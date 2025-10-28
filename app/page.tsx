@@ -37,7 +37,15 @@ export default function Home() {
             <li><strong>디자인:</strong> 탑바에 로그인 사용자 업로드.</li>
             <li><strong>대화방 참여 목록:</strong> vibe/chat/joins 에 저장해서, 채팅방 목록을 표시하고, 클릭하여 입장.</li>
             <li><strong>모든 함수를 API 화 시키기</strong></li>
-            <li><strong>게시판</strong></li>
+            <li>
+              <strong>게시판</strong>
+              <ol className="mt-2 space-y-1 list-decimal list-inside">
+                <li>게시판 글/코멘트을 RTDB 에 저장(sync)</li>
+                <li>게시를 SEO 를 위해서, RTDB 글을 Supabase 로 캐시.</li>
+                <li>서버에서 렌더링하는 경우는 무조건 Supabase 에서 데이터 가져오기.</li>
+                <li>클라이언트에서 Hydration 후, RTDB 에서 글 가져와 Reboot (렌더링)</li>
+              </ol>
+            </li>
             <li><strong>푸시 알림</strong></li>
             <li><strong>Flutter iOS/Android 앱 개발</strong></li>
           </ol>
