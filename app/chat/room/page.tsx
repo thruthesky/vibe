@@ -81,7 +81,8 @@ function ChatRoomContent() {
 
     async function fetchOtherUserName() {
       try {
-        const displayName = await getUserDisplayName(otherId);
+        // otherId는 이미 위에서 null 체크를 했으므로 타입 단언 사용
+        const displayName = await getUserDisplayName(otherId!);
         if (displayName) {
           setOtherUserName(displayName);
         } else {
@@ -104,8 +105,8 @@ function ChatRoomContent() {
       try {
         setError("");
 
-        // 채팅방 생성
-        const createResult = await createChatRoom(currentUserId, otherId);
+        // 채팅방 생성 (이미 위에서 null 체크를 했으므로 타입 단언 사용)
+        const createResult = await createChatRoom(currentUserId!, otherId!);
         if (!createResult.success || !createResult.roomId) {
           throw new Error("채팅방 생성에 실패했습니다.");
         }
