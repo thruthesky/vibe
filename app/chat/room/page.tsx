@@ -2,7 +2,7 @@
 // 두 사용자 간의 실시간 채팅을 제공합니다.
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { auth } from "@/lib/firebase";
 import { getUserDisplayName } from "@/lib/user";
@@ -15,7 +15,8 @@ import {
   ChatMessage,
 } from "@/lib/chat";
 
-export default function ChatRoomPage() {
+// useSearchParams()를 사용하는 실제 채팅 컴포넌트
+function ChatRoomContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -395,5 +396,20 @@ export default function ChatRoomPage() {
         </form>
       </div>
     </div>
+  );
+}
+
+// Suspense 경계로 감싼 메인 페이지 컴포넌트
+export default function ChatRoomPage() {
+  return (
+    <Suspense
+      fallback={
+        <div style={{ padding: "2rem", textAlign: "center" }}>
+          <p>채팅방을 불러오는 중...</p>
+        </div>
+      }
+    >
+      <ChatRoomContent />
+    </Suspense>
   );
 }
