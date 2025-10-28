@@ -39,7 +39,7 @@ export default function Home() {
             <li><strong>모든 함수를 API 화 시키기</strong></li>
             <li>
               <strong>게시판</strong>
-              <ol className="mt-2 space-y-1 list-decimal list-inside">
+              <ol className="mt-2 space-y-1 list-decimal ml-6">
                 <li>게시판 글/코멘트을 RTDB 에 저장(sync)</li>
                 <li>게시를 SEO 를 위해서, RTDB 글을 Supabase 로 캐시.</li>
                 <li>서버에서 렌더링하는 경우는 무조건 Supabase 에서 데이터 가져오기.</li>
