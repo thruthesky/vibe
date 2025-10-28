@@ -19,13 +19,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
 import { MessageCircle, Users, Menu, LogOut, User as UserIcon } from "lucide-react";
 
 export function Topbar() {
@@ -131,7 +124,7 @@ export function Topbar() {
                 </Button>
               </div>
 
-              {/* 모바일 메뉴 (햄버거) */}
+              {/* 모바일 메뉴 아이콘 */}
               <div className="md:hidden flex items-center gap-2">
                 {/* 프로필 아이콘 */}
                 <Button variant="ghost" size="sm" asChild>
@@ -142,66 +135,12 @@ export function Topbar() {
                   </Link>
                 </Button>
 
-                {/* 메뉴 아이콘 */}
-                <Sheet>
-                  <SheetTrigger asChild>
-                    <Button variant="ghost" size="lg">
-                      <Menu className="h-6 w-6" />
-                    </Button>
-                  </SheetTrigger>
-                  <SheetContent>
-                    <SheetHeader>
-                      <SheetTitle>메뉴</SheetTitle>
-                    </SheetHeader>
-                    <div className="mt-6 flex flex-col gap-4">
-                      {/* 사용자 정보 */}
-                      <div className="flex items-center gap-3 pb-4 border-b">
-                        <Avatar className="h-10 w-10">
-                          <AvatarFallback>{getUserInitial()}</AvatarFallback>
-                        </Avatar>
-                        <div className="flex flex-col">
-                          <span className="font-medium">
-                            {user.displayName || "사용자"}
-                          </span>
-                          <span className="text-sm text-muted-foreground">
-                            {user.email}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* 메뉴 항목 */}
-                      <Button variant="ghost" asChild className="justify-start">
-                        <Link href="/chat/room">
-                          <MessageCircle className="mr-2 h-4 w-4" />
-                          채팅
-                        </Link>
-                      </Button>
-
-                      <Button variant="ghost" asChild className="justify-start">
-                        <Link href="/users">
-                          <Users className="mr-2 h-4 w-4" />
-                          사용자찾기
-                        </Link>
-                      </Button>
-
-                      <Button variant="ghost" asChild className="justify-start">
-                        <Link href="/profile">
-                          <UserIcon className="mr-2 h-4 w-4" />
-                          프로필 수정
-                        </Link>
-                      </Button>
-
-                      <Button
-                        variant="ghost"
-                        onClick={handleLogout}
-                        className="justify-start"
-                      >
-                        <LogOut className="mr-2 h-4 w-4" />
-                        로그아웃
-                      </Button>
-                    </div>
-                  </SheetContent>
-                </Sheet>
+                {/* 메뉴 아이콘 - /menu 페이지로 이동 */}
+                <Button variant="ghost" size="lg" asChild>
+                  <Link href="/menu">
+                    <Menu className="h-6 w-6" />
+                  </Link>
+                </Button>
               </div>
             </>
           )}
@@ -236,33 +175,12 @@ export function Topbar() {
                   </Link>
                 </Button>
 
-                {/* 메뉴 아이콘 */}
-                <Sheet>
-                  <SheetTrigger asChild>
-                    <Button variant="ghost" size="lg">
-                      <Menu className="h-6 w-6" />
-                    </Button>
-                  </SheetTrigger>
-                  <SheetContent>
-                    <SheetHeader>
-                      <SheetTitle>메뉴</SheetTitle>
-                    </SheetHeader>
-                    <div className="mt-6 flex flex-col gap-4">
-                      <Button asChild className="w-full justify-start">
-                        <Link href="/auth/login">로그인</Link>
-                      </Button>
-                      <Button asChild className="w-full justify-start">
-                        <Link href="/auth/signup">회원가입</Link>
-                      </Button>
-                      <Button variant="ghost" asChild className="w-full justify-start">
-                        <Link href="/users">
-                          <Users className="mr-2 h-4 w-4" />
-                          회원 목록
-                        </Link>
-                      </Button>
-                    </div>
-                  </SheetContent>
-                </Sheet>
+                {/* 메뉴 아이콘 - /menu 페이지로 이동 */}
+                <Button variant="ghost" size="lg" asChild>
+                  <Link href="/menu">
+                    <Menu className="h-6 w-6" />
+                  </Link>
+                </Button>
               </div>
             </div>
           )}
