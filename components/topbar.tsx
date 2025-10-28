@@ -1,0 +1,207 @@
+"use client";
+
+// 탑바 컴포넌트
+// 모든 페이지 상단에 고정되어 표시되는 네비게이션 바입니다.
+
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { User, onAuthStateChanged } from "firebase/auth";
+import { auth } from "@/lib/firebase";
+import { logOut } from "@/lib/auth";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { MessageCircle, Users, Menu, LogOut, User as UserIcon } from "lucide-react";
+
+export function Topbar() {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+
+  // Firebase Auth 상태 변화 감지
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setLoading(false);
+    });
+
+    // 컴포넌트 언마운트 시 구독 해제
+    return () => unsubscribe();
+  }, []);
+
+  // 로그아웃 핸들러
+  const handleLogout = async () => {
+    const result = await logOut();
+    if (result.success) {
+      router.push("/");
+      router.refresh();
+    }
+  };
+
+  // 사용자 이름의 첫 글자를 가져옴 (아바타 표시용)
+  const getUserInitial = () => {
+    if (user?.displayName) {
+      return user.displayName.charAt(0).toUpperCase();
+    }
+    if (user?.email) {
+      return user.email.charAt(0).toUpperCase();
+    }
+    return "U";
+  };
+
+  return (
+    <header className="fixed top-0 left-0 right-0 z-50 border-b bg-background">
+      <div className="container mx-auto flex h-16 items-center justify-between px-4">
+        {/* 왼쪽: 로고 */}
+        <Link href="/" className="flex items-center gap-2">
+          <div className="text-xl font-bold">[KVB] 한바보</div>
+        </Link>
+
+        {/* 오른쪽: 네비게이션 */}
+        <nav className="flex items-center gap-2">
+          {!loading && user && (
+            <>
+              {/* 데스크톱 메뉴 */}
+              <div className="hidden md:flex items-center gap-2">
+                {/* 채팅 버튼 */}
+                <Button variant="ghost" size="sm" asChild>
+                  <Link href="/chat/room">
+                    <MessageCircle className="h-4 w-4 mr-2" />
+                    채팅
+                  </Link>
+                </Button>
+
+                {/* 사용자 찾기 버튼 */}
+                <Button variant="ghost" size="sm" asChild>
+                  <Link href="/users">
+                    <Users className="h-4 w-4 mr-2" />
+                    사용자찾기
+                  </Link>
+                </Button>
+
+                {/* 프로필 드롭다운 메뉴 */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="gap-2">
+                      <Avatar className="h-6 w-6">
+                        <AvatarFallback>{getUserInitial()}</AvatarFallback>
+                      </Avatar>
+                      <span className="hidden lg:inline-block">
+                        {user.displayName || user.email}
+                      </span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>내 계정</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link href="/profile">
+                        <UserIcon className="mr-2 h-4 w-4" />
+                        프로필 수정
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleLogout}>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      로그아웃
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+
+              {/* 모바일 메뉴 (햄버거) */}
+              <div className="md:hidden">
+                <Sheet>
+                  <SheetTrigger asChild>
+                    <Button variant="ghost" size="sm">
+                      <Menu className="h-5 w-5" />
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent>
+                    <SheetHeader>
+                      <SheetTitle>메뉴</SheetTitle>
+                    </SheetHeader>
+                    <div className="mt-6 flex flex-col gap-4">
+                      {/* 사용자 정보 */}
+                      <div className="flex items-center gap-3 pb-4 border-b">
+                        <Avatar className="h-10 w-10">
+                          <AvatarFallback>{getUserInitial()}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex flex-col">
+                          <span className="font-medium">
+                            {user.displayName || "사용자"}
+                          </span>
+                          <span className="text-sm text-muted-foreground">
+                            {user.email}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* 메뉴 항목 */}
+                      <Button variant="ghost" asChild className="justify-start">
+                        <Link href="/chat/room">
+                          <MessageCircle className="mr-2 h-4 w-4" />
+                          채팅
+                        </Link>
+                      </Button>
+
+                      <Button variant="ghost" asChild className="justify-start">
+                        <Link href="/users">
+                          <Users className="mr-2 h-4 w-4" />
+                          사용자찾기
+                        </Link>
+                      </Button>
+
+                      <Button variant="ghost" asChild className="justify-start">
+                        <Link href="/profile">
+                          <UserIcon className="mr-2 h-4 w-4" />
+                          프로필 수정
+                        </Link>
+                      </Button>
+
+                      <Button
+                        variant="ghost"
+                        onClick={handleLogout}
+                        className="justify-start"
+                      >
+                        <LogOut className="mr-2 h-4 w-4" />
+                        로그아웃
+                      </Button>
+                    </div>
+                  </SheetContent>
+                </Sheet>
+              </div>
+            </>
+          )}
+
+          {/* 로그인하지 않은 경우 */}
+          {!loading && !user && (
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" asChild>
+                <Link href="/auth/login">로그인</Link>
+              </Button>
+              <Button size="sm" asChild>
+                <Link href="/auth/signup">회원가입</Link>
+              </Button>
+            </div>
+          )}
+        </nav>
+      </div>
+    </header>
+  );
+}
