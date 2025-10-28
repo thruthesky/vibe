@@ -2,7 +2,7 @@
 // 퀵메뉴 링크를 제공합니다.
 
 import Link from "next/link";
-import { Home, MessageCircle, Users, User, FileText, ExternalLink } from "lucide-react";
+import { Home, MessageCircle, Users, User, FileText, ExternalLink, BookOpen } from "lucide-react";
 
 export function LeftSidebar() {
   return (
@@ -56,23 +56,28 @@ export function LeftSidebar() {
         {/* 구분선 */}
         <div className="my-6 border-t"></div>
 
-        {/* 퀵 링크 섹션 */}
-        <div className="space-y-3">
-          <h3 className="text-sm font-semibold text-muted-foreground px-3">
-            퀵 링크
-          </h3>
-
-          {/* 한바보 카카오톡 단톡방 */}
+        {/* 링크 섹션 */}
+        <div className="space-y-2">
+          {/* 한바보 참여 단톡방 */}
           <a
-            href="https://open.kakao.com/o/g1w1KbNg"
+            href="https://open.kakao.com/o/gn2qMetf"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors text-sm"
           >
             <MessageCircle className="h-4 w-4" />
-            <span>한바보 카톡방</span>
+            <span>한바보 참여 단톡방</span>
             <ExternalLink className="h-3 w-3 ml-auto" />
           </a>
+
+          {/* 개발일지 */}
+          <Link
+            href="/dev/history"
+            className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors text-sm"
+          >
+            <BookOpen className="h-4 w-4" />
+            <span>개발일지</span>
+          </Link>
         </div>
 
         {/* 구분선 */}

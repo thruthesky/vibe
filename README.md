@@ -180,20 +180,7 @@ npm run dev
 
 ## 📝 스터디 로그
 
-### 2025-10-27 (첫 번째 세미나)
-
-**구현 완료**
-- ✅ 기본 프로젝트 셋업 (Next.js 16, React 19, TypeScript)
-- ✅ Firebase 설정 및 인증 구현
-- ✅ 이메일/비밀번호 회원가입 & 로그인
-- ✅ 회원 정보 수정 (프로필 업데이트)
-- ✅ 1:1 채팅 기능 (실시간 메시지 동기화)
-
-**배운 것들**
-- Next.js App Router 구조 이해
-- Firebase Authentication 사용법
-- Firebase Realtime Database 실시간 동기화
-- Git PR을 통한 협업 방식
+자세한 개발 일지와 스터디 기록은 [https://www.vibers.kr/dev/history](https://www.vibers.kr/dev/history)를 참조하세요.
 
 <br/>
 
