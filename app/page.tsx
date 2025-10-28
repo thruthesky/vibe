@@ -1,65 +1,200 @@
-import Image from "next/image";
+// 홈페이지 컴포넌트
+"use client";
+
+import { useEffect, useState } from "react";
+import { auth } from "../lib/firebase";
 
 export default function Home() {
+  const [userId, setUserId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Firebase 인증 상태 확인
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        setUserId(user.uid);
+      } else {
+        setUserId(null);
+      }
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div style={{ padding: "2rem" }}>
+      <h1>헬로 바이브 🚀</h1>
+      <p>바이브 웹/앱 개발 스터디 프로젝트에 오신 것을 환영합니다!</p>
+
+      {/* 프로젝트 개요 */}
+      <div
+        style={{
+          marginTop: "2rem",
+          padding: "2rem",
+          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          borderRadius: "12px",
+          color: "white",
+          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+        }}
+      >
+        <h2 style={{ marginTop: 0, fontSize: "1.5rem", marginBottom: "1rem" }}>
+          💬 AI와 함께하는 협업 개발 경험
+        </h2>
+        <p style={{ lineHeight: "1.8", fontSize: "1rem", margin: 0 }}>
+          <strong>한바보</strong>(한국 바이버 보스)는 AI 기반 바이브 코딩으로 실전 소셜 웹 애플리케이션을 만드는
+          오픈소스 스터디 커뮤니티입니다. 코드는 AI에게 맡기고, 설계와 기획에 집중하며,
+          Git을 통한 협업과 실제 배포까지 경험합니다. 인증, 게시판, 채팅, 알림 등 실용적인 기능을 구현하며,
+          지속 가능한 개발 능력과 AI 컨트롤 역량을 기릅니다.
+        </p>
+        <div style={{ marginTop: "1.5rem", display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+          <span style={{
+            padding: "0.5rem 1rem",
+            backgroundColor: "rgba(255, 255, 255, 0.2)",
+            borderRadius: "20px",
+            fontSize: "0.9rem"
+          }}>
+            💬 소스 코딩 금지
+          </span>
+          <span style={{
+            padding: "0.5rem 1rem",
+            backgroundColor: "rgba(255, 255, 255, 0.2)",
+            borderRadius: "20px",
+            fontSize: "0.9rem"
+          }}>
+            🤝 실전 협업
+          </span>
+          <span style={{
+            padding: "0.5rem 1rem",
+            backgroundColor: "rgba(255, 255, 255, 0.2)",
+            borderRadius: "20px",
+            fontSize: "0.9rem"
+          }}>
+            🎯 실용적 기능
+          </span>
+          <span style={{
+            padding: "0.5rem 1rem",
+            backgroundColor: "rgba(255, 255, 255, 0.2)",
+            borderRadius: "20px",
+            fontSize: "0.9rem"
+          }}>
+            📚 함께 성장
+          </span>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
+      </div>
+
+      {!loading && (
+        <div style={{ marginTop: "2rem", padding: "1rem", backgroundColor: "#f0f0f0", borderRadius: "4px" }}>
+          {userId ? (
+            <div>
+              <h2>로그인 성공!</h2>
+              <p>
+                <strong>사용자 ID:</strong> <code>{userId}</code>
+              </p>
+              {/* 로그인한 사용자를 위한 메뉴 */}
+              <div style={{ display: "flex", gap: "1rem", marginTop: "1rem" }}>
+                {/* 회원 정보 수정 링크 */}
+                <a
+                  href="/profile"
+                  style={{
+                    padding: "0.5rem 1rem",
+                    backgroundColor: "#17a2b8",
+                    color: "white",
+                    textDecoration: "none",
+                    border: "none",
+                    borderRadius: "4px",
+                    cursor: "pointer",
+                    display: "inline-block",
+                  }}
+                >
+                  회원 정보 수정
+                </a>
+                {/* 로그아웃 버튼 */}
+                <button
+                  onClick={async () => {
+                    await auth.signOut();
+                  }}
+                  style={{
+                    padding: "0.5rem 1rem",
+                    backgroundColor: "#dc3545",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "4px",
+                    cursor: "pointer",
+                  }}
+                >
+                  로그아웃
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div>
+              <h2>시작하기</h2>
+              {/* 로그인 및 회원가입 링크 */}
+              <div style={{ display: "flex", gap: "1rem" }}>
+                <a
+                  href="/auth/login"
+                  style={{
+                    padding: "0.75rem 1.5rem",
+                    backgroundColor: "#007bff",
+                    color: "white",
+                    textDecoration: "none",
+                    borderRadius: "4px",
+                    display: "inline-block",
+                  }}
+                >
+                  로그인
+                </a>
+                {/* 회원가입 페이지로 이동하는 링크 */}
+                <a
+                  href="/auth/signup"
+                  style={{
+                    padding: "0.75rem 1.5rem",
+                    backgroundColor: "#28a745",
+                    color: "white",
+                    textDecoration: "none",
+                    borderRadius: "4px",
+                    display: "inline-block",
+                  }}
+                >
+                  회원가입
+                </a>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* 모든 사용자가 접근 가능한 메뉴 */}
+      <div style={{ marginTop: "2rem", padding: "1rem", backgroundColor: "#f9f9f9", borderRadius: "4px" }}>
+        <h2>메뉴</h2>
+        <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+          {/* 회원 목록 페이지 링크 */}
           <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="/users"
+            style={{
+              padding: "0.5rem 1rem",
+              backgroundColor: "#6c757d",
+              color: "white",
+              textDecoration: "none",
+              borderRadius: "4px",
+              display: "inline-block",
+            }}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
+            회원 목록
           </a>
         </div>
-      </main>
+      </div>
+
+      <div style={{ marginTop: "2rem" }}>
+        <h2>프로젝트 목표</h2>
+        <ul>
+          <li>사용자 인증</li>
+          <li>게시판 CRUD 기능</li>
+          <li>채팅 기능</li>
+          <li>알림 기능</li>
+        </ul>
+      </div>
     </div>
   );
 }

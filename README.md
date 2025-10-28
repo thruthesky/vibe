@@ -1,36 +1,206 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🚀 Vibe - 바이브 웹/앱 개발 스터디 프로젝트
 
-## Getting Started
+> AI와 함께하는 협업 개발 경험, 코딩 없이 만드는 실전 웹 애플리케이션
+> 진행중인 공동 프로젝트 보기: [vibers.kr](https://vibers.kr)
 
-First, run the development server:
+<br/>
+
+## 📖 프로젝트 소개
+
+**한바보**는 `한국 바이브 보스` 약자로 바이브 코딩(AI 기반 개발)을 통해 실전 소셜 웹 애플리케이션을 만들어가는 **오픈소스 스터디 커뮤니티**입니다.
+
+직접 코드를 타이핑하는 대신, AI와 대화하며 개발하는 새로운 방식으로 웹/앱 개발을 경험하고,
+Git을 활용한 협업 방식을 배우며, 실제 배포까지 경험할 수 있습니다.
+
+> **주관**: [한바보 바이브 코딩 - 카톡채팅](https://open.kakao.com/o/gn2qMetf)
+> AI 기반 개발을 연구하고 실천하는 바이브 (노코딩) 커뮤니티
+
+> **해결 과제**: 소스 코드를 절대 입력하지 않는 바이브 코딩으로 어디까지 만들 수 있을까?
+
+### 🌟 프로젝트 특징
+
+- **💬 소스 코딩 금지** - 코드는 AI에게 맡기고, 당신은 설계와 기획에 집중하세요
+- **🛠️ 지속 가능한 개발** - 프롬프트 몇 번에 뚝딱 만들어 줄 것이라 생각하면 오산. 사용자들의 요구에 지속적인 업데이트가 가능한 프로젝트
+- **🤝 실전 협업 경험** - Git PR을 통한 협업, 코드 리뷰 경험
+- **🌐 모든 AI** - 소스 코딩을 하지 않는 다면, 어떤 AI 라도 OK
+- **🎯 실용적인 기능 구현** - 인증, 게시판, 채팅, 알림 등 실제 서비스에 필요한 기능들
+- **📚 함께 성장** - 모르는 것을 서로 물어보고 배우는 학습 문화
+
+<br/>
+
+## 📌 목표
+
+- AI 컨트롤. 모든 것이 내 손안에 있어야 합니다. AI 가 만들고 싶어하는 것을 만드는 것이 아니라, 내가 만들고 싶은 것을 AI 가 만들도록 컨트롤하는 능력을 기릅니다.
+- 완전한 통제를 통한 지속 가능한 개발.
+
+<br/>
+
+## 🎯 이런 분들께 추천합니다
+
+- ✅ AI 기반 개발(바이브 코딩)에 관심이 있으신 분
+- ✅ 같이 공부하고 싶은 분. GitHub, 배포, 백엔드, DB 등을 실전에서 사용해보고 싶으신 분
+- ✅ Firebase, Supabase 같은 백엔드 서비스를 배우고 싶으신 분
+- ✅ Next.js, React, Flutter 기반 모던 웹 개발을 경험하고 싶으신 분
+
+<br/>
+
+## 🚀 시작하기
+
+정말, 프롬프트 몇 번만으로 뚝딱 만들어지기를 기대하셨나요? 모르는 것이 있으면 서로 물어보고 배우는 것이 중요합니다!
+
+### 참여 방법
+
+1. **이 저장소를 Fork** 하세요 (Fork?)
+2. **본인의 환경 설정**을 추가하세요 (환경?)
+   - Firebase 프로젝트 생성 및 `.env.local` 설정 (설정?)
+   - Supabase 프로젝트 생성 (선택)
+3. **기능 개발 및 PR 제출** (PR?)
+   - 새로운 기능을 추가하거나 버그를 수정하세요
+   - Pull Request를 보내주세요
+4. **본인의 사이트에 배포**해보세요
+
+### 개발 환경 셋업
 
 ```bash
+# 저장소 클론
+git clone https://github.com/thruthesky/vibe.git
+cd vibe
+
+# 의존성 설치
+npm install
+
+# 환경 변수 설정
+cp .env.example .env.local
+# .env.local 파일에 본인의 Firebase 설정 추가
+
+# 개발 서버 실행
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+<br/>
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🛠️ 기술 스택
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 프론트엔드
+- **Next.js 16** - React 기반 풀스택 프레임워크
+- **React 19** - 최신 React 기능
+- **Flutter** - 크로스플랫폼 모바일 앱 개발
 
-## Learn More
+### 백엔드 & 데이터베이스
+- **Firebase** - 인증, Realtime Database, Firestore
+- **Supabase** (선택) - PostgreSQL 기반 백엔드
+- **Next.js API Routes** - RESTful API 엔드포인트
 
-To learn more about Next.js, take a look at the following resources:
+### 모바일 앱
+- **Flutter** - Next.js API를 통해 웹과 동일한 수준의 UI/UX를 제공하는 크로스플랫폼 앱 개발
+  - iOS/Android 동시 지원
+  - Next.js API 엔드포인트 통합
+  - 웹과 동일한 Firebase 인증 사용
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 개발 도구
+- **Turbopack** - 빠른 번들링
+- **각종 인공지능 AI** - AI 기반 개발 도구
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+<br/>
 
-## Deploy on Vercel
+## 🎨 구현된/예정된 기능
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- 페이스북 소셜 서비스 웹/앱을 목표합니다
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### ✅ 구현 완료
+- 사용자 인증 (이메일/비밀번호 회원가입, 로그인, 로그아웃)
+- 회원 정보 수정 (프로필 업데이트)
+- 1:1 채팅 기능 (실시간 메시지)
+
+### 🚧 개발 예정
+- 게시판 CRUD (생성, 읽기, 수정, 삭제)
+  - SEO 최적화
+  - 무한 스크롤
+  - 댓글 및 대댓글
+- 그룹 채팅
+- 알림 기능 (푸시 알림, 이메일 알림)
+- 사용자 검색 및 팔로우
+  - 피드 전파
+
+<br/>
+
+## 📚 스터디 진행 방식
+
+### 세미나 시간 집중 개발
+- **세미나 시간에만 같이 개발/스터디 진행** - 혼자 시간을 내서 따로 공부하기 없기. 수업(세미나) 시간에만 공부하기.
+- **실시간 질의응답** - 막히는 부분은 바로 물어보고 해결
+- **협업 경험** - Git PR, 코드 리뷰 등 실전 협업 방식 학습
+
+### 바이브 코딩 원칙
+- **코드 직접 타이핑 금지** - AI에게 요청하여 구현
+- **설계와 기획에 집중** - "무엇을" 만들지, "어떻게" 동작할지 고민
+- **AI와 대화** - 명확한 요구사항 전달 능력 향상
+- **자유로운 도구 선택** - 소스 코딩을 직접 하지 않는 한, 어떤 AI, 툴, Agent를 써도 상관없음
+
+### 협업 개발 가이드라인
+
+#### 🔄 코드 관리 원칙
+- **기존 코드 존중** - 여러 명이 많은 시간과 정성을 들여 하나의 기능을 수정/보완해 나가므로, 기존 코드를 함부로 삭제하거나 동일한 기능/로직을 중복 생성하지 않기
+- **점진적 개선** - 기존에 존재하는 코드를 리팩토링하거나 업데이트/발전시켜 나가기
+- **지속 가능성** - 지속 가능한 시스템을 개발하는 것이 목표
+
+#### 🏗️ 아키텍처 원칙
+- **100% API 기반 설계** - Next.js에서 모든 데이터 처리는 API를 통해 구현
+  - 이유: 외부 앱(Flutter)에서 백엔드(DB)를 참조하기 위함
+  - `/app/api/` 디렉토리에 모든 API 엔드포인트 구현
+  - 클라이언트(웹/앱)는 API를 통해서만 데이터 접근
+
+### 서로 돕는 문화
+- GitHub 사용법 (Fork, Clone, PR 방법)
+- Firebase, Supabase 셋업 방법
+- 프론트엔드/백엔드 개발 질문
+- 배포 및 도메인 연결
+
+<br/>
+
+## 🤝 기여 가이드
+
+1. **이슈 등록** - 버그 발견이나 새 기능 제안
+2. **브랜치 생성** - `feature/기능명` 형식으로 브랜치 생성
+3. **개발 진행** - AI와 함께 기능 구현
+4. **PR 제출** - 상세한 설명과 함께 Pull Request 제출
+5. **코드 리뷰** - 다른 참여자들과 코드 리뷰 진행
+6. **병합** - 승인 후 main 브랜치에 병합
+
+<br/>
+
+
+## 📞 문의 및 소통
+
+- **카카오톡**: [바이브 코딩 오픈채팅방](https://open.kakao.com/o/gn2qMetf) - 실시간 질문과 스터디 참여
+- **이슈**: 버그 리포트나 기능 제안은 [GitHub Issues](https://github.com/thruthesky/vibe/issues)에 등록해주세요
+- **토론**: 아이디어 공유나 질문은 [한바보 단톡방](https://open.kakao.com/o/gn2qMetf)을 활용해주세요
+
+<br/>
+
+## 📝 스터디 로그
+
+### 2025-10-27 (첫 번째 세미나)
+
+**구현 완료**
+- ✅ 기본 프로젝트 셋업 (Next.js 16, React 19, TypeScript)
+- ✅ Firebase 설정 및 인증 구현
+- ✅ 이메일/비밀번호 회원가입 & 로그인
+- ✅ 회원 정보 수정 (프로필 업데이트)
+- ✅ 1:1 채팅 기능 (실시간 메시지 동기화)
+
+**배운 것들**
+- Next.js App Router 구조 이해
+- Firebase Authentication 사용법
+- Firebase Realtime Database 실시간 동기화
+- Git PR을 통한 협업 방식
+
+<br/>
+
+---
+
+**함께 만들어가는 한바보 프로젝트에 오신 것을 환영합니다! 🎉**
+
+*"코드는 AI에게, 창의성은 우리에게"*
+
+
