@@ -24,8 +24,23 @@ export default function Home() {
 
   return (
     <div style={{ padding: "2rem" }}>
-      <h1>헬로 바이브 🚀</h1>
-      <p>바이브 웹/앱 개발 스터디 프로젝트에 오신 것을 환영합니다!</p>
+      <h1>바이브 코딩 스터디 프로젝트</h1>
+      <p>
+        누구든지 참여를 할 수 있습니다. PR 하시거나,{" "}
+        <a
+          href="https://open.kakao.com/o/g1w1KbNg"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            color: "#007bff",
+            textDecoration: "underline",
+            fontWeight: "bold",
+          }}
+        >
+          한바보
+        </a>{" "}
+        단톡방에 참여해주세요.
+      </p>
 
       {/* TODO 목록 */}
       <div
