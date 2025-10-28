@@ -36,6 +36,7 @@ export default function Home() {
           <ol className="space-y-2 text-muted-foreground list-decimal list-inside">
             <li><strong>디자인:</strong> 탑바에 로그인 사용자 업로드.</li>
             <li><strong>대화방 참여 목록:</strong> vibe/chat/joins 에 저장해서, 채팅방 목록을 표시하고, 클릭하여 입장.</li>
+            <li><strong>모든 함수를 API 화 시키기</strong></li>
             <li><strong>게시판</strong></li>
             <li><strong>푸시 알림</strong></li>
             <li><strong>Flutter iOS/Android 앱 개발</strong></li>
