@@ -63,30 +63,6 @@ export default function Home() {
           </ol>
         </div>
 
-        {/* 프로젝트 개요 */}
-        <div className="bg-slate-100 border border-slate-200 rounded-lg p-6 space-y-4">
-          <h2 className="text-xl font-semibold text-foreground">AI와 함께하는 협업 개발 경험</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            <strong className="text-foreground">한바보</strong>(한국 바이버 보스)는 AI 기반 바이브 코딩으로 실전 소셜 웹 애플리케이션을 만드는
-            오픈소스 스터디 커뮤니티입니다. 코드는 AI에게 맡기고, 설계와 기획에 집중하며,
-            Git을 통한 협업과 실제 배포까지 경험합니다. 인증, 게시판, 채팅, 알림 등 실용적인 기능을 구현하며,
-            지속 가능한 개발 능력과 AI 컨트롤 역량을 기릅니다.
-          </p>
-          <div className="flex flex-wrap gap-2 pt-2">
-            <span className="inline-block bg-white border border-slate-200 px-3 py-1 rounded-full text-sm text-muted-foreground">
-              💬 소스 코딩 금지
-            </span>
-            <span className="inline-block bg-white border border-slate-200 px-3 py-1 rounded-full text-sm text-muted-foreground">
-              🤝 실전 협업
-            </span>
-            <span className="inline-block bg-white border border-slate-200 px-3 py-1 rounded-full text-sm text-muted-foreground">
-              🎯 실용적 기능
-            </span>
-            <span className="inline-block bg-white border border-slate-200 px-3 py-1 rounded-full text-sm text-muted-foreground">
-              📚 함께 성장
-            </span>
-          </div>
-        </div>
 
         {!loading && (
         <div className="bg-slate-50 border border-slate-200 rounded-lg p-6 space-y-4" style={{ marginTop: "2rem" }}>
