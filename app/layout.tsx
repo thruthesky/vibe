@@ -2,6 +2,7 @@
 // 모든 페이지가 이 레이아웃을 공유합니다
 import type { Metadata } from "next";
 import { Topbar } from "@/components/topbar";
+import { TestFab } from "@/components/test-fab";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -21,6 +22,8 @@ export default function RootLayout({
         <Topbar />
         {/* 탑바 높이만큼 여백을 주어 컨텐츠가 탑바에 가려지지 않도록 함 */}
         <main className="pt-16">{children}</main>
+        {/* 테스트용 Floating Action Button (개발/테스트 환경에서만 표시) */}
+        <TestFab />
       </body>
     </html>
   );
