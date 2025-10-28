@@ -33,6 +33,14 @@
 
 - [ ] **4단계**: 작업 내용 파악 및 계획 수립
 - [ ] **5단계**: 코드 작성/수정 진행
+  - **React 19.2 사용 필수** ⚠️
+    - 반드시 React 19.2 버전 사용
+    - Memoization이 필요한 경우 **React Compiler** 사용
+    - ❌ **절대 금지**: `useMemo`, `useCallback`, `React.memo` 사용 금지
+    - React Compiler는 자동으로 최적화를 수행합니다
+    - 참고 문서:
+      - [React Compiler](https://react.dev/learn/react-compiler)
+      - [React Compiler Installation](https://react.dev/learn/react-compiler/installation)
 - [ ] **6단계**: 테스트 실행 (필요시)
   - **테스트, E2E, 디버깅, 검증** 관련 요청 시 → `@.claude/skills/test/SKILL.md` 문서 참고
   - Playwright MCP 또는 Chrome DevTools MCP 사용
