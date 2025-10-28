@@ -24,11 +24,28 @@ export default function Home() {
 
   return (
     <div style={{ padding: "2rem" }}>
+      {/* 바이브 코딩 배너 */}
+      <div
+        style={{
+          marginBottom: "1.5rem",
+          padding: "0.75rem 1rem",
+          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          borderRadius: "8px",
+          textAlign: "center",
+          color: "white",
+          fontWeight: "bold",
+          fontSize: "0.95rem",
+          boxShadow: "0 2px 8px rgba(102, 126, 234, 0.3)",
+        }}
+      >
+        🤖 현재 보시고 계시는 이 사이트는 100% 바이브 코딩으로만 만들어졌습니다.
+      </div>
+
       <h1>바이브 코딩 스터디 프로젝트</h1>
       <p>
         누구든지 참여를 할 수 있습니다. PR 하시거나,{" "}
         <a
-          href="https://open.kakao.com/o/g1w1KbNg"
+          href="https://open.kakao.com/o/gn2qMetf"
           target="_blank"
           rel="noopener noreferrer"
           style={{
