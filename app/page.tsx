@@ -51,7 +51,13 @@ export default function Home() {
                 <li>클라이언트에서 Hydration 후, RTDB 에서 글 가져와 Reboot (렌더링)</li>
               </ol>
             </li>
-            <li><strong>푸시 알림</strong></li>
+            <li>
+              <strong>푸시 알림</strong>
+              <ol className="mt-2 space-y-1 list-decimal ml-8">
+                <li>채팅방에 알림 구독(선택)</li>
+                <li>댓글이 달린 경우, 푸시 알림</li>
+              </ol>
+            </li>
             <li><strong>Flutter iOS/Android 앱 개발</strong></li>
           </ol>
         </div>
