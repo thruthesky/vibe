@@ -73,7 +73,7 @@ export function Topbar() {
         </Link>
 
         {/* 오른쪽: 네비게이션 */}
-        <nav className="flex items-center gap-2">
+        <nav className="flex items-center gap-1">
           {!loading && user && (
             <>
               {/* 데스크톱 메뉴 */}
@@ -122,14 +122,31 @@ export function Topbar() {
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
+
+                {/* 메뉴 아이콘 - 맨 오른쪽 */}
+                <Button variant="ghost" size="sm" asChild>
+                  <Link href="/menu">
+                    <Menu className="h-5 w-5" />
+                  </Link>
+                </Button>
               </div>
 
               {/* 모바일 메뉴 (햄버거) */}
-              <div className="md:hidden">
+              <div className="md:hidden flex items-center gap-2">
+                {/* 프로필 아이콘 */}
+                <Button variant="ghost" size="sm" asChild>
+                  <Link href="/profile">
+                    <Avatar className="h-7 w-7">
+                      <AvatarFallback className="text-xs">{getUserInitial()}</AvatarFallback>
+                    </Avatar>
+                  </Link>
+                </Button>
+
+                {/* 메뉴 아이콘 */}
                 <Sheet>
                   <SheetTrigger asChild>
-                    <Button variant="ghost" size="sm">
-                      <Menu className="h-5 w-5" />
+                    <Button variant="ghost" size="lg">
+                      <Menu className="h-6 w-6" />
                     </Button>
                   </SheetTrigger>
                   <SheetContent>
@@ -191,13 +208,62 @@ export function Topbar() {
 
           {/* 로그인하지 않은 경우 */}
           {!loading && !user && (
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" asChild>
-                <Link href="/auth/login">로그인</Link>
-              </Button>
-              <Button size="sm" asChild>
-                <Link href="/auth/signup">회원가입</Link>
-              </Button>
+            <div className="flex items-center gap-1">
+              {/* 데스크톱 메뉴 */}
+              <div className="hidden md:flex items-center gap-2">
+                <Button variant="ghost" size="sm" asChild>
+                  <Link href="/auth/login">로그인</Link>
+                </Button>
+                <Button size="sm" asChild>
+                  <Link href="/auth/signup">회원가입</Link>
+                </Button>
+                {/* 메뉴 아이콘 */}
+                <Button variant="ghost" size="sm" asChild>
+                  <Link href="/menu">
+                    <Menu className="h-5 w-5" />
+                  </Link>
+                </Button>
+              </div>
+
+              {/* 모바일 메뉴 */}
+              <div className="md:hidden flex items-center gap-2">
+                {/* 프로필 아이콘 (로그인 페이지로) */}
+                <Button variant="ghost" size="sm" asChild>
+                  <Link href="/auth/login">
+                    <Avatar className="h-7 w-7">
+                      <AvatarFallback className="text-xs">?</AvatarFallback>
+                    </Avatar>
+                  </Link>
+                </Button>
+
+                {/* 메뉴 아이콘 */}
+                <Sheet>
+                  <SheetTrigger asChild>
+                    <Button variant="ghost" size="lg">
+                      <Menu className="h-6 w-6" />
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent>
+                    <SheetHeader>
+                      <SheetTitle>메뉴</SheetTitle>
+                    </SheetHeader>
+                    <div className="mt-6 flex flex-col gap-4">
+                      <Button asChild className="w-full justify-start">
+                        <Link href="/auth/login">로그인</Link>
+                      </Button>
+                      <Button asChild className="w-full justify-start">
+                        <Link href="/auth/signup">회원가입</Link>
+                      </Button>
+                      <Button variant="ghost" asChild className="w-full justify-start">
+                        <Link href="/users">
+                          <Users className="mr-2 h-4 w-4" />
+                          회원 목록
+                        </Link>
+                      </Button>
+                    </div>
+                  </SheetContent>
+                </Sheet>
+              </div>
             </div>
           )}
         </nav>
