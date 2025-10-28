@@ -24,8 +24,64 @@ export default function Home() {
 
   return (
     <div style={{ padding: "2rem" }}>
-      <h1>헬로 바이브</h1>
+      <h1>헬로 바이브 🚀</h1>
       <p>바이브 웹/앱 개발 스터디 프로젝트에 오신 것을 환영합니다!</p>
+
+      {/* 프로젝트 개요 */}
+      <div
+        style={{
+          marginTop: "2rem",
+          padding: "2rem",
+          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          borderRadius: "12px",
+          color: "white",
+          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+        }}
+      >
+        <h2 style={{ marginTop: 0, fontSize: "1.5rem", marginBottom: "1rem" }}>
+          💬 AI와 함께하는 협업 개발 경험
+        </h2>
+        <p style={{ lineHeight: "1.8", fontSize: "1rem", margin: 0 }}>
+          <strong>한바보</strong>(한국 바이버 보스)는 AI 기반 바이브 코딩으로 실전 소셜 웹 애플리케이션을 만드는
+          오픈소스 스터디 커뮤니티입니다. 코드는 AI에게 맡기고, 설계와 기획에 집중하며,
+          Git을 통한 협업과 실제 배포까지 경험합니다. 인증, 게시판, 채팅, 알림 등 실용적인 기능을 구현하며,
+          지속 가능한 개발 능력과 AI 컨트롤 역량을 기릅니다.
+        </p>
+        <div style={{ marginTop: "1.5rem", display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+          <span style={{
+            padding: "0.5rem 1rem",
+            backgroundColor: "rgba(255, 255, 255, 0.2)",
+            borderRadius: "20px",
+            fontSize: "0.9rem"
+          }}>
+            💬 소스 코딩 금지
+          </span>
+          <span style={{
+            padding: "0.5rem 1rem",
+            backgroundColor: "rgba(255, 255, 255, 0.2)",
+            borderRadius: "20px",
+            fontSize: "0.9rem"
+          }}>
+            🤝 실전 협업
+          </span>
+          <span style={{
+            padding: "0.5rem 1rem",
+            backgroundColor: "rgba(255, 255, 255, 0.2)",
+            borderRadius: "20px",
+            fontSize: "0.9rem"
+          }}>
+            🎯 실용적 기능
+          </span>
+          <span style={{
+            padding: "0.5rem 1rem",
+            backgroundColor: "rgba(255, 255, 255, 0.2)",
+            borderRadius: "20px",
+            fontSize: "0.9rem"
+          }}>
+            📚 함께 성장
+          </span>
+        </div>
+      </div>
 
       {!loading && (
         <div style={{ marginTop: "2rem", padding: "1rem", backgroundColor: "#f0f0f0", borderRadius: "4px" }}>
