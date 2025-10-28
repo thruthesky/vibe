@@ -293,6 +293,78 @@ export const auth: Auth = getAuth(app);
 
 ---
 
+## 🎨 디자인 가이드라인 (Design Guidelines)
+
+모든 페이지와 컴포넌트는 다음 디자인 원칙을 따릅니다:
+
+### 디자인 원칙
+
+**1. Tailwind CSS와 shadcn/ui 적극 활용**
+- 모든 스타일링은 **Tailwind CSS 클래스**로 구현
+- shadcn/ui 컴포넌트 활용으로 일관된 UI 유지
+- 인라인 스타일(`style={}`)은 최소화 (필요시만 사용)
+
+**2. 단조롭고 모던한 스타일**
+- **복잡한 구성요소 금지**: 과도한 장식이나 복잡한 UI 요소 제거
+- **그라디언트 금지**: 선형 그라디언트 등 화려한 효과 사용 금지
+- **신뢰성 있는 색상**: Slate, Gray, White 등 무채색과 기본 색상 중심
+- **모던한 느낌**: 미니멀하면서도 세련된 디자인 추구
+
+**3. 색상 팔레트**
+- **배경**: `bg-background` (흰색/어두운 배경)
+- **텍스트**: `text-foreground`, `text-muted-foreground`
+- **강조**: `bg-slate-900`, `bg-slate-800`, `bg-slate-600` 등
+- **상태**: `bg-red-50`, `bg-green-50`, `bg-yellow-50` (에러, 성공, 경고)
+
+**4. 가독성 높은 디자인**
+- **충분한 여백**: `p-6`, `py-8`, `space-y-4` 등으로 명확한 간격
+- **명확한 계층 구조**: 제목 크기로 시각적 중요도 표현
+- **적절한 글꼴 크기**: `text-sm`, `text-base`, `text-lg`, `text-3xl` 등
+- **높은 명도 대비**: 텍스트와 배경의 충분한 대비
+
+**5. 디자인 일관성**
+- **모든 페이지에 동일한 스타일 적용**
+- **버튼 스타일 통일**:
+  - 주요 버튼: `bg-slate-900 hover:bg-slate-800 text-white font-medium rounded-lg`
+  - 보조 버튼: `bg-slate-100 hover:bg-slate-200 text-foreground`
+  - 위험 버튼: `bg-red-50 border border-red-200 text-red-700`
+- **입력 필드 통일**: `border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-400`
+- **카드/섹션 통일**: `bg-slate-50 border border-slate-200 rounded-lg p-6`
+
+**6. 금지 사항**
+- ❌ **그라디언트 배경** (`linear-gradient` 등)
+- ❌ **화려한 색상** (원색, 네온 색상)
+- ❌ **과도한 애니메이션** (장시간 재생되는 애니메이션)
+- ❌ **복잡한 레이아웃** (많은 중첩 구조)
+- ❌ **숨겨진 콘텐츠** (사용자가 발견하기 어려운 요소)
+
+### 구현 예시
+
+**카드 섹션:**
+```tsx
+<div className="bg-slate-50 border border-slate-200 rounded-lg p-6 space-y-4">
+  <h2 className="text-lg font-semibold text-foreground">제목</h2>
+  <p className="text-muted-foreground">설명 텍스트</p>
+</div>
+```
+
+**버튼:**
+```tsx
+<button className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-medium rounded-lg transition-colors">
+  버튼
+</button>
+```
+
+**입력 필드:**
+```tsx
+<input
+  className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-400 bg-white text-foreground placeholder-muted-foreground"
+  placeholder="입력하세요..."
+/>
+```
+
+---
+
 ## Firebase 설정 가이드
 
 ### 1. Firebase 프로젝트 생성

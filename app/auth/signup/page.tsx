@@ -45,112 +45,105 @@ export default function SignUpPage() {
   }
 
   return (
-    <div style={{ padding: "2rem", maxWidth: "400px", margin: "0 auto" }}>
-      <h1>회원가입</h1>
-
-      {error && (
-        <div style={{ color: "red", marginBottom: "1rem" }}>
-          {error}
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: "1rem" }}>
-          <label htmlFor="displayName">이름</label>
-          <input
-            id="displayName"
-            type="text"
-            value={displayName}
-            onChange={(e) => setDisplayName(e.target.value)}
-            required
-            style={{
-              width: "100%",
-              padding: "0.5rem",
-              marginTop: "0.5rem",
-              borderRadius: "4px",
-              border: "1px solid #ccc",
-            }}
-          />
+    <div className="min-h-screen bg-background flex items-center justify-center px-4">
+      <div className="w-full max-w-sm">
+        {/* 페이지 제목 */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-foreground">회원가입</h1>
+          <p className="text-muted-foreground mt-2">새 계정을 만드세요</p>
         </div>
 
-        <div style={{ marginBottom: "1rem" }}>
-          <label htmlFor="email">이메일</label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            style={{
-              width: "100%",
-              padding: "0.5rem",
-              marginTop: "0.5rem",
-              borderRadius: "4px",
-              border: "1px solid #ccc",
-            }}
-          />
-        </div>
+        {/* 오류 메시지 */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            {error}
+          </div>
+        )}
 
-        <div style={{ marginBottom: "1rem" }}>
-          <label htmlFor="password">비밀번호</label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            style={{
-              width: "100%",
-              padding: "0.5rem",
-              marginTop: "0.5rem",
-              borderRadius: "4px",
-              border: "1px solid #ccc",
-            }}
-          />
-        </div>
+        {/* 회원가입 폼 */}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* 이름 입력 */}
+          <div>
+            <label htmlFor="displayName" className="block text-sm font-medium text-foreground mb-2">
+              이름
+            </label>
+            <input
+              id="displayName"
+              type="text"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              placeholder="이름을 입력하세요"
+              required
+              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-400 bg-white text-foreground placeholder-muted-foreground"
+            />
+          </div>
 
-        <div style={{ marginBottom: "1rem" }}>
-          <label htmlFor="passwordConfirm">비밀번호 확인</label>
-          <input
-            id="passwordConfirm"
-            type="password"
-            value={passwordConfirm}
-            onChange={(e) => setPasswordConfirm(e.target.value)}
-            required
-            style={{
-              width: "100%",
-              padding: "0.5rem",
-              marginTop: "0.5rem",
-              borderRadius: "4px",
-              border: "1px solid #ccc",
-            }}
-          />
-        </div>
+          {/* 이메일 입력 */}
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
+              이메일
+            </label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="이메일을 입력하세요"
+              required
+              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-400 bg-white text-foreground placeholder-muted-foreground"
+            />
+          </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          style={{
-            width: "100%",
-            padding: "0.75rem",
-            backgroundColor: loading ? "#ccc" : "#28a745",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor: loading ? "not-allowed" : "pointer",
-            fontSize: "1rem",
-          }}
-        >
-          {loading ? "회원가입 중..." : "회원가입"}
-        </button>
-      </form>
+          {/* 비밀번호 입력 */}
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
+              비밀번호
+            </label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="비밀번호를 입력하세요 (최소 6자)"
+              required
+              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-400 bg-white text-foreground placeholder-muted-foreground"
+            />
+          </div>
 
-      <p style={{ marginTop: "1rem", textAlign: "center" }}>
-        이미 계정이 있으신가요?{" "}
-        <a href="/auth/login" style={{ color: "#007bff" }}>
-          로그인
-        </a>
-      </p>
+          {/* 비밀번호 확인 입력 */}
+          <div>
+            <label htmlFor="passwordConfirm" className="block text-sm font-medium text-foreground mb-2">
+              비밀번호 확인
+            </label>
+            <input
+              id="passwordConfirm"
+              type="password"
+              value={passwordConfirm}
+              onChange={(e) => setPasswordConfirm(e.target.value)}
+              placeholder="비밀번호를 다시 입력하세요"
+              required
+              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-400 bg-white text-foreground placeholder-muted-foreground"
+            />
+          </div>
+
+          {/* 제출 버튼 */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-2 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white font-medium rounded-lg transition-colors"
+          >
+            {loading ? "회원가입 중..." : "회원가입"}
+          </button>
+        </form>
+
+        {/* 로그인 링크 */}
+        <p className="text-center text-muted-foreground text-sm mt-6">
+          이미 계정이 있으신가요?{" "}
+          <a href="/auth/login" className="font-semibold text-foreground hover:underline">
+            로그인
+          </a>
+        </p>
+      </div>
     </div>
   );
 }

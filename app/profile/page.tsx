@@ -85,114 +85,82 @@ export default function ProfilePage() {
   // 인증 상태 확인 중
   if (authLoading) {
     return (
-      <div style={{ padding: "2rem", textAlign: "center" }}>
-        <p>로딩 중...</p>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">로딩 중...</p>
       </div>
     );
   }
 
   return (
-    <div style={{ padding: "2rem", maxWidth: "400px", margin: "0 auto" }}>
-      <h1>회원 정보 수정</h1>
-      <p>사용자 이름(displayName)을 수정합니다.</p>
-
-      {/* 오류 메시지 표시 */}
-      {error && (
-        <div
-          style={{
-            color: "white",
-            backgroundColor: "#dc3545",
-            padding: "1rem",
-            borderRadius: "4px",
-            marginBottom: "1rem",
-          }}
-        >
-          {error}
-        </div>
-      )}
-
-      {/* 성공 메시지 표시 */}
-      {success && (
-        <div
-          style={{
-            color: "white",
-            backgroundColor: "#28a745",
-            padding: "1rem",
-            borderRadius: "4px",
-            marginBottom: "1rem",
-          }}
-        >
-          {success}
-        </div>
-      )}
-
-      {/* 회원 정보 수정 폼 */}
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: "1rem" }}>
-          <label htmlFor="displayName">이름</label>
-          <input
-            id="displayName"
-            type="text"
-            value={displayName}
-            onChange={(e) => setDisplayName(e.target.value)}
-            placeholder="사용자 이름을 입력하세요"
-            disabled={loading}
-            required
-            style={{
-              width: "100%",
-              padding: "0.5rem",
-              marginTop: "0.5rem",
-              borderRadius: "4px",
-              border: "1px solid #ccc",
-              boxSizing: "border-box",
-              backgroundColor: loading ? "#f5f5f5" : "white",
-            }}
-          />
+    <div className="min-h-screen bg-background flex items-center justify-center px-4">
+      <div className="w-full max-w-sm">
+        {/* 페이지 제목 */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-foreground">회원 정보 수정</h1>
+          <p className="text-muted-foreground mt-2">사용자 이름을 수정합니다</p>
         </div>
 
-        <div style={{ display: "flex", gap: "1rem" }}>
-          {/* 저장 버튼 */}
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              flex: 1,
-              padding: "0.75rem",
-              backgroundColor: loading ? "#ccc" : "#007bff",
-              color: "white",
-              border: "none",
-              borderRadius: "4px",
-              cursor: loading ? "not-allowed" : "pointer",
-              fontSize: "1rem",
-            }}
-          >
-            {loading ? "저장 중..." : "저장"}
-          </button>
+        {/* 오류 메시지 */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            {error}
+          </div>
+        )}
 
-          {/* 취소 버튼 */}
-          <button
-            type="button"
-            onClick={() => router.push("/")}
-            disabled={loading}
-            style={{
-              flex: 1,
-              padding: "0.75rem",
-              backgroundColor: "#6c757d",
-              color: "white",
-              border: "none",
-              borderRadius: "4px",
-              cursor: loading ? "not-allowed" : "pointer",
-              fontSize: "1rem",
-            }}
-          >
-            취소
-          </button>
-        </div>
-      </form>
+        {/* 성공 메시지 */}
+        {success && (
+          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
+            {success}
+          </div>
+        )}
 
-      <p style={{ marginTop: "1rem", fontSize: "0.9rem", color: "#666" }}>
-        저장된 이름은 Firebase Realtime Database의 <code>/vibe/users/&lt;uid&gt;/displayName</code> 경로에 저장됩니다.
-      </p>
+        {/* 회원 정보 수정 폼 */}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* 이름 입력 */}
+          <div>
+            <label htmlFor="displayName" className="block text-sm font-medium text-foreground mb-2">
+              이름
+            </label>
+            <input
+              id="displayName"
+              type="text"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              placeholder="사용자 이름을 입력하세요"
+              disabled={loading}
+              required
+              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-400 bg-white text-foreground placeholder-muted-foreground disabled:bg-slate-100 disabled:text-muted-foreground"
+            />
+          </div>
+
+          {/* 버튼 */}
+          <div className="flex gap-2 pt-2">
+            {/* 저장 버튼 */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex-1 py-2 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white font-medium rounded-lg transition-colors"
+            >
+              {loading ? "저장 중..." : "저장"}
+            </button>
+
+            {/* 취소 버튼 */}
+            <button
+              type="button"
+              onClick={() => router.push("/")}
+              disabled={loading}
+              className="flex-1 py-2 bg-slate-600 hover:bg-slate-700 disabled:bg-slate-300 text-white font-medium rounded-lg transition-colors"
+            >
+              취소
+            </button>
+          </div>
+        </form>
+
+        {/* 정보 텍스트 */}
+        <p className="mt-6 text-xs text-muted-foreground text-center">
+          저장된 이름은 Firebase Realtime Database의 <code className="bg-slate-100 px-1 py-0.5 rounded">/vibe/users/&lt;uid&gt;/displayName</code> 경로에 저장됩니다.
+        </p>
+      </div>
     </div>
   );
 }

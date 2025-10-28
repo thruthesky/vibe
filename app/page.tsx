@@ -23,154 +23,87 @@ export default function Home() {
   }, []);
 
   return (
-    <div style={{ padding: "2rem" }}>
-      {/* 바이브 코딩 배너 */}
-      <div
-        style={{
-          marginBottom: "1.5rem",
-          padding: "0.75rem 1rem",
-          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-          borderRadius: "8px",
-          textAlign: "center",
-          color: "white",
-          fontWeight: "bold",
-          fontSize: "0.95rem",
-          boxShadow: "0 2px 8px rgba(102, 126, 234, 0.3)",
-        }}
-      >
-        🤖 현재 보시고 계시는 이 사이트는 100% 바이브 코딩으로만 만들어졌습니다.
-      </div>
-
-      <h1>바이브 코딩 스터디 프로젝트</h1>
-      <p>
-        누구든지 참여를 할 수 있습니다. PR 하시거나,{" "}
-        <a
-          href="https://open.kakao.com/o/gn2qMetf"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
-            color: "#007bff",
-            textDecoration: "underline",
-            fontWeight: "bold",
-          }}
-        >
-          한바보
-        </a>{" "}
-        단톡방에 참여해주세요.
-      </p>
-
-      {/* TODO 목록 */}
-      <div
-        style={{
-          marginTop: "2rem",
-          padding: "1.5rem",
-          backgroundColor: "#fff3cd",
-          border: "1px solid #ffc107",
-          borderRadius: "8px",
-          boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-        }}
-      >
-        <h2 style={{ marginTop: 0, fontSize: "1.3rem", marginBottom: "1rem", color: "#856404" }}>
-          📋 해야할 일 (TODO)
-        </h2>
-        <ol style={{ margin: 0, paddingLeft: "1.5rem", lineHeight: "2", color: "#856404" }}>
-          <li>
-            <strong>디자인:</strong> 탑바에 로그인 사용자 업로드.
-          </li>
-          <li>
-            <strong>대화방 참여 목록:</strong> vibe/chat/joins 에 저장해서, 채팅방 목록을 표시하고, 클릭하여 입장.
-          </li>
-          <li>
-            <strong>게시판</strong>
-          </li>
-          <li>
-            <strong>푸시 알림</strong>
-          </li>
-          <li>
-            <strong>Flutter iOS/Android 앱 개발</strong>
-          </li>
-        </ol>
-      </div>
-
-      {/* 프로젝트 개요 */}
-      <div
-        style={{
-          marginTop: "2rem",
-          padding: "2rem",
-          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-          borderRadius: "12px",
-          color: "white",
-          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-        }}
-      >
-        <h2 style={{ marginTop: 0, fontSize: "1.5rem", marginBottom: "1rem" }}>
-          💬 AI와 함께하는 협업 개발 경험
-        </h2>
-        <p style={{ lineHeight: "1.8", fontSize: "1rem", margin: 0 }}>
-          <strong>한바보</strong>(한국 바이버 보스)는 AI 기반 바이브 코딩으로 실전 소셜 웹 애플리케이션을 만드는
-          오픈소스 스터디 커뮤니티입니다. 코드는 AI에게 맡기고, 설계와 기획에 집중하며,
-          Git을 통한 협업과 실제 배포까지 경험합니다. 인증, 게시판, 채팅, 알림 등 실용적인 기능을 구현하며,
-          지속 가능한 개발 능력과 AI 컨트롤 역량을 기릅니다.
-        </p>
-        <div style={{ marginTop: "1.5rem", display: "flex", gap: "1rem", flexWrap: "wrap" }}>
-          <span style={{
-            padding: "0.5rem 1rem",
-            backgroundColor: "rgba(255, 255, 255, 0.2)",
-            borderRadius: "20px",
-            fontSize: "0.9rem"
-          }}>
-            💬 소스 코딩 금지
-          </span>
-          <span style={{
-            padding: "0.5rem 1rem",
-            backgroundColor: "rgba(255, 255, 255, 0.2)",
-            borderRadius: "20px",
-            fontSize: "0.9rem"
-          }}>
-            🤝 실전 협업
-          </span>
-          <span style={{
-            padding: "0.5rem 1rem",
-            backgroundColor: "rgba(255, 255, 255, 0.2)",
-            borderRadius: "20px",
-            fontSize: "0.9rem"
-          }}>
-            🎯 실용적 기능
-          </span>
-          <span style={{
-            padding: "0.5rem 1rem",
-            backgroundColor: "rgba(255, 255, 255, 0.2)",
-            borderRadius: "20px",
-            fontSize: "0.9rem"
-          }}>
-            📚 함께 성장
-          </span>
+    <div className="min-h-screen bg-background">
+      <div className="max-w-3xl mx-auto px-6 py-8 space-y-8">
+        {/* 바이브 코딩 배너 */}
+        <div className="bg-slate-900 text-white rounded-lg p-4 border border-slate-800 text-center">
+          <p className="text-sm font-medium">
+            🤖 현재 보시고 계시는 이 사이트는 100% 바이브 코딩으로만 만들어졌습니다.
+          </p>
         </div>
-      </div>
 
-      {!loading && (
-        <div style={{ marginTop: "2rem", padding: "1rem", backgroundColor: "#f0f0f0", borderRadius: "4px" }}>
+        {/* 페이지 제목 및 소개 */}
+        <div className="space-y-4">
+          <h1 className="text-4xl font-bold text-foreground">바이브 코딩 스터디 프로젝트</h1>
+          <p className="text-lg text-muted-foreground leading-relaxed">
+            누구든지 참여를 할 수 있습니다. PR 하시거나,{" "}
+            <a
+              href="https://open.kakao.com/o/gn2qMetf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-foreground hover:underline"
+            >
+              한바보
+            </a>{" "}
+            단톡방에 참여해주세요.
+          </p>
+        </div>
+
+        {/* TODO 목록 */}
+        <div className="bg-slate-50 border border-slate-200 rounded-lg p-6 space-y-4">
+          <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
+            📋 해야할 일 (TODO)
+          </h2>
+          <ol className="space-y-2 text-muted-foreground list-decimal list-inside">
+            <li><strong>디자인:</strong> 탑바에 로그인 사용자 업로드.</li>
+            <li><strong>대화방 참여 목록:</strong> vibe/chat/joins 에 저장해서, 채팅방 목록을 표시하고, 클릭하여 입장.</li>
+            <li><strong>게시판</strong></li>
+            <li><strong>푸시 알림</strong></li>
+            <li><strong>Flutter iOS/Android 앱 개발</strong></li>
+          </ol>
+        </div>
+
+        {/* 프로젝트 개요 */}
+        <div className="bg-slate-100 border border-slate-200 rounded-lg p-6 space-y-4">
+          <h2 className="text-xl font-semibold text-foreground">AI와 함께하는 협업 개발 경험</h2>
+          <p className="text-muted-foreground leading-relaxed">
+            <strong className="text-foreground">한바보</strong>(한국 바이버 보스)는 AI 기반 바이브 코딩으로 실전 소셜 웹 애플리케이션을 만드는
+            오픈소스 스터디 커뮤니티입니다. 코드는 AI에게 맡기고, 설계와 기획에 집중하며,
+            Git을 통한 협업과 실제 배포까지 경험합니다. 인증, 게시판, 채팅, 알림 등 실용적인 기능을 구현하며,
+            지속 가능한 개발 능력과 AI 컨트롤 역량을 기릅니다.
+          </p>
+          <div className="flex flex-wrap gap-2 pt-2">
+            <span className="inline-block bg-white border border-slate-200 px-3 py-1 rounded-full text-sm text-muted-foreground">
+              💬 소스 코딩 금지
+            </span>
+            <span className="inline-block bg-white border border-slate-200 px-3 py-1 rounded-full text-sm text-muted-foreground">
+              🤝 실전 협업
+            </span>
+            <span className="inline-block bg-white border border-slate-200 px-3 py-1 rounded-full text-sm text-muted-foreground">
+              🎯 실용적 기능
+            </span>
+            <span className="inline-block bg-white border border-slate-200 px-3 py-1 rounded-full text-sm text-muted-foreground">
+              📚 함께 성장
+            </span>
+          </div>
+        </div>
+
+        {!loading && (
+        <div className="bg-slate-50 border border-slate-200 rounded-lg p-6 space-y-4" style={{ marginTop: "2rem" }}>
           {userId ? (
-            <div>
-              <h2>로그인 성공!</h2>
-              <p>
-                <strong>사용자 ID:</strong> <code>{userId}</code>
-              </p>
+            <div className="space-y-4">
+              <div>
+                <h2 className="text-lg font-semibold text-foreground">로그인 성공!</h2>
+                <p className="text-sm text-muted-foreground mt-2">
+                  <strong>사용자 ID:</strong> <code className="bg-slate-100 px-2 py-1 rounded text-xs">{userId}</code>
+                </p>
+              </div>
               {/* 로그인한 사용자를 위한 메뉴 */}
-              <div style={{ display: "flex", gap: "1rem", marginTop: "1rem" }}>
+              <div className="flex gap-2 flex-wrap">
                 {/* 회원 정보 수정 링크 */}
                 <a
                   href="/profile"
-                  style={{
-                    padding: "0.5rem 1rem",
-                    backgroundColor: "#17a2b8",
-                    color: "white",
-                    textDecoration: "none",
-                    border: "none",
-                    borderRadius: "4px",
-                    cursor: "pointer",
-                    display: "inline-block",
-                  }}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm font-medium transition-colors"
                 >
                   회원 정보 수정
                 </a>
@@ -179,48 +112,27 @@ export default function Home() {
                   onClick={async () => {
                     await auth.signOut();
                   }}
-                  style={{
-                    padding: "0.5rem 1rem",
-                    backgroundColor: "#dc3545",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "4px",
-                    cursor: "pointer",
-                  }}
+                  className="px-4 py-2 bg-slate-600 hover:bg-slate-700 text-white rounded-md text-sm font-medium transition-colors"
                 >
                   로그아웃
                 </button>
               </div>
             </div>
           ) : (
-            <div>
-              <h2>시작하기</h2>
+            <div className="space-y-4">
+              <h2 className="text-lg font-semibold text-foreground">시작하기</h2>
               {/* 로그인 및 회원가입 링크 */}
-              <div style={{ display: "flex", gap: "1rem" }}>
+              <div className="flex gap-2 flex-wrap">
                 <a
                   href="/auth/login"
-                  style={{
-                    padding: "0.75rem 1.5rem",
-                    backgroundColor: "#007bff",
-                    color: "white",
-                    textDecoration: "none",
-                    borderRadius: "4px",
-                    display: "inline-block",
-                  }}
+                  className="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-md text-sm font-medium transition-colors"
                 >
                   로그인
                 </a>
                 {/* 회원가입 페이지로 이동하는 링크 */}
                 <a
                   href="/auth/signup"
-                  style={{
-                    padding: "0.75rem 1.5rem",
-                    backgroundColor: "#28a745",
-                    color: "white",
-                    textDecoration: "none",
-                    borderRadius: "4px",
-                    display: "inline-block",
-                  }}
+                  className="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-md text-sm font-medium transition-colors"
                 >
                   회원가입
                 </a>
@@ -230,24 +142,18 @@ export default function Home() {
         </div>
       )}
 
-      {/* 모든 사용자가 접근 가능한 메뉴 */}
-      <div style={{ marginTop: "2rem", padding: "1rem", backgroundColor: "#f9f9f9", borderRadius: "4px" }}>
-        <h2>메뉴</h2>
-        <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
-          {/* 회원 목록 페이지 링크 */}
-          <a
-            href="/users"
-            style={{
-              padding: "0.5rem 1rem",
-              backgroundColor: "#6c757d",
-              color: "white",
-              textDecoration: "none",
-              borderRadius: "4px",
-              display: "inline-block",
-            }}
-          >
-            회원 목록
-          </a>
+        {/* 모든 사용자가 접근 가능한 메뉴 */}
+        <div className="bg-slate-50 border border-slate-200 rounded-lg p-6 space-y-4">
+          <h2 className="text-lg font-semibold text-foreground">메뉴</h2>
+          <div className="flex gap-2 flex-wrap">
+            {/* 회원 목록 페이지 링크 */}
+            <a
+              href="/users"
+              className="px-4 py-2 bg-slate-700 hover:bg-slate-800 text-white rounded-md text-sm font-medium transition-colors"
+            >
+              회원 목록
+            </a>
+          </div>
         </div>
       </div>
     </div>

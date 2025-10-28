@@ -76,8 +76,8 @@ export default function UsersPage() {
   // 로딩 상태
   if (loading) {
     return (
-      <div style={{ padding: "2rem", textAlign: "center" }}>
-        <p>회원 목록을 불러오는 중...</p>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">회원 목록을 불러오는 중...</p>
       </div>
     );
   }
@@ -85,152 +85,107 @@ export default function UsersPage() {
   // 오류 상태
   if (error) {
     return (
-      <div style={{ padding: "2rem" }}>
-        <h1>회원 목록</h1>
-        <div
-          style={{
-            color: "white",
-            backgroundColor: "#dc3545",
-            padding: "1rem",
-            borderRadius: "4px",
-          }}
-        >
-          오류가 발생했습니다: {error}
+      <div className="min-h-screen bg-background p-6">
+        <div className="max-w-3xl mx-auto">
+          <h1 className="text-3xl font-bold text-foreground mb-6">회원 목록</h1>
+          <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+            오류가 발생했습니다: {error}
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div style={{ padding: "2rem", maxWidth: "800px", margin: "0 auto" }}>
-      <h1>회원 목록</h1>
-      <p>현재 등록된 회원 정보입니다.</p>
-
-      {/* 회원 수 표시 */}
-      <div
-        style={{
-          padding: "1rem",
-          backgroundColor: "#e9ecef",
-          borderRadius: "4px",
-          marginBottom: "1rem",
-        }}
-      >
-        <strong>총 회원 수: {users.length}명</strong>
-      </div>
-
-      {/* 회원이 없을 경우 */}
-      {users.length === 0 ? (
-        <div
-          style={{
-            padding: "2rem",
-            textAlign: "center",
-            backgroundColor: "#f5f5f5",
-            borderRadius: "4px",
-          }}
-        >
-          <p>등록된 회원이 없습니다.</p>
+    <div className="min-h-screen bg-background p-6">
+      <div className="max-w-3xl mx-auto space-y-6">
+        {/* 페이지 제목 */}
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">회원 목록</h1>
+          <p className="text-muted-foreground mt-2">현재 등록된 회원 정보입니다.</p>
         </div>
-      ) : (
-        // 회원 목록을 테이블로 표시
-        <div style={{ overflowX: "auto" }}>
-          <table
-            style={{
-              width: "100%",
-              borderCollapse: "collapse",
-              border: "1px solid #ddd",
-            }}
-          >
-            <thead>
-              <tr style={{ backgroundColor: "#007bff", color: "white" }}>
-                <th style={{ padding: "1rem", textAlign: "left", border: "1px solid #ddd" }}>
-                  이름
-                </th>
-                <th style={{ padding: "1rem", textAlign: "left", border: "1px solid #ddd" }}>
-                  UID
-                </th>
-                <th style={{ padding: "1rem", textAlign: "left", border: "1px solid #ddd" }}>
-                  이메일
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((user, index) => {
-                // 현재 사용자와 다른 사용자인지 확인
-                const isCurrentUser = currentUserId === user.uid;
-                const isClickable = !isCurrentUser;
 
-                return (
-                <tr
-                  key={user.uid}
-                  onClick={() => {
-                    // 현재 사용자가 아닌 경우만 채팅방으로 이동
-                    if (isClickable) {
-                      router.push(`/chat/room?otherId=${user.uid}`);
-                    }
-                  }}
-                  style={{
-                    backgroundColor: index % 2 === 0 ? "#f9f9f9" : "white",
-                    cursor: isClickable ? "pointer" : "default",
-                    opacity: isCurrentUser ? 0.6 : 1,
-                    transition: "background-color 0.2s",
-                  }}
-                  onMouseEnter={(e) => {
-                    if (isClickable) {
-                      e.currentTarget.style.backgroundColor = "#e9ecef";
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor =
-                      index % 2 === 0 ? "#f9f9f9" : "white";
-                  }}
-                >
-                  {/* 사용자 이름 (displayName) */}
-                  <td style={{ padding: "1rem", border: "1px solid #ddd" }}>
-                    <strong>{user.displayName}</strong>
-                  </td>
+        {/* 회원 수 표시 */}
+        <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
+          <p className="text-sm text-foreground">
+            <strong>총 회원 수: {users.length}명</strong>
+          </p>
+        </div>
 
-                  {/* 사용자 UID */}
-                  <td style={{ padding: "1rem", border: "1px solid #ddd" }}>
-                    <code style={{ fontSize: "0.85rem", wordBreak: "break-all" }}>
-                      {user.uid}
-                    </code>
-                  </td>
-
-                  {/* 사용자 이메일 */}
-                  <td style={{ padding: "1rem", border: "1px solid #ddd" }}>
-                    {user.email ? (
-                      <a href={`mailto:${user.email}`} style={{ color: "#007bff" }}>
-                        {user.email}
-                      </a>
-                    ) : (
-                      <span style={{ color: "#999" }}>-</span>
-                    )}
-                  </td>
+        {/* 회원이 없을 경우 */}
+        {users.length === 0 ? (
+          <div className="bg-slate-50 border border-slate-200 rounded-lg p-8 text-center">
+            <p className="text-muted-foreground">등록된 회원이 없습니다.</p>
+          </div>
+        ) : (
+          // 회원 목록을 테이블로 표시
+          <div className="overflow-x-auto border border-slate-200 rounded-lg">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-slate-100 border-b border-slate-200">
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">이름</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">UID</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">이메일</th>
                 </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
+              </thead>
+              <tbody>
+                {users.map((user) => {
+                  // 현재 사용자와 다른 사용자인지 확인
+                  const isCurrentUser = currentUserId === user.uid;
+                  const isClickable = !isCurrentUser;
 
-      {/* 데이터 설명 */}
-      <div
-        style={{
-          marginTop: "2rem",
-          padding: "1rem",
-          backgroundColor: "#f0f0f0",
-          borderRadius: "4px",
-          fontSize: "0.9rem",
-        }}
-      >
-        <p>
-          <strong>📍 데이터 저장 위치:</strong>
-        </p>
-        <ul>
-          <li>Firebase Realtime Database: <code>/vibe/users/&lt;uid&gt;</code></li>
-          <li>조회 시마다 최신 데이터를 불러옵니다</li>
-        </ul>
+                  return (
+                    <tr
+                      key={user.uid}
+                      onClick={() => {
+                        // 현재 사용자가 아닌 경우만 채팅방으로 이동
+                        if (isClickable) {
+                          router.push(`/chat/room?otherId=${user.uid}`);
+                        }
+                      }}
+                      className={`border-b border-slate-200 transition-colors ${
+                        isCurrentUser
+                          ? "bg-slate-50 opacity-60"
+                          : isClickable
+                          ? "bg-white hover:bg-slate-50 cursor-pointer"
+                          : "bg-white"
+                      }`}
+                    >
+                      <td className="px-6 py-4">
+                        <strong className="text-foreground">{user.displayName}</strong>
+                      </td>
+                      <td className="px-6 py-4">
+                        <code className="text-xs bg-slate-100 px-2 py-1 rounded text-muted-foreground">
+                          {user.uid.substring(0, 8)}...
+                        </code>
+                      </td>
+                      <td className="px-6 py-4">
+                        {user.email ? (
+                          <a href={`mailto:${user.email}`} className="text-sm text-blue-600 hover:underline">
+                            {user.email}
+                          </a>
+                        ) : (
+                          <span className="text-sm text-muted-foreground">-</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* 데이터 설명 */}
+        <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-2 text-sm text-muted-foreground">
+          <p>
+            <strong className="text-foreground">📍 데이터 저장 위치:</strong>
+          </p>
+          <ul className="list-disc list-inside space-y-1">
+            <li>Firebase Realtime Database: <code className="bg-white px-1 py-0.5 rounded text-xs">/vibe/users/&lt;uid&gt;</code></li>
+            <li>조회 시마다 최신 데이터를 불러옵니다</li>
+          </ul>
+        </div>
       </div>
     </div>
   );
