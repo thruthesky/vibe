@@ -83,9 +83,7 @@ npm run dev
 ### 프론트엔드
 - **Next.js 16** - React 기반 풀스택 프레임워크
 - **React 19** - 최신 React 기능
-- **TypeScript** - 타입 안전성
-- **Tailwind CSS 4** - 유틸리티 기반 스타일링
-- **shadcn/ui** - 접근성 높은 UI 컴포넌트
+- **Flutter** - 크로스플랫폼 모바일 앱 개발
 
 ### 백엔드 & 데이터베이스
 - **Firebase** - 인증, Realtime Database, Firestore
