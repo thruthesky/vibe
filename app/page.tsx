@@ -27,6 +27,33 @@ export default function Home() {
       <h1>헬로 바이브 🚀</h1>
       <p>바이브 웹/앱 개발 스터디 프로젝트에 오신 것을 환영합니다!</p>
 
+      {/* TODO 목록 */}
+      <div
+        style={{
+          marginTop: "2rem",
+          padding: "1.5rem",
+          backgroundColor: "#fff3cd",
+          border: "1px solid #ffc107",
+          borderRadius: "8px",
+          boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+        }}
+      >
+        <h2 style={{ marginTop: 0, fontSize: "1.3rem", marginBottom: "1rem", color: "#856404" }}>
+          📋 해야할 일 (TODO)
+        </h2>
+        <ol style={{ margin: 0, paddingLeft: "1.5rem", lineHeight: "2", color: "#856404" }}>
+          <li>
+            <strong>디자인:</strong> 탑바에 로그인 사용자 업로드.
+          </li>
+          <li>
+            <strong>대화방 참여 목록:</strong> vibe/chat/joins 에 저장해서, 채팅방 목록을 표시하고, 클릭하여 입장.
+          </li>
+          <li>
+            <strong>게시판</strong>
+          </li>
+        </ol>
+      </div>
+
       {/* 프로젝트 개요 */}
       <div
         style={{
