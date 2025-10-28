@@ -35,11 +35,16 @@ export default function Home() {
           </h2>
           <ol className="space-y-2 text-muted-foreground list-decimal list-inside">
             <li><strong>디자인:</strong> 탑바에 로그인 사용자 업로드.</li>
-            <li><strong>대화방 참여 목록:</strong> vibe/chat/joins 에 저장해서, 채팅방 목록을 표시하고, 클릭하여 입장.</li>
+            <li>
+              <strong>대화방 참여 목록:</strong> vibe/chat/joins 에 저장해서, 채팅방 목록을 표시하고, 클릭하여 입장.
+              <ol className="mt-2 space-y-1 list-decimal ml-8">
+                <li>그룹 채팅: 생성, 수정, 삭제, 초대</li>
+              </ol>
+            </li>
             <li><strong>모든 함수를 API 화 시키기</strong></li>
             <li>
               <strong>게시판</strong>
-              <ol className="mt-2 space-y-1 list-decimal ml-6">
+              <ol className="mt-2 space-y-1 list-decimal ml-8">
                 <li>게시판 글/코멘트을 RTDB 에 저장(sync)</li>
                 <li>게시를 SEO 를 위해서, RTDB 글을 Supabase 로 캐시.</li>
                 <li>서버에서 렌더링하는 경우는 무조건 Supabase 에서 데이터 가져오기.</li>
