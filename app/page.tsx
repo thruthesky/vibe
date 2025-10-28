@@ -58,7 +58,12 @@ export default function Home() {
                 <li>댓글이 달린 경우, 푸시 알림</li>
               </ol>
             </li>
-            <li><strong>Flutter iOS/Android 앱 개발</strong></li>
+            <li>
+              <strong>Flutter iOS/Android 앱 개발</strong>
+              <ol className="mt-2 space-y-1 list-decimal ml-8">
+                <li>웹의 모든 기능을 구현</li>
+              </ol>
+            </li>
           </ol>
         </div>
 
