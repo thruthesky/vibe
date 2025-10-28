@@ -66,6 +66,12 @@ export default function Home() {
           <li>
             <strong>게시판</strong>
           </li>
+          <li>
+            <strong>푸시 알림</strong>
+          </li>
+          <li>
+            <strong>Flutter iOS/Android 앱 개발</strong>
+          </li>
         </ol>
       </div>
 
@@ -226,16 +232,6 @@ export default function Home() {
             회원 목록
           </a>
         </div>
-      </div>
-
-      <div style={{ marginTop: "2rem" }}>
-        <h2>프로젝트 목표</h2>
-        <ul>
-          <li>사용자 인증</li>
-          <li>게시판 CRUD 기능</li>
-          <li>채팅 기능</li>
-          <li>알림 기능</li>
-        </ul>
       </div>
     </div>
   );
