@@ -41,8 +41,8 @@ export function TestFab() {
   const router = useRouter();
 
   // 빌드 버전 정보 (Unix timestamp - 밀리초)
-  // 현재 시간: 2025-10-30 10:40 AM
-  const buildTimestamp = 1730307621000;
+  // 현재 시간: 2025-10-30 12:59 AM
+  const buildTimestamp = 1761753945000;
   const buildDate = new Date(buildTimestamp).toLocaleString("ko-KR", {
     year: "2-digit",
     month: "2-digit",
