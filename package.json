@@ -3,8 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "vercel-build": "next build",
     "dev": "next dev",
-    "deploy": "vercel deploy --prebuilt --prod --yes",
+    "deploy": "vercel deploy --prod --yes",
     "build:vercel": "vercel build",
     "start": "next start",
     "lint": "eslint"

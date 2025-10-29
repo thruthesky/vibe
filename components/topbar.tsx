@@ -84,9 +84,19 @@ export function Topbar() {
             <span className="text-blue-600 inline-block transition-transform duration-300 delay-150 group-hover:-translate-y-1 group-hover:scale-110">
               B
             </span>
-            {/* 한바보 */}
-            <span className="inline-block transition-transform duration-300 delay-200 group-hover:-translate-y-1">
-              {" 한바보"}
+            {/* 공백 */}
+            <span className="inline-block">&nbsp;</span>
+            {/* 한 */}
+            <span className="inline-block transition-transform duration-300 delay-[225ms] group-hover:-translate-y-1">
+              한
+            </span>
+            {/* 바 */}
+            <span className="inline-block transition-transform duration-300 delay-[300ms] group-hover:-translate-y-1">
+              바
+            </span>
+            {/* 보 */}
+            <span className="inline-block transition-transform duration-300 delay-[375ms] group-hover:-translate-y-1">
+              보
             </span>
           </div>
         </Link>
