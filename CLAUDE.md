@@ -221,14 +221,6 @@ NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=
 
 ## 자주 사용되는 명령어
 
-### 개발 서버 시작
-```bash
-npm run dev
-```
-- **포트**: http://localhost:3000
-- **핫 리로드**: 파일 변경 시 자동으로 브라우저 새로고침됨
-- **Turbopack**: 빠른 번들링을 위해 Turbopack 사용
-
 ### 프로덕션 빌드
 ```bash
 npm run build
@@ -249,23 +241,7 @@ npm run start
 
 ### 디렉토리 구조
 
-```
-vibe/
-├── app/                    # Next.js App Router 기반 페이지
-│   ├── auth/               # 인증 관련 페이지
-│   │   ├── signup/         # 회원가입 페이지
-│   │   └── login/          # 로그인 페이지
-│   ├── login/              # 로그인 페이지 (호환성)
-│   ├── layout.tsx          # 루트 레이아웃
-│   └── page.tsx            # 홈페이지
-├── lib/                    # 유틸리티 함수 및 설정
-│   ├── firebase.ts         # Firebase 초기화 및 서비스 export
-│   ├── auth.ts             # 인증 관련 함수 (회원가입, 로그인, 로그아웃)
-│   └── utils.ts            # 기타 유틸리티 함수
-├── node_modules/           # 의존성 패키지
-├── package.json            # 프로젝트 메타데이터 및 의존성
-└── tsconfig.json           # TypeScript 설정
-```
+전체 프로젝트 구조와 디렉토리 설명은 [@docs/project-overview.md](../docs/project-overview.md)를 참고하세요.
 
 ### 핵심 모듈 설명
 
