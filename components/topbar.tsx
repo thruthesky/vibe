@@ -19,7 +19,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MessageCircle, Users, Menu, LogOut, User as UserIcon } from "lucide-react";
+import {
+  MessageCircle,
+  Users,
+  Menu,
+  LogOut,
+  User as UserIcon,
+} from "lucide-react";
 
 export function Topbar() {
   const [user, setUser] = useState<User | null>(null);
@@ -65,7 +71,7 @@ export function Topbar() {
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         {/* 왼쪽: 로고 */}
         <Link href="/" className="flex items-center gap-2">
-          <div className="text-xl font-bold">[KVB] 한바보</div>
+          <div className="text-xl font-bold">KVB 한바보</div>
         </Link>
 
         {/* 오른쪽: 네비게이션 */}
@@ -133,7 +139,9 @@ export function Topbar() {
                 <Button variant="ghost" size="sm" asChild>
                   <Link href="/profile">
                     <Avatar className="h-7 w-7">
-                      <AvatarFallback className="text-xs">{getUserInitial()}</AvatarFallback>
+                      <AvatarFallback className="text-xs">
+                        {getUserInitial()}
+                      </AvatarFallback>
                     </Avatar>
                   </Link>
                 </Button>
