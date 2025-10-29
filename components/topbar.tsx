@@ -58,7 +58,10 @@ export function Topbar() {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 border-b bg-background">
+    <header
+      className="fixed top-0 left-0 right-0 z-50 border-b shadow-sm"
+      style={{ backgroundColor: "hsl(var(--background))" }}
+    >
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         {/* 왼쪽: 로고 */}
         <Link href="/" className="flex items-center gap-2">
