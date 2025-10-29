@@ -19,7 +19,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Settings, User, Server, Palette } from "lucide-react";
+import { Settings, User, Server, Palette, Copy, Check } from "lucide-react";
 
 // 테스트 계정 데이터
 const TEST_ACCOUNTS = [
@@ -38,7 +38,20 @@ const TEST_PASSWORD = "12345a,*";
 export function TestFab() {
   const [isLoading, setIsLoading] = useState(false);
   const [showServerInfo, setShowServerInfo] = useState(false);
+  const [showVersionInfo, setShowVersionInfo] = useState(false);
+  const [copied, setCopied] = useState(false);
   const router = useRouter();
+
+  // 빌드 버전 정보 (Unix timestamp - 밀리초)
+  const buildTimestamp = 1730307621000;
+  const buildDate = new Date(buildTimestamp).toLocaleString("ko-KR", {
+    year: "2-digit",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
 
   // 테스트 계정 로그인 또는 회원가입 핸들러
   const handleTestLogin = async (account: typeof TEST_ACCOUNTS[0]) => {
@@ -92,6 +105,18 @@ export function TestFab() {
     setShowServerInfo(!showServerInfo);
   };
 
+  // 버전 정보 표시 토글
+  const handleVersionInfo = () => {
+    setShowVersionInfo(!showVersionInfo);
+  };
+
+  // 버전 정보 복사
+  const handleCopyVersion = async () => {
+    await navigator.clipboard.writeText(buildDate);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
     <>
       {/* Floating Action Button */}
@@ -100,7 +125,10 @@ export function TestFab() {
           <DropdownMenuTrigger asChild>
             <Button
               size="lg"
-              className="h-14 w-14 rounded-full shadow-lg"
+              className="h-14 w-14 rounded-full shadow-lg bg-amber-700 hover:bg-amber-800 text-white"
+              style={{
+                backgroundColor: "rgba(180, 83, 9, 0.7)",
+              }}
               disabled={isLoading}
             >
               <Settings className="h-6 w-6" />
@@ -147,6 +175,15 @@ export function TestFab() {
                 <span>Design Components</span>
               </Link>
             </DropdownMenuItem>
+
+            <DropdownMenuSeparator />
+
+            {/* 버전 정보 */}
+            <DropdownMenuItem onClick={handleVersionInfo}>
+              <span className="text-xs text-muted-foreground">
+                버전 정보
+              </span>
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -190,6 +227,53 @@ export function TestFab() {
             </div>
             <Button
               onClick={handleServerInfo}
+              className="w-full mt-6"
+              variant="outline"
+            >
+              닫기
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* 버전 정보 모달 */}
+      {showVersionInfo && (
+        <div
+          className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
+          onClick={handleVersionInfo}
+        >
+          <div
+            className="bg-background border rounded-lg p-6 max-w-sm w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-xl font-bold mb-4">버전 정보</h2>
+            <div className="space-y-4 text-sm">
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
+                <p className="text-muted-foreground mb-2">현재 빌드 버전</p>
+                <p className="text-lg font-mono font-bold text-foreground">
+                  {buildDate}
+                </p>
+              </div>
+              <Button
+                onClick={handleCopyVersion}
+                variant="outline"
+                className="w-full flex items-center justify-center gap-2"
+              >
+                {copied ? (
+                  <>
+                    <Check className="h-4 w-4" />
+                    복사됨
+                  </>
+                ) : (
+                  <>
+                    <Copy className="h-4 w-4" />
+                    버전 정보 복사
+                  </>
+                )}
+              </Button>
+            </div>
+            <Button
+              onClick={handleVersionInfo}
               className="w-full mt-6"
               variant="outline"
             >
