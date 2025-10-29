@@ -71,7 +71,12 @@ export function Topbar() {
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         {/* 왼쪽: 로고 */}
         <Link href="/" className="flex items-center gap-2">
-          <div className="text-xl font-bold">KVB 한바보</div>
+          <div className="text-xl font-bold">
+            <span className="text-red-600">K</span>
+            <span className="text-green-600">V</span>
+            <span className="text-blue-600">B</span>
+            {" 한바보"}
+          </div>
         </Link>
 
         {/* 오른쪽: 네비게이션 */}
