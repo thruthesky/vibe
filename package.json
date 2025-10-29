@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "deploy": "vercel deploy --prebuilt --prod --yes",
+    "build:vercel": "vercel build",
     "start": "next start",
     "lint": "eslint"
   },
