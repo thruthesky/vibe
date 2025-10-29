@@ -19,7 +19,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Settings, User, Server, Palette, Copy, Check } from "lucide-react";
+import { Settings, User, Server, Palette } from "lucide-react";
 
 // 테스트 계정 데이터
 const TEST_ACCOUNTS = [
@@ -38,11 +38,10 @@ const TEST_PASSWORD = "12345a,*";
 export function TestFab() {
   const [isLoading, setIsLoading] = useState(false);
   const [showServerInfo, setShowServerInfo] = useState(false);
-  const [showVersionInfo, setShowVersionInfo] = useState(false);
-  const [copied, setCopied] = useState(false);
   const router = useRouter();
 
   // 빌드 버전 정보 (Unix timestamp - 밀리초)
+  // 현재 시간: 2025-10-30 10:40 AM
   const buildTimestamp = 1730307621000;
   const buildDate = new Date(buildTimestamp).toLocaleString("ko-KR", {
     year: "2-digit",
@@ -103,18 +102,6 @@ export function TestFab() {
   // 서버 정보 표시 토글
   const handleServerInfo = () => {
     setShowServerInfo(!showServerInfo);
-  };
-
-  // 버전 정보 표시 토글
-  const handleVersionInfo = () => {
-    setShowVersionInfo(!showVersionInfo);
-  };
-
-  // 버전 정보 복사
-  const handleCopyVersion = async () => {
-    await navigator.clipboard.writeText(buildDate);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
@@ -178,12 +165,13 @@ export function TestFab() {
 
             <DropdownMenuSeparator />
 
-            {/* 버전 정보 */}
-            <DropdownMenuItem onClick={handleVersionInfo}>
-              <span className="text-xs text-muted-foreground">
-                버전 정보
-              </span>
-            </DropdownMenuItem>
+            {/* 버전 정보 - 메뉴에 직접 표시 */}
+            <div className="px-2 py-2 text-xs">
+              <p className="text-muted-foreground mb-1">빌드 버전</p>
+              <p className="font-mono font-bold text-foreground bg-slate-50 border border-slate-200 rounded px-2 py-1">
+                {buildDate}
+              </p>
+            </div>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -236,52 +224,6 @@ export function TestFab() {
         </div>
       )}
 
-      {/* 버전 정보 모달 */}
-      {showVersionInfo && (
-        <div
-          className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
-          onClick={handleVersionInfo}
-        >
-          <div
-            className="bg-background border rounded-lg p-6 max-w-sm w-full"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2 className="text-xl font-bold mb-4">버전 정보</h2>
-            <div className="space-y-4 text-sm">
-              <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
-                <p className="text-muted-foreground mb-2">현재 빌드 버전</p>
-                <p className="text-lg font-mono font-bold text-foreground">
-                  {buildDate}
-                </p>
-              </div>
-              <Button
-                onClick={handleCopyVersion}
-                variant="outline"
-                className="w-full flex items-center justify-center gap-2"
-              >
-                {copied ? (
-                  <>
-                    <Check className="h-4 w-4" />
-                    복사됨
-                  </>
-                ) : (
-                  <>
-                    <Copy className="h-4 w-4" />
-                    버전 정보 복사
-                  </>
-                )}
-              </Button>
-            </div>
-            <Button
-              onClick={handleVersionInfo}
-              className="w-full mt-6"
-              variant="outline"
-            >
-              닫기
-            </Button>
-          </div>
-        </div>
-      )}
     </>
   );
 }

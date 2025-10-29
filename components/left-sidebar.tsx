@@ -169,12 +169,13 @@ export function LeftSidebar() {
         </div>
       </div>
 
-      {/* 빌드 타임스탬프 */}
+      {/* 빌드 타임스탬프 - 현재 배포 시간으로 업데이트됨 */}
       <div className="mt-8 pt-4 border-t text-xs text-muted-foreground">
         <div className="flex items-center justify-between">
           <span>빌드 버전</span>
           <span className="font-mono">
-            {new Date(1730307621000).toLocaleString(navigator.language, {
+            {/* 현재 시간의 Unix timestamp(밀리초)를 사용하여 빌드 날짜를 표시합니다 */}
+            {new Date(1761753137000).toLocaleString(navigator.language, {
               year: "2-digit",
               month: "2-digit",
               day: "2-digit",
