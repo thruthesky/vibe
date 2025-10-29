@@ -186,6 +186,17 @@ export function LeftSidebar() {
           </span>
         </div>
       </div>
+
+      {/* Copyleft 정보 */}
+      <div className="mt-4 text-xs text-muted-foreground text-center">
+        <p className="leading-relaxed">
+          © Copyleft
+          <br />
+          AI 가 만든 코드여서
+          <br />
+          저작권이 없습니다.
+        </p>
+      </div>
     </aside>
   );
 }

@@ -70,12 +70,24 @@ export function Topbar() {
     >
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         {/* 왼쪽: 로고 */}
-        <Link href="/" className="flex items-center gap-2">
-          <div className="text-xl font-bold">
-            <span className="text-red-600">K</span>
-            <span className="text-green-600">V</span>
-            <span className="text-blue-600">B</span>
-            {" 한바보"}
+        <Link href="/" className="flex items-center gap-2 group">
+          <div className="text-xl font-bold flex items-center">
+            {/* K - 빨강 */}
+            <span className="text-red-600 inline-block transition-transform duration-300 group-hover:-translate-y-1 group-hover:scale-110">
+              K
+            </span>
+            {/* V - 초록 */}
+            <span className="text-green-600 inline-block transition-transform duration-300 delay-75 group-hover:-translate-y-1 group-hover:scale-110">
+              V
+            </span>
+            {/* B - 파랑 */}
+            <span className="text-blue-600 inline-block transition-transform duration-300 delay-150 group-hover:-translate-y-1 group-hover:scale-110">
+              B
+            </span>
+            {/* 한바보 */}
+            <span className="inline-block transition-transform duration-300 delay-200 group-hover:-translate-y-1">
+              {" 한바보"}
+            </span>
           </div>
         </Link>
 
