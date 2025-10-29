@@ -168,6 +168,23 @@ export function LeftSidebar() {
           </Link>
         </div>
       </div>
+
+      {/* 빌드 타임스탬프 */}
+      <div className="mt-8 pt-4 border-t text-xs text-muted-foreground">
+        <div className="flex items-center justify-between">
+          <span>빌드 버전</span>
+          <span className="font-mono">
+            {new Date(1730307621000).toLocaleString(navigator.language, {
+              year: "2-digit",
+              month: "2-digit",
+              day: "2-digit",
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: true,
+            })}
+          </span>
+        </div>
+      </div>
     </aside>
   );
 }
