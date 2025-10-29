@@ -44,6 +44,10 @@ export default function Home() {
               채팅방 목록을 표시하고, 클릭하여 입장.
               <ol className="mt-2 space-y-1 list-decimal ml-8">
                 <li>그룹 채팅: 생성, 수정, 삭제, 초대</li>
+                <li>
+                  오픈 채팅: 로그인 없이 채팅방 입장 가능, 단 메시지 전송은
+                  로그인 필요
+                </li>
               </ol>
             </li>
             <li>
