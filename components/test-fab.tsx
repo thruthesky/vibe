@@ -5,6 +5,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { signIn, signUp } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,7 +19,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Settings, User, Server } from "lucide-react";
+import { Settings, User, Server, Palette } from "lucide-react";
 
 // 테스트 계정 데이터
 const TEST_ACCOUNTS = [
@@ -137,6 +138,14 @@ export function TestFab() {
             <DropdownMenuItem onClick={handleServerInfo}>
               <Server className="mr-2 h-4 w-4" />
               <span>서버 정보 보기</span>
+            </DropdownMenuItem>
+
+            {/* 디자인 컴포넌트 */}
+            <DropdownMenuItem asChild>
+              <Link href="/dev/design">
+                <Palette className="mr-2 h-4 w-4" />
+                <span>Design Components</span>
+              </Link>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
