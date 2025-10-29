@@ -103,7 +103,31 @@
   - Playwright MCP 또는 Chrome DevTools MCP 사용
   - 실제 프로덕션 환경에서 테스트 수행
 
-- [ ] **9단계**: 최종 변경사항 커밋 및 푸시 ⚠️ **배포 및 테스트 완료 후**
+- [ ] **9단계**: 빌드 날짜/버전 업데이트 ⚠️ **개발자가 명시적으로 요청한 경우에만 실행**
+  - **🔥 트리거 조건**: 개발자가 **"빌드 날짜 업데이트"** 또는 **"버전 업데이트"**라고 명시적으로 요청할 때만 실행
+  - **구현 위치**: [components/left-sidebar.tsx](components/left-sidebar.tsx) 파일 맨 아래
+  - **빌드 날짜 형식**: "YY-MM-DD HH:II [오전/오후]"
+  - **구현 방법**:
+    - 소스 코드에는 `const buildTimestamp = 1234567890;` 형태로 Unix timestamp 저장
+    - 웹 브라우저에서는 사용자의 브라우저 언어에 맞게 `Intl` API 사용하여 표시
+    - 예시 코드:
+      ```tsx
+      // 빌드 타임스탬프 (Unix timestamp - 밀리초)
+      const buildTimestamp = Date.now();
+
+      // 사용자 브라우저 언어에 맞게 날짜 포맷팅
+      const buildDate = new Intl.DateTimeFormat(navigator.language, {
+        year: '2-digit',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      }).format(new Date(buildTimestamp));
+      ```
+  - **중요**: 명시적 요청이 없으면 날짜 업데이트를 하지 않음
+
+- [ ] **10단계**: 최종 변경사항 커밋 및 푸시 ⚠️ **배포 및 테스트 완료 후**
   - 커밋 메시지에 작업 내용 명확히 기재
   - 예: `"KVB 로고 색상 변경 완료 (UTF-8 인코딩 확인완료)"`
   - **git commit 후 즉시 git push 실행**
@@ -112,7 +136,7 @@
     git commit -a -m "커밋 메시지" && git push
     ```
 
-  **🔥🔥🔥 배포 → UTF-8 확인 → 테스트 → git commit → git push 순서로 진행! 🔥🔥🔥**
+  **🔥🔥🔥 배포 → UTF-8 확인 → 테스트 → 버전 업데이트(요청 시) → git commit → git push 순서로 진행! 🔥🔥🔥**
 
 ### 테스트 및 검증 가이드
 
