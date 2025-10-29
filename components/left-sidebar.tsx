@@ -175,7 +175,7 @@ export function LeftSidebar() {
           <span>빌드 버전</span>
           <span className="font-mono">
             {/* 현재 시간의 Unix timestamp(밀리초)를 사용하여 빌드 날짜를 표시합니다 */}
-            {new Date(1761753137000).toLocaleString(navigator.language, {
+            {new Date(1761753533000).toLocaleString(navigator.language, {
               year: "2-digit",
               month: "2-digit",
               day: "2-digit",
