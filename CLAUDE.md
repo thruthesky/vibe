@@ -8,11 +8,12 @@
 
 **⚠️ 중요: 모든 작업은 다음 워크플로우를 반드시 따라야 합니다.**
 
-**🚨🚨🚨 최우선 규칙: 작업 완료 후 반드시 Vercel CLI로 배포하세요! 🚨🚨🚨**
-- ⚡ **목표: 8초 이내 빠른 배포** - `vercel build` → `vercel deploy --prebuilt --prod --yes`
-- 🚀 **실제 프로덕션(https://www.vibers.kr/)에서 즉시 테스트**
+**🚨🚨🚨 최우선 규칙: 코드 수정 후 즉시 배포하세요! 🚨🚨🚨**
+- ⚡ **목표: 코드 수정 → 즉시 배포 → 빠른 테스트**
+- 🚀 **배포 우선 순서**: 코드 수정 완료 → **배포** → git commit
+- ✅ **이유**: 실제 프로덕션 환경(https://www.vibers.kr/)에서 즉시 테스트하여 문제를 빠르게 발견
 - ❌ **git push는 하지 않습니다!** git commit까지만 실행
-- Vercel CLI 배포가 모든 작업의 최종 단계입니다
+- 배포 명령어: `vercel --prod --yes` (간단하고 빠름)
 
 ### 작업 시작 전 필수 단계
 
@@ -30,8 +31,8 @@
   - 서버 상태 확인: `lsof -i :3000` (포트 3000에 node 프로세스가 있는지 확인)
 
 - [ ] **1단계**: 현재 작업 상태 확인 (`git status`)
-- [ ] **2단계**: 변경사항 스테이징 및 커밋 (`git commit -a -m "..."`)
-  - 모든 작업을 진행하기 전에 **반드시** 기존 변경사항을 커밋하세요
+- [ ] **2단계**: 기존 변경사항이 있다면 커밋 (`git commit -a -m "..."`)
+  - 작업 시작 전에 기존 변경사항을 먼저 커밋하세요
   - 커밋 메시지 예: `"회원가입 페이지 스타일 수정"`
 
 ### 작업 진행 단계
@@ -69,14 +70,10 @@
     - 참고 문서:
       - [React Compiler](https://react.dev/learn/react-compiler)
       - [React Compiler Installation](https://react.dev/learn/react-compiler/installation)
-- [ ] **6단계**: 테스트 실행 (필요시)
-  - **테스트, E2E, 디버깅, 검증** 관련 요청 시 → `@.claude/skills/test/SKILL.md` 문서 참고
-  - Playwright MCP 또는 Chrome DevTools MCP 사용
-  - 테스트 결과 검증
 
-### 작업 완료 단계 (🚨 마지막은 반드시 Vercel CLI 배포! 🚨)
+### 작업 완료 단계 (🚨 코드 수정 후 즉시 배포! 🚨)
 
-- [ ] **7단계**: UTF-8 인코딩 검증 (문서/코드 수정/생성 시 필수!)
+- [ ] **6단계**: UTF-8 인코딩 검증 (문서/코드 수정/생성 시 필수!)
   - **모든 문서 파일(*.md)과 소스 코드(*.ts, *.tsx, *.js, *.css 등)는 반드시 UTF-8 인코딩**
   - 인코딩 확인 명령어 (macOS/Linux):
     ```bash
@@ -85,48 +82,33 @@
   - 정상 출력: `charset=utf-8` ✅
   - 잘못된 경우 UTF-8 인코딩 변환 필요 (VSCode에서 우측 하단 "CRLF" → "UTF-8" 선택)
 
-- [ ] **8단계**: 최종 변경사항 커밋
-  - 커밋 메시지에 작업 내용 명확히 기재
-  - 예: `"로그인 기능 검증 완료 및 오류 수정 (UTF-8 인코딩 확인완료)"`
+- [ ] **7단계**: 🚨🚨🚨 즉시 배포 🚨🚨🚨 **🔥 git commit 이전에 가장 먼저 실행! 🔥**
+  - **⚡ 배포 명령어 (간단하고 빠름):**
+    ```bash
+    vercel --prod --yes
+    ```
+    - `--prod`: 프로덕션 URL로 바로 배포
+    - `--yes`: 비대화형 (질문 없이 진행)
 
-- [ ] **9단계**: 🚨🚨🚨 Vercel CLI로 빠른 배포 🚨🚨🚨 **🔥 최우선 배포 방법 🔥**
-  - **⚡ 목표: 8초 이내에 빌드 및 배포 완료**
   - **🚀 실제 프로덕션 환경(https://www.vibers.kr/)에서 즉시 테스트**
-  - **❌ 중요: git push는 하지 않습니다! git commit까지만 실행하세요**
-
-  **배포 프로세스 (2단계):**
-
-  1. **로컬 빌드 실행** (Build Output API 산출물 생성)
-     ```bash
-     vercel build
-     ```
-     - `.vercel/output/` 폴더에 Vercel 규격 산출물 생성
-     - 원격 설치/빌드 과정 전부 생략 가능 ⚡
-
-  2. **결과물만 업로드하여 즉시 프로덕션 배포** (⚡ 가장 빠른 방법)
-     ```bash
-     vercel deploy --prebuilt --prod --yes
-     ```
-     - `--prebuilt`: .vercel/output만 업로드 (소스코드 미전송)
-     - `--prod`: 프로덕션 URL로 바로 배포
-     - `--yes`: 비대화형 (질문 없이 진행)
-
-  **⚡ 왜 이 방식이 가장 빠른가?**
-  - ✅ **원격 설치/빌드 생략** — 원격에서 npm install, next build 등을 모두 생략
-  - ✅ **소스코드 미전송** — .vercel/output만 업로드하므로 속도 ↑, 보안 ↑
-  - ✅ **즉시 프로덕션 배포** — --yes --prod로 승인 절차 없이 바로 배포
-  - ✅ **Git Integration보다 압도적으로 빠름** — 체감 속도 최대 10배 이상
+  - **✅ 배포 성공 확인**: 터미널에서 배포 URL 확인
 
   **⚠️ 주의사항:**
-  - Vercel CLI는 이미 설치 및 링크되어 있습니다 (`vercel link --yes`)
+  - Vercel CLI는 이미 설치 및 링크되어 있습니다
   - 배포 실패 시: 직접 해결하지 말고 개발자에게 알려주세요
   - 환경 변수 필요 시: 개발자에게 `vercel env pull .env.local` 실행 요청
 
-  **✅ 배포 성공 확인:**
-  - 터미널에서 배포 URL 확인 (https://www.vibers.kr/)
-  - Playwright MCP 또는 Chrome DevTools MCP로 실제 프로덕션 환경 테스트
+- [ ] **8단계**: 테스트 실행 (필요시) ⚠️ **배포 후 실행**
+  - **테스트, E2E, 디버깅, 검증** 관련 요청 시 → `@.claude/skills/test/SKILL.md` 문서 참고
+  - Playwright MCP 또는 Chrome DevTools MCP 사용
+  - 실제 프로덕션 환경에서 테스트 수행
 
-  **🔥🔥🔥 Vercel CLI 배포가 완료되면 작업이 완료됩니다! 🔥🔥🔥**
+- [ ] **9단계**: 최종 변경사항 커밋 ⚠️ **배포 및 테스트 완료 후**
+  - 커밋 메시지에 작업 내용 명확히 기재
+  - 예: `"KVB 로고 색상 변경 완료 (UTF-8 인코딩 확인완료)"`
+  - **❌ 중요: git push는 하지 않습니다!** git commit까지만 실행
+
+  **🔥🔥🔥 배포 → 테스트 → git commit 순서로 진행! 🔥🔥🔥**
 
 ### 테스트 및 검증 가이드
 
