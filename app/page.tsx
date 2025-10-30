@@ -119,7 +119,10 @@ export default function Home() {
           </h2>
           <ol className="space-y-2 text-muted-foreground list-decimal list-inside">
             <li>
-              <strong>디자인:</strong> 탑바에 로그인 사용자 업로드.
+              <strong>디자인:</strong> 탑바에 로그인 사용자 정보 표시.
+            </li>
+            <li>
+              <strong>회원 정보 수정:</strong> 회원 사진 등록. 회원 정보 실시간 업데이트
             </li>
             <li>
               <strong>대화방 참여 목록:</strong> vibe/chat/joins 에 저장해서,
