@@ -58,7 +58,7 @@ export default function Home() {
               </AccordionTrigger>
               <AccordionContent className="px-4 pb-3 text-muted-foreground">
                 <p className="leading-relaxed">
-                  프롬프트 엔지니어링, 컨텍스트 드리븐, 스펙킷 등으로 만들 수 있는 것은 아무것도 없습니다.
+                  실용적인 웹/앱을 만들기 위해서는 인간의 수 많은 개입이 필요합니다. AI 는 결국 생각없이 입력이 주어지면 그에 따른 출력을 할 뿐입니다.
                 </p>
                 <p className="text-xs text-muted-foreground mt-2">
                   AI 는 도구 일 뿐, 원하는 결과물이 만들어지도록 방향을 제시하고 통제해야합니다.
