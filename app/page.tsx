@@ -12,10 +12,9 @@ export default function Home() {
     <div className="min-h-screen bg-background">
       <div className="max-w-3xl mx-auto px-6 py-8 space-y-8">
         {/* 바이브 코딩 배너 */}
-        <div className="bg-slate-900 text-white rounded-lg p-4 border border-slate-800 text-center">
-          <p className="text-sm font-medium">
-            🤖 현재 보시고 계시는 이 사이트는 100% 바이브 코딩으로만
-            만들어졌습니다.
+        <div className="bg-slate-900 text-white rounded-lg px-4 py-2 border border-slate-800 text-center">
+          <p className="text-xs font-medium">
+            🤖 현재 보시고 계시는 이 사이트는 100% 바이브 코딩으로만 만들어졌습니다.
           </p>
         </div>
 
