@@ -40,7 +40,7 @@ export default function Home() {
                 </div>
               </AccordionTrigger>
               <AccordionContent className="px-4 pb-3 text-muted-foreground">
-                눈만뜨면 더 강력한 인공지능, 툴, 에이전트가 쏟아지고 있습니다. 여러분들은 어떻게 변하고 있나요?
+                매일 더욱 더 강력한 인공지능, 툴, 에이전트가 쏟아지고 있습니다. 여러분들은 매일 어떻게 변하고 있나요?
               </AccordionContent>
             </AccordionItem>
 
