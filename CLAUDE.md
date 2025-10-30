@@ -198,6 +198,47 @@
 - 실전 테스트 예제
 - 트러블슈팅 가이드
 
+#### 테스트 계정 로그인 방법
+
+테스트를 수행할 때는 다음 방법으로 로그인하세요:
+
+1. **로그인 페이지 접속**: https://www.vibers.kr/auth/login
+2. **테스트 계정 정보**:
+   - **이메일**: apple@test.com, banana@test.com 등
+   - **비밀번호**: 12345a,*
+3. **대체 방법 - Floating Button 사용**:
+   - 홈페이지 접속: https://www.vibers.kr/
+   - 하단 오른쪽의 개발 Floating Button 클릭
+   - Floating button에서 제공하는 테스트 계정으로 로그인
+
+**⚠️ 로그인이 필요한 기능 테스트 시**: 위 로그인 페이지에서 테스트 계정으로 로그인하세요.
+
+---
+
+## 📍 홈페이지 주요 경로
+
+프로덕션 사이트의 주요 경로는 다음과 같습니다:
+
+### 인증 및 사용자 관련
+- **홈페이지**: https://www.vibers.kr/
+- **로그인**: https://www.vibers.kr/auth/login
+- **프로필 수정**: https://www.vibers.kr/profile
+- **사용자 목록**: https://www.vibers.kr/users
+
+### 채팅 관련
+- **채팅방 입장**: https://www.vibers.kr/chat/room?otherId=xxx
+  - `otherId`는 대화 상대방의 UID
+
+#### 채팅방 입장 절차
+
+채팅 기능을 테스트하려면 다음 순서를 따르세요:
+
+1. **테스트 계정 로그인**: https://www.vibers.kr/auth/login
+   - 이메일: apple@test.com, banana@test.com 등
+   - 비밀번호: 12345a,*
+2. **사용자 목록 접속**: https://www.vibers.kr/users
+3. **채팅 상대 선택**: 사용자 목록에서 원하는 사용자 선택하여 채팅방 입장
+
 ---
 
 ## 프로젝트 개요
