@@ -9,8 +9,8 @@ export interface UpdateInterface {
  * Interface representing the last message information in a chat room.
  *
  * This structure is used in both:
- * - /chat/rooms/{roomId}/lastMessage
- * - /chat/joins/{uid}/{roomId}/lastMessage
+ * - /{ROOT_FOLDER}/chat/rooms/{roomId}/lastMessage
+ * - /{ROOT_FOLDER}/chat/joins/{uid}/{roomId}/lastMessage
  */
 export interface LastMessage {
   text?: string; // Last text preview
@@ -68,7 +68,7 @@ export type ChatRoomJson = ChatRoom;
 /**
  * Interface representing a chat message in RTDB.
  *
- * Database path: /chat/messages/{roomId}/{messageId}
+ * Database path: /{ROOT_FOLDER}/chat/messages/{roomId}/{messageId}
  */
 export interface ChatMessage {
   id: string; // Message ID - should match document key
@@ -98,7 +98,7 @@ export interface CreateChatMessageParams {
 /**
  * Interface for chat join information (stored per user per room).
  *
- * Database path: /chat/joins/{uid}/{roomId}
+ * Database path: /{ROOT_FOLDER}/chat/joins/{uid}/{roomId}
  *
  * This interface matches the structure defined in docs/chat/chat-database.md
  */

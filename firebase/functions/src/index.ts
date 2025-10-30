@@ -13,6 +13,7 @@ import { DataSnapshot } from "firebase-admin/database";
 import type { DatabaseEvent } from "firebase-functions/v2/database";
 import { CreateChatMessageParams } from "./interfaces";
 import { updateOnMessageCreatedForSingleChat } from "./functions";
+import { ROOT_FOLDER } from "./firebase.config";
 
 // Configuration based on environment
 // Note: This uses hardcoded values based on the default Firebase project
@@ -31,14 +32,6 @@ const getConfig = () => {
       databaseURL:
         "https://withcenter-test-5-default-rtdb.asia-southeast1.firebasedatabase.app/",
       region: "asia-southeast1", // Must match database region for database triggers
-    };
-  } else if (
-    projectValue === "philgo" ||
-    projectValue.includes("philgo-64b1a")
-  ) {
-    return {
-      databaseURL: "https://philgo-64b1a.firebaseio.com/",
-      region: "us-central1",
     };
   } else {
     throw new Error(`Unknown FIREBASE_PROJECT value: ${projectValue}`);
@@ -100,8 +93,8 @@ if (!admin.apps.length) {
  * @see docs/chat/cloud-functions.md#keep-trigger-functions-simple
  * @see docs/chat/chat-logic.md#message-creation-flow
  */
-export const onChatMessageCreated = onValueCreated(
-  "/chat/messages/{roomId}/{messageId}",
+export const onVibeChatMessageCreated = onValueCreated(
+  `/${ROOT_FOLDER}/chat/messages/{roomId}/{messageId}`,
   async (event: DatabaseEvent<DataSnapshot>) => {
     const roomId = event.params.roomId as string;
     const messageId = event.params.messageId as string;

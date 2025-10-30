@@ -248,7 +248,7 @@ if (!admin.apps.length) {
 
 ```typescript
 export const onChatMessageCreated = onValueCreated(
-  "/vibe/chat/messages/{roomId}/{messageId}",
+  `/${ROOT_FOLDER}/chat/messages/{roomId}/{messageId}`,
   async (event: DatabaseEvent<DataSnapshot>) => {
     // 함수 본문
   }
@@ -579,7 +579,7 @@ const subscribePath = joinPropsPath(uid, "subscriptions", roomId);
 ```typescript
 // index.ts (트리거 함수) - 단순하게!
 export const onChatMessageCreated = onValueCreated(
-  "/vibe/chat/messages/{roomId}/{messageId}",
+  `/${ROOT_FOLDER}/chat/messages/{roomId}/{messageId}`,
   async (event) => {
     const roomId = event.params.roomId;
     const messageData = event.data.val();

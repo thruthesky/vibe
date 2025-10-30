@@ -268,8 +268,8 @@ export function makeSingleChatRoomId(uid1: string, uid2: string): string {
  * @return {string} Database path for chat join
  *
  * @example
- * joinPath("user123", "room-abc") // Returns "vibe/chat/joins/user123/room-abc"
- * joinPath("user123", "room-abc", "order") // Returns "vibe/chat/joins/user123/room-abc/order"
+ * joinPath("user123", "room-abc") // Returns "{ROOT_FOLDER}/chat/joins/user123/room-abc"
+ * joinPath("user123", "room-abc", "order") // Returns "{ROOT_FOLDER}/chat/joins/user123/room-abc/order"
  */
 export function joinPath(uid: string, roomId: string, field?: string): string {
   const basePath = `${ROOT_FOLDER}/chat/joins/${uid}/${roomId}`;
@@ -288,8 +288,8 @@ export function joinPath(uid: string, roomId: string, field?: string): string {
  * @return {string} Database path for chat join property
  *
  * @example
- * joinPropsPath("user123", "unread") // Returns "vibe/chat/join-props/user123/unread"
- * joinPropsPath("user123", "unread", "user456") // Returns "vibe/chat/join-props/user123/unread/user456"
+ * joinPropsPath("user123", "unread") // Returns "{ROOT_FOLDER}/chat/join-props/user123/unread"
+ * joinPropsPath("user123", "unread", "user456") // Returns "{ROOT_FOLDER}/chat/join-props/user123/unread/user456"
  */
 export function joinPropsPath(
   uid: string,
@@ -311,8 +311,8 @@ export function joinPropsPath(
  * @return {string} Database path for user data
  *
  * @example
- * userPath("user123") // Returns "vibe/users/user123"
- * userPath("user123", "chatUnreadCount") // Returns "vibe/users/user123/chatUnreadCount"
+ * userPath("user123") // Returns "{ROOT_FOLDER}/users/user123"
+ * userPath("user123", "chatUnreadCount") // Returns "{ROOT_FOLDER}/users/user123/chatUnreadCount"
  */
 export function userPath(uid: string, field?: string): string {
   const basePath = `${ROOT_FOLDER}/users/${uid}`;
@@ -331,8 +331,8 @@ export function userPath(uid: string, field?: string): string {
  * @return {string} Database path for chat message
  *
  * @example
- * messagePath("room-abc", "msg-123") // Returns "vibe/chat/messages/room-abc/msg-123"
- * messagePath("room-abc", "msg-123", "errors/1234567890") // Returns "vibe/chat/messages/room-abc/msg-123/errors/1234567890"
+ * messagePath("room-abc", "msg-123") // Returns "{ROOT_FOLDER}/chat/messages/room-abc/msg-123"
+ * messagePath("room-abc", "msg-123", "errors/1234567890") // Returns "{ROOT_FOLDER}/chat/messages/room-abc/msg-123/errors/1234567890"
  */
 export function messagePath(
   roomId: string,
@@ -746,7 +746,7 @@ export async function updateUsersUnreadCount(
 
   // Fetch unread data for all users in parallel
   console.log(
-    "[updateUsersUnreadCount] Fetching unread data from /vibe/chat/join-props/{uid}/unread"
+    `[updateUsersUnreadCount] Fetching unread data from /${ROOT_FOLDER}/chat/join-props/{uid}/unread`
   );
   const unreadSnapshots = await Promise.all(
     userUids.map((uid) =>
