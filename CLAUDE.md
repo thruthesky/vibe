@@ -8,14 +8,14 @@
 
 **⚠️ 중요: 모든 작업은 다음 워크플로우를 반드시 따라야 합니다.**
 
-**🚨🚨🚨 최우선 규칙: 코드 수정 후 즉시 Preview 배포하세요! 🚨🚨🚨**
-- ⚡ **목표: 코드 수정 → 즉시 Preview 배포 → 빠른 테스트**
-- 🚀 **작업 순서**: 코드 수정 완료 → **Preview 배포 (완료까지 기다림)** → UTF-8 인코딩 검증 → git commit & push
-- ✅ **이유**: Preview URL에서 즉시 테스트하여 문제를 빠르게 발견
+**🚨🚨🚨 최우선 규칙: 코드 수정 후 즉시 프로덕션 배포하세요! 🚨🚨🚨**
+- ⚡ **목표: 코드 수정 → 즉시 프로덕션 배포 → 실서비스 반영**
+- 🚀 **작업 순서**: 코드 수정 완료 → **프로덕션 배포 (완료까지 기다림)** → UTF-8 인코딩 검증 → git commit & push
+- ✅ **이유**: 실제 서비스 환경(https://www.vibers.kr/)에 즉시 반영하여 실서비스 검증
 - ✅ **배포 모드**:
-  - **기본 배포 (Preview)**: `npm run preview` - 항상 기본으로 사용
-  - **프로덕션 배포**: `npm run deploy` - 개발자가 명시적으로 "production" 또는 "프로덕션" 배포 요청 시에만 사용
-- **Preview 배포 명령어**: `npm run preview` (빌드 후 Preview 배포, 배포 완료까지 기다림)
+  - **기본 배포 (프로덕션)**: `npm run deploy` - 항상 기본으로 사용
+  - **Preview 배포**: `npm run preview` - 개발자가 명시적으로 "preview" 또는 "프리뷰" 배포 요청 시에만 사용
+- **프로덕션 배포 명령어**: `npm run deploy` (빌드 후 프로덕션 배포, 배포 완료까지 기다림)
 
 ### 작업 진행 단계
 
@@ -53,11 +53,29 @@
       - [React Compiler](https://react.dev/learn/react-compiler)
       - [React Compiler Installation](https://react.dev/learn/react-compiler/installation)
 
-### 작업 완료 단계 (🚨 코드 수정 후 즉시 Preview 배포! 🚨)
+### 작업 완료 단계 (🚨 코드 수정 후 즉시 프로덕션 배포! 🚨)
 
-- [ ] **4단계**: 🚨🚨🚨 Preview 배포 (완료될 때까지 기다림) 🚨🚨🚨 **🔥 코드 수정 후 가장 먼저 실행! 🔥**
+- [ ] **4단계**: 🚨🚨🚨 프로덕션 배포 (완료될 때까지 기다림) 🚨🚨🚨 **🔥 코드 수정 후 가장 먼저 실행! 🔥**
 
-  **⚡ 기본 배포 모드: Preview (항상 사용)**
+  **⚡ 기본 배포 모드: 프로덕션 (항상 사용)**
+
+  ```bash
+  npm run deploy
+  ```
+
+  - **프로덕션 배포 특징**:
+    - 빌드 (`vercel build`) + 프로덕션 배포 (`vercel deploy --prod --yes`)를 한 번에 실행
+    - 실제 서비스 URL로 직접 배포 (https://www.vibers.kr/)
+    - **배포가 완료될 때까지 기다린 후 다음 단계 진행**
+    - ✅ **배포 완료 확인**: https://www.vibers.kr/ 에서 변경사항 확인
+
+  - **🚀 실서비스에서 검증**
+    - 프로덕션 배포가 완료되면 실제 서비스 URL(https://www.vibers.kr/)에서 즉시 검증
+    - 실제 사용자가 사용할 환경에서 정확한 동작 검증 가능
+
+  **⚠️ Preview 배포 (명시적 요청 시에만)**
+
+  개발자가 **"preview"** 또는 **"프리뷰"** 배포를 명시적으로 요청한 경우에만:
 
   ```bash
   npm run preview
@@ -66,31 +84,13 @@
   - **Preview 배포 특징**:
     - 빌드 (`vercel build`) + Preview 배포 (`vercel deploy --prebuilt --yes`)를 한 번에 실행
     - Preview URL 생성 (예: `https://vibe-abc123.vercel.app`)
-    - **배포가 완료될 때까지 기다린 후 다음 단계 진행**
-    - ✅ **배포 완료 확인**: Preview URL이 나타나면 배포 완료
-
-  - **🚀 Preview URL에서 테스트**
-    - Preview 배포가 완료되면 자동으로 생성된 Preview URL에서 테스트
-    - 빠른 피드백으로 문제를 즉시 발견
-
-  **⚠️ 프로덕션 배포 (명시적 요청 시에만)**
-
-  개발자가 **"production"** 또는 **"프로덕션"** 배포를 명시적으로 요청한 경우에만:
-
-  ```bash
-  npm run deploy
-  ```
-
-  - **프로덕션 배포 특징**:
-    - 프로덕션 URL로 직접 배포 (`vercel deploy --prod --yes`)
-    - **배포 성공 확인**: 배포 URL → **https://www.vibers.kr/**
-    - 배포가 완료될 때까지 기다림
-    - Preview와 달리 신중하게 배포 (테스트 완료 후)
+    - **배포가 완료될 때까지 기다림**
+    - Preview URL에서 테스트 (프로덕션 반영 전 사전 검증 목적)
 
   **⚠️ 주의사항:**
   - Vercel CLI는 이미 설치 및 링크되어 있습니다
-  - **기본 배포는 항상 Preview**: `npm run preview` 사용
-  - **프로덕션 배포**: 개발자가 명시적으로 요청한 경우에만 `npm run deploy` 사용
+  - **기본 배포는 항상 프로덕션**: `npm run deploy` 사용
+  - **Preview 배포**: 개발자가 명시적으로 요청한 경우에만 `npm run preview` 사용
   - 배포 실패 시: 직접 해결하지 말고 개발자에게 알려주세요
   - 환경 변수 필요 시: 개발자에게 `vercel env pull .env.local` 실행 요청
 
@@ -174,14 +174,14 @@
 
 **🔥🔥🔥 작업 완료 후 순서:**
 1. **코드 수정 완료**
-2. **Preview 배포 실행** ← 가장 먼저! (배포 완료까지 기다림)
+2. **프로덕션 배포 실행** ← 가장 먼저! (배포 완료까지 기다림)
 3. **배포 완료 후 다음 작업들을 백그라운드에서 동시 실행**:
    - UTF-8 인코딩 검증
    - git commit & push
    - 테스트 실행 (필요시)
    - 버전 업데이트 (개발자 명시적 요청 시에만)
 
-**⚠️ 프로덕션 배포는 개발자가 명시적으로 요청한 경우에만!**
+**⚠️ Preview 배포는 개발자가 명시적으로 요청한 경우에만!**
 
 ### 테스트 및 검증 가이드
 
@@ -233,22 +233,22 @@ NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=
 
 ## 자주 사용되는 명령어
 
-### Preview 배포 (기본 배포)
-```bash
-npm run preview
-```
-- **가장 많이 사용하는 명령어**: 코드 수정 후 항상 실행
-- Vercel 빌드 + Preview 배포를 한 번에 실행
-- Preview URL 생성하여 즉시 테스트 가능
-- 배포가 완료될 때까지 기다린 후 다음 단계 진행
-
-### 프로덕션 배포 (명시적 요청 시에만)
+### 프로덕션 배포 (기본 배포)
 ```bash
 npm run deploy
 ```
-- **주의**: 개발자가 명시적으로 "프로덕션" 또는 "production" 배포 요청 시에만 사용
-- 프로덕션 URL (https://www.vibers.kr/)로 직접 배포
-- Preview에서 충분히 테스트 후에 사용
+- **가장 많이 사용하는 명령어**: 코드 수정 후 항상 실행
+- Vercel 빌드 + 프로덕션 배포를 한 번에 실행
+- 실제 서비스 URL(https://www.vibers.kr/)에 즉시 배포
+- 배포가 완료될 때까지 기다린 후 다음 단계 진행
+
+### Preview 배포 (명시적 요청 시에만)
+```bash
+npm run preview
+```
+- **주의**: 개발자가 명시적으로 "preview" 또는 "프리뷰" 배포 요청 시에만 사용
+- Preview URL이 생성되어 프로덕션 반영 전 사전 검증 가능
+- 필요시 Preview에서 테스트 후 확인
 
 ---
 
