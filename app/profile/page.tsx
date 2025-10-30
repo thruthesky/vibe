@@ -1,22 +1,25 @@
 // 회원 정보 수정 페이지
-// 사용자의 displayName을 수정하고 Firebase Realtime Database에 저장합니다.
+// 사용자의 displayName을 수정하고 프로필 사진을 업로드합니다.
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { auth } from "@/lib/firebase";
-import { saveUserDisplayName, getUserDisplayName } from "@/lib/user";
+import { saveUserDisplayName, getUserDisplayName, uploadProfilePhoto, getUserPhotoUrl } from "@/lib/user";
 
 export default function ProfilePage() {
   const [displayName, setDisplayName] = useState("");
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [photoLoading, setPhotoLoading] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [userId, setUserId] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
-  // Firebase 인증 상태 확인 및 현재 displayName 조회
+  // Firebase 인증 상태 확인 및 현재 displayName, 사진 URL 조회
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
@@ -33,6 +36,12 @@ export default function ProfilePage() {
             setDisplayName(rtdbDisplayName);
           }
         }
+
+        // 현재 프로필 사진 URL 조회
+        const currentPhotoUrl = await getUserPhotoUrl(user.uid);
+        if (currentPhotoUrl) {
+          setPhotoUrl(currentPhotoUrl);
+        }
       } else {
         // 로그인하지 않은 사용자는 로그인 페이지로 리다이렉트
         router.push("/auth/login");
@@ -42,6 +51,37 @@ export default function ProfilePage() {
 
     return () => unsubscribe();
   }, [router]);
+
+  // 사진 파일 선택 핸들러
+  async function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !userId) return;
+
+    setError("");
+    setSuccess("");
+    setPhotoLoading(true);
+
+    try {
+      // 사진 업로드 및 URL 저장
+      const result = await uploadProfilePhoto(userId, file);
+
+      if (result.success && result.photoUrl) {
+        setPhotoUrl(result.photoUrl);
+        setSuccess("프로필 사진이 성공적으로 업로드되었습니다!");
+      } else {
+        setError(result.error || "사진 업로드에 실패했습니다.");
+      }
+    } catch (err: any) {
+      setError(err.message || "사진 업로드 중 오류가 발생했습니다.");
+    }
+
+    setPhotoLoading(false);
+
+    // 파일 입력 초기화
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  }
 
   // 회원 정보 수정 폼 제출 핸들러
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
@@ -118,6 +158,48 @@ export default function ProfilePage() {
             {success}
           </div>
         )}
+
+        {/* 프로필 사진 섹션 */}
+        <div className="mb-6 space-y-3 text-center">
+          <label className="block text-sm font-semibold text-[#050505]">프로필 사진</label>
+
+          {/* 현재 사진 미리보기 */}
+          {photoUrl ? (
+            <div className="flex justify-center">
+              <img
+                src={photoUrl}
+                alt="프로필 사진"
+                className="h-24 w-24 rounded-full border-2 border-[#1877f2] object-cover shadow-md"
+              />
+            </div>
+          ) : (
+            <div className="flex justify-center">
+              <div className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-[#dfe1e6] bg-[#f0f2f5] text-[#8d949e]">
+                <span className="text-sm">사진 없음</span>
+              </div>
+            </div>
+          )}
+
+          {/* 사진 업로드 버튼 */}
+          <button
+            type="button"
+            disabled={photoLoading}
+            onClick={() => fileInputRef.current?.click()}
+            className="w-full rounded-2xl border border-[#dfe1e6] bg-white px-4 py-2 text-sm font-semibold text-[#050505] transition-colors hover:bg-[#f0f2f5] disabled:cursor-not-allowed disabled:text-[#8d949e]"
+          >
+            {photoLoading ? "업로드 중..." : "사진 변경"}
+          </button>
+
+          {/* 숨겨진 파일 입력 */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handlePhotoChange}
+            disabled={photoLoading}
+            className="hidden"
+          />
+        </div>
 
         {/* 회원 정보 수정 폼 */}
         <form onSubmit={handleSubmit} className="space-y-5">

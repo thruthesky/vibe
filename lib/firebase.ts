@@ -3,6 +3,7 @@ import { initializeApp } from "firebase/app";
 import { getAuth, Auth } from "firebase/auth";
 import { getFirestore, Firestore } from "firebase/firestore";
 import { getDatabase, Database } from "firebase/database";
+import { getStorage, FirebaseStorage } from "firebase/storage";
 
 // Firebase 설정 정보
 // Firebase Console에서 프로젝트 설정 > 앱 추가 > 웹 에서 설정 정보를 복사하세요
@@ -24,5 +25,6 @@ const app = initializeApp(firebaseConfig);
 export const auth: Auth = getAuth(app);
 export const db: Firestore = getFirestore(app);
 export const rtdb: Database = getDatabase(app); // Realtime Database
+export const storage: FirebaseStorage = getStorage(app); // Firebase Storage
 
 export default app;
