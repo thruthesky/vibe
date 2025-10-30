@@ -238,6 +238,181 @@ await sendMessage(roomId, senderId, senderName, text);
 // set(ref(rtdb, `/{ROOT_FOLDER}/chat/joins/${uid}/${roomId}/order`), Date.now());
 ```
 
+---
+
+## 1:1 채팅방 입장 및 채팅 로직
+
+### 개요
+
+1:1 채팅방의 핵심 특징은 **비대칭적 생성 패턴**입니다. 한 사용자가 입장할 때와 메시지를 보낼 때의 동작이 다릅니다.
+
+### 단계별 상세 로직
+
+#### **Step 1: 채팅방 입장 (`joinChatRoom` 함수 호출)**
+
+사용자 A가 사용자 B와 채팅하기 위해 `/users` 페이지에서 B를 클릭할 때:
+
+```
+사용자 A가 채팅방 입장 → /chat/room?otherId=B로 이동
+
+🔵 생성되는 데이터:
+✅ /{ROOT_FOLDER}/chat/joins/A/A---B  ← A의 입장 정보만 생성
+   └─ roomId: "A---B"
+   └─ createdAt: timestamp
+   └─ order: timestamp
+
+❌ /{ROOT_FOLDER}/chat/joins/B/A---B  ← B의 입장 정보는 생성 안 됨!
+   (아직 생성되지 않음 - 메시지 전송 시 자동 생성됨)
+```
+
+**왜 이렇게 설계했나?**:
+- 채팅방이 일방적으로 생성되지 않음 (리소스 낭비 방지)
+- 실제로 메시지 교환이 있을 때만 양쪽 모두에 저장
+- 대량의 빈 채팅방 생성 방지
+
+#### **Step 2: 메시지 전송 (실제 채팅 시작)**
+
+사용자 A가 메시지를 보낼 때:
+
+```
+사용자 A가 메시지 전송
+    ↓
+/{ROOT_FOLDER}/chat/messages/A---B/{messageId}에 저장
+    ↓
+Firebase Cloud Functions 트리거
+    ↓
+양쪽 모두의 chat/joins 업데이트
+    ↓
+
+🔵 A의 chat/joins 업데이트:
+/{ROOT_FOLDER}/chat/joins/A/A---B
+  ├─ text: "메시지 내용"
+  ├─ sentAt: timestamp
+  ├─ senderUid: "A"
+  ├─ otherName: "B의이름"         ← B의 displayName
+  ├─ otherNameLowerCase: "b의이름"
+  ├─ order: 101234567890          ← "10" prefix 타임스탬프
+  ├─ singleOrder: 101234567890
+  └─ unread: 0                    ← 발신자는 0
+
+🔵 B의 chat/joins 새로 생성:
+/{ROOT_FOLDER}/chat/joins/B/A---B  ← 이제 생성됨!
+  ├─ text: "메시지 내용"
+  ├─ sentAt: timestamp
+  ├─ senderUid: "A"
+  ├─ otherName: "A의이름"         ← A의 displayName
+  ├─ otherNameLowerCase: "a의이름"
+  ├─ order: 101234567890          ← 동일한 타임스탬프
+  ├─ singleOrder: 101234567890
+  └─ unread: 1                    ← 수신자는 +1
+```
+
+**핵심 포인트**:
+- 메시지 전송 전까지 B의 `chat/joins`는 생성되지 않음
+- Cloud Functions가 메시지 감지 시 자동으로 B의 `chat/joins` 생성
+- 이후 B가 채팅방에 입장하면 이미 존재하는 메시지 목록을 볼 수 있음
+
+#### **Step 3: 상대방도 이미 입장한 경우**
+
+사용자 B가 먼저 A와 채팅하려고 입장한 후, A가 나중에 입장한 경우:
+
+```
+Timeline:
+1. B가 /chat/room?otherId=A로 입장
+   ├─ /{ROOT_FOLDER}/chat/joins/B/A---B 생성
+   └─ /{ROOT_FOLDER}/chat/joins/A/A---B는 아직 없음
+
+2. A가 메시지 전송
+   ├─ /{ROOT_FOLDER}/chat/messages/A---B/{messageId} 저장
+   ├─ Cloud Functions 트리거
+   └─ A의 /{ROOT_FOLDER}/chat/joins/A/A---B 생성 (신규 또는 업데이트)
+   └─ B의 /{ROOT_FOLDER}/chat/joins/A---B 업데이트
+
+결과: 둘 다 메시지를 볼 수 있음
+```
+
+### 클라이언트 구현 가이드
+
+#### 채팅방 입장 시 (`/chat/room` 페이지)
+
+```typescript
+"use client";
+
+import { useEffect } from "react";
+import { getCurrentUser } from "@/lib/auth";
+import { joinChatRoom } from "@/lib/chat";
+
+export default function ChatRoomPage() {
+  const myUser = getCurrentUser();
+  const otherId = searchParams.get("otherId");
+
+  useEffect(() => {
+    if (!myUser || !otherId) return;
+
+    // Step 1: 채팅방 입장
+    // /{ROOT_FOLDER}/chat/joins/{myUid}/{roomId}만 생성됨
+    const joinResult = await joinChatRoom(myUser.uid, otherId, otherUserDisplayName);
+
+    if (joinResult.success) {
+      // Step 2: 메시지 리스너 등록
+      // 이미 존재하는 메시지들을 받을 수 있음
+      const unsubscribe = subscribeToMessages(joinResult.roomId, (messages) => {
+        // 메시지 업데이트
+      });
+
+      return () => unsubscribe();
+    }
+  }, [myUser, otherId]);
+
+  return (
+    // 채팅 UI
+  );
+}
+```
+
+#### 메시지 전송 시
+
+```typescript
+// 사용자가 메시지 입력 후 전송
+async function handleSendMessage(text: string) {
+  const result = await sendMessage(
+    roomId,           // A---B
+    myUid,            // A의 UID
+    myDisplayName,    // A의 displayName
+    text
+  );
+
+  if (result.success) {
+    // Cloud Functions가 자동으로:
+    // 1. A의 chat/joins 업데이트
+    // 2. B의 chat/joins 신규 생성 또는 업데이트
+    // 3. 양쪽의 unread count 관리
+
+    // 클라이언트는 아무것도 추가로 할 필요 없음
+    // (실시간 리스너가 자동으로 UI 업데이트)
+  }
+}
+```
+
+### 자주 묻는 질문 (FAQ)
+
+**Q1: B가 아직 채팅방에 입장하지 않았는데 A가 메시지를 보낼 수 있나요?**
+- ✅ 네, 가능합니다. A가 먼저 입장 후 메시지를 보내면 Cloud Functions가 B의 `chat/joins`를 자동 생성합니다.
+
+**Q2: A가 메시지를 보낼 때 B의 displayName은 어디서 가져오나요?**
+- `getUser(otherId)` 함수를 통해 `/users/{otherId}`에서 displayName을 조회합니다.
+- Cloud Functions가 B의 `chat/joins`를 생성할 때 이 displayName을 저장합니다.
+
+**Q3: 만약 B의 displayName이 변경되면?**
+- 변경 전 메시지는 이미 저장된 `otherName`을 표시합니다.
+- 변경 후 새 메시지를 보내면 최신 displayName이 저장됩니다.
+
+**Q4: `/chat/list` 페이지에서 상대방 이름을 보려면?**
+- `/{ROOT_FOLDER}/chat/joins/{myUid}/{roomId}/otherName`에서 바로 가져올 수 있습니다.
+- 추가 조회 불필요 (이미 Cloud Functions가 저장함)
+
+---
+
 ### 메시지 전송 시 클라이언트와 Cloud Functions 역할 분담
 
 **⚠️ 중요: 클라이언트는 최소한의 데이터만 전송하고, Firebase Cloud Functions가 나머지를 자동으로 처리합니다.**
