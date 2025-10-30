@@ -612,6 +612,136 @@ NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=<your-auth-domain>
 
 ---
 
+## 🔐 인증 상태 관리 (Authentication State Management)
+
+### 문제: 페이지 새로고침 시 로그인 상태 미인식
+
+여러 페이지에서 새로고침(F5)을 할 때, 이미 로그인했음에도 로그인 화면이 표시되는 문제가 발생할 수 있습니다. 이는 Firebase의 `onAuthStateChanged` 이벤트가 완료될 때까지 기다리지 않고, 다른 로직이 먼저 실행되기 때문입니다.
+
+### 해결책: 인증 상태 확인 후 렌더링
+
+모든 로그인이 필요한 페이지에서 다음 패턴을 따릅니다:
+
+#### 1단계: 인증 상태 확인 상태 변수 추가
+
+```typescript
+const [authLoading, setAuthLoading] = useState(true); // 인증 상태 확인 중
+```
+
+#### 2단계: onAuthStateChanged로 인증 상태 감시
+
+```typescript
+useEffect(() => {
+  // ⚠️ 매우 중요: onAuthStateChanged 콜백에서 setAuthLoading(false)를 호출할 때까지
+  // 페이지 콘텐츠를 렌더링하지 않습니다
+  const unsubscribe = auth.onAuthStateChanged(async (user) => {
+    if (user) {
+      // 로그인한 사용자
+      setUserId(user.uid);
+      // 필요한 추가 초기화 작업 수행
+    } else {
+      // 로그인하지 않은 사용자
+      router.push("/auth/login");
+    }
+    // ⚠️ 이 부분이 가장 중요합니다
+    setAuthLoading(false); // 인증 상태 확인 완료
+  });
+
+  return () => unsubscribe();
+}, [router]);
+```
+
+#### 3단계: 인증 상태 확인 중일 때 로딩 화면 표시
+
+```typescript
+// authLoading이 true일 때는 로딩 화면만 표시
+if (authLoading) {
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-[#f0f2f5]">
+      <p className="text-sm text-[#5d6472]">로딩 중...</p>
+    </div>
+  );
+}
+
+// authLoading이 false가 되어야만 실제 페이지 콘텐츠 렌더링
+return (
+  // 페이지 내용
+);
+```
+
+### 완벽한 예시 코드
+
+```typescript
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { auth } from "@/lib/firebase";
+
+export default function ProtectedPage() {
+  const router = useRouter();
+  const [userId, setUserId] = useState<string | null>(null);
+  const [authLoading, setAuthLoading] = useState(true); // ✅ 인증 상태 확인 중
+  const [pageLoading, setPageLoading] = useState(false); // 페이지 데이터 로딩 상태와는 별도
+
+  // ✅ 1단계: Firebase 인증 상태 확인
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        // ✅ 로그인한 사용자
+        setUserId(user.uid);
+        // 여기서 필요한 추가 작업 수행 (데이터 로드 등)
+      } else {
+        // ❌ 로그인하지 않은 사용자
+        router.push("/auth/login");
+      }
+      // ⚠️ 가장 중요: 마지막에 authLoading을 false로 설정
+      setAuthLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [router]);
+
+  // ✅ 2단계: authLoading 중일 때는 로딩 화면 표시
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-[#f0f2f5]">
+        <p className="text-sm text-[#5d6472]">로딩 중...</p>
+      </div>
+    );
+  }
+
+  // ✅ 3단계: authLoading이 false가 되어야만 여기 실행
+  return (
+    <div className="p-6">
+      {/* authLoading이 false일 때만 이 내용이 렌더링됨 */}
+      <h1>보호된 페이지</h1>
+      <p>로그인한 사용자만 이 내용을 볼 수 있습니다.</p>
+    </div>
+  );
+}
+```
+
+### 핵심 규칙
+
+**🔥 매우 중요:**
+1. **`onAuthStateChanged` 콜백 완료까지 기다리기**: `setAuthLoading(false)` 호출이 맨 마지막에 와야 함
+2. **조건부 렌더링**: `if (authLoading) return <로딩화면>` 을 첫 줄에 배치
+3. **별도의 로딩 상태**: 데이터 로딩과 인증 상태 확인은 별도의 상태 변수로 관리
+4. **모든 로그인 필수 페이지에 적용**: `/profile`, `/chat/room` 등
+
+### 적용 대상 페이지
+
+| 페이지 | 경로 | 로그인 필요 | 상태 |
+|--------|------|-----------|------|
+| 프로필 수정 | `/profile` | ✅ | ✅ 이미 구현됨 |
+| 1:1 채팅 | `/chat/room` | ✅ | ⚠️ 수정 필요 |
+| 회원 목록 | `/users` | ❌ | - 불필요 |
+| 메뉴 | `/menu` | ❌ | ✅ 이미 구현됨 |
+| 홈 | `/` | ❌ | - 불필요 |
+
+---
+
 ## 📚 라우트 참고 문서
 
 **⚠️ 중요: 페이지 이동, 링크 추가, 라우트 변경 요청을 받은 경우 반드시 아래 문서를 참고하세요**

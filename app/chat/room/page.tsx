@@ -27,19 +27,23 @@ function ChatRoomContent() {
   const [roomId, setRoomId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [messageText, setMessageText] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [authLoading, setAuthLoading] = useState(true); // Firebase 인증 상태 확인 중
+  const [loading, setLoading] = useState(false); // 채팅방 데이터 로딩 상태
   const [error, setError] = useState("");
   const [isSending, setIsSending] = useState(false);
 
-  // 현재 사용자 정보 확인 및 초기화
+  // ⚠️ 1단계: Firebase 인증 상태 확인 (이것이 완료될 때까지 기다립니다)
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
+        // 로그인한 사용자
         setCurrentUserId(user.uid);
       } else {
         // 로그인하지 않은 사용자는 로그인 페이지로 리다이렉트
         router.push("/auth/login");
       }
+      // ⚠️ 가장 중요: 인증 상태 확인 완료
+      setAuthLoading(false);
     });
 
     return () => unsubscribe();
@@ -93,6 +97,7 @@ function ChatRoomContent() {
     async function initializeChat() {
       try {
         setError("");
+        setLoading(true); // 채팅방 데이터 로딩 시작
 
         // 채팅방 입장 (본인의 chat/joins에만 저장)
         const joinResult = await joinChatRoom(currentUserId!, otherId!, otherUserName);
@@ -112,7 +117,7 @@ function ChatRoomContent() {
           setMessages(updatedMessages);
         });
 
-        setLoading(false);
+        setLoading(false); // 채팅방 데이터 로딩 완료
 
         // 정리 함수
         return () => {
@@ -178,7 +183,16 @@ function ChatRoomContent() {
     }
   }
 
-  // 로딩 상태
+  // ⚠️ 2단계: Firebase 인증 상태 확인 중일 때는 로딩 화면 표시
+  if (authLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-[#f0f2f5]">
+        <p className="text-sm text-[#65676b]">인증 정보를 확인하는 중...</p>
+      </div>
+    );
+  }
+
+  // 채팅방 데이터 로딩 중
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center bg-[#f0f2f5]">
