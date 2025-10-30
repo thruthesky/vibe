@@ -217,6 +217,10 @@ function ChatRoomContent() {
             <p className="mt-1 text-xs text-[#8d949e]">
               {otherId?.substring(0, 8)}...
             </p>
+            <div className="mt-2 flex items-center gap-2 text-xs font-medium text-[#6f7682]">
+              <span className="inline-flex h-2 w-2 rounded-full bg-[#4cc46b] shadow-[0_0_6px_rgba(76,196,107,0.45)]" />
+              <span>실시간 동기화 중</span>
+            </div>
           </div>
           <button
             onClick={() => router.back()}

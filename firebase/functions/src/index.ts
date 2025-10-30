@@ -53,7 +53,7 @@ const config = getConfig();
 // V1 함수는 대신 functions.runWith({ maxInstances: 10 })를 각각 사용해야 합니다.
 // V1 API에서 각 함수는 컨테이너당 하나의 요청만 처리할 수 있으므로,
 // 이것이 최대 동시 요청 수가 됩니다.
-setGlobalOptions({ maxInstances: 10 });
+setGlobalOptions({ maxInstances: 10, region: config.region });
 
 if (!admin.apps.length) {
   admin.initializeApp({

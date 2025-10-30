@@ -7,11 +7,15 @@ export default function DevHistoryPage() {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(198,219,255,0.35),transparent_55%),radial-gradient(circle_at_bottom,_rgba(214,233,218,0.3),transparent_60%)]" />
       <div className="relative mx-auto max-w-3xl space-y-8">
         {/* 페이지 제목 */}
-        <div>
+        <div className="space-y-2">
           <h1 className="text-4xl font-bold tracking-tight text-[#050505]">📝 스터디 로그</h1>
-          <p className="mt-2 text-sm text-[#5d6472]">
+          <p className="text-sm text-[#5d6472]">
             한바보 프로젝트의 개발 진행 현황을 기록합니다.
           </p>
+          <div className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/90 px-3 py-1 text-xs font-medium text-[#1877f2] shadow-sm shadow-[#cfdbf4]/50 backdrop-blur">
+            <span className="inline-flex h-2 w-2 rounded-full bg-[#44c46f] shadow-[0_0_6px_rgba(68,196,111,0.45)]" />
+            최신 업데이트 자동 동기화
+          </div>
         </div>
 
         {/* 2025-10-27 세미나 */}

@@ -115,6 +115,17 @@ export default function UsersPage() {
           </p>
         </div>
 
+        {/* 안내 문구 */}
+        <div className="rounded-3xl border border-white/60 bg-white/90 p-4 text-sm text-[#5d6472] shadow-md shadow-[#d7e1f5]/40 backdrop-blur flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+          <span className="inline-flex items-center gap-2 font-semibold text-[#1877f2]">
+            <span className="inline-flex h-2.5 w-2.5 rounded-full bg-[#1877f2] shadow-[0_0_6px_rgba(24,119,242,0.5)]" />
+            실시간 목록
+          </span>
+          <span className="text-xs sm:text-sm">
+            회원을 클릭하면 바로 1:1 채팅방으로 이동합니다.
+          </span>
+        </div>
+
         {/* 회원이 없을 경우 */}
         {users.length === 0 ? (
           <div className="rounded-3xl border border-white/60 bg-white/95 p-8 text-center text-sm text-[#5d6472] shadow-xl shadow-[#ccd9f0]/45 backdrop-blur">

@@ -131,53 +131,65 @@ export default function Home() {
           <h2 className="flex items-center gap-2 text-2xl font-semibold text-[#050505]">
             📋 해야할 일 (TODO)
           </h2>
-          <ol className="list-inside list-decimal space-y-2 text-sm leading-relaxed text-[#505766] marker:text-[#1877f2]">
-            <li>
+          <ol className="list-inside list-decimal space-y-3 text-sm leading-relaxed text-[#505766] marker:text-[#1877f2]">
+            <li className="rounded-2xl border border-[#dfe3ec] bg-white/85 px-4 py-3 shadow-sm shadow-[#dbe3f3]/40">
               <strong className="text-[#050505]">디자인:</strong> 탑바에 로그인 사용자 정보 표시.
             </li>
-            <li>
+            <li className="rounded-2xl border border-[#dfe3ec] bg-white/85 px-4 py-3 shadow-sm shadow-[#dbe3f3]/40">
               <strong className="text-[#050505]">회원 정보 수정:</strong> 회원 사진 등록. 회원 정보 실시간 업데이트
             </li>
-            <li>
+            <li className="rounded-2xl border border-[#dfe3ec] bg-white/85 px-4 py-3 shadow-sm shadow-[#dbe3f3]/40">
               <strong className="text-[#050505]">대화방 참여 목록:</strong> vibe/chat/joins 에 저장해서,
               채팅방 목록을 표시하고, 클릭하여 입장.
-              <ol className="ml-8 mt-2 list-decimal space-y-1">
-                <li>그룹 채팅: 생성, 수정, 삭제, 초대</li>
-                <li>
+              <ol className="ml-8 mt-3 list-decimal space-y-2 text-[#505766] marker:text-[#8da2ff]">
+                <li className="rounded-xl border border-[#e6eaf5] bg-white/90 px-3 py-2 shadow-inner shadow-white/70">
+                  그룹 채팅: 생성, 수정, 삭제, 초대
+                </li>
+                <li className="rounded-xl border border-[#e6eaf5] bg-white/90 px-3 py-2 shadow-inner shadow-white/70">
                   오픈 채팅: 로그인 없이 채팅방 입장 가능, 단 메시지 전송은
                   로그인 필요
                 </li>
               </ol>
             </li>
-            <li>
+            <li className="rounded-2xl border border-[#dfe3ec] bg-white/85 px-4 py-3 shadow-sm shadow-[#dbe3f3]/40">
               <strong className="text-[#050505]">모든 함수를 API 화 시키기</strong>
             </li>
-            <li>
+            <li className="rounded-2xl border border-[#dfe3ec] bg-white/85 px-4 py-3 shadow-sm shadow-[#dbe3f3]/40">
               <strong className="text-[#050505]">게시판</strong>
-              <ol className="ml-8 mt-2 list-decimal space-y-1">
-                <li>게시판 글/코멘트을 RTDB 에 저장(sync)</li>
-                <li>게시를 SEO 를 위해서, RTDB 글을 Supabase 로 캐시.</li>
-                <li>
+              <ol className="ml-8 mt-3 list-decimal space-y-2 text-[#505766] marker:text-[#8da2ff]">
+                <li className="rounded-xl border border-[#e6eaf5] bg-white/90 px-3 py-2 shadow-inner shadow-white/70">
+                  게시판 글/코멘트을 RTDB 에 저장(sync)
+                </li>
+                <li className="rounded-xl border border-[#e6eaf5] bg-white/90 px-3 py-2 shadow-inner shadow-white/70">
+                  게시를 SEO 를 위해서, RTDB 글을 Supabase 로 캐시.
+                </li>
+                <li className="rounded-xl border border-[#e6eaf5] bg-white/90 px-3 py-2 shadow-inner shadow-white/70">
                   서버에서 렌더링하는 경우는 무조건 Supabase 에서 데이터
                   가져오기.
                 </li>
-                <li>
+                <li className="rounded-xl border border-[#e6eaf5] bg-white/90 px-3 py-2 shadow-inner shadow-white/70">
                   클라이언트에서 Hydration 후, RTDB 에서 글 가져와 Reboot
                   (렌더링)
                 </li>
               </ol>
             </li>
-            <li>
+            <li className="rounded-2xl border border-[#dfe3ec] bg-white/85 px-4 py-3 shadow-sm shadow-[#dbe3f3]/40">
               <strong className="text-[#050505]">푸시 알림</strong>
-              <ol className="ml-8 mt-2 list-decimal space-y-1">
-                <li>채팅방에 알림 구독(선택)</li>
-                <li>댓글이 달린 경우, 푸시 알림</li>
+              <ol className="ml-8 mt-3 list-decimal space-y-2 text-[#505766] marker:text-[#8da2ff]">
+                <li className="rounded-xl border border-[#e6eaf5] bg-white/90 px-3 py-2 shadow-inner shadow-white/70">
+                  채팅방에 알림 구독(선택)
+                </li>
+                <li className="rounded-xl border border-[#e6eaf5] bg-white/90 px-3 py-2 shadow-inner shadow-white/70">
+                  댓글이 달린 경우, 푸시 알림
+                </li>
               </ol>
             </li>
-            <li>
+            <li className="rounded-2xl border border-[#dfe3ec] bg-white/85 px-4 py-3 shadow-sm shadow-[#dbe3f3]/40">
               <strong className="text-[#050505]">Flutter iOS/Android 앱 개발</strong>
-              <ol className="ml-8 mt-2 list-decimal space-y-1">
-                <li>웹의 모든 기능을 구현</li>
+              <ol className="ml-8 mt-3 list-decimal space-y-2 text-[#505766] marker:text-[#8da2ff]">
+                <li className="rounded-xl border border-[#e6eaf5] bg-white/90 px-3 py-2 shadow-inner shadow-white/70">
+                  웹의 모든 기능을 구현
+                </li>
               </ol>
             </li>
           </ol>

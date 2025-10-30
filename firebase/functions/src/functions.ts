@@ -1,9 +1,5 @@
 import * as admin from "firebase-admin";
-import type {
-  CreateChatMessageParams,
-  LastMessage,
-  UpdateInterface,
-} from "./interfaces";
+import type { CreateChatMessageParams, UpdateInterface } from "./interfaces";
 
 import {
   FCM_SUBSCRIPTIONS_PATH,
@@ -88,12 +84,20 @@ export async function updateOnMessageCreatedForSingleChat(
     const messageUpdates: UpdateInterface = {};
     messageUpdates[messagePath(roomId, messageId, "sentAt")] = now;
     await admin.database().ref().update(messageUpdates);
-    console.log(`[updateOnMessageCreatedForSingleChat] ✓ sentAt added to message ${messageId}`);
+    console.log(
+      `[updateOnMessageCreatedForSingleChat] ✓ sentAt added to message ${messageId}`
+    );
 
     // Step 2: Get both users' displayName from chat/joins
     const [senderJoinSnapshot, receiverJoinSnapshot] = await Promise.all([
-      admin.database().ref(joinPath(senderUid, roomId, "displayName")).once("value"),
-      admin.database().ref(joinPath(receiverUid, roomId, "displayName")).once("value"),
+      admin
+        .database()
+        .ref(joinPath(senderUid, roomId, "displayName"))
+        .once("value"),
+      admin
+        .database()
+        .ref(joinPath(receiverUid, roomId, "displayName"))
+        .once("value"),
     ]);
 
     const senderDisplayName = senderJoinSnapshot.val() || "Unknown";

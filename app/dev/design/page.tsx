@@ -21,11 +21,15 @@ export default function DesignPage() {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(198,219,255,0.35),transparent_55%),radial-gradient(circle_at_bottom,_rgba(214,233,218,0.3),transparent_60%)]" />
       <div className="relative max-w-5xl mx-auto px-6 py-10 space-y-12">
         {/* 페이지 제목 */}
-        <div className="space-y-4">
+        <div className="space-y-3">
           <h1 className="text-4xl font-bold text-foreground">Design Components</h1>
           <p className="text-lg text-muted-foreground">
             프로젝트에서 사용하는 디자인 컴포넌트와 스타일을 미리 확인할 수 있습니다.
           </p>
+          <div className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/90 px-3 py-1 text-xs font-medium text-[#1877f2] shadow-sm shadow-[#cfdbf4]/50 backdrop-blur">
+            <span className="inline-flex h-2 w-2 rounded-full bg-[#44c46f] shadow-[0_0_6px_rgba(68,196,111,0.45)]" />
+            최신 UI 가이드 스냅샷
+          </div>
         </div>
 
         {/* 색상 팔레트 */}
