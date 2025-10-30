@@ -41,11 +41,12 @@ export default function MenuPage() {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(198,219,255,0.35),transparent_55%),radial-gradient(circle_at_bottom,_rgba(214,233,218,0.3),transparent_60%)]" />
       <div className="relative mx-auto max-w-2xl px-6">
         {/* 페이지 제목 */}
-        <div className="mb-10">
+        <div className="mb-10 space-y-3">
           <h1 className="text-4xl font-bold tracking-tight text-[#050505]">메뉴</h1>
-          <p className="mt-2 text-sm text-[#5d6472]">
+          <p className="text-sm text-[#5d6472]">
             빠르게 이동하고 싶은 기능을 선택하세요.
           </p>
+          <div className="h-px w-full bg-gradient-to-r from-transparent via-[#dfe3ec] to-transparent" />
         </div>
 
         {/* 로딩 상태 */}
