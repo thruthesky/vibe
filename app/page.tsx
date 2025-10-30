@@ -79,7 +79,7 @@ export default function Home() {
               </AccordionTrigger>
               <AccordionContent className="px-4 pb-3 text-muted-foreground space-y-3">
                 <p className="leading-relaxed">
-                  음악을 인공지능(AI)으로 만드는 것 보다 훨씬 저작권 제약이 큽니다. 간단한 소프트웨어를 개발하기 위해서는 수백/수천 개의 오픈소스 라이브러리 모듈이 사용됩니다. 그 중 GPL 라이센스는 극악하죠.
+                  음악을 인공지능(AI)으로 만드는 것 보다 훨씬 저작권 제약이 큽니다. 간단한 소프트웨어를 개발하기 위해서는 수백/수천 개의 오픈소스 라이브러리 모듈이 사용됩니다.
                 </p>
                 <p className="leading-relaxed text-sm font-medium text-red-600">
                   GPL 라이센스를 쓰는 모든 소프트웨어는 오픈소스로 공개되어야합니다.
