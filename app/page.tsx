@@ -11,6 +11,63 @@ export default function Home() {
           </p>
         </div>
 
+        {/* AI 명언 */}
+        <div className="bg-linear-to-br from-slate-50 to-slate-100 border border-slate-200 rounded-lg p-6 space-y-4">
+          <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
+            💡 AI 시대의 진실
+          </h2>
+          <div className="space-y-4">
+            {/* 명언 1 */}
+            <div className="bg-white rounded-lg p-4 border border-slate-200 shadow-sm">
+              <div className="flex items-start gap-3">
+                <div className="shrink-0 w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold text-sm">
+                  1
+                </div>
+                <p className="text-foreground leading-relaxed pt-1">
+                  AI 시대에 변하지 않는 것은 당신입니다.
+                </p>
+              </div>
+            </div>
+
+            {/* 명언 2 */}
+            <div className="bg-white rounded-lg p-4 border border-slate-200 shadow-sm">
+              <div className="flex items-start gap-3">
+                <div className="shrink-0 w-8 h-8 bg-green-100 text-green-600 rounded-full flex items-center justify-center font-bold text-sm">
+                  2
+                </div>
+                <p className="text-foreground leading-relaxed pt-1">
+                  AI 만으로 할 수 있는 것은 아무 것도 없습니다. 프롬프트
+                  엔지니어링, 컨텍스트 드리븐, 스펙킷 등으로 만들 수 있는 것은
+                  아무것도 없습니다.
+                </p>
+              </div>
+            </div>
+
+            {/* 명언 3 */}
+            <div className="bg-white rounded-lg p-4 border border-slate-200 shadow-sm">
+              <div className="flex items-start gap-3">
+                <div className="shrink-0 w-8 h-8 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center font-bold text-sm">
+                  3
+                </div>
+                <div className="text-foreground leading-relaxed pt-1 space-y-2">
+                  <p>
+                    AI 만은 웹/앱에는 저작권이 없습니다. AI 로 음악을 생성하는
+                    것과 다르게, 웹/앱을 개발하기 위해서는 무수한 작안 라이브러리
+                    모듈들이 모여서 만들어지며, 각 모듈은 다른 저작원을 가지고
+                    있습니다.
+                  </p>
+                  <p className="text-muted-foreground text-sm">
+                    웹/앱이 사용하는 수백, 수천개의 저작권을 모두 알고 있나요?
+                    GPL 라이센스를 가지는 라이브러리 모듈이 흔하죠? 그러한
+                    것들을 여러분들이 만든 소프트웨어는 오픈 소스로 공개를 해야
+                    합니다.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* 페이지 제목 및 소개 */}
         <div className="space-y-4">
           <h1 className="text-4xl font-bold text-foreground">
