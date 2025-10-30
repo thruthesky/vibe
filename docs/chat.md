@@ -12,7 +12,8 @@
 4. [페이지/라우트](#페이지라우트)
 5. [Firebase Realtime Database 구조](#firebase-realtime-database-구조)
 6. [사용 예제](#사용-예제)
-7. [보안 고려사항](#보안-고려사항)
+7. [무한 스크롤 (Infinite Scroll) 구현 가이드라인](#무한-스크롤-infinite-scroll-구현-가이드라인)
+8. [보안 고려사항](#보안-고려사항)
 
 ---
 
@@ -30,6 +31,27 @@ Vibe 프로젝트의 **채팅 시스템**은 다음 기술 스택을 활용합�
 - **채팅방 ID (roomId)**: `uid1-uid2` 형식 (알파벳 순서로 정렬된 두 UID)
 - **메시지**: 발신자, 메시지 내용, 전송 시간 포함
 - **실시간 동기화**: Firebase의 `onValue` 함수를 사용한 실시간 메시지 수신
+
+### 실시간 업데이트 요구사항
+
+**⚠️ 중요: 모든 채팅 관련 데이터는 실시간으로 업데이트되어야 합니다.**
+
+1. **채팅 메시지 실시간 반영**
+   - 다른 사용자가 메시지를 보내면 즉시 화면에 표시
+   - Firebase RTDB의 `onValue()` 리스너 사용
+
+2. **채팅방 목록 실시간 업데이트**
+   - 사용자가 채팅방 목록을 보고 있을 때, 다른 사용자가 메시지를 보내면 마지막 메시지가 즉시 업데이트
+   - 새로운 채팅방이 생성되면 목록에 즉시 추가
+   - `/vibe/chat/joins/<myUid>` 경로를 실시간으로 구독
+
+3. **채팅방 입장/나가기 실시간 반영**
+   - 그룹 채팅에서 사용자가 입장하거나 나가면 즉시 반영
+   - 참여자 목록 실시간 업데이트
+
+4. **메모리 관리**
+   - 컴포넌트 언마운트 시 리스너를 반드시 제거하여 메모리 누수 방지
+   - `useEffect` cleanup 함수에서 `off()` 또는 리스너 해제 함수 호출
 
 ### 1:1 채팅 vs 그룹 채팅
 
@@ -506,6 +528,181 @@ if (unsubscribe) {
   unsubscribe();
 }
 ```
+
+---
+
+## 무한 스크롤 (Infinite Scroll) 구현 가이드라인
+
+**⚠️ 중요: 모든 채팅 관련 페이지는 무한 스크롤 방식으로 구현되어야 합니다.**
+
+### 왜 무한 스크롤인가?
+
+- **성능 최적화**: 수천 개의 메시지/채팅방을 한 번에 로드하면 앱이 느려짐
+- **네트워크 효율성**: 필요한 데이터만 가져와서 데이터 사용량 절감
+- **사용자 경험**: 빠른 초기 로딩 속도
+
+### 구현 대상
+
+1. **채팅방 목록 페이지**
+   - `/vibe/chat/joins/<myUid>` 경로의 채팅방 목록
+   - 한 번에 10~20개씩 로드
+   - 스크롤 시 다음 페이지 로드
+
+2. **채팅 메시지 페이지**
+   - `/vibe/chat/messages/<room-id>` 경로의 메시지 목록
+   - 한 번에 20~50개씩 로드
+   - 스크롤 시 이전 메시지 로드 (역순 스크롤)
+
+### Firebase RTDB 페이지네이션 방법
+
+#### 1. 채팅방 목록 페이지네이션
+
+```typescript
+import { ref, query, orderByChild, limitToLast, endBefore } from "firebase/database";
+import { rtdb } from "@/lib/firebase";
+
+// 첫 페이지 로드 (최신 20개)
+const firstPageQuery = query(
+  ref(rtdb, `/vibe/chat/joins/${myUid}`),
+  orderByChild('lastMessageSentAt'),
+  limitToLast(20)
+);
+
+// 다음 페이지 로드 (이전 20개)
+const nextPageQuery = query(
+  ref(rtdb, `/vibe/chat/joins/${myUid}`),
+  orderByChild('lastMessageSentAt'),
+  endBefore(oldestTimestamp),
+  limitToLast(20)
+);
+```
+
+#### 2. 채팅 메시지 페이지네이션
+
+```typescript
+import { ref, query, orderByChild, limitToLast, endBefore } from "firebase/database";
+import { rtdb } from "@/lib/firebase";
+
+// 첫 페이지 로드 (최신 50개 메시지)
+const firstPageQuery = query(
+  ref(rtdb, `/vibe/chat/messages/${roomId}`),
+  orderByChild('sentAt'),
+  limitToLast(50)
+);
+
+// 다음 페이지 로드 (이전 50개 메시지)
+const nextPageQuery = query(
+  ref(rtdb, `/vibe/chat/messages/${roomId}`),
+  orderByChild('sentAt'),
+  endBefore(oldestMessageTimestamp),
+  limitToLast(50)
+);
+```
+
+### React 컴포넌트 구현 예시
+
+```typescript
+"use client";
+
+import { useEffect, useState, useRef } from "react";
+import { ref, query, orderByChild, limitToLast, endBefore, onValue } from "firebase/database";
+import { rtdb } from "@/lib/firebase";
+
+export default function ChatRoomList({ myUid }: { myUid: string }) {
+  const [chatRooms, setChatRooms] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // 첫 페이지 로드
+  useEffect(() => {
+    const firstPageQuery = query(
+      ref(rtdb, `/vibe/chat/joins/${myUid}`),
+      orderByChild('lastMessageSentAt'),
+      limitToLast(20)
+    );
+
+    const unsubscribe = onValue(firstPageQuery, (snapshot) => {
+      const rooms: any[] = [];
+      snapshot.forEach((child) => {
+        rooms.push({ id: child.key, ...child.val() });
+      });
+      setChatRooms(rooms.reverse()); // 최신순 정렬
+    });
+
+    return () => unsubscribe();
+  }, [myUid]);
+
+  // 스크롤 이벤트 처리
+  const handleScroll = () => {
+    if (!scrollRef.current || isLoading || !hasMore) return;
+
+    const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
+
+    // 스크롤이 하단에 도달하면 다음 페이지 로드
+    if (scrollTop + clientHeight >= scrollHeight - 100) {
+      loadNextPage();
+    }
+  };
+
+  // 다음 페이지 로드
+  const loadNextPage = async () => {
+    if (chatRooms.length === 0) return;
+
+    setIsLoading(true);
+    const oldestTimestamp = chatRooms[chatRooms.length - 1].lastMessageSentAt;
+
+    const nextPageQuery = query(
+      ref(rtdb, `/vibe/chat/joins/${myUid}`),
+      orderByChild('lastMessageSentAt'),
+      endBefore(oldestTimestamp),
+      limitToLast(20)
+    );
+
+    onValue(nextPageQuery, (snapshot) => {
+      const rooms: any[] = [];
+      snapshot.forEach((child) => {
+        rooms.push({ id: child.key, ...child.val() });
+      });
+
+      if (rooms.length === 0) {
+        setHasMore(false);
+      } else {
+        setChatRooms((prev) => [...prev, ...rooms.reverse()]);
+      }
+      setIsLoading(false);
+    }, { onlyOnce: true });
+  };
+
+  return (
+    <div ref={scrollRef} onScroll={handleScroll} className="overflow-auto h-screen">
+      {chatRooms.map((room) => (
+        <div key={room.id}>{room.lastMessage}</div>
+      ))}
+      {isLoading && <div>로딩 중...</div>}
+      {!hasMore && <div>더 이상 채팅방이 없습니다.</div>}
+    </div>
+  );
+}
+```
+
+### 주의사항
+
+1. **실시간 업데이트와 페이지네이션 병행**
+   - 첫 페이지는 실시간 리스너로 구독
+   - 다음 페이지는 `onlyOnce: true` 옵션으로 일회성 조회
+
+2. **정렬 기준**
+   - 채팅방 목록: `lastMessageSentAt` 기준 내림차순
+   - 메시지 목록: `sentAt` 기준 내림차순 (최신 메시지가 하단)
+
+3. **로딩 상태 관리**
+   - `isLoading` 상태로 중복 요청 방지
+   - `hasMore` 상태로 더 이상 데이터가 없을 때 요청 중단
+
+4. **스크롤 위치 유지**
+   - 새 메시지 로드 후 스크롤 위치가 변경되지 않도록 처리
+   - 채팅 메시지는 역순 스크롤 (상단으로 스크롤 시 이전 메시지 로드)
 
 ---
 
