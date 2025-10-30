@@ -8,27 +8,16 @@
 
 **⚠️ 중요: 모든 작업은 다음 워크플로우를 반드시 따라야 합니다.**
 
-**🚨🚨🚨 최우선 규칙: 코드 수정 후 즉시 배포하세요! 🚨🚨🚨**
-- ⚡ **목표: 코드 수정 → 즉시 배포 → 빠른 테스트**
-- 🚀 **배포 우선 순서**: 코드 수정 완료 → **배포** → git commit → git push
-- ✅ **이유**: 실제 프로덕션 환경(https://www.vibers.kr/)에서 즉시 테스트하여 문제를 빠르게 발견
-- ✅ **git push 포함**: git commit 후 즉시 git push로 원격 저장소에 반영
-- 배포 명령어: `npm run build:vercel && npm run deploy` (빌드 후 배포)
+**🚨🚨🚨 최우선 규칙: 코드 수정 후 즉시 Preview 배포하세요! 🚨🚨🚨**
+- ⚡ **목표: 코드 수정 → 즉시 Preview 배포 → 빠른 테스트**
+- 🚀 **배포 우선 순서**: 코드 수정 완료 → **Preview 배포 (백그라운드)** → UTF-8 확인 → git commit → git push (동시 진행)
+- ✅ **이유**: Preview URL에서 즉시 테스트하여 문제를 빠르게 발견
+- ✅ **배포 모드**:
+  - **기본 배포 (Preview)**: `npm run preview` - 항상 기본으로 사용
+  - **프로덕션 배포**: `npm run deploy` - 개발자가 명시적으로 "production" 또는 "프로덕션" 배포 요청 시에만 사용
+- **Preview 배포 명령어**: `npm run preview` (빌드 후 Preview 배포, 백그라운드 실행)
 
 ### 작업 시작 전 필수 단계
-
-- [ ] **개발 웹 서버 상태 확인** ⚠️ **중요**
-  - **로컬 개발 웹 서버는 항상 실행되고 있습니다**
-  - **🚫 절대로 직접 `npm run dev`를 실행하지 마세요 🚫**
-  - **허용되는 npm 명령어**:
-    - ✅ `npm install` 또는 `npm i` - 새로운 패키지/모듈 설치 가능
-    - ✅ `npm run build` - 프로덕션 빌드 가능
-    - ✅ `npm run lint` - 린트 검사 가능
-    - ❌ `npm run dev` - **절대 실행 금지**
-  - 만약 개발 웹 서버가 동작하고 있지 않다면:
-    - 개발자에게 알려주세요
-    - 개발자가 직접 `npm run dev`를 실행/재시작하도록 안내하세요
-  - 서버 상태 확인: `lsof -i :3000` (포트 3000에 node 프로세스가 있는지 확인)
 
 - [ ] **1단계**: 현재 작업 상태 확인 (`git status`)
 - [ ] **2단계**: 기존 변경사항이 있다면 커밋 (`git commit -a -m "..."`)
@@ -71,46 +60,49 @@
       - [React Compiler](https://react.dev/learn/react-compiler)
       - [React Compiler Installation](https://react.dev/learn/react-compiler/installation)
 
-### 작업 완료 단계 (🚨 코드 수정 후 즉시 배포! 🚨)
+### 작업 완료 단계 (🚨 코드 수정 후 즉시 Preview 배포! 🚨)
 
-- [ ] **6단계**: 🚨🚨🚨 즉시 배포 🚨🚨🚨 **🔥 코드 수정 후 가장 먼저 실행! 🔥**
-  - **⚡ 배포 명령어 (2단계 프로세스):**
+- [ ] **6단계**: 🚨🚨🚨 즉시 Preview 배포 (백그라운드) 🚨🚨🚨 **🔥 코드 수정 후 가장 먼저 실행! 🔥**
 
-    **1단계: 로컬에서 Vercel 규격으로 빌드**
-    ```bash
-    npm run build:vercel
-    ```
-    - Vercel 규격의 프로덕션 빌드 생성
-    - `.vercel/output` 디렉토리에 빌드 결과물 생성
-    - TypeScript 컴파일 및 최적화 수행
+  **⚡ 기본 배포 모드: Preview (항상 사용)**
 
-    **2단계: 빌드된 결과물을 프로덕션에 배포**
-    ```bash
-    npm run deploy
-    ```
-    - `--prebuilt`: 로컬 빌드 결과물 사용 (서버에서 빌드 생략)
-    - `--prod`: 프로덕션 URL로 바로 배포
-    - `--yes`: 비대화형 (질문 없이 진행)
+  ```bash
+  npm run preview
+  ```
 
-  - **🔧 선택적 Next.js 빌드 (필요시에만):**
-    - 빌드 에러 확인이 필요한 경우에만 로컬에서 미리 빌드
-    ```bash
-    npm run build
-    ```
-    - TypeScript 컴파일 및 최적화된 번들 생성
-    - `.next` 디렉토리에 빌드 결과물 생성
-    - ⚠️ **주의**: 이 명령은 Vercel 배포와 무관하며, 로컬 테스트용입니다
+  - **Preview 배포 특징**:
+    - 빌드 (`vercel build`) + Preview 배포 (`vercel deploy --prebuilt --yes`)를 한 번에 실행
+    - Preview URL 생성 (예: `https://vibe-abc123.vercel.app`)
+    - 백그라운드로 실행 (run_in_background: true)
+    - **동시 진행**: Preview 배포와 함께 UTF-8 확인, git commit, git push를 병렬로 실행
 
-  - **🚀 실제 프로덕션 환경에서 즉시 테스트**
-  - **✅ 배포 성공 확인**: 배포 URL → **https://www.vibers.kr/**
+  - **🚀 Preview URL에서 즉시 테스트**
+    - Preview 배포가 완료되면 자동으로 생성된 Preview URL에서 테스트
+    - 빠른 피드백으로 문제를 즉시 발견
+
+  **⚠️ 프로덕션 배포 (명시적 요청 시에만)**
+
+  개발자가 **"production"** 또는 **"프로덕션"** 배포를 명시적으로 요청한 경우에만:
+
+  ```bash
+  npm run deploy
+  ```
+
+  - **프로덕션 배포 특징**:
+    - 프로덕션 URL로 직접 배포 (`vercel deploy --prod --yes`)
+    - **배포 성공 확인**: 배포 URL → **https://www.vibers.kr/**
+    - 백그라운드가 아닌 일반 실행으로 진행
+    - Preview와 달리 신중하게 배포 (테스트 완료 후)
 
   **⚠️ 주의사항:**
   - Vercel CLI는 이미 설치 및 링크되어 있습니다
-  - **반드시 `npm run build:vercel` → `npm run deploy` 순서로 실행**
+  - **기본 배포는 항상 Preview**: `npm run preview` 사용
+  - **프로덕션 배포**: 개발자가 명시적으로 요청한 경우에만 `npm run deploy` 사용
   - 배포 실패 시: 직접 해결하지 말고 개발자에게 알려주세요
   - 환경 변수 필요 시: 개발자에게 `vercel env pull .env.local` 실행 요청
 
-- [ ] **7단계**: UTF-8 인코딩 검증 (문서/코드 수정/생성 시 필수!) ⚠️ **배포 후 실행**
+- [ ] **7단계**: UTF-8 인코딩 검증 (문서/코드 수정/생성 시 필수!) ⚠️ **Preview 배포와 동시 진행**
+  - **⚡ Preview 배포가 백그라운드로 실행되는 동안 병렬로 실행합니다**
   - **모든 문서 파일(*.md)과 소스 코드(*.ts, *.tsx, *.js, *.css 등)는 반드시 UTF-8 인코딩**
   - 인코딩 확인 명령어 (macOS/Linux):
     ```bash
@@ -119,13 +111,14 @@
   - 정상 출력: `charset=utf-8` ✅
   - 잘못된 경우 UTF-8 인코딩 변환 필요 (VSCode에서 우측 하단 "CRLF" → "UTF-8" 선택)
 
-- [ ] **8단계**: 테스트 실행 (필요시) ⚠️ **배포 후 실행**
+- [ ] **8단계**: 테스트 실행 (필요시) ⚠️ **Preview 배포 완료 후 실행**
   - **테스트, E2E, 디버깅, 검증** 관련 요청 시 → `@.claude/skills/test/SKILL.md` 문서 참고
   - Playwright MCP 또는 Chrome DevTools MCP 사용
-  - 🚀 **⚠️ 중요: 반드시 프로덕션 사이트(https://www.vibers.kr/)에서만 테스트하세요**
+  - 🚀 **⚠️ 중요: Preview URL 또는 프로덕션 사이트에서 테스트하세요**
+    - ✅ **기본 테스트**: Preview URL (예: `https://vibe-abc123.vercel.app`)에서 테스트
+    - ✅ **프로덕션 테스트**: 프로덕션 배포 후 https://www.vibers.kr/ 에서 테스트
     - ❌ **절대로 localhost:3000에서 테스트하면 안 됨**
-    - ✅ 반드시 https://www.vibers.kr/ 에서 테스트
-    - 이유: 프로덕션 환경에서만 실제 동작 검증 가능
+    - 이유: 실제 배포 환경에서만 정확한 동작 검증 가능
 
 - [ ] **9단계**: 빌드 날짜/버전 업데이트 ⚠️ **개발자가 명시적으로 요청한 경우에만 실행**
   - **🔥 트리거 조건**: 개발자가 **"빌드 날짜 업데이트"** 또는 **"버전 업데이트"**라고 명시적으로 요청할 때만 실행
@@ -174,16 +167,24 @@
 - 모든 외부 링크 (예: 카카오 오픈톡, 깃허브 등)
 - 특히 한글 텍스트 다음의 마크다운 링크에서 필수
 
-- [ ] **10단계**: 최종 변경사항 커밋 및 푸시 ⚠️ **배포 및 테스트 완료 후**
+- [ ] **10단계**: 최종 변경사항 커밋 및 푸시 ⚠️ **Preview 배포와 동시 진행**
+  - **⚡ Preview 배포가 백그라운드로 실행되는 동안 병렬로 실행합니다**
   - 커밋 메시지에 작업 내용 명확히 기재
-  - 예: `"KVB 로고 색상 변경 완료 (UTF-8 인코딩 확인완료)"`
+  - 예: `"feat: AI 명언 섹션 추가 (UTF-8 인코딩 확인완료)"`
   - **git commit 후 즉시 git push 실행**
   - 명령어:
     ```bash
     git commit -a -m "커밋 메시지" && git push
     ```
 
-  **🔥🔥🔥 배포 → UTF-8 확인 → 테스트 → 버전 업데이트(요청 시) → git commit → git push 순서로 진행! 🔥🔥🔥**
+  **🔥🔥🔥 작업 완료 후 순서:**
+  1. **Preview 배포 시작** (백그라운드) ← 최우선!
+  2. **UTF-8 확인** (Preview 배포와 동시 진행)
+  3. **git commit & push** (Preview 배포와 동시 진행)
+  4. **Preview URL에서 테스트** (Preview 배포 완료 후)
+  5. **버전 업데이트** (개발자 명시적 요청 시에만)
+
+  **⚠️ 프로덕션 배포는 개발자가 명시적으로 요청한 경우에만!**
 
 ### 테스트 및 검증 가이드
 
@@ -235,19 +236,22 @@ NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=
 
 ## 자주 사용되는 명령어
 
-### 프로덕션 빌드
+### Preview 배포 (기본 배포)
 ```bash
-npm run build
+npm run preview
 ```
-- TypeScript 컴파일 및 최적화된 번들 생성
-- `.next` 디렉토리에 빌드 결과물 생성
+- **가장 많이 사용하는 명령어**: 코드 수정 후 항상 실행
+- Vercel 빌드 + Preview 배포를 한 번에 실행
+- Preview URL 생성하여 즉시 테스트 가능
+- 백그라운드로 실행
 
-### 프로덕션 서버 시작
+### 프로덕션 배포 (명시적 요청 시에만)
 ```bash
-npm run start
+npm run deploy
 ```
-- `npm run build` 후에 실행해야 함
-- 프로덕션 환경에서의 성능을 테스트할 때 사용
+- **주의**: 개발자가 명시적으로 "프로덕션" 또는 "production" 배포 요청 시에만 사용
+- 프로덕션 URL (https://www.vibers.kr/)로 직접 배포
+- Preview에서 충분히 테스트 후에 사용
 
 ---
 
@@ -468,7 +472,6 @@ NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=<your-auth-domain>
 ### Firebase 연결 오류
 1. `.env.local`에 환경 변수가 올바르게 설정되었는지 확인
 2. `NEXT_PUBLIC_` 접두사가 있는지 확인
-3. 개발 서버 재시작 (`npm run dev`)
 
 ### 모듈 import 오류
 - `tsconfig.json`의 `baseUrl`과 `paths` 설정 확인
@@ -477,7 +480,6 @@ NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=<your-auth-domain>
 ### 스타일 적용 안 됨
 - Tailwind CSS 클래스 이름 확인
 - PostCSS 설정이 올바른지 확인 (`postcss.config.mjs`)
-- 개발 서버 재시작
 
 ---
 
