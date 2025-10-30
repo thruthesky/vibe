@@ -22,7 +22,6 @@ function ChatRoomContent() {
   const messageInputRef = useRef<HTMLInputElement>(null); // 메시지 입력 필드 ref
 
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [currentUserName, setCurrentUserName] = useState<string>("");
   const [otherId, setOtherId] = useState<string | null>(null);
   const [otherUserName, setOtherUserName] = useState<string>("로딩 중...");
   const [roomId, setRoomId] = useState<string | null>(null);
@@ -37,16 +36,6 @@ function ChatRoomContent() {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
         setCurrentUserId(user.uid);
-
-        // 현재 사용자 이름 조회
-        const displayName = await getUserDisplayName(user.uid);
-        if (displayName) {
-          setCurrentUserName(displayName);
-        } else if (user.displayName) {
-          setCurrentUserName(user.displayName);
-        } else {
-          setCurrentUserName(user.email?.split("@")[0] || "사용자");
-        }
       } else {
         // 로그인하지 않은 사용자는 로그인 페이지로 리다이렉트
         router.push("/auth/login");
@@ -157,12 +146,8 @@ function ChatRoomContent() {
     setIsSending(true);
 
     try {
-      const result = await sendMessage(
-        roomId,
-        currentUserId,
-        currentUserName || "사용자",
-        messageText
-      );
+      // text와 senderUid 전송, sentAt은 Firebase Cloud Functions가 자동 추가
+      const result = await sendMessage(roomId, currentUserId, messageText);
 
       if (result.success) {
         setMessageText("");

@@ -121,44 +121,43 @@ export async function joinChatRoom(
 
 /**
  * 채팅 메시지를 전송하고 저장합니다.
+ * ⚠️ 주의: text와 senderUid만 저장하고, sentAt은 Firebase Cloud Functions가 자동으로 추가합니다.
+ *
  * 저장 위치: /{ROOT_FOLDER}/chat/messages/<room-id>/<message-id>
  *
  * @param roomId - 채팅방 ID
- * @param sender - 발신자 UID
- * @param senderName - 발신자 이름
+ * @param senderUid - 발신자 UID
  * @param text - 메시지 내용
  * @returns 전송 성공 여부
  */
 export async function sendMessage(
   roomId: string,
-  sender: string,
-  senderName: string,
+  senderUid: string,
   text: string
 ): Promise<{ success: boolean; messageId?: string; error?: string }> {
   try {
-    if (!roomId || !sender || !text.trim()) {
+    if (!roomId || !senderUid || !text.trim()) {
       return {
         success: false,
         error: "필수 정보가 부족합니다.",
       };
     }
 
-    // 메시지 저장
+    // 메시지 저장 (text와 senderUid만 저장)
     const messagesRef = ref(rtdb, `${ROOT_FOLDER}/chat/messages/${roomId}`);
     const newMessageRef = push(messagesRef);
 
-    const message: ChatMessage = {
-      sender,
-      senderName,
+    const message = {
       text: text.trim(),
-      timestamp: Date.now(),
-      messageId: newMessageRef.key || "",
+      senderUid,
     };
 
     await set(newMessageRef, message);
 
-    // ⚠️ 주의: chat/joins의 lastMessage, order 등은 Firebase Cloud Functions가 자동으로 업데이트합니다.
-    // 클라이언트에서 직접 업데이트하지 않습니다.
+    // ⚠️ 주의: Firebase Cloud Functions가 자동으로 추가 작업을 수행합니다:
+    // 1. chat/messages/{roomId}/{messageId}에 sentAt 추가
+    // 2. chat/joins/A/{roomId}와 chat/joins/B/{roomId} 업데이트 (order, otherName 등)
+    // 3. unread 카운트 증가
 
     return {
       success: true,

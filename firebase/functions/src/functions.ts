@@ -81,83 +81,61 @@ export async function updateOnMessageCreatedForSingleChat(
         `Invalid single chat roomId ${roomId} for senderUid ${senderUid}`
       );
     }
-    // Get both users' information in parallel for efficiency
-    // TODO: waste. get only nickname and photoUrl instead of getting the whole user object. only this two fields are needed.
-    const [senderSnapshot, receiverSnapshot] = await Promise.all([
-      admin.database().ref(userPath(senderUid)).once("value"),
-      admin.database().ref(userPath(receiverUid)).once("value"),
-    ]);
-
-    const senderData = senderSnapshot.val();
-    const receiverData = receiverSnapshot.val();
 
     const now = Date.now();
 
-    const imageUrl = getFirstImageUrlFromMessageData(messageData);
+    // Step 1: Add sentAt to the message (client only sends text and senderUid)
+    const messageUpdates: UpdateInterface = {};
+    messageUpdates[messagePath(roomId, messageId, "sentAt")] = now;
+    await admin.database().ref().update(messageUpdates);
+    console.log(`[updateOnMessageCreatedForSingleChat] ✓ sentAt added to message ${messageId}`);
 
-    // Prepare last message data
-    // Ensure no undefined values (Firebase doesn't allow undefined)
-    const lastMessage: LastMessage = {
-      text: messageData.text || "",
-      url: imageUrl,
-      senderUid: messageData.senderUid,
-      sentAt: now,
-    };
+    // Step 2: Get both users' displayName from chat/joins
+    const [senderJoinSnapshot, receiverJoinSnapshot] = await Promise.all([
+      admin.database().ref(joinPath(senderUid, roomId, "displayName")).once("value"),
+      admin.database().ref(joinPath(receiverUid, roomId, "displayName")).once("value"),
+    ]);
 
-    // Special timestamp for the recipient to ensure proper ordering in chat list
-    // By prefixing with "20", recipient's messages appear at the top of their chat list
-    const receiverTimestamp = parseInt("20" + now);
+    const senderDisplayName = senderJoinSnapshot.val() || "Unknown";
+    const receiverDisplayName = receiverJoinSnapshot.val() || "Unknown";
 
-    // Update chat joins for both users
+    // Step 3: Prepare timestamps with "10" prefix for ordering
+    // By prefixing with "10", new messages appear at the top of the chat list
+    const orderTimestamp = parseInt("10" + now);
+
+    // Step 4: Update chat joins for both users
     const joinUpdates: UpdateInterface = {};
 
-    // Update for receiver
+    // Update for receiver (person who receives the message)
     joinUpdates[joinPath(receiverUid, roomId, "id")] = roomId;
-    joinUpdates[joinPath(receiverUid, roomId, "order")] = receiverTimestamp;
-    joinUpdates[joinPath(receiverUid, roomId, "lastMessage")] = lastMessage;
-    joinUpdates[joinPath(receiverUid, roomId, "userDisplayName")] =
-      senderData?.nickname || "";
-    joinUpdates[joinPath(receiverUid, roomId, "userDisplayNameLowerCase")] = (
-      senderData?.nickname || ""
-    ).toLowerCase();
-    joinUpdates[joinPath(receiverUid, roomId, "userPhotoUrl")] =
-      senderData?.photoUrl || null;
+    joinUpdates[joinPath(receiverUid, roomId, "text")] = messageData.text || "";
+    joinUpdates[joinPath(receiverUid, roomId, "sentAt")] = now;
+    joinUpdates[joinPath(receiverUid, roomId, "senderUid")] = senderUid;
+    joinUpdates[joinPath(receiverUid, roomId, "otherName")] = senderDisplayName;
+    joinUpdates[joinPath(receiverUid, roomId, "order")] = orderTimestamp;
+    joinUpdates[joinPath(receiverUid, roomId, "singleOrder")] = orderTimestamp;
 
-    // Update for sender
+    // Update for sender (person who sent the message)
     joinUpdates[joinPath(senderUid, roomId, "id")] = roomId;
-    joinUpdates[joinPath(senderUid, roomId, "order")] = now;
-    joinUpdates[joinPath(senderUid, roomId, "lastMessage")] = lastMessage;
-    joinUpdates[joinPath(senderUid, roomId, "userDisplayName")] =
-      receiverData?.nickname || "";
-    joinUpdates[joinPath(senderUid, roomId, "userDisplayNameLowerCase")] = (
-      receiverData?.nickname || ""
-    ).toLowerCase();
-    joinUpdates[joinPath(senderUid, roomId, "userPhotoUrl")] =
-      receiverData?.photoUrl || null;
+    joinUpdates[joinPath(senderUid, roomId, "text")] = messageData.text || "";
+    joinUpdates[joinPath(senderUid, roomId, "sentAt")] = now;
+    joinUpdates[joinPath(senderUid, roomId, "senderUid")] = senderUid;
+    joinUpdates[joinPath(senderUid, roomId, "otherName")] = receiverDisplayName;
+    joinUpdates[joinPath(senderUid, roomId, "order")] = orderTimestamp;
+    joinUpdates[joinPath(senderUid, roomId, "singleOrder")] = orderTimestamp;
 
-    // Unread count for the recipient's chat join and mine's chat join
+    // Step 5: Unread count management
+    // Receiver: increment unread count
+    // Sender: reset to 0
     joinUpdates[joinPath(receiverUid, roomId, "unread")] =
       admin.database.ServerValue.increment(1);
     joinUpdates[joinPath(senderUid, roomId, "unread")] = 0;
 
-    // singleOrder for the recipient and mine
-    joinUpdates[joinPath(receiverUid, roomId, "singleOrder")] =
-      receiverTimestamp;
-    joinUpdates[joinPath(senderUid, roomId, "singleOrder")] = now;
-
-    // unread count - stored at /vibe/chat/join-props/{uid}/unread/{otherUid}
-    // IMPORTANT: Use otherUid (not roomId) to minimize data storage
-    // For 1:1 chat, otherUid is sufficient and uses significantly less storage than full roomId
-    // Example: "userAbc123" (11 chars) vs "userAbc123---userXyz789" (23 chars) = 52% savings
-    joinUpdates[joinPropsPath(receiverUid, "unread", senderUid)] =
+    // Store unread in join-props for performance
+    // IMPORTANT: Use roomId (not otherUid) as key
+    joinUpdates[joinPropsPath(receiverUid, "unread", roomId)] =
       admin.database.ServerValue.increment(1);
-    joinUpdates[joinPropsPath(senderUid, "unread", receiverUid)] = 0;
-
-    // singleOrder - stored at /vibe/chat/join-props/{uid}/singleOrder/{otherUid}
-    // IMPORTANT: Use otherUid (not roomId) to minimize data storage
-    joinUpdates[joinPropsPath(receiverUid, "singleOrder", senderUid)] =
-      receiverTimestamp;
-    joinUpdates[joinPropsPath(senderUid, "singleOrder", receiverUid)] = now;
+    joinUpdates[joinPropsPath(senderUid, "unread", roomId)] = 0;
 
     // Execute batch update
     console.log(
@@ -181,20 +159,19 @@ export async function updateOnMessageCreatedForSingleChat(
       "[updateOnMessageCreatedForSingleChat] ✓ User unread counts updated successfully"
     );
 
-    // Send notification to the receiver
+    // Step 6: Send notification to the receiver
     console.log(`Sending notification to user ${receiverUid}`);
     if (receiverUid && receiverUid !== senderUid) {
       await sendNotificationToUids({
         uids: [receiverUid],
-        title: senderData?.nickname ?? "챗 메시지",
-        body: messageData.text ?? "사진을 업로드하였습니다.",
-        imageUrl: imageUrl || undefined,
+        title: senderDisplayName || "챗 메시지",
+        body: messageData.text || "",
         data: {
           roomId: roomId,
           messageId: messageId,
           senderUid: messageData.senderUid,
         },
-        link: "/chat/room.php?id=" + messageData.senderUid,
+        link: "/chat/room?otherId=" + messageData.senderUid,
         excludeSubscribers: true,
         subscriptionName: roomId,
       });
@@ -306,8 +283,8 @@ export function joinPath(uid: string, roomId: string, field?: string): string {
  * These properties are stored separately from joins for efficient querying.
  *
  * @param {string} uid - User ID
- * @param {string} category - Property category (e.g., "unread", "singleOrder")
- * @param {string} [key] - Optional key within the category
+ * @param {string} field - Property field name (e.g., "unread", "singleOrder")
+ * @param {string} [key] - Optional key within the field
  * @return {string} Database path for chat join property
  *
  * @example
@@ -316,10 +293,10 @@ export function joinPath(uid: string, roomId: string, field?: string): string {
  */
 export function joinPropsPath(
   uid: string,
-  category: string,
+  field: string,
   key?: string
 ): string {
-  const basePath = `${ROOT_FOLDER}/chat/join-props/${uid}/${category}`;
+  const basePath = `${ROOT_FOLDER}/chat/join-props/${uid}/${field}`;
   return key ? `${basePath}/${key}` : basePath;
 }
 
