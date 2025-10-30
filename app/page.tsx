@@ -86,7 +86,7 @@ export default function Home() {
                   GPL 라이센스를 쓰는 모든 소프트웨어는 오픈소스로 공개되어야합니다.
                 </p>
                 <p className="leading-relaxed italic">
-                  여러분들이 만드는 소프트웨어가 쓰는 모든 라이브러리의 저작권을 확인하셨나요? 그렇지 않으면 여러분은 자신도 모르게 저작권 위함을 하고 계신 것입니다.
+                  여러분들이 만드는 소프트웨어가 쓰는 모든 라이브러리의 저작권을 확인하셨나요? 그렇지 않으면 여러분은 자신도 모르게 저작권 위반을 하고 계신 것입니다.
                 </p>
               </AccordionContent>
             </AccordionItem>
