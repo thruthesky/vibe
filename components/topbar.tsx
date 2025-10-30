@@ -63,17 +63,17 @@ export function Topbar() {
     return () => unsubscribe();
   }, []);
 
-  // 로고 애니메이션 - 로딩 후 1회 자동 수행, 매 60초마다 반복
+  // 로고 애니메이션 - 로딩 후 1회 자동 수행, 매 10초마다 반복
   useEffect(() => {
     // 로딩 완료 후 500ms 후 1회 자동 실행
     const initialTimer = setTimeout(() => {
       triggerLogoAnimation();
     }, 500);
 
-    // 매 60초마다 실행
+    // 매 10초마다 실행
     const intervalTimer = setInterval(() => {
       triggerLogoAnimation();
-    }, 60000);
+    }, 10000);
 
     // 클린업 함수
     return () => {
@@ -111,30 +111,16 @@ export function Topbar() {
         {/* 왼쪽: 로고 */}
         <Link href="/" className="flex items-center gap-2 group" ref={logoRef}>
           <div className="text-xl font-bold flex items-center">
-            {/* K - 빨강 */}
-            <span className="text-red-600 inline-block transition-transform duration-300 group-hover:-translate-y-1 group-hover:scale-110">
-              K
-            </span>
-            {/* V - 초록 */}
-            <span className="text-green-600 inline-block transition-transform duration-300 delay-75 group-hover:-translate-y-1 group-hover:scale-110">
-              V
-            </span>
-            {/* B - 파랑 */}
-            <span className="text-blue-600 inline-block transition-transform duration-300 delay-150 group-hover:-translate-y-1 group-hover:scale-110">
-              B
-            </span>
-            {/* 공백 */}
-            <span className="inline-block">&nbsp;</span>
             {/* 한 */}
-            <span className="inline-block transition-transform duration-300 delay-[225ms] group-hover:-translate-y-1">
+            <span className="inline-block transition-transform duration-300 group-hover:-translate-y-1">
               한
             </span>
             {/* 바 */}
-            <span className="inline-block transition-transform duration-300 delay-[300ms] group-hover:-translate-y-1">
+            <span className="inline-block transition-transform duration-300 delay-75 group-hover:-translate-y-1">
               바
             </span>
             {/* 보 */}
-            <span className="inline-block transition-transform duration-300 delay-[375ms] group-hover:-translate-y-1">
+            <span className="inline-block transition-transform duration-300 delay-150 group-hover:-translate-y-1">
               보
             </span>
           </div>
@@ -148,7 +134,7 @@ export function Topbar() {
               <div className="hidden md:flex items-center gap-2">
                 {/* 채팅 버튼 */}
                 <Button variant="ghost" size="sm" asChild>
-                  <Link href="/chat/room">
+                  <Link href="/chat/list">
                     <MessageCircle className="h-4 w-4 mr-2" />
                     채팅
                   </Link>

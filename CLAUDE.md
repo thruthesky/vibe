@@ -237,6 +237,8 @@
 - **사용자 목록**: https://www.vibers.kr/users
 
 ### 채팅 관련
+- **채팅방 목록**: https://www.vibers.kr/chat/list
+  - 로그인한 사용자의 모든 채팅방 목록 표시
 - **채팅방 입장**: https://www.vibers.kr/chat/room?otherId=xxx
   - `otherId`는 대화 상대방의 UID
 
