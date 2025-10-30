@@ -61,7 +61,7 @@ export default function Home() {
                   프롬프트 엔지니어링, 컨텍스트 드리븐, 스펙킷 등으로 만들 수 있는 것은 아무것도 없습니다.
                 </p>
                 <p className="text-xs text-muted-foreground mt-2">
-                  AI는 도구일 뿐, 올바른 방향과 통제가 필요합니다.
+                  AI 는 도구 일 뿐, 원하는 결과물이 만들어지도록 방향을 제시하고 통제해야합니다.
                 </p>
               </AccordionContent>
             </AccordionItem>
