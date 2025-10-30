@@ -16,7 +16,8 @@ export interface ChatMessage {
 }
 
 /**
- * 채팅방 정보 인터페이스
+ * 그룹 채팅방 정보 인터페이스
+ * ⚠️ 주의: 1:1 채팅에서는 사용하지 않음 (그룹 채팅 전용)
  */
 export interface ChatRoom {
   roomId: string;
@@ -24,6 +25,20 @@ export interface ChatRoom {
   createdAt: number;
   lastMessage?: string;
   lastMessageTime?: number;
+}
+
+/**
+ * 채팅방 참여 정보 인터페이스 (chat/joins)
+ * 1:1 채팅과 그룹 채팅 모두에서 사용
+ */
+export interface ChatJoin {
+  roomId: string;
+  createdAt: number;
+  lastMessage?: string;
+  lastMessageSentAt?: number;
+  order?: number;
+  singleOrder?: number;
+  groupOrder?: number;
 }
 
 /**
@@ -40,12 +55,13 @@ export function generateRoomId(uid1: string, uid2: string): string {
 }
 
 /**
- * 채팅방을 생성합니다.
- * 저장 위치: /{ROOT_FOLDER}/chat/rooms/<room-id>
+ * 1:1 채팅방 ID를 생성하고 반환합니다.
+ * ⚠️ 주의: 1:1 채팅은 chat/rooms에 저장하지 않습니다.
+ * Firebase Cloud Functions가 첫 메시지 전송 시 chat/joins에 자동으로 생성합니다.
  *
  * @param uid1 - 첫 번째 사용자 ID
  * @param uid2 - 두 번째 사용자 ID
- * @returns 생성된 채팅방 정보 또는 오류
+ * @returns 생성된 채팅방 ID
  */
 export async function createChatRoom(
   uid1: string,
@@ -59,37 +75,18 @@ export async function createChatRoom(
       };
     }
 
+    // 1:1 채팅방 ID 생성 (chat/rooms에 저장하지 않음)
     const roomId = generateRoomId(uid1, uid2);
-    const roomRef = ref(rtdb, `${ROOT_FOLDER}/chat/rooms/${roomId}`);
-
-    // 기존 채팅방이 있는지 확인
-    const snapshot = await get(roomRef);
-    if (snapshot.exists()) {
-      // 기존 채팅방이 있으면 반환
-      return {
-        success: true,
-        roomId,
-      };
-    }
-
-    // 새 채팅방 생성
-    const newRoom = {
-      roomId,
-      users: [uid1, uid2].sort(),
-      createdAt: Date.now(),
-    };
-
-    await set(roomRef, newRoom);
 
     return {
       success: true,
       roomId,
     };
   } catch (error: any) {
-    console.error("채팅방 생성 실패:", error);
+    console.error("채팅방 ID 생성 실패:", error);
     return {
       success: false,
-      error: error.message || "채팅방 생성에 실패했습니다.",
+      error: error.message || "채팅방 ID 생성에 실패했습니다.",
     };
   }
 }
@@ -132,17 +129,8 @@ export async function sendMessage(
 
     await set(newMessageRef, message);
 
-    // 채팅방의 마지막 메시지 정보 업데이트
-    const roomRef = ref(rtdb, `${ROOT_FOLDER}/chat/rooms/${roomId}`);
-    const roomSnapshot = await get(roomRef);
-    if (roomSnapshot.exists()) {
-      const roomData = roomSnapshot.val();
-      await set(roomRef, {
-        ...roomData,
-        lastMessage: text.trim(),
-        lastMessageTime: Date.now(),
-      });
-    }
+    // ⚠️ 주의: chat/joins의 lastMessage, order 등은 Firebase Cloud Functions가 자동으로 업데이트합니다.
+    // 클라이언트에서 직접 업데이트하지 않습니다.
 
     return {
       success: true,
@@ -252,37 +240,37 @@ export function subscribeToMessages(
 
 /**
  * 사용자의 채팅방 목록을 조회합니다.
- * 조회 위치: /{ROOT_FOLDER}/chat/rooms
+ * 조회 위치: /{ROOT_FOLDER}/chat/joins/<uid>
+ * ⚠️ 주의: 1:1 채팅과 그룹 채팅 모두 chat/joins에서 조회합니다.
  *
  * @param uid - 사용자 ID
  * @returns 사용자가 참여 중인 채팅방 배열
  */
-export async function getUserChatRooms(uid: string): Promise<ChatRoom[]> {
+export async function getUserChatRooms(uid: string): Promise<ChatJoin[]> {
   try {
     if (!uid) {
       return [];
     }
 
-    const roomsRef = ref(rtdb, `${ROOT_FOLDER}/chat/rooms`);
-    const snapshot = await get(roomsRef);
+    const joinsRef = ref(rtdb, `${ROOT_FOLDER}/chat/joins/${uid}`);
+    const snapshot = await get(joinsRef);
 
     if (snapshot.exists()) {
-      const roomsObj = snapshot.val();
-      const userRooms: ChatRoom[] = [];
+      const joinsObj = snapshot.val();
+      const userRooms: ChatJoin[] = [];
 
-      // 사용자가 참여 중인 채팅방만 필터링
-      Object.entries(roomsObj).forEach(([roomId, room]: [string, any]) => {
-        if (room.users && room.users.includes(uid)) {
-          userRooms.push({
-            roomId,
-            ...room,
-          });
-        }
+      // chat/joins 하위의 모든 채팅방 가져오기
+      Object.entries(joinsObj).forEach(([roomId, join]: [string, any]) => {
+        userRooms.push({
+          roomId,
+          ...join,
+        });
       });
 
-      // 마지막 메시지 시간 기준으로 정렬 (최신순)
+      // order 필드 기준으로 정렬 (최신순)
+      // order가 없으면 createdAt 기준으로 정렬
       userRooms.sort(
-        (a, b) => (b.lastMessageTime || 0) - (a.lastMessageTime || 0)
+        (a, b) => (b.order || b.createdAt || 0) - (a.order || a.createdAt || 0)
       );
 
       return userRooms;
@@ -296,11 +284,12 @@ export async function getUserChatRooms(uid: string): Promise<ChatRoom[]> {
 }
 
 /**
- * 채팅방 정보를 조회합니다.
+ * 그룹 채팅방 정보를 조회합니다.
  * 조회 위치: /{ROOT_FOLDER}/chat/rooms/<room-id>
+ * ⚠️ 주의: 그룹 채팅 전용 함수입니다. 1:1 채팅에서는 사용하지 않습니다.
  *
  * @param roomId - 채팅방 ID
- * @returns 채팅방 정보 또는 null
+ * @returns 그룹 채팅방 정보 또는 null
  */
 export async function getChatRoom(
   roomId: string
@@ -322,7 +311,7 @@ export async function getChatRoom(
 
     return null;
   } catch (error: any) {
-    console.error("채팅방 정보 조회 실패:", error);
+    console.error("그룹 채팅방 정보 조회 실패:", error);
     return null;
   }
 }
