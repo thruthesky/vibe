@@ -5,7 +5,7 @@
   "scripts": {
     "vercel-build": "next build",
     "dev": "next dev",
-    "deploy": "vercel deploy --prod --yes",
+    "deploy": "vercel deploy --prebuilt --prod --yes",
     "build:vercel": "vercel build",
     "start": "next start",
     "lint": "eslint"
