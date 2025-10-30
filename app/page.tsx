@@ -1,4 +1,12 @@
 // 홈페이지 컴포넌트
+// shadcn/ui Accordion 컴포넌트 임포트
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from "@/components/ui/accordion";
+
 export default function Home() {
   return (
     <div className="min-h-screen bg-background">
@@ -11,61 +19,78 @@ export default function Home() {
           </p>
         </div>
 
-        {/* AI 명언 */}
+        {/* AI 시대의 진실 - 아코디언 형식 */}
         <div className="bg-linear-to-br from-slate-50 to-slate-100 border border-slate-200 rounded-lg p-6 space-y-4">
           <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
             💡 AI 시대의 진실
           </h2>
-          <div className="space-y-4">
-            {/* 명언 1 */}
-            <div className="bg-white rounded-lg p-4 border border-slate-200 shadow-sm">
-              <div className="flex items-start gap-3">
-                <div className="shrink-0 w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold text-sm">
-                  1
-                </div>
-                <p className="text-foreground leading-relaxed pt-1">
-                  AI 시대에 변하지 않는 것은 당신입니다.
-                </p>
-              </div>
-            </div>
 
-            {/* 명언 2 */}
-            <div className="bg-white rounded-lg p-4 border border-slate-200 shadow-sm">
-              <div className="flex items-start gap-3">
-                <div className="shrink-0 w-8 h-8 bg-green-100 text-green-600 rounded-full flex items-center justify-center font-bold text-sm">
-                  2
+          {/* 아코디언 컴포넌트 */}
+          <Accordion type="single" collapsible className="space-y-2">
+            {/* 아코디언 항목 1 - AI 시대에 변하지 않는 것은 당신 */}
+            <AccordionItem value="item-1" className="border border-slate-200 rounded-lg bg-white">
+              <AccordionTrigger className="px-4 py-3 hover:bg-slate-50">
+                <div className="flex items-center gap-3 text-left">
+                  <div className="shrink-0 w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold text-sm">
+                    1
+                  </div>
+                  <span className="text-foreground font-medium">
+                    AI 시대에 변하지 않는 것은 당신입니다.
+                  </span>
                 </div>
-                <p className="text-foreground leading-relaxed pt-1">
-                  AI 만으로 할 수 있는 것은 아무 것도 없습니다. 프롬프트
-                  엔지니어링, 컨텍스트 드리븐, 스펙킷 등으로 만들 수 있는 것은
-                  아무것도 없습니다.
-                </p>
-              </div>
-            </div>
+              </AccordionTrigger>
+              <AccordionContent className="px-4 pb-3 text-muted-foreground">
+                변하는 기술 시대에 가장 중요한 것은 당신의 능력과 생각입니다.
+              </AccordionContent>
+            </AccordionItem>
 
-            {/* 명언 3 */}
-            <div className="bg-white rounded-lg p-4 border border-slate-200 shadow-sm">
-              <div className="flex items-start gap-3">
-                <div className="shrink-0 w-8 h-8 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center font-bold text-sm">
-                  3
+            {/* 아코디언 항목 2 - AI 만으로 할 수 있는 것은 없다 */}
+            <AccordionItem value="item-2" className="border border-slate-200 rounded-lg bg-white">
+              <AccordionTrigger className="px-4 py-3 hover:bg-slate-50">
+                <div className="flex items-center gap-3 text-left">
+                  <div className="shrink-0 w-8 h-8 bg-green-100 text-green-600 rounded-full flex items-center justify-center font-bold text-sm">
+                    2
+                  </div>
+                  <span className="text-foreground font-medium">
+                    AI 만으로 할 수 있는 것은 아무 것도 없습니다.
+                  </span>
                 </div>
-                <div className="text-foreground leading-relaxed pt-1 space-y-2">
-                  <p>
-                    AI 만은 웹/앱에는 저작권이 없습니다. AI 로 음악을 생성하는
-                    것과 다르게, 웹/앱을 개발하기 위해서는 무수한 작안 라이브러리
-                    모듈들이 모여서 만들어지며, 각 모듈은 다른 저작원을 가지고
-                    있습니다.
-                  </p>
-                  <p className="text-muted-foreground text-sm">
-                    웹/앱이 사용하는 수백, 수천개의 저작권을 모두 알고 있나요?
-                    GPL 라이센스를 가지는 라이브러리 모듈이 흔하죠? 그러한
-                    것들을 여러분들이 만든 소프트웨어는 오픈 소스로 공개를 해야
-                    합니다.
-                  </p>
+              </AccordionTrigger>
+              <AccordionContent className="px-4 pb-3 text-muted-foreground">
+                <p className="leading-relaxed">
+                  프롬프트 엔지니어링, 컨텍스트 드리븐, 스펙킷 등으로 만들 수 있는 것은 아무것도 없습니다.
+                </p>
+                <p className="text-xs text-muted-foreground mt-2">
+                  AI는 도구일 뿐, 올바른 방향과 통제가 필요합니다.
+                </p>
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* 아코디언 항목 3 - 저작권 문제 */}
+            <AccordionItem value="item-3" className="border border-slate-200 rounded-lg bg-white">
+              <AccordionTrigger className="px-4 py-3 hover:bg-slate-50">
+                <div className="flex items-center gap-3 text-left">
+                  <div className="shrink-0 w-8 h-8 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center font-bold text-sm">
+                    3
+                  </div>
+                  <span className="text-foreground font-medium">
+                    AI 로 만든 웹/앱에는 저작권이 없습니다.
+                  </span>
                 </div>
-              </div>
-            </div>
-          </div>
+              </AccordionTrigger>
+              <AccordionContent className="px-4 pb-3 text-muted-foreground space-y-3">
+                <p className="leading-relaxed">
+                  음악을 인공지능(AI)으로 만드는 것 보다 훨씬 저작권 제약이 큽니다. 간단한 소프트웨어를 개발하기 위해서는 수백/수천 개의 오픈소스 라이브러리 모듈이 사용됩니다. 그 중 GPL 라이센스는 극악하죠.
+                </p>
+                <p className="leading-relaxed text-sm font-medium text-red-600">
+                  GPL 라이센스를 쓰는 모든 소프트웨어는 오픈소스로 공개되어야합니다.
+                </p>
+                <p className="leading-relaxed italic">
+                  여러분들이 만드는 소프트웨어가 쓰는 모든 라이브러리의 저작권을 확인하셨나요?
+                </p>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </div>
 
         {/* 페이지 제목 및 소개 */}
