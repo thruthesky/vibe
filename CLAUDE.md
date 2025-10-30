@@ -358,6 +358,32 @@ Next.js App Router를 사용하므로:
 
 ## 코딩 가이드라인
 
+### 🔥 한글 작성 필수 규칙
+
+**⚠️ 최우선 규칙: 모든 주석, 설명, 문서는 반드시 한글로 작성해야 합니다!**
+
+- **코드 주석**: 모든 함수, 변수, 로직 설명은 한글로 작성
+- **커밋 메시지**: git commit 메시지는 한글로 작성
+- **문서 작성**: README, 개발 가이드 등 모든 문서는 한글로 작성
+- **변수명/함수명**: 영문으로 명명하되, 주석은 반드시 한글 제공
+- **에러 메시지**: 사용자에게 표시되는 메시지는 한글로 작성
+- **주석 예시**:
+  ```typescript
+  // ✅ 올바른 예시
+  // 사용자 정보를 Firebase에서 조회합니다
+  async function getUserInfo(uid: string) {
+    const user = await getDoc(doc(db, 'users', uid));
+    return user.data();
+  }
+
+  // ❌ 잘못된 예시
+  // Get user info from Firebase
+  async function getUserInfo(uid: string) {
+    const user = await getDoc(doc(db, 'users', uid));
+    return user.data();
+  }
+  ```
+
 ### 프레임워크 버전 관리
 
 **⚠️ 중요: 반드시 최신 버전을 사용하세요**

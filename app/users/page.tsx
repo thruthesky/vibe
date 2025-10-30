@@ -189,12 +189,12 @@ export default function UsersPage() {
         )}
 
         {/* 데이터 설명 */}
-        <div className="rounded-2xl border border-[#e4e6eb] bg-white p-4 text-sm text-[#65676b] shadow-sm space-y-2">
+        <div className="rounded-3xl border border-white/60 bg-white/95 p-4 text-sm text-[#5d6472] shadow-xl shadow-[#ccd9f0]/45 backdrop-blur space-y-2">
           <p className="font-semibold text-[#050505]">📍 데이터 저장 위치:</p>
-          <ul className="space-y-1 text-[#65676b]">
+          <ul className="space-y-1 text-[#5d6472]">
             <li>
               Firebase Realtime Database:{" "}
-              <code className="rounded bg-[#f0f2f5] px-1 py-0.5 text-xs text-[#050505]">
+              <code className="rounded bg-[#f0f2f5] px-1 py-0.5 text-xs text-[#050505] shadow-inner shadow-white">
                 /vibe/users/&lt;uid&gt;
               </code>
             </li>

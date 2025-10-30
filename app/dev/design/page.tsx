@@ -17,8 +17,9 @@ import { Home, User, MessageCircle, FileText, Settings } from "lucide-react";
 
 export default function DesignPage() {
   return (
-    <div className="min-h-screen bg-[#f0f2f5]">
-      <div className="max-w-5xl mx-auto px-6 py-8 space-y-12">
+    <div className="relative min-h-screen bg-[#f0f2f5]">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(198,219,255,0.35),transparent_55%),radial-gradient(circle_at_bottom,_rgba(214,233,218,0.3),transparent_60%)]" />
+      <div className="relative max-w-5xl mx-auto px-6 py-10 space-y-12">
         {/* 페이지 제목 */}
         <div className="space-y-4">
           <h1 className="text-4xl font-bold text-foreground">Design Components</h1>

@@ -207,103 +207,98 @@ function ChatRoomContent() {
   }
 
   return (
-    <div className="flex h-screen flex-col bg-[#f0f2f5]">
-      {/* 채팅방 헤더 */}
-      <div className="flex items-center justify-between border-b border-[#dfe1e6] bg-white/95 px-6 py-4 shadow-sm backdrop-blur">
-        <div>
-          <h2 className="text-lg font-semibold text-[#050505]">{otherUserName}</h2>
-          <p className="mt-1 text-xs text-[#8d949e]">
-            {otherId?.substring(0, 8)}...
-          </p>
-        </div>
-        <button
-          onClick={() => router.back()}
-          className="rounded-xl border border-[#dfe1e6] bg-white px-4 py-2 text-sm font-semibold text-[#1877f2] transition-colors hover:bg-[#e7f3ff]"
-        >
-          ← 돌아가기
-        </button>
-      </div>
-
-      {/* 오류 메시지 */}
-      {error && (
-        <div className="border-b border-[#f7b928]/40 bg-[#fff8e6] px-6 py-3 text-sm text-[#a15c00]">
-          ⚠️ {error}
-        </div>
-      )}
-
-      {/* 메시지 영역 */}
-      <div className="flex-1 space-y-4 overflow-y-auto bg-[#f0f2f5] px-4 py-6 lg:px-6">
-        {messages.length === 0 ? (
-          <div className="flex h-full flex-col items-center justify-center rounded-2xl border border-dashed border-[#dfe1e6] bg-white/60 p-6 text-center text-sm text-[#65676b] shadow-inner">
-            <p className="font-semibold text-[#050505]">아직 메시지가 없습니다.</p>
-            <p className="mt-1 text-sm">
-              {otherUserName}님과의 대화를 시작해보세요!
+    <div className="relative flex h-screen flex-col bg-[#f0f2f5]">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(198,219,255,0.3),transparent_55%),radial-gradient(circle_at_bottom,_rgba(214,233,218,0.25),transparent_60%)]" />
+      <div className="relative flex h-full flex-col">
+        {/* 채팅방 헤더 */}
+        <div className="flex items-center justify-between border-b border-[#dfe1e6] bg-white/90 px-6 py-4 shadow-lg shadow-[#d8e4f8]/50 backdrop-blur">
+          <div>
+            <h2 className="text-lg font-semibold text-[#050505]">{otherUserName}</h2>
+            <p className="mt-1 text-xs text-[#8d949e]">
+              {otherId?.substring(0, 8)}...
             </p>
           </div>
-        ) : (
-          messages.map((message) => (
-            <div
-              key={message.messageId}
-              className={`flex ${message.sender === currentUserId ? "justify-end" : "justify-start"}`}
-            >
+          <button
+            onClick={() => router.back()}
+            className="rounded-xl border border-[#dfe1e6] bg-white px-4 py-2 text-sm font-semibold text-[#1877f2] shadow-sm transition-colors hover:bg-[#e7f3ff]"
+          >
+            ← 돌아가기
+          </button>
+        </div>
+
+        {/* 오류 메시지 */}
+        {error && (
+          <div className="border-b border-[#f7b928]/40 bg-[#fff8e6]/90 px-6 py-3 text-sm text-[#a15c00]">
+            ⚠️ {error}
+          </div>
+        )}
+
+        {/* 메시지 영역 */}
+        <div className="flex-1 space-y-5 overflow-y-auto px-4 py-6 lg:px-6">
+          {messages.length === 0 ? (
+            <div className="flex h-full flex-col items-center justify-center rounded-3xl border border-dashed border-[#dfe1e6] bg-white/70 p-6 text-center text-sm text-[#5d6472] shadow-inner">
+              <p className="font-semibold text-[#050505]">아직 메시지가 없습니다.</p>
+              <p className="mt-1 text-sm">
+                {otherUserName}님과의 대화를 시작해보세요!
+              </p>
+            </div>
+          ) : (
+            messages.map((message) => (
               <div
-                className={`max-w-xs break-words rounded-2xl px-4 py-3 shadow ${
-                  message.sender === currentUserId
-                    ? "bg-[#1877f2] text-white shadow-md"
-                    : "bg-white text-[#050505] shadow-sm border border-[#dfe1e6]"
-                }`}
+                key={message.messageId}
+                className={`flex ${message.sender === currentUserId ? "justify-end" : "justify-start"}`}
               >
-                {message.sender !== currentUserId && (
-                  <div
-                    className={`mb-1 text-xs font-semibold ${
-                      message.sender === currentUserId
-                        ? "text-white/80"
-                        : "text-[#65676b]"
-                    }`}
-                  >
-                    {message.senderName}
-                  </div>
-                )}
-                <p className="text-sm">{message.text}</p>
                 <div
-                  className={`mt-1 text-[11px] ${
+                  className={`max-w-[70%] break-words rounded-3xl px-5 py-3 shadow-md ${
                     message.sender === currentUserId
-                      ? "text-white/80"
-                      : "text-[#8d949e]"
+                      ? "bg-gradient-to-r from-[#1877f2] to-[#1660d8] text-white shadow-[#99b5f7]/50"
+                      : "bg-white/95 text-[#050505] shadow-[#ccd9f0]/40 ring-1 ring-inset ring-white/40 backdrop-blur"
                   }`}
                 >
-                  {new Date(message.timestamp).toLocaleTimeString("ko-KR", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
+                  {message.sender !== currentUserId && (
+                    <div className="mb-1 text-xs font-semibold text-[#5d6472]">
+                      {message.senderName}
+                    </div>
+                  )}
+                  <p className="text-sm leading-relaxed">{message.text}</p>
+                  <div
+                    className={`mt-1 text-[11px] ${
+                      message.sender === currentUserId ? "text-white/80" : "text-[#8d949e]"
+                    }`}
+                  >
+                    {new Date(message.timestamp).toLocaleTimeString("ko-KR", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))
-        )}
-        <div ref={messagesEndRef} />
-      </div>
+            ))
+          )}
+          <div ref={messagesEndRef} />
+        </div>
 
-      {/* 메시지 입력 영역 */}
-      <div className="border-t border-[#dfe1e6] bg-white px-4 py-4 shadow-[0_-1px_4px_rgba(0,0,0,0.03)] lg:px-6">
-        <form onSubmit={handleSendMessage} className="flex gap-2">
-          <input
-            ref={messageInputRef}
-            type="text"
-            value={messageText}
-            onChange={(e) => setMessageText(e.target.value)}
-            placeholder="메시지를 입력하세요..."
-            disabled={isSending}
-            className="flex-1 rounded-full border border-[#dfe1e6] bg-[#f5f6f7] px-5 py-3 text-sm text-[#050505] shadow-inner placeholder:text-[#8d949e] focus:border-[#1877f2] focus:outline-none focus:ring-2 focus:ring-[#99c2ff] disabled:cursor-not-allowed disabled:text-[#8d949e]"
-          />
-          <button
-            type="submit"
-            disabled={!messageText.trim() || isSending}
-            className="rounded-full bg-[#1877f2] px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#166fe5] disabled:cursor-not-allowed disabled:bg-[#c3dafb]"
-          >
-            {isSending ? "전송 중..." : "전송"}
-          </button>
-        </form>
+        {/* 메시지 입력 영역 */}
+        <div className="border-t border-[#dfe1e6] bg-white/90 px-4 py-4 shadow-[0_-8px_24px_rgba(205,215,240,0.35)] backdrop-blur lg:px-6">
+          <form onSubmit={handleSendMessage} className="flex gap-2">
+            <input
+              ref={messageInputRef}
+              type="text"
+              value={messageText}
+              onChange={(e) => setMessageText(e.target.value)}
+              placeholder="메시지를 입력하세요..."
+              disabled={isSending}
+              className="flex-1 rounded-full border border-[#dfe1e6] bg-white/90 px-5 py-3 text-sm text-[#050505] shadow-inner shadow-white/70 placeholder:text-[#8d949e] focus:border-[#1877f2] focus:outline-none focus:ring-2 focus:ring-[#99c2ff] disabled:cursor-not-allowed disabled:text-[#8d949e]"
+            />
+            <button
+              type="submit"
+              disabled={!messageText.trim() || isSending}
+              className="rounded-full bg-[#1877f2] px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-[#99b5f7]/60 transition-colors hover:bg-[#166fe5] disabled:cursor-not-allowed disabled:bg-[#c3dafb]"
+            >
+              {isSending ? "전송 중..." : "전송"}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );
@@ -315,7 +310,7 @@ export default function ChatRoomPage() {
     <Suspense
       fallback={
         <div className="flex h-screen items-center justify-center bg-[#f0f2f5]">
-          <p className="text-sm text-[#65676b]">채팅방을 불러오는 중...</p>
+          <p className="text-sm text-[#5d6472]">채팅방을 불러오는 중...</p>
         </div>
       }
     >

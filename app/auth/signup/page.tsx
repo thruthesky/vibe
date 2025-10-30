@@ -78,7 +78,7 @@ export default function SignUpPage() {
               onChange={(e) => setDisplayName(e.target.value)}
               placeholder="이름을 입력하세요"
               required
-              className="w-full rounded-2xl border border-[#dfe1e6] bg-white px-4 py-3 text-[#050505] shadow-inner shadow-white placeholder:text-[#8d949e] focus:border-[#1877f2] focus:outline-none focus:ring-2 focus:ring-[#99c2ff]"
+              className="w-full rounded-2xl border border-[#dfe1e6] bg-white/95 px-4 py-3 text-[#050505] shadow-inner shadow-white placeholder:text-[#8d949e] focus:border-[#1877f2] focus:outline-none focus:ring-2 focus:ring-[#99c2ff]"
             />
           </div>
 
@@ -94,7 +94,7 @@ export default function SignUpPage() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="이메일을 입력하세요"
               required
-              className="w-full rounded-2xl border border-[#dfe1e6] bg-white px-4 py-3 text-[#050505] shadow-inner shadow-white placeholder:text-[#8d949e] focus:border-[#1877f2] focus:outline-none focus:ring-2 focus:ring-[#99c2ff]"
+              className="w-full rounded-2xl border border-[#dfe1e6] bg-white/95 px-4 py-3 text-[#050505] shadow-inner shadow-white placeholder:text-[#8d949e] focus:border-[#1877f2] focus:outline-none focus:ring-2 focus:ring-[#99c2ff]"
             />
           </div>
 
@@ -110,7 +110,7 @@ export default function SignUpPage() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="비밀번호를 입력하세요 (최소 6자)"
               required
-              className="w-full rounded-2xl border border-[#dfe1e6] bg-white px-4 py-3 text-[#050505] shadow-inner shadow-white placeholder:text-[#8d949e] focus:border-[#1877f2] focus:outline-none focus:ring-2 focus:ring-[#99c2ff]"
+              className="w-full rounded-2xl border border-[#dfe1e6] bg-white/95 px-4 py-3 text-[#050505] shadow-inner shadow-white placeholder:text-[#8d949e] focus:border-[#1877f2] focus:outline-none focus:ring-2 focus:ring-[#99c2ff]"
             />
           </div>
 
@@ -126,7 +126,7 @@ export default function SignUpPage() {
               onChange={(e) => setPasswordConfirm(e.target.value)}
               placeholder="비밀번호를 다시 입력하세요"
               required
-              className="w-full rounded-2xl border border-[#dfe1e6] bg-white px-4 py-3 text-[#050505] shadow-inner shadow-white placeholder:text-[#8d949e] focus:border-[#1877f2] focus:outline-none focus:ring-2 focus:ring-[#99c2ff]"
+              className="w-full rounded-2xl border border-[#dfe1e6] bg-white/95 px-4 py-3 text-[#050505] shadow-inner shadow-white placeholder:text-[#8d949e] focus:border-[#1877f2] focus:outline-none focus:ring-2 focus:ring-[#99c2ff]"
             />
           </div>
 
@@ -139,6 +139,8 @@ export default function SignUpPage() {
             {loading ? "회원가입 중..." : "회원가입"}
           </button>
         </form>
+
+        <div className="mt-5 h-px w-full bg-gradient-to-r from-transparent via-[#dfe3ec] to-transparent" />
 
         {/* 로그인 링크 */}
         <p className="mt-8 text-center text-sm text-[#5d6472]">
