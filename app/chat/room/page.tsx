@@ -20,6 +20,7 @@ function ChatRoomContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messageInputRef = useRef<HTMLInputElement>(null); // 메시지 입력 필드 ref
 
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [currentUserName, setCurrentUserName] = useState<string>("");
@@ -166,6 +167,8 @@ function ChatRoomContent() {
 
       if (result.success) {
         setMessageText("");
+        // 메시지 전송 후 입력 필드에 포커스 유지
+        messageInputRef.current?.focus();
       } else {
         setError(result.error || "메시지 전송에 실패했습니다.");
       }
@@ -287,6 +290,7 @@ function ChatRoomContent() {
       <div className="bg-white border-t border-slate-200 p-6">
         <form onSubmit={handleSendMessage} className="flex gap-2">
           <input
+            ref={messageInputRef}
             type="text"
             value={messageText}
             onChange={(e) => setMessageText(e.target.value)}
