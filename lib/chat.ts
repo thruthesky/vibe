@@ -2,7 +2,7 @@
 
 import { rtdb } from "./firebase";
 import { ref, set, get, push, onValue, Unsubscribe } from "firebase/database";
-import { ROOT_FOLDER } from "@/app/app.config";
+import { ROOT_FOLDER, ROOM_SEPARATOR } from "@/app/app.config";
 
 /**
  * 채팅 메시지 인터페이스
@@ -28,15 +28,15 @@ export interface ChatRoom {
 
 /**
  * 두 사용자 간 채팅방 ID를 생성합니다.
- * 형식: uid1-uid2 (알파벳 순서로 정렬)
+ * 형식: uid1---uid2 (알파벳 순서로 정렬, --- 구분자 사용)
  *
  * @param uid1 - 첫 번째 사용자 ID
  * @param uid2 - 두 번째 사용자 ID
- * @returns 생성된 채팅방 ID
+ * @returns 생성된 채팅방 ID (예: "user123---user456")
  */
 export function generateRoomId(uid1: string, uid2: string): string {
   const ids = [uid1, uid2].sort();
-  return `${ids[0]}-${ids[1]}`;
+  return `${ids[0]}${ROOM_SEPARATOR}${ids[1]}`;
 }
 
 /**
