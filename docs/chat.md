@@ -238,6 +238,103 @@ await sendMessage(roomId, senderId, senderName, text);
 // set(ref(rtdb, `/{ROOT_FOLDER}/chat/joins/${uid}/${roomId}/order`), Date.now());
 ```
 
+### 메시지 전송 시 클라이언트와 Cloud Functions 역할 분담
+
+**⚠️ 중요: 클라이언트는 최소한의 데이터만 전송하고, Firebase Cloud Functions가 나머지를 자동으로 처리합니다.**
+
+#### 1. 클라이언트 (React.js) 역할
+
+사용자가 메시지를 전송하면, **오직 2개의 필드만 저장**합니다:
+
+```typescript
+// A가 B에게 메시지 전송
+await sendMessage(roomId, senderUid, text);
+
+// 저장되는 데이터 (/{ROOT_FOLDER}/chat/messages/A---B/{messageId}):
+{
+  text: "안녕하세요",
+  senderUid: "userA"
+}
+```
+
+#### 2. Firebase Cloud Functions 역할
+
+메시지가 저장되면 Cloud Functions가 자동으로 다음 작업을 수행합니다:
+
+**Step 1: 메시지에 `sentAt` 추가**
+```
+/{ROOT_FOLDER}/chat/messages/A---B/{messageId}:
+  text: "안녕하세요"
+  senderUid: "userA"
+  sentAt: 1234567890  ← Cloud Functions가 자동 추가
+```
+
+**Step 2: 양쪽 사용자의 `chat/joins` 업데이트**
+
+```
+/{ROOT_FOLDER}/chat/joins/userA/A---B:
+  id: "A---B"
+  text: "안녕하세요"
+  sentAt: 1234567890
+  senderUid: "userA"
+  otherName: "B의이름"           ← 상대방 이름 (채팅방 목록에 표시)
+  otherName_LowerCase: "b의이름"  ← 대소문자 구분 없이 검색용
+  order: 101234567890            ← "10" + timestamp (정렬용)
+  singleOrder: 101234567890      ← 1:1 채팅 정렬용
+  unread: 0                      ← 발신자는 0
+
+/{ROOT_FOLDER}/chat/joins/userB/A---B:
+  id: "A---B"
+  text: "안녕하세요"
+  sentAt: 1234567890
+  senderUid: "userA"
+  otherName: "A의이름"           ← 상대방 이름
+  otherName_LowerCase: "a의이름"
+  order: 101234567890            ← 동일한 timestamp
+  singleOrder: 101234567890
+  unread: 1                      ← 수신자는 +1
+```
+
+**`order` 필드에 "10" prefix를 사용하는 이유**:
+- 일반 timestamp: `1234567890` (현재 시간)
+- "10" prefix: `101234567890` (미래 시간)
+- 채팅방 목록을 `order` 내림차순 정렬하면 새 메시지가 있는 채팅방이 맨 위에 표시됨
+
+**`otherName` 필드가 중요한 이유**:
+- A가 메시지를 보내든 B가 보내든, **각 사용자는 항상 상대방 이름을 봐야 함**
+- `chat/joins/A/A---B`에는 B의 이름 저장
+- `chat/joins/B/A---B`에는 A의 이름 저장
+- 채팅방 목록에서 "누구와 대화 중"인지 바로 표시 가능
+
+**Step 3: unread 카운트 관리**
+
+성능 향상을 위해 **3곳에 중복 저장**합니다:
+
+```
+1. /{ROOT_FOLDER}/chat/joins/{uid}/{roomId}/unread
+   - 채팅방별 읽지 않은 메시지 수
+
+2. /{ROOT_FOLDER}/chat/join-props/{uid}/unread/{roomId}
+   - 성능 최적화용 (빠른 조회)
+
+3. /{ROOT_FOLDER}/users/{uid}/chatUnreadCount
+   - 사용자 전체 읽지 않은 메시지 총합
+   - chat/join-props/{uid}/unread/ 하위 모든 값의 합계
+```
+
+**예시**:
+```
+사용자 B가 3개 채팅방에서 읽지 않은 메시지가 있는 경우:
+
+/{ROOT_FOLDER}/chat/join-props/userB/unread:
+  A---B: 5      ← A와의 채팅방: 5개 안 읽음
+  C---B: 2      ← C와의 채팅방: 2개 안 읽음
+  D---B: 3      ← D와의 채팅방: 3개 안 읽음
+
+/{ROOT_FOLDER}/users/userB:
+  chatUnreadCount: 10  ← 총 10개 (5 + 2 + 3)
+```
+
 ---
 
 ## API 함수
@@ -267,33 +364,50 @@ const roomId = generateRoomId("user123", "user456");
 
 ---
 
-### createChatRoom()
+### joinChatRoom()
 
-**채팅방을 생성하거나 기존 채팅방을 반환합니다.**
+**1:1 채팅방에 입장합니다.**
+
+⚠️ **주의**: 본인(`myUid`)의 `chat/joins`에만 저장하고, 상대방에게는 아무것도 생성하지 않습니다. 상대방의 `chat/joins`는 Firebase Cloud Functions가 메시지 전송 시 자동으로 생성합니다.
 
 ```typescript
-async function createChatRoom(
-  uid1: string,
-  uid2: string
+async function joinChatRoom(
+  myUid: string,
+  otherUid: string,
+  otherDisplayName: string
 ): Promise<{ success: boolean; roomId?: string; error?: string }>
 ```
 
 **매개변수**:
-- `uid1` (string): 첫 번째 사용자 UID
-- `uid2` (string): 두 번째 사용자 UID
+- `myUid` (string): 현재 사용자 UID
+- `otherUid` (string): 상대방 사용자 UID
+- `otherDisplayName` (string): 상대방 표시 이름
 
 **반환값**:
 - `success` (boolean): 성공 여부
-- `roomId` (string): 생성되거나 기존 채팅방 ID
+- `roomId` (string): 생성된 채팅방 ID
 - `error` (string): 오류 메시지 (선택)
 
-**저장 위치**: `/{ROOT_FOLDER}/chat/rooms/<room-id>`
+**저장 위치**: `/{ROOT_FOLDER}/chat/joins/<myUid>/<roomId>`
+
+**저장되는 데이터**:
+```typescript
+{
+  roomId: "myUid---otherUid",
+  createdAt: timestamp,
+  order: timestamp,
+  displayName: otherDisplayName  // 상대방 이름
+}
+```
 
 **사용 예제**:
 ```typescript
-const result = await createChatRoom("user123", "user456");
+// A가 B와 채팅 시작
+const result = await joinChatRoom("userA", "userB", "B의이름");
 if (result.success) {
-  console.log("채팅방 ID:", result.roomId);
+  console.log("채팅방 ID:", result.roomId); // "userA---userB"
+  // → /chat/joins/userA/userA---userB 생성됨 ✅
+  // → /chat/joins/userB/userA---userB 생성 안 됨 ❌ (메시지 전송 시 자동 생성)
 }
 ```
 

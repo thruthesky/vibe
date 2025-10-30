@@ -323,6 +323,236 @@ await updateOnMessageCreatedForSingleChat(roomId, messageId, messageData);
 
 ---
 
+#### 5.5.1 1:1 채팅 메시지 전송 시 자동화 프로세스
+
+##### 클라이언트와 Cloud Functions의 역할 분담
+
+**클라이언트 (React.js)가 하는 일**:
+- 최소한의 데이터만 전송 → 네트워크 비용 절감
+- 전송 데이터:
+  ```typescript
+  {
+    text: "메시지 내용",      // 메시지 본문
+    senderUid: "user-uid-1"   // 발신자 UID만
+  }
+  ```
+
+**Cloud Functions가 자동으로 처리하는 일**:
+- 메시지 메타데이터 추가
+- 양측 사용자의 채팅방 정보 업데이트
+- 읽지 않은 메시지 수 관리
+
+---
+
+##### Cloud Functions의 3단계 처리 과정
+
+**Step 1: 메시지에 sentAt 추가**
+
+```typescript
+// /{ROOT_FOLDER}/chat/messages/{roomId}/{messageId}/sentAt 경로에 타임스탬프 추가
+const now = Date.now();
+messageUpdates[messagePath(roomId, messageId, "sentAt")] = now;
+await admin.database().ref().update(messageUpdates);
+```
+
+**결과**:
+```
+/{ROOT_FOLDER}/chat/messages/
+  user-A-uid---user-B-uid/
+    messageId123/
+      text: "안녕하세요"
+      senderUid: "user-A-uid"
+      sentAt: 1698473000000  ← Cloud Functions가 추가
+```
+
+**Step 2: 양측 사용자의 chat/joins 업데이트**
+
+```typescript
+// chat/joins에서 displayName 조회
+const [senderJoinSnapshot, receiverJoinSnapshot] = await Promise.all([
+  admin.database().ref(joinPath(senderUid, roomId, "displayName")).once("value"),
+  admin.database().ref(joinPath(receiverUid, roomId, "displayName")).once("value"),
+]);
+
+const senderDisplayName = senderJoinSnapshot.val() || "Unknown";
+const receiverDisplayName = receiverJoinSnapshot.val() || "Unknown";
+
+// order timestamp에 "10" 접두사 추가
+const orderTimestamp = parseInt("10" + now);
+
+// 양측 사용자의 chat/joins 업데이트
+const joinUpdates: UpdateInterface = {};
+
+// 수신자 (receiverUid)의 chat/joins 업데이트
+joinUpdates[joinPath(receiverUid, roomId, "id")] = roomId;
+joinUpdates[joinPath(receiverUid, roomId, "text")] = messageData.text || "";
+joinUpdates[joinPath(receiverUid, roomId, "sentAt")] = now;
+joinUpdates[joinPath(receiverUid, roomId, "senderUid")] = senderUid;
+joinUpdates[joinPath(receiverUid, roomId, "otherName")] = senderDisplayName;
+joinUpdates[joinPath(receiverUid, roomId, "otherName_LowerCase")] = senderDisplayName.toLowerCase();
+joinUpdates[joinPath(receiverUid, roomId, "order")] = orderTimestamp;
+joinUpdates[joinPath(receiverUid, roomId, "singleOrder")] = orderTimestamp;
+joinUpdates[joinPath(receiverUid, roomId, "unread")] = admin.database.ServerValue.increment(1);
+
+// 발신자 (senderUid)의 chat/joins 업데이트
+joinUpdates[joinPath(senderUid, roomId, "id")] = roomId;
+joinUpdates[joinPath(senderUid, roomId, "text")] = messageData.text || "";
+joinUpdates[joinPath(senderUid, roomId, "sentAt")] = now;
+joinUpdates[joinPath(senderUid, roomId, "senderUid")] = senderUid;
+joinUpdates[joinPath(senderUid, roomId, "otherName")] = receiverDisplayName;
+joinUpdates[joinPath(senderUid, roomId, "otherName_LowerCase")] = receiverDisplayName.toLowerCase();
+joinUpdates[joinPath(senderUid, roomId, "order")] = orderTimestamp;
+joinUpdates[joinPath(senderUid, roomId, "singleOrder")] = orderTimestamp;
+joinUpdates[joinPath(senderUid, roomId, "unread")] = 0;
+
+await admin.database().ref().update(joinUpdates);
+```
+
+**결과**:
+```
+/{ROOT_FOLDER}/chat/joins/
+  user-A-uid/                     ← 발신자
+    user-A-uid---user-B-uid/
+      id: "user-A-uid---user-B-uid"
+      text: "안녕하세요"
+      sentAt: 1698473000000
+      senderUid: "user-A-uid"
+      otherName: "User B"          ← 상대방 이름
+      otherName_LowerCase: "user b"
+      order: 101698473000000       ← "10" 접두사
+      singleOrder: 101698473000000
+      unread: 0                    ← 발신자는 0
+
+  user-B-uid/                     ← 수신자
+    user-A-uid---user-B-uid/
+      id: "user-A-uid---user-B-uid"
+      text: "안녕하세요"
+      sentAt: 1698473000000
+      senderUid: "user-A-uid"
+      otherName: "User A"          ← 상대방 이름
+      otherName_LowerCase: "user a"
+      order: 101698473000000       ← "10" 접두사
+      singleOrder: 101698473000000
+      unread: 1                    ← 수신자는 +1
+```
+
+**Step 3: 읽지 않은 메시지 수 관리 (3곳에 저장)**
+
+```typescript
+// 1. chat/joins/{uid}/{roomId}/unread (이미 Step 2에서 처리됨)
+
+// 2. chat/join-props/{uid}/unread/{roomId} (독립적인 카운트)
+joinUpdates[joinPropsPath(receiverUid, "unread", roomId)] =
+  admin.database.ServerValue.increment(1);
+joinUpdates[joinPropsPath(senderUid, "unread", roomId)] = 0;
+
+// 3. users/{uid}/unreadCount (전체 안읽은 메시지 수)
+await updateUsersUnreadCount([senderUid, receiverUid]);
+```
+
+**결과**:
+```
+/{ROOT_FOLDER}/chat/join-props/
+  user-B-uid/
+    unread/
+      user-A-uid---user-B-uid: 1  ← 이 채팅방의 안읽은 메시지 수
+
+/{ROOT_FOLDER}/users/
+  user-B-uid/
+    unreadCount: 5                ← 모든 채팅방의 안읽은 메시지 총합
+```
+
+---
+
+##### order 필드의 "10" 접두사 설명
+
+**일반 타임스탬프**:
+```typescript
+const timestamp = 1698473000000;  // 13자리
+```
+
+**"10" 접두사를 추가한 order**:
+```typescript
+const orderTimestamp = parseInt("10" + timestamp);
+// 결과: 101698473000000 (15자리)
+```
+
+**이유**:
+- 채팅방 목록을 `order` 필드로 내림차순 정렬하면 최신 메시지가 위로 올라옴
+- "10" 접두사를 추가하면 새 메시지는 항상 과거 메시지보다 큰 값을 가짐
+- 미래의 타임스탬프와도 충돌하지 않음 (10 접두사는 매우 큰 숫자)
+
+---
+
+##### otherName 필드 설계
+
+**각 사용자의 chat/joins에 상대방 이름을 저장하는 이유**:
+
+1. **성능 최적화**:
+   - 채팅방 목록 조회 시 상대방 이름을 바로 표시 가능
+   - 별도의 `users/{uid}/displayName` 조회 불필요 → 네트워크 요청 감소
+
+2. **데이터 구조**:
+   ```typescript
+   // User A의 chat/joins
+   chat/joins/user-A-uid/user-A-uid---user-B-uid/
+     otherName: "User B"  ← User B의 이름 저장
+
+   // User B의 chat/joins
+   chat/joins/user-B-uid/user-A-uid---user-B-uid/
+     otherName: "User A"  ← User A의 이름 저장
+   ```
+
+3. **검색 최적화**:
+   - `otherName_LowerCase` 필드로 대소문자 무관 검색 지원
+   - 채팅방 목록에서 상대방 이름으로 필터링 가능
+
+---
+
+##### joinPropsPath 함수 - category에서 field로 변경
+
+**이전 (잘못된 이름)**:
+```typescript
+export function joinPropsPath(
+  uid: string,
+  category: string,  // ← 부적절한 이름
+  key?: string
+): string {
+  const basePath = `${ROOT_FOLDER}/chat/join-props/${uid}/${category}`;
+  return key ? `${basePath}/${key}` : basePath;
+}
+```
+
+**현재 (올바른 이름)**:
+```typescript
+export function joinPropsPath(
+  uid: string,
+  field: string,  // ← field로 변경
+  key?: string
+): string {
+  const basePath = `${ROOT_FOLDER}/chat/join-props/${uid}/${field}`;
+  return key ? `${basePath}/${key}` : basePath;
+}
+```
+
+**사용 예시**:
+```typescript
+// unread 카운트 조회/업데이트
+const unreadPath = joinPropsPath(uid, "unread", roomId);
+// 결과: /{ROOT_FOLDER}/chat/join-props/{uid}/unread/{roomId}
+
+// 알림 구독 여부 조회
+const subscribePath = joinPropsPath(uid, "subscriptions", roomId);
+// 결과: /{ROOT_FOLDER}/chat/join-props/{uid}/subscriptions/{roomId}
+```
+
+**변경 이유**:
+- `category`는 의미가 모호함
+- `field`가 더 명확한 의미 전달 (데이터베이스 필드명)
+- 다른 함수들과 네이밍 일관성 향상
+
+---
+
 ## 6. 설계 철학
 
 ### Keep Trigger Functions Simple
