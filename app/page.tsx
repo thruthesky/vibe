@@ -40,7 +40,7 @@ export default function Home() {
                 </div>
               </AccordionTrigger>
               <AccordionContent className="px-4 pb-3 text-muted-foreground">
-                변하는 기술 시대에 가장 중요한 것은 당신의 능력과 생각입니다.
+                눈만뜨면 더 강력한 인공지능, 툴, 에이전트가 쏟아지고 있습니다. 여러분들은 어떻게 변하고 있나요?
               </AccordionContent>
             </AccordionItem>
 
