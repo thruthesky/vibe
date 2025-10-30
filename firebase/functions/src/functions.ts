@@ -83,8 +83,8 @@ export async function updateOnMessageCreatedForSingleChat(
     // Get both users' information in parallel for efficiency
     // TODO: waste. get only nickname and photoUrl instead of getting the whole user object. only this two fields are needed.
     const [senderSnapshot, receiverSnapshot] = await Promise.all([
-      admin.database().ref(`users/${senderUid}`).once("value"),
-      admin.database().ref(`users/${receiverUid}`).once("value"),
+      admin.database().ref(userPath(senderUid)).once("value"),
+      admin.database().ref(userPath(receiverUid)).once("value"),
     ]);
 
     const senderData = senderSnapshot.val();
@@ -111,54 +111,50 @@ export async function updateOnMessageCreatedForSingleChat(
     const joinUpdates: UpdateInterface = {};
 
     // Update for receiver
-    joinUpdates[`chat/joins/${receiverUid}/${roomId}/id`] = roomId;
-    joinUpdates[`chat/joins/${receiverUid}/${roomId}/order`] =
-      receiverTimestamp;
-    joinUpdates[`chat/joins/${receiverUid}/${roomId}/lastMessage`] =
-      lastMessage;
-    joinUpdates[`chat/joins/${receiverUid}/${roomId}/userDisplayName`] =
+    joinUpdates[joinPath(receiverUid, roomId, "id")] = roomId;
+    joinUpdates[joinPath(receiverUid, roomId, "order")] = receiverTimestamp;
+    joinUpdates[joinPath(receiverUid, roomId, "lastMessage")] = lastMessage;
+    joinUpdates[joinPath(receiverUid, roomId, "userDisplayName")] =
       senderData?.nickname || "";
-    joinUpdates[
-      `chat/joins/${receiverUid}/${roomId}/userDisplayNameLowerCase`
-    ] = (senderData?.nickname || "").toLowerCase();
-    joinUpdates[`chat/joins/${receiverUid}/${roomId}/userPhotoUrl`] =
+    joinUpdates[joinPath(receiverUid, roomId, "userDisplayNameLowerCase")] =
+      (senderData?.nickname || "").toLowerCase();
+    joinUpdates[joinPath(receiverUid, roomId, "userPhotoUrl")] =
       senderData?.photoUrl || null;
 
     // Update for sender
-    joinUpdates[`chat/joins/${senderUid}/${roomId}/id`] = roomId;
-    joinUpdates[`chat/joins/${senderUid}/${roomId}/order`] = now;
-    joinUpdates[`chat/joins/${senderUid}/${roomId}/lastMessage`] = lastMessage;
-    joinUpdates[`chat/joins/${senderUid}/${roomId}/userDisplayName`] =
+    joinUpdates[joinPath(senderUid, roomId, "id")] = roomId;
+    joinUpdates[joinPath(senderUid, roomId, "order")] = now;
+    joinUpdates[joinPath(senderUid, roomId, "lastMessage")] = lastMessage;
+    joinUpdates[joinPath(senderUid, roomId, "userDisplayName")] =
       receiverData?.nickname || "";
-    joinUpdates[`chat/joins/${senderUid}/${roomId}/userDisplayNameLowerCase`] =
+    joinUpdates[joinPath(senderUid, roomId, "userDisplayNameLowerCase")] =
       (receiverData?.nickname || "").toLowerCase();
-    joinUpdates[`chat/joins/${senderUid}/${roomId}/userPhotoUrl`] =
+    joinUpdates[joinPath(senderUid, roomId, "userPhotoUrl")] =
       receiverData?.photoUrl || null;
 
     // Unread count for the recipient's chat join and mine's chat join
-    joinUpdates[`chat/joins/${receiverUid}/${roomId}/unread`] =
+    joinUpdates[joinPath(receiverUid, roomId, "unread")] =
       admin.database.ServerValue.increment(1);
-    joinUpdates[`chat/joins/${senderUid}/${roomId}/unread`] = 0;
+    joinUpdates[joinPath(senderUid, roomId, "unread")] = 0;
 
     // singleOrder for the recipient and mine
-    joinUpdates[`chat/joins/${receiverUid}/${roomId}/singleOrder`] =
+    joinUpdates[joinPath(receiverUid, roomId, "singleOrder")] =
       receiverTimestamp;
-    joinUpdates[`chat/joins/${senderUid}/${roomId}/singleOrder`] = now;
+    joinUpdates[joinPath(senderUid, roomId, "singleOrder")] = now;
 
-    // unread count - stored at /chat/join-props/{uid}/unread/{otherUid}
+    // unread count - stored at /vibe/chat/join-props/{uid}/unread/{otherUid}
     // IMPORTANT: Use otherUid (not roomId) to minimize data storage
     // For 1:1 chat, otherUid is sufficient and uses significantly less storage than full roomId
     // Example: "userAbc123" (11 chars) vs "userAbc123---userXyz789" (23 chars) = 52% savings
-    joinUpdates[`chat/join-props/${receiverUid}/unread/${senderUid}`] =
+    joinUpdates[joinPropsPath(receiverUid, "unread", senderUid)] =
       admin.database.ServerValue.increment(1);
-    joinUpdates[`chat/join-props/${senderUid}/unread/${receiverUid}`] = 0;
+    joinUpdates[joinPropsPath(senderUid, "unread", receiverUid)] = 0;
 
-    // singleOrder - stored at /chat/join-props/{uid}/singleOrder/{otherUid}
+    // singleOrder - stored at /vibe/chat/join-props/{uid}/singleOrder/{otherUid}
     // IMPORTANT: Use otherUid (not roomId) to minimize data storage
-    joinUpdates[`chat/join-props/${receiverUid}/singleOrder/${senderUid}`] =
+    joinUpdates[joinPropsPath(receiverUid, "singleOrder", senderUid)] =
       receiverTimestamp;
-    joinUpdates[`chat/join-props/${senderUid}/singleOrder/${receiverUid}`] =
-      now;
+    joinUpdates[joinPropsPath(senderUid, "singleOrder", receiverUid)] = now;
 
     // Execute batch update
     console.log(
@@ -207,7 +203,7 @@ export async function updateOnMessageCreatedForSingleChat(
 
     await admin
       .database()
-      .ref(`chat/messages/${roomId}/${messageId}/errors/${timestamp}`)
+      .ref(messagePath(roomId, messageId, `errors/${timestamp}`))
       .set(errorMessage);
 
     console.error(
@@ -278,6 +274,93 @@ export function makeSingleChatRoomId(uid1: string, uid2: string): string {
   }
   const [first, second] = [uid1, uid2].sort();
   return `${first}${ROOM_SEPARATOR}${second}`;
+}
+
+/**
+ * Generate path for chat joins
+ *
+ * Returns the database path for a user's chat join entry.
+ * Optionally include a specific field within the join.
+ *
+ * @param {string} uid - User ID
+ * @param {string} roomId - Room ID
+ * @param {string} [field] - Optional field name within the join
+ * @return {string} Database path for chat join
+ *
+ * @example
+ * joinPath("user123", "room-abc") // Returns "vibe/chat/joins/user123/room-abc"
+ * joinPath("user123", "room-abc", "order") // Returns "vibe/chat/joins/user123/room-abc/order"
+ */
+export function joinPath(uid: string, roomId: string, field?: string): string {
+  const basePath = `vibe/chat/joins/${uid}/${roomId}`;
+  return field ? `${basePath}/${field}` : basePath;
+}
+
+/**
+ * Generate path for chat join properties
+ *
+ * Returns the database path for chat join properties.
+ * These properties are stored separately from joins for efficient querying.
+ *
+ * @param {string} uid - User ID
+ * @param {string} category - Property category (e.g., "unread", "singleOrder")
+ * @param {string} [key] - Optional key within the category
+ * @return {string} Database path for chat join property
+ *
+ * @example
+ * joinPropsPath("user123", "unread") // Returns "vibe/chat/join-props/user123/unread"
+ * joinPropsPath("user123", "unread", "user456") // Returns "vibe/chat/join-props/user123/unread/user456"
+ */
+export function joinPropsPath(
+  uid: string,
+  category: string,
+  key?: string
+): string {
+  const basePath = `vibe/chat/join-props/${uid}/${category}`;
+  return key ? `${basePath}/${key}` : basePath;
+}
+
+/**
+ * Generate path for user data
+ *
+ * Returns the database path for a user's data.
+ * Optionally include a specific field within the user data.
+ *
+ * @param {string} uid - User ID
+ * @param {string} [field] - Optional field name within the user data
+ * @return {string} Database path for user data
+ *
+ * @example
+ * userPath("user123") // Returns "vibe/users/user123"
+ * userPath("user123", "chatUnreadCount") // Returns "vibe/users/user123/chatUnreadCount"
+ */
+export function userPath(uid: string, field?: string): string {
+  const basePath = `vibe/users/${uid}`;
+  return field ? `${basePath}/${field}` : basePath;
+}
+
+/**
+ * Generate path for chat messages
+ *
+ * Returns the database path for a chat message.
+ * Optionally include a specific field within the message.
+ *
+ * @param {string} roomId - Room ID
+ * @param {string} messageId - Message ID
+ * @param {string} [field] - Optional field name within the message
+ * @return {string} Database path for chat message
+ *
+ * @example
+ * messagePath("room-abc", "msg-123") // Returns "vibe/chat/messages/room-abc/msg-123"
+ * messagePath("room-abc", "msg-123", "errors/1234567890") // Returns "vibe/chat/messages/room-abc/msg-123/errors/1234567890"
+ */
+export function messagePath(
+  roomId: string,
+  messageId: string,
+  field?: string
+): string {
+  const basePath = `vibe/chat/messages/${roomId}/${messageId}`;
+  return field ? `${basePath}/${field}` : basePath;
 }
 
 /**
@@ -683,11 +766,11 @@ export async function updateUsersUnreadCount(
 
   // Fetch unread data for all users in parallel
   console.log(
-    "[updateUsersUnreadCount] Fetching unread data from /chat/join-props/{uid}/unread"
+    "[updateUsersUnreadCount] Fetching unread data from /vibe/chat/join-props/{uid}/unread"
   );
   const unreadSnapshots = await Promise.all(
     userUids.map((uid) =>
-      admin.database().ref(`chat/join-props/${uid}/unread`).once("value")
+      admin.database().ref(joinPropsPath(uid, "unread")).once("value")
     )
   );
 
@@ -717,7 +800,7 @@ export async function updateUsersUnreadCount(
     );
 
     // Add to batch update
-    userUpdates[`users/${uid}/chatUnreadCount`] = totalUnread;
+    userUpdates[userPath(uid, "chatUnreadCount")] = totalUnread;
   }
 
   // Execute batch update
