@@ -135,6 +135,18 @@ function ChatRoomContent() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // 메시지 전송 후 입력 필드에 포커스 유지
+  // isSending이 false로 변경되고 messageText가 비어있으면 포커스 설정
+  useEffect(() => {
+    if (!isSending && messageText === "" && messageInputRef.current) {
+      // 마이크로태스크 큐를 사용하여 포커스 설정
+      // 이렇게 하면 DOM 렌더링 직후 즉시 포커스 설정됨
+      Promise.resolve().then(() => {
+        messageInputRef.current?.focus();
+      });
+    }
+  }, [isSending, messageText]);
+
   // 메시지 전송 핸들러
   async function handleSendMessage(e: React.FormEvent) {
     e.preventDefault();
@@ -151,8 +163,10 @@ function ChatRoomContent() {
 
       if (result.success) {
         setMessageText("");
-        // 메시지 전송 후 입력 필드에 포커스 유지
-        messageInputRef.current?.focus();
+        // 마이크로태스크 큐에서 포커스를 즉시 설정하여 사용자가 계속 입력할 수 있도록 함
+        Promise.resolve().then(() => {
+          messageInputRef.current?.focus();
+        });
       } else {
         setError(result.error || "메시지 전송에 실패했습니다.");
       }
@@ -167,8 +181,8 @@ function ChatRoomContent() {
   // 로딩 상태
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-background">
-        <p className="text-muted-foreground">채팅방을 불러오는 중...</p>
+      <div className="flex h-screen items-center justify-center bg-[#f0f2f5]">
+        <p className="text-sm text-[#65676b]">채팅방을 불러오는 중...</p>
       </div>
     );
   }
@@ -176,14 +190,14 @@ function ChatRoomContent() {
   // 오류 상태
   if (error && !roomId) {
     return (
-      <div className="flex items-center justify-center h-screen bg-background p-6">
-        <div className="space-y-4 max-w-sm">
-          <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+      <div className="flex h-screen items-center justify-center bg-[#f0f2f5] p-6">
+        <div className="max-w-sm space-y-4">
+          <div className="rounded-2xl border border-[#f28b82] bg-[#fdecea] px-4 py-3 text-sm text-[#b3261e] shadow-sm">
             오류: {error}
           </div>
           <button
             onClick={() => router.back()}
-            className="w-full py-2 bg-slate-600 hover:bg-slate-700 text-white font-medium rounded-lg transition-colors"
+            className="w-full rounded-xl border border-[#dfe1e6] bg-white py-3 text-sm font-semibold text-[#1877f2] shadow-sm transition-colors hover:bg-[#e7f3ff]"
           >
             돌아가기
           </button>
@@ -193,18 +207,18 @@ function ChatRoomContent() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-background">
+    <div className="flex h-screen flex-col bg-[#f0f2f5]">
       {/* 채팅방 헤더 */}
-      <div className="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center">
+      <div className="flex items-center justify-between border-b border-[#dfe1e6] bg-white/95 px-6 py-4 shadow-sm backdrop-blur">
         <div>
-          <h2 className="text-lg font-semibold text-foreground">{otherUserName}</h2>
-          <p className="text-xs text-muted-foreground mt-1">
+          <h2 className="text-lg font-semibold text-[#050505]">{otherUserName}</h2>
+          <p className="mt-1 text-xs text-[#8d949e]">
             {otherId?.substring(0, 8)}...
           </p>
         </div>
         <button
           onClick={() => router.back()}
-          className="px-4 py-2 text-sm bg-slate-100 hover:bg-slate-200 text-foreground rounded-lg transition-colors"
+          className="rounded-xl border border-[#dfe1e6] bg-white px-4 py-2 text-sm font-semibold text-[#1877f2] transition-colors hover:bg-[#e7f3ff]"
         >
           ← 돌아가기
         </button>
@@ -212,17 +226,17 @@ function ChatRoomContent() {
 
       {/* 오류 메시지 */}
       {error && (
-        <div className="px-6 py-3 bg-yellow-50 border-b border-yellow-200 text-yellow-700 text-sm">
+        <div className="border-b border-[#f7b928]/40 bg-[#fff8e6] px-6 py-3 text-sm text-[#a15c00]">
           ⚠️ {error}
         </div>
       )}
 
       {/* 메시지 영역 */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-background">
+      <div className="flex-1 space-y-4 overflow-y-auto bg-[#f0f2f5] px-4 py-6 lg:px-6">
         {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
-            <p className="font-medium">아직 메시지가 없습니다.</p>
-            <p className="text-sm mt-1">
+          <div className="flex h-full flex-col items-center justify-center rounded-2xl border border-dashed border-[#dfe1e6] bg-white/60 p-6 text-center text-sm text-[#65676b] shadow-inner">
+            <p className="font-semibold text-[#050505]">아직 메시지가 없습니다.</p>
+            <p className="mt-1 text-sm">
               {otherUserName}님과의 대화를 시작해보세요!
             </p>
           </div>
@@ -233,18 +247,18 @@ function ChatRoomContent() {
               className={`flex ${message.sender === currentUserId ? "justify-end" : "justify-start"}`}
             >
               <div
-                className={`max-w-xs lg:max-w-md rounded-lg px-4 py-2 break-words ${
+                className={`max-w-xs break-words rounded-2xl px-4 py-3 shadow ${
                   message.sender === currentUserId
-                    ? "bg-slate-900 text-white"
-                    : "bg-slate-100 text-foreground"
+                    ? "bg-[#1877f2] text-white shadow-md"
+                    : "bg-white text-[#050505] shadow-sm border border-[#dfe1e6]"
                 }`}
               >
                 {message.sender !== currentUserId && (
                   <div
-                    className={`text-xs font-semibold mb-1 ${
+                    className={`mb-1 text-xs font-semibold ${
                       message.sender === currentUserId
-                        ? "text-white"
-                        : "text-muted-foreground"
+                        ? "text-white/80"
+                        : "text-[#65676b]"
                     }`}
                   >
                     {message.senderName}
@@ -252,10 +266,10 @@ function ChatRoomContent() {
                 )}
                 <p className="text-sm">{message.text}</p>
                 <div
-                  className={`text-xs mt-1 ${
+                  className={`mt-1 text-[11px] ${
                     message.sender === currentUserId
-                      ? "text-white opacity-75"
-                      : "text-muted-foreground"
+                      ? "text-white/80"
+                      : "text-[#8d949e]"
                   }`}
                 >
                   {new Date(message.timestamp).toLocaleTimeString("ko-KR", {
@@ -271,7 +285,7 @@ function ChatRoomContent() {
       </div>
 
       {/* 메시지 입력 영역 */}
-      <div className="bg-white border-t border-slate-200 p-6">
+      <div className="border-t border-[#dfe1e6] bg-white px-4 py-4 shadow-[0_-1px_4px_rgba(0,0,0,0.03)] lg:px-6">
         <form onSubmit={handleSendMessage} className="flex gap-2">
           <input
             ref={messageInputRef}
@@ -280,12 +294,12 @@ function ChatRoomContent() {
             onChange={(e) => setMessageText(e.target.value)}
             placeholder="메시지를 입력하세요..."
             disabled={isSending}
-            className="flex-1 px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-400 bg-white text-foreground placeholder-muted-foreground disabled:bg-slate-100"
+            className="flex-1 rounded-full border border-[#dfe1e6] bg-[#f5f6f7] px-5 py-3 text-sm text-[#050505] shadow-inner placeholder:text-[#8d949e] focus:border-[#1877f2] focus:outline-none focus:ring-2 focus:ring-[#99c2ff] disabled:cursor-not-allowed disabled:text-[#8d949e]"
           />
           <button
             type="submit"
             disabled={!messageText.trim() || isSending}
-            className="px-6 py-2 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white font-medium rounded-lg transition-colors"
+            className="rounded-full bg-[#1877f2] px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#166fe5] disabled:cursor-not-allowed disabled:bg-[#c3dafb]"
           >
             {isSending ? "전송 중..." : "전송"}
           </button>
@@ -300,8 +314,8 @@ export default function ChatRoomPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex items-center justify-center h-screen bg-background">
-          <p className="text-muted-foreground">채팅방을 불러오는 중...</p>
+        <div className="flex h-screen items-center justify-center bg-[#f0f2f5]">
+          <p className="text-sm text-[#65676b]">채팅방을 불러오는 중...</p>
         </div>
       }
     >

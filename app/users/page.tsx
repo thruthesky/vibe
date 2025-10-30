@@ -76,8 +76,9 @@ export default function UsersPage() {
   // 로딩 상태
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground">회원 목록을 불러오는 중...</p>
+      <div className="relative min-h-screen bg-[#f0f2f5] flex items-center justify-center">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(198,219,255,0.35),transparent_55%),radial-gradient(circle_at_bottom,_rgba(214,233,218,0.3),transparent_60%)]" />
+        <p className="relative text-sm text-[#5d6472]">회원 목록을 불러오는 중...</p>
       </div>
     );
   }
@@ -85,10 +86,11 @@ export default function UsersPage() {
   // 오류 상태
   if (error) {
     return (
-      <div className="min-h-screen bg-background p-6">
-        <div className="max-w-3xl mx-auto">
-          <h1 className="text-3xl font-bold text-foreground mb-6">회원 목록</h1>
-          <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+      <div className="relative min-h-screen bg-[#f0f2f5] p-6">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(198,219,255,0.35),transparent_55%),radial-gradient(circle_at_bottom,_rgba(214,233,218,0.3),transparent_60%)]" />
+        <div className="relative mx-auto max-w-3xl space-y-4">
+          <h1 className="text-3xl font-bold tracking-tight text-[#050505]">회원 목록</h1>
+          <div className="rounded-3xl border border-[#f28b82] bg-[#fdecea] p-4 text-sm text-[#b3261e] shadow-xl shadow-[#f5d4d0]/50 backdrop-blur">
             오류가 발생했습니다: {error}
           </div>
         </div>
@@ -97,35 +99,42 @@ export default function UsersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-3xl mx-auto space-y-6">
+    <div className="relative min-h-screen bg-[#f0f2f5] p-6">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(198,219,255,0.35),transparent_55%),radial-gradient(circle_at_bottom,_rgba(214,233,218,0.3),transparent_60%)]" />
+      <div className="relative mx-auto max-w-3xl space-y-6">
         {/* 페이지 제목 */}
         <div>
-          <h1 className="text-3xl font-bold text-foreground">회원 목록</h1>
-          <p className="text-muted-foreground mt-2">현재 등록된 회원 정보입니다.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-[#050505]">회원 목록</h1>
+          <p className="mt-2 text-sm text-[#5d6472]">현재 등록된 회원 정보를 확인하고 채팅을 시작하세요.</p>
         </div>
 
         {/* 회원 수 표시 */}
-        <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
-          <p className="text-sm text-foreground">
-            <strong>총 회원 수: {users.length}명</strong>
+        <div className="rounded-3xl border border-white/60 bg-white/95 p-4 shadow-xl shadow-[#ccd9f0]/45 backdrop-blur">
+          <p className="text-sm text-[#5d6472]">
+            <strong className="text-[#050505]">총 회원 수: {users.length}명</strong>
           </p>
         </div>
 
         {/* 회원이 없을 경우 */}
         {users.length === 0 ? (
-          <div className="bg-slate-50 border border-slate-200 rounded-lg p-8 text-center">
-            <p className="text-muted-foreground">등록된 회원이 없습니다.</p>
+          <div className="rounded-3xl border border-white/60 bg-white/95 p-8 text-center text-sm text-[#5d6472] shadow-xl shadow-[#ccd9f0]/45 backdrop-blur">
+            등록된 회원이 없습니다.
           </div>
         ) : (
           // 회원 목록을 테이블로 표시
-          <div className="overflow-x-auto border border-slate-200 rounded-lg">
-            <table className="w-full">
+          <div className="overflow-x-auto rounded-3xl border border-white/60 bg-white/95 shadow-xl shadow-[#ccd9f0]/45 backdrop-blur">
+            <table className="w-full text-left">
               <thead>
-                <tr className="bg-slate-100 border-b border-slate-200">
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">이름</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">UID</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">이메일</th>
+                <tr className="border-b border-[#dfe1e6] bg-[#f5f6f7]">
+                  <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-[#5d6472]">
+                    이름
+                  </th>
+                  <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-[#5d6472]">
+                    UID
+                  </th>
+                  <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-[#5d6472]">
+                    이메일
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -143,29 +152,32 @@ export default function UsersPage() {
                           router.push(`/chat/room?otherId=${user.uid}`);
                         }
                       }}
-                      className={`border-b border-slate-200 transition-colors ${
+                      className={`border-b border-[#f0f2f5] text-sm transition-all last:border-transparent ${
                         isCurrentUser
-                          ? "bg-slate-50 opacity-60"
+                          ? "bg-[#f5f6f7] opacity-75"
                           : isClickable
-                          ? "bg-white hover:bg-slate-50 cursor-pointer"
+                          ? "cursor-pointer hover:-translate-y-[1px] hover:bg-[#eef2f9] hover:shadow-md hover:shadow-[#dce5f7]/60"
                           : "bg-white"
                       }`}
                     >
                       <td className="px-6 py-4">
-                        <strong className="text-foreground">{user.displayName}</strong>
+                        <strong className="text-[#050505]">{user.displayName}</strong>
                       </td>
                       <td className="px-6 py-4">
-                        <code className="text-xs bg-slate-100 px-2 py-1 rounded text-muted-foreground">
+                        <code className="rounded bg-[#f0f2f5] px-2 py-1 text-xs text-[#5d6472] shadow-inner shadow-white">
                           {user.uid.substring(0, 8)}...
                         </code>
                       </td>
                       <td className="px-6 py-4">
                         {user.email ? (
-                          <a href={`mailto:${user.email}`} className="text-sm text-blue-600 hover:underline">
+                          <a
+                            href={`mailto:${user.email}`}
+                            className="text-sm font-medium text-[#1877f2] hover:underline"
+                          >
                             {user.email}
                           </a>
                         ) : (
-                          <span className="text-sm text-muted-foreground">-</span>
+                          <span className="text-sm text-[#5d6472]">-</span>
                         )}
                       </td>
                     </tr>
@@ -177,13 +189,16 @@ export default function UsersPage() {
         )}
 
         {/* 데이터 설명 */}
-        <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-2 text-sm text-muted-foreground">
-          <p>
-            <strong className="text-foreground">📍 데이터 저장 위치:</strong>
-          </p>
-          <ul className="list-disc list-inside space-y-1">
-            <li>Firebase Realtime Database: <code className="bg-white px-1 py-0.5 rounded text-xs">/vibe/users/&lt;uid&gt;</code></li>
-            <li>조회 시마다 최신 데이터를 불러옵니다</li>
+        <div className="rounded-2xl border border-[#e4e6eb] bg-white p-4 text-sm text-[#65676b] shadow-sm space-y-2">
+          <p className="font-semibold text-[#050505]">📍 데이터 저장 위치:</p>
+          <ul className="space-y-1 text-[#65676b]">
+            <li>
+              Firebase Realtime Database:{" "}
+              <code className="rounded bg-[#f0f2f5] px-1 py-0.5 text-xs text-[#050505]">
+                /vibe/users/&lt;uid&gt;
+              </code>
+            </li>
+            <li>조회 시마다 최신 데이터를 불러옵니다.</li>
           </ul>
         </div>
       </div>

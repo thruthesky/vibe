@@ -41,17 +41,21 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4">
-      <div className="w-full max-w-sm">
+    <div className="relative min-h-screen bg-[#f0f2f5] flex items-center justify-center px-4 py-16">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(180,208,255,0.45),transparent_55%),radial-gradient(circle_at_bottom,_rgba(198,230,208,0.35),transparent_60%)]" />
+      <div className="relative w-full max-w-sm rounded-3xl border border-white/60 bg-white/95 p-10 shadow-2xl shadow-[#c3d4f0]/45 backdrop-blur">
         {/* 페이지 제목 */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground">로그인</h1>
-          <p className="text-muted-foreground mt-2">계정에 로그인하세요</p>
+        <div className="mb-6 text-center space-y-2">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#e8f1ff] text-[#1877f2] shadow-inner shadow-white">
+            <span className="text-xl font-bold">V</span>
+          </div>
+          <h1 className="text-3xl font-bold tracking-tight text-[#050505]">로그인</h1>
+          <p className="text-sm text-[#5d6472]">계정에 로그인하고 대화를 이어가세요.</p>
         </div>
 
         {/* 오류 메시지 */}
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div className="mb-6 rounded-2xl border border-[#f28b82] bg-[#fdecea] px-4 py-3 text-sm text-[#b3261e] shadow-inner shadow-white/60">
             {error}
           </div>
         )}
@@ -59,8 +63,8 @@ export default function LoginPage() {
         {/* 로그인 폼 */}
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* 이메일 입력 */}
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
+          <div className="space-y-2">
+            <label htmlFor="email" className="block text-sm font-semibold text-[#050505]">
               이메일
             </label>
             <input
@@ -70,13 +74,13 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="이메일을 입력하세요"
               required
-              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-400 bg-white text-foreground placeholder-muted-foreground"
+              className="w-full rounded-2xl border border-[#dfe1e6] bg-white px-4 py-3 text-[#050505] shadow-inner shadow-white placeholder:text-[#8d949e] focus:border-[#1877f2] focus:outline-none focus:ring-2 focus:ring-[#99c2ff]"
             />
           </div>
 
           {/* 비밀번호 입력 */}
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
+          <div className="space-y-2">
+            <label htmlFor="password" className="block text-sm font-semibold text-[#050505]">
               비밀번호
             </label>
             <input
@@ -86,7 +90,7 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="비밀번호를 입력하세요"
               required
-              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-400 bg-white text-foreground placeholder-muted-foreground"
+              className="w-full rounded-2xl border border-[#dfe1e6] bg-white px-4 py-3 text-[#050505] shadow-inner shadow-white placeholder:text-[#8d949e] focus:border-[#1877f2] focus:outline-none focus:ring-2 focus:ring-[#99c2ff]"
             />
           </div>
 
@@ -94,16 +98,16 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white font-medium rounded-lg transition-colors"
+            className="w-full rounded-2xl bg-[#1877f2] py-3 text-sm font-semibold text-white shadow-lg shadow-[#99b5f7]/60 transition-colors hover:bg-[#166fe5] disabled:cursor-not-allowed disabled:bg-[#c3dafb]"
           >
             {loading ? "처리 중..." : "로그인"}
           </button>
         </form>
 
         {/* 회원가입 링크 */}
-        <p className="text-center text-muted-foreground text-sm mt-6">
+        <p className="mt-8 text-center text-sm text-[#5d6472]">
           아직 계정이 없으신가요?{" "}
-          <a href="/auth/signup" className="font-semibold text-foreground hover:underline">
+          <a href="/auth/signup" className="font-semibold text-[#1877f2] hover:underline">
             회원가입
           </a>
         </p>

@@ -85,40 +85,45 @@ export default function ProfilePage() {
   // 인증 상태 확인 중
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground">로딩 중...</p>
+      <div className="relative min-h-screen bg-[#f0f2f5] flex items-center justify-center">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(198,219,255,0.35),transparent_55%),radial-gradient(circle_at_bottom,_rgba(206,230,208,0.25),transparent_65%)]" />
+        <p className="relative text-sm text-[#5d6472]">로딩 중...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4">
-      <div className="w-full max-w-sm">
+    <div className="relative min-h-screen bg-[#f0f2f5] flex items-center justify-center px-4 py-16">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(198,219,255,0.4),transparent_55%),radial-gradient(circle_at_bottom,_rgba(214,233,218,0.3),transparent_60%)]" />
+      <div className="relative w-full max-w-sm rounded-3xl border border-white/60 bg-white/95 p-10 shadow-2xl shadow-[#c3d4f0]/45 backdrop-blur">
         {/* 페이지 제목 */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground">회원 정보 수정</h1>
-          <p className="text-muted-foreground mt-2">사용자 이름을 수정합니다</p>
+        <div className="mb-6 text-center space-y-2">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#e8f1ff] text-[#1877f2] shadow-inner shadow-white">
+            <span className="text-xl font-bold">V</span>
+          </div>
+          <h1 className="text-3xl font-bold tracking-tight text-[#050505]">회원 정보 수정</h1>
+          <p className="text-sm text-[#5d6472]">사용자 이름을 최신 상태로 유지하세요.</p>
         </div>
 
         {/* 오류 메시지 */}
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div className="mb-6 rounded-2xl border border-[#f28b82] bg-[#fdecea] px-4 py-3 text-sm text-[#b3261e] shadow-inner shadow-white/60">
             {error}
           </div>
         )}
 
         {/* 성공 메시지 */}
         {success && (
-          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
+          <div className="mb-6 rounded-2xl border border-[#8dd17c] bg-[#e6f4ea] px-4 py-3 text-sm text-[#1b5e20] shadow-inner shadow-white/60">
             {success}
           </div>
         )}
 
         {/* 회원 정보 수정 폼 */}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
           {/* 이름 입력 */}
-          <div>
-            <label htmlFor="displayName" className="block text-sm font-medium text-foreground mb-2">
+          <div className="space-y-2 text-left">
+            <label htmlFor="displayName" className="block text-sm font-semibold text-[#050505]">
               이름
             </label>
             <input
@@ -129,17 +134,17 @@ export default function ProfilePage() {
               placeholder="사용자 이름을 입력하세요"
               disabled={loading}
               required
-              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-400 bg-white text-foreground placeholder-muted-foreground disabled:bg-slate-100 disabled:text-muted-foreground"
+              className="w-full rounded-2xl border border-[#dfe1e6] bg-white px-4 py-3 text-[#050505] shadow-inner shadow-white placeholder:text-[#8d949e] focus:border-[#1877f2] focus:outline-none focus:ring-2 focus:ring-[#99c2ff] disabled:cursor-not-allowed disabled:bg-[#f0f2f5] disabled:text-[#8d949e]"
             />
           </div>
 
           {/* 버튼 */}
-          <div className="flex gap-2 pt-2">
+          <div className="flex gap-2 pt-1">
             {/* 저장 버튼 */}
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 py-2 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white font-medium rounded-lg transition-colors"
+              className="flex-1 rounded-2xl bg-[#1877f2] py-3 text-sm font-semibold text-white shadow-lg shadow-[#99b5f7]/60 transition-colors hover:bg-[#166fe5] disabled:cursor-not-allowed disabled:bg-[#c3dafb]"
             >
               {loading ? "저장 중..." : "저장"}
             </button>
@@ -149,7 +154,7 @@ export default function ProfilePage() {
               type="button"
               onClick={() => router.push("/")}
               disabled={loading}
-              className="flex-1 py-2 bg-slate-600 hover:bg-slate-700 disabled:bg-slate-300 text-white font-medium rounded-lg transition-colors"
+              className="flex-1 rounded-2xl border border-[#dfe1e6] bg-white py-3 text-sm font-semibold text-[#1877f2] transition-colors hover:bg-[#e7f3ff] disabled:cursor-not-allowed disabled:text-[#8d949e]"
             >
               취소
             </button>
@@ -157,8 +162,12 @@ export default function ProfilePage() {
         </form>
 
         {/* 정보 텍스트 */}
-        <p className="mt-6 text-xs text-muted-foreground text-center">
-          저장된 이름은 Firebase Realtime Database의 <code className="bg-slate-100 px-1 py-0.5 rounded">/vibe/users/&lt;uid&gt;/displayName</code> 경로에 저장됩니다.
+        <p className="mt-8 text-center text-xs text-[#5d6472]">
+          저장된 이름은 Firebase Realtime Database의{" "}
+          <code className="rounded bg-[#f0f2f5] px-1 py-0.5 text-[11px] text-[#050505] shadow-inner shadow-white">
+            /vibe/users/&lt;uid&gt;/displayName
+          </code>{" "}
+          경로에 보관됩니다.
         </p>
       </div>
     </div>

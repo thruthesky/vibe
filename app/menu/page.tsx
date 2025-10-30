@@ -37,17 +37,21 @@ export default function MenuPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background pt-24 pb-12">
-      <div className="max-w-2xl mx-auto px-6">
+    <div className="relative min-h-screen bg-[#f0f2f5] pt-24 pb-16">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(198,219,255,0.35),transparent_55%),radial-gradient(circle_at_bottom,_rgba(214,233,218,0.3),transparent_60%)]" />
+      <div className="relative mx-auto max-w-2xl px-6">
         {/* 페이지 제목 */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-foreground">메뉴</h1>
+        <div className="mb-10">
+          <h1 className="text-4xl font-bold tracking-tight text-[#050505]">메뉴</h1>
+          <p className="mt-2 text-sm text-[#5d6472]">
+            빠르게 이동하고 싶은 기능을 선택하세요.
+          </p>
         </div>
 
         {/* 로딩 상태 */}
         {loading && (
-          <div className="text-center text-muted-foreground py-12">
-            <p>로딩 중...</p>
+          <div className="rounded-3xl border border-white/60 bg-white/90 py-12 text-center text-sm text-[#5d6472] shadow-xl shadow-[#ccd9f0]/45 backdrop-blur">
+            로딩 중...
           </div>
         )}
 
@@ -55,34 +59,45 @@ export default function MenuPage() {
         {!loading && user && (
           <div className="space-y-6">
             {/* 사용자 정보 섹션 */}
-            <div className="bg-slate-50 border border-slate-200 rounded-lg p-6">
-              <h2 className="text-lg font-semibold text-foreground mb-2">
+            <div className="rounded-3xl border border-white/60 bg-white/95 p-6 shadow-xl shadow-[#cbd8f2]/45 backdrop-blur">
+              <h2 className="text-lg font-semibold text-[#050505]">
                 현재 로그인 사용자
               </h2>
-              <p className="text-muted-foreground">
-                <strong>{user.displayName || user.email}</strong>
+              <p className="mt-2 text-sm text-[#5d6472]">
+                <strong className="text-[#050505]">{user.displayName || user.email}</strong>
               </p>
             </div>
 
             {/* 사용자 메뉴 */}
-            <div className="bg-slate-50 border border-slate-200 rounded-lg p-6 space-y-3">
-              <h2 className="text-lg font-semibold text-foreground mb-4">
+            <div className="rounded-3xl border border-white/60 bg-white/95 p-6 shadow-xl shadow-[#cbd8f2]/45 backdrop-blur space-y-3">
+              <h2 className="text-lg font-semibold text-[#050505]">
                 회원 메뉴
               </h2>
 
-              <Button asChild className="w-full justify-start h-auto py-3">
+              <Button
+                asChild
+                className="w-full justify-start rounded-2xl bg-[#1877f2] py-3 text-sm font-semibold shadow-lg shadow-[#99b5f7]/60 hover:bg-[#166fe5]"
+              >
                 <Link href="/profile">
                   <span>회원 정보 수정</span>
                 </Link>
               </Button>
 
-              <Button asChild variant="ghost" className="w-full justify-start h-auto py-3">
+              <Button
+                asChild
+                variant="ghost"
+                className="w-full justify-start rounded-2xl border border-transparent bg-[#e7f3ff] py-3 text-sm font-semibold text-[#1877f2] hover:bg-[#d8e8ff]"
+              >
                 <Link href="/users">
                   <span>회원 목록</span>
                 </Link>
               </Button>
 
-              <Button asChild variant="ghost" className="w-full justify-start h-auto py-3">
+              <Button
+                asChild
+                variant="ghost"
+                className="w-full justify-start rounded-2xl border border-transparent bg-[#f5f6f7] py-3 text-sm font-semibold text-[#050505] hover:bg-[#e9ebee]"
+              >
                 <Link href="/chat/room">
                   <span>채팅</span>
                 </Link>
@@ -90,14 +105,14 @@ export default function MenuPage() {
             </div>
 
             {/* 로그아웃 버튼 */}
-            <div>
+            <div className="rounded-3xl border border-white/60 bg-white/95 p-6 shadow-xl shadow-[#cbd8f2]/45 backdrop-blur">
               <Button
                 onClick={handleLogout}
-                variant="outline"
-                className="w-full justify-start h-auto py-3"
+                variant="ghost"
+                className="w-full justify-center gap-2 rounded-2xl border border-[#dfe1e6] bg-white py-3 text-sm font-semibold text-[#1877f2] hover:bg-[#e7f3ff]"
               >
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>로그아웃</span>
+                <LogOut className="h-4 w-4" />
+                로그아웃
               </Button>
             </div>
           </div>
@@ -107,18 +122,25 @@ export default function MenuPage() {
         {!loading && !user && (
           <div className="space-y-6">
             {/* 로그인/회원가입 섹션 */}
-            <div className="bg-slate-50 border border-slate-200 rounded-lg p-6 space-y-3">
-              <h2 className="text-lg font-semibold text-foreground mb-4">
+            <div className="rounded-3xl border border-white/60 bg-white/95 p-6 shadow-xl shadow-[#cbd8f2]/45 backdrop-blur space-y-3">
+              <h2 className="text-lg font-semibold text-[#050505]">
                 인증
               </h2>
 
-              <Button asChild className="w-full justify-start h-auto py-3">
+              <Button
+                asChild
+                className="w-full justify-start rounded-2xl bg-[#1877f2] py-3 text-sm font-semibold shadow-lg shadow-[#99b5f7]/60 hover:bg-[#166fe5]"
+              >
                 <Link href="/auth/login">
                   <span>로그인</span>
                 </Link>
               </Button>
 
-              <Button asChild className="w-full justify-start h-auto py-3">
+              <Button
+                asChild
+                variant="ghost"
+                className="w-full justify-start rounded-2xl border border-[#dfe1e6] bg-white py-3 text-sm font-semibold text-[#1877f2] hover:bg-[#e7f3ff]"
+              >
                 <Link href="/auth/signup">
                   <span>회원가입</span>
                 </Link>
@@ -126,12 +148,16 @@ export default function MenuPage() {
             </div>
 
             {/* 회원 목록 섹션 */}
-            <div className="bg-slate-50 border border-slate-200 rounded-lg p-6">
-              <h2 className="text-lg font-semibold text-foreground mb-4">
+            <div className="rounded-3xl border border-white/60 bg-white/95 p-6 shadow-xl shadow-[#cbd8f2]/45 backdrop-blur">
+              <h2 className="text-lg font-semibold text-[#050505]">
                 회원
               </h2>
 
-              <Button asChild variant="ghost" className="w-full justify-start h-auto py-3">
+              <Button
+                asChild
+                variant="ghost"
+                className="w-full justify-start rounded-2xl border border-transparent bg-[#f5f6f7] py-3 text-sm font-semibold text-[#050505] hover:bg-[#e9ebee]"
+              >
                 <Link href="/users">
                   <span>회원 목록</span>
                 </Link>
@@ -141,11 +167,11 @@ export default function MenuPage() {
         )}
 
         {/* 뒤로가기 버튼 */}
-        <div className="mt-8">
+        <div className="mt-10">
           <Button
-            variant="outline"
+            variant="ghost"
             onClick={() => router.back()}
-            className="w-full"
+            className="w-full justify-center rounded-2xl border border-[#dfe1e6] bg-white py-3 text-sm font-semibold text-[#050505] shadow-lg shadow-[#d5deef]/50 hover:bg-[#f5f6f7]"
           >
             뒤로가기
           </Button>
