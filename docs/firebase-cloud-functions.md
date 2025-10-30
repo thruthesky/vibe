@@ -139,7 +139,6 @@ firebase/
 | 프로젝트 | 환경 변수 값 | Database URL | Region |
 |---------|-------------|--------------|--------|
 | **test5** | `test5` 또는 `withcenter-test-5` 포함 | `https://withcenter-test-5-default-rtdb.asia-southeast1.firebasedatabase.app/` | `asia-southeast1` |
-| **philgo** | `philgo` 또는 `philgo-64b1a` 포함 | `https://philgo-64b1a.firebaseio.com/` | `us-central1` |
 
 #### 코드 예시
 
@@ -154,14 +153,6 @@ const getConfig = () => {
         "https://withcenter-test-5-default-rtdb.asia-southeast1.firebasedatabase.app/",
       region: "asia-southeast1",
     };
-  } else if (
-    projectValue === "philgo" ||
-    projectValue.includes("philgo-64b1a")
-  ) {
-    return {
-      databaseURL: "https://philgo-64b1a.firebaseio.com/",
-      region: "us-central1",
-    };
   } else {
     throw new Error(`Unknown FIREBASE_PROJECT value: ${projectValue}`);
   }
@@ -173,9 +164,6 @@ const getConfig = () => {
 ```bash
 # test5 프로젝트에 배포
 firebase deploy --only functions --project=test5
-
-# philgo 프로젝트에 배포
-firebase deploy --only functions --project=philgo
 ```
 
 #### 주의사항
@@ -420,7 +408,6 @@ firebase deploy --only functions
 **Database trigger는 반드시 database region과 일치해야 합니다**:
 
 - test5 프로젝트: `asia-southeast1`
-- philgo 프로젝트: `us-central1`
 
 Region이 일치하지 않으면 함수가 트리거되지 않습니다!
 
@@ -429,9 +416,9 @@ Region이 일치하지 않으면 함수가 트리거되지 않습니다!
 채팅 관련 Cloud Functions 개발 시 반드시 [chat.md](./chat.md)의 RTDB 구조를 따라야 합니다:
 
 - **1:1 채팅방 roomId**: `uid1---uid2` (세 개의 대시 `---`)
-- **그룹 채팅방 roomId**: `group-<random-id>`
-- **메시지 경로**: `/chat/messages/<roomId>/<messageId>`
-- **참여 정보 경로**: `/chat/joins/<uid>/<roomId>`
+- **그룹 채팅방 roomId**: `group-xxx` (예: `group-abc123`)
+- **메시지 경로**: `/vibe/chat/messages/<room-id>/<message-id>`
+- **참여 정보 경로**: `/vibe/chat/joins/<login-uid>/<room-id>`
 
 ### 7.5 Firebase Admin 모듈
 

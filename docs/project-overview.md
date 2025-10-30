@@ -403,7 +403,7 @@ saveUserData(uid: string, userData: object)
 
 #### 기능 목록
 - ✅ Firebase Realtime Database 실시간 채팅
-- ✅ 채팅방 ID 자동 생성 (uid1-uid2 형식)
+- ✅ 채팅방 ID 자동 생성 (uid1---uid2 형식, 세 개의 대시)
 - ✅ 메시지 송수신
 - ✅ 실시간 메시지 수신 (onValue 리스너)
 - ⏳ 채팅방 목록 (/vibe/chat/joins)
@@ -414,9 +414,9 @@ saveUserData(uid: string, userData: object)
 #### 채팅방 ID 생성 규칙
 
 ```typescript
-// 두 사용자의 UID를 알파벳 순으로 정렬하여 생성
+// 두 사용자의 UID를 알파벳 순으로 정렬하여 생성 (세 개의 대시 --- 사용)
 generateRoomId("user-B-uid", "user-A-uid")
-  → "user-A-uid-user-B-uid"
+  → "user-A-uid---user-B-uid"
 ```
 
 이렇게 하면 항상 동일한 채팅방 ID가 생성됩니다.
@@ -524,28 +524,34 @@ useEffect(() => {
 │
 ├── chat/                           # 채팅 시스템
 │   │
-│   ├── messages/                   # 채팅 메시지
-│   │   └── <room-id>/             # 채팅방 ID (uid1-uid2)
+│   ├── messages/                   # 모든 채팅 메시지 (1:1 및 그룹)
+│   │   └── <room-id>/             # 채팅방 ID (1:1: uid1---uid2, 그룹: group-xxx)
 │   │       └── <message-id>/      # 메시지 ID (Firebase 자동 생성)
 │   │           ├── sender: "user-uid-1"
 │   │           ├── senderName: "홍길동"
 │   │           ├── text: "안녕하세요!"
-│   │           └── timestamp: 1698473000000
+│   │           └── sentAt: 1698473000000
 │   │
-│   ├── rooms/                      # 채팅방 정보
-│   │   └── <room-id>/
-│   │       ├── roomId: "user-uid-1-user-uid-2"
-│   │       ├── users: ["user-uid-1", "user-uid-2"]
-│   │       ├── createdAt: 1698473000000
-│   │       ├── lastMessage: "안녕하세요!"
-│   │       └── lastMessageTime: 1698473000000
+│   ├── joins/                      # 사용자별 채팅방 참여 목록 (모든 채팅방)
+│   │   └── <login-uid>/            # 로그인한 사용자 UID
+│   │       └── <room-id>/          # 참여한 채팅방 ID
+│   │           ├── roomId: "user-uid-1---user-uid-2"
+│   │           ├── createdAt: 1698473000000
+│   │           ├── lastMessage: "안녕하세요!"
+│   │           ├── lastMessageSentAt: 1698473000000
+│   │           ├── order: 1698473000000
+│   │           ├── singleOrder: 1698473000000  # 1:1 채팅방인 경우에만
+│   │           └── groupOrder: 1698473000000   # 그룹 채팅방인 경우에만
 │   │
-│   └── joins/                      # 채팅방 참여 목록 (향후 구현)
-│       └── <user-uid>/
-│           └── <room-id>/
-│               ├── joinedAt: 1698473000000
-│               ├── lastReadTime: 1698473000000
-│               └── unreadCount: 5
+│   └── rooms/                      # 그룹 채팅방 정보 (그룹 채팅 전용)
+│       └── <room-id>/              # 그룹 채팅방 ID
+│           ├── roomId: "group-abc123"
+│           ├── users: ["user-uid-1", "user-uid-2", "user-uid-3"]
+│           ├── createdAt: 1698473000000
+│           ├── lastMessage: "안녕하세요!"
+│           ├── lastMessageSentAt: 1698473000000
+│           ├── open: true          # 오픈 채팅방 (선택)
+│           └── password: "secret"  # 비밀번호 보호 (선택)
 │
 └── posts/                          # 게시판 (향후 구현)
     └── <post-id>/
