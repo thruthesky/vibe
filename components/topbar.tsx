@@ -2,6 +2,7 @@
 
 // 탑바 컴포넌트
 // 모든 페이지 상단에 고정되어 표시되는 네비게이션 바입니다.
+// 사용자의 displayName과 photoUrl을 RTDB에서 실시간으로 감시하여 표시합니다.
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
@@ -9,8 +10,9 @@ import { useRouter } from "next/navigation";
 import { User, onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { logOut } from "@/lib/auth";
+import { listenToUserDisplayName, listenToUserPhotoUrl } from "@/lib/user";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,6 +32,9 @@ import {
 export function Topbar() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  // RTDB에서 실시간으로 가져오는 사용자 정보
+  const [displayName, setDisplayName] = useState<string | null>(null);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const router = useRouter();
   const logoRef = useRef<HTMLAnchorElement>(null);
 
@@ -52,7 +57,7 @@ export function Topbar() {
     }
   };
 
-  // Firebase Auth 상태 변화 감지 및 로고 애니메이션 설정
+  // Firebase Auth 상태 변화 감지
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
@@ -62,6 +67,28 @@ export function Topbar() {
     // 컴포넌트 언마운트 시 구독 해제
     return () => unsubscribe();
   }, []);
+
+  // 사용자의 displayName과 photoUrl을 RTDB에서 실시간으로 감시
+  useEffect(() => {
+    // user가 없으면 리스너 설정하지 않음
+    if (!user) return;
+
+    // displayName 리스너 설정
+    const unsubscribeDisplayName = listenToUserDisplayName(user.uid, (name) => {
+      setDisplayName(name);
+    });
+
+    // photoUrl 리스너 설정
+    const unsubscribePhotoUrl = listenToUserPhotoUrl(user.uid, (url) => {
+      setPhotoUrl(url);
+    });
+
+    // 컴포넌트 언마운트 시 리스너 해제
+    return () => {
+      unsubscribeDisplayName();
+      unsubscribePhotoUrl();
+    };
+  }, [user]);
 
   // 로고 애니메이션 - 로딩 후 1회 자동 수행, 매 10초마다 반복
   useEffect(() => {
@@ -153,10 +180,11 @@ export function Topbar() {
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="sm" className="gap-2">
                       <Avatar className="h-6 w-6">
+                        {photoUrl && <AvatarImage src={photoUrl} alt="프로필 사진" />}
                         <AvatarFallback>{getUserInitial()}</AvatarFallback>
                       </Avatar>
                       <span className="hidden lg:inline-block">
-                        {user.displayName || user.email}
+                        {displayName || user.displayName || user.email}
                       </span>
                     </Button>
                   </DropdownMenuTrigger>
@@ -180,7 +208,7 @@ export function Topbar() {
                 {/* 메뉴 아이콘 - 맨 오른쪽 */}
                 <Button variant="ghost" size="sm" asChild>
                   <Link href="/menu">
-                    <Menu className="h-5 w-5" />
+                    <Menu className="h-6 w-6" />
                   </Link>
                 </Button>
               </div>
@@ -191,6 +219,7 @@ export function Topbar() {
                 <Button variant="ghost" size="sm" asChild>
                   <Link href="/profile">
                     <Avatar className="h-7 w-7">
+                      {photoUrl && <AvatarImage src={photoUrl} alt="프로필 사진" />}
                       <AvatarFallback className="text-xs">
                         {getUserInitial()}
                       </AvatarFallback>
@@ -201,7 +230,7 @@ export function Topbar() {
                 {/* 메뉴 아이콘 - /menu 페이지로 이동 */}
                 <Button variant="ghost" size="lg" asChild>
                   <Link href="/menu">
-                    <Menu className="h-6 w-6" />
+                    <Menu className="h-7 w-7" />
                   </Link>
                 </Button>
               </div>

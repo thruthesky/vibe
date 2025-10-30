@@ -1,7 +1,7 @@
 // Firebase Realtime Database (RTDB)와 Storage를 사용한 사용자 정보 관리 함수들
 
 import { rtdb, storage } from "./firebase";
-import { ref, set, get } from "firebase/database";
+import { ref, set, get, onValue, off } from "firebase/database";
 import { ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
 import { ROOT_FOLDER } from "@/app/app.config";
 
@@ -230,4 +230,91 @@ export async function getUserPhotoUrl(uid: string): Promise<string | null> {
     console.error("프로필 사진 URL 조회 실패:", error);
     return null;
   }
+}
+
+/**
+ * 사용자의 displayName을 RTDB에서 실시간으로 감시합니다.
+ * displayName이 변경되면 callback 함수가 실행됩니다.
+ * 조회 위치: /{ROOT_FOLDER}/users/<uid>/displayName
+ *
+ * @param uid - 사용자의 고유 ID (Firebase UID)
+ * @param callback - displayName이 변경될 때마다 실행할 콜백 함수
+ * @returns 리스너 해제 함수 (컴포넌트 언마운트 시 호출해야 함)
+ */
+export function listenToUserDisplayName(
+  uid: string,
+  callback: (displayName: string | null) => void
+): () => void {
+  // RTDB에서 사용자 displayName 실시간 감시
+  // 경로: /{ROOT_FOLDER}/users/<uid>/displayName
+  const userRef = ref(rtdb, `${ROOT_FOLDER}/users/${uid}/displayName`);
+
+  const unsubscribe = onValue(userRef, (snapshot) => {
+    if (snapshot.exists()) {
+      callback(snapshot.val());
+    } else {
+      callback(null);
+    }
+  });
+
+  // 리스너 해제 함수 반환
+  return unsubscribe;
+}
+
+/**
+ * 사용자의 프로필 사진 URL을 RTDB에서 실시간으로 감시합니다.
+ * photoUrl이 변경되면 callback 함수가 실행됩니다.
+ * 조회 위치: /{ROOT_FOLDER}/users/<uid>/photoUrl
+ *
+ * @param uid - 사용자의 고유 ID (Firebase UID)
+ * @param callback - photoUrl이 변경될 때마다 실행할 콜백 함수
+ * @returns 리스너 해제 함수 (컴포넌트 언마운트 시 호출해야 함)
+ */
+export function listenToUserPhotoUrl(
+  uid: string,
+  callback: (photoUrl: string | null) => void
+): () => void {
+  // RTDB에서 사용자 photoUrl 실시간 감시
+  // 경로: /{ROOT_FOLDER}/users/<uid>/photoUrl
+  const userPhotoRef = ref(rtdb, `${ROOT_FOLDER}/users/${uid}/photoUrl`);
+
+  const unsubscribe = onValue(userPhotoRef, (snapshot) => {
+    if (snapshot.exists()) {
+      callback(snapshot.val());
+    } else {
+      callback(null);
+    }
+  });
+
+  // 리스너 해제 함수 반환
+  return unsubscribe;
+}
+
+/**
+ * 사용자의 전체 정보를 RTDB에서 실시간으로 감시합니다.
+ * 사용자 정보가 변경되면 callback 함수가 실행됩니다.
+ * 조회 위치: /{ROOT_FOLDER}/users/<uid>
+ *
+ * @param uid - 사용자의 고유 ID (Firebase UID)
+ * @param callback - 사용자 정보가 변경될 때마다 실행할 콜백 함수
+ * @returns 리스너 해제 함수 (컴포넌트 언마운트 시 호출해야 함)
+ */
+export function listenToUserData(
+  uid: string,
+  callback: (userData: { [key: string]: any } | null) => void
+): () => void {
+  // RTDB에서 사용자 전체 정보 실시간 감시
+  // 경로: /{ROOT_FOLDER}/users/<uid>
+  const userRef = ref(rtdb, `${ROOT_FOLDER}/users/${uid}`);
+
+  const unsubscribe = onValue(userRef, (snapshot) => {
+    if (snapshot.exists()) {
+      callback(snapshot.val());
+    } else {
+      callback(null);
+    }
+  });
+
+  // 리스너 해제 함수 반환
+  return unsubscribe;
 }

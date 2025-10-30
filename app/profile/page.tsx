@@ -169,12 +169,12 @@ export default function ProfilePage() {
               <img
                 src={photoUrl}
                 alt="프로필 사진"
-                className="h-24 w-24 rounded-full border-2 border-[#1877f2] object-cover shadow-md"
+                className="h-32 w-32 rounded-full border-2 border-[#1877f2] object-cover shadow-md"
               />
             </div>
           ) : (
             <div className="flex justify-center">
-              <div className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-[#dfe1e6] bg-[#f0f2f5] text-[#8d949e]">
+              <div className="flex h-32 w-32 items-center justify-center rounded-full border-2 border-[#dfe1e6] bg-slate-300 text-slate-700 font-semibold">
                 <span className="text-sm">사진 없음</span>
               </div>
             </div>
