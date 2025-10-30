@@ -1,0 +1,89 @@
+[2025-10-30 11:48:36] Status line triggered (cc-statusline v1.3.2)
+[2025-10-30 11:48:36] Input:
+{
+  "session_id": "ddb918c5-2acc-4d29-89ad-bb523442a692",
+  "transcript_path": "/Users/thruthesky/.claude/projects/-Users-thruthesky-apps-vibe/ddb918c5-2acc-4d29-89ad-bb523442a692.jsonl",
+  "cwd": "/Users/thruthesky/apps/vibe",
+  "model": {
+    "id": "claude-sonnet-4-5-20250929",
+    "display_name": "Sonnet 4.5"
+  },
+  "workspace": {
+    "current_dir": "/Users/thruthesky/apps/vibe",
+    "project_dir": "/Users/thruthesky/apps/vibe"
+  },
+  "version": "2.0.28",
+  "output_style": {
+    "name": "default"
+  },
+  "cost": {
+    "total_cost_usd": 0,
+    "total_duration_ms": 3487,
+    "total_api_duration_ms": 0,
+    "total_lines_added": 0,
+    "total_lines_removed": 0
+  },
+  "exceeds_200k_tokens": false
+}
+[2025-10-30 11:48:36] Using jq for JSON parsing
+---
+[2025-10-30 11:48:36] Extracted: dir=~/apps/vibe, model=Sonnet 4.5, version=, git=main, context=, cost=0, cost_ph=0.00, tokens=, tpm=, session_pct=0
+[2025-10-30 11:49:16] Status line triggered (cc-statusline v1.3.2)
+[2025-10-30 11:49:16] Input:
+{
+  "session_id": "ddb918c5-2acc-4d29-89ad-bb523442a692",
+  "transcript_path": "/Users/thruthesky/.claude/projects/-Users-thruthesky-apps-vibe/ddb918c5-2acc-4d29-89ad-bb523442a692.jsonl",
+  "cwd": "/Users/thruthesky/apps/vibe",
+  "model": {
+    "id": "claude-sonnet-4-5-20250929",
+    "display_name": "Sonnet 4.5"
+  },
+  "workspace": {
+    "current_dir": "/Users/thruthesky/apps/vibe",
+    "project_dir": "/Users/thruthesky/apps/vibe"
+  },
+  "version": "2.0.28",
+  "output_style": {
+    "name": "default"
+  },
+  "cost": {
+    "total_cost_usd": 0.0184613,
+    "total_duration_ms": 44093,
+    "total_api_duration_ms": 14550,
+    "total_lines_added": 0,
+    "total_lines_removed": 0
+  },
+  "exceeds_200k_tokens": false
+}
+[2025-10-30 11:49:16] Using jq for JSON parsing
+---
+[2025-10-30 11:49:18] Status line triggered (cc-statusline v1.3.2)
+[2025-10-30 11:49:18] Input:
+{
+  "session_id": "ddb918c5-2acc-4d29-89ad-bb523442a692",
+  "transcript_path": "/Users/thruthesky/.claude/projects/-Users-thruthesky-apps-vibe/ddb918c5-2acc-4d29-89ad-bb523442a692.jsonl",
+  "cwd": "/Users/thruthesky/apps/vibe",
+  "model": {
+    "id": "claude-sonnet-4-5-20250929",
+    "display_name": "Sonnet 4.5"
+  },
+  "workspace": {
+    "current_dir": "/Users/thruthesky/apps/vibe",
+    "project_dir": "/Users/thruthesky/apps/vibe"
+  },
+  "version": "2.0.28",
+  "output_style": {
+    "name": "default"
+  },
+  "cost": {
+    "total_cost_usd": 0.0184613,
+    "total_duration_ms": 46565,
+    "total_api_duration_ms": 14550,
+    "total_lines_added": 0,
+    "total_lines_removed": 0
+  },
+  "exceeds_200k_tokens": false
+}
+[2025-10-30 11:49:18] Using jq for JSON parsing
+---
+[2025-10-30 11:49:18] Extracted: dir=~/apps/vibe, model=Sonnet 4.5, version=, git=main, context=, cost=0.0184613, cost_ph=1.43, tokens=, tpm=, session_pct=0

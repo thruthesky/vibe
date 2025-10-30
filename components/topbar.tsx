@@ -3,7 +3,7 @@
 // 탑바 컴포넌트
 // 모든 페이지 상단에 고정되어 표시되는 네비게이션 바입니다.
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { User, onAuthStateChanged } from "firebase/auth";
@@ -31,8 +31,28 @@ export function Topbar() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const logoRef = useRef<HTMLAnchorElement>(null);
 
-  // Firebase Auth 상태 변화 감지
+  // 로고 애니메이션 트리거 함수
+  const triggerLogoAnimation = () => {
+    if (logoRef.current) {
+      // 기존 애니메이션 클래스 제거 (재트리거 가능하도록)
+      logoRef.current.classList.remove('logo-animate-active');
+
+      // 리플로우를 강제로 발생시켜 애니메이션 재시작
+      void logoRef.current.offsetWidth;
+
+      // 애니메이션 클래스 추가
+      logoRef.current.classList.add('logo-animate-active');
+
+      // 애니메이션 완료 후 클래스 제거
+      setTimeout(() => {
+        logoRef.current?.classList.remove('logo-animate-active');
+      }, 600);
+    }
+  };
+
+  // Firebase Auth 상태 변화 감지 및 로고 애니메이션 설정
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
@@ -41,6 +61,25 @@ export function Topbar() {
 
     // 컴포넌트 언마운트 시 구독 해제
     return () => unsubscribe();
+  }, []);
+
+  // 로고 애니메이션 - 로딩 후 1회 자동 수행, 매 60초마다 반복
+  useEffect(() => {
+    // 로딩 완료 후 500ms 후 1회 자동 실행
+    const initialTimer = setTimeout(() => {
+      triggerLogoAnimation();
+    }, 500);
+
+    // 매 60초마다 실행
+    const intervalTimer = setInterval(() => {
+      triggerLogoAnimation();
+    }, 60000);
+
+    // 클린업 함수
+    return () => {
+      clearTimeout(initialTimer);
+      clearInterval(intervalTimer);
+    };
   }, []);
 
   // 로그아웃 핸들러
@@ -70,7 +109,7 @@ export function Topbar() {
     >
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         {/* 왼쪽: 로고 */}
-        <Link href="/" className="flex items-center gap-2 group">
+        <Link href="/" className="flex items-center gap-2 group" ref={logoRef}>
           <div className="text-xl font-bold flex items-center">
             {/* K - 빨강 */}
             <span className="text-red-600 inline-block transition-transform duration-300 group-hover:-translate-y-1 group-hover:scale-110">
