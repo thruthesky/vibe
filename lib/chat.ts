@@ -2,6 +2,7 @@
 
 import { rtdb } from "./firebase";
 import { ref, set, get, push, onValue, Unsubscribe } from "firebase/database";
+import { ROOT_FOLDER } from "@/app/app.config";
 
 /**
  * 채팅 메시지 인터페이스
@@ -40,7 +41,7 @@ export function generateRoomId(uid1: string, uid2: string): string {
 
 /**
  * 채팅방을 생성합니다.
- * 저장 위치: /vibe/chat/rooms/<room-id>
+ * 저장 위치: /{ROOT_FOLDER}/chat/rooms/<room-id>
  *
  * @param uid1 - 첫 번째 사용자 ID
  * @param uid2 - 두 번째 사용자 ID
@@ -59,7 +60,7 @@ export async function createChatRoom(
     }
 
     const roomId = generateRoomId(uid1, uid2);
-    const roomRef = ref(rtdb, `vibe/chat/rooms/${roomId}`);
+    const roomRef = ref(rtdb, `${ROOT_FOLDER}/chat/rooms/${roomId}`);
 
     // 기존 채팅방이 있는지 확인
     const snapshot = await get(roomRef);
@@ -95,7 +96,7 @@ export async function createChatRoom(
 
 /**
  * 채팅 메시지를 전송하고 저장합니다.
- * 저장 위치: /vibe/chat/messages/<room-id>/<message-id>
+ * 저장 위치: /{ROOT_FOLDER}/chat/messages/<room-id>/<message-id>
  *
  * @param roomId - 채팅방 ID
  * @param sender - 발신자 UID
@@ -118,7 +119,7 @@ export async function sendMessage(
     }
 
     // 메시지 저장
-    const messagesRef = ref(rtdb, `vibe/chat/messages/${roomId}`);
+    const messagesRef = ref(rtdb, `${ROOT_FOLDER}/chat/messages/${roomId}`);
     const newMessageRef = push(messagesRef);
 
     const message: ChatMessage = {
@@ -132,7 +133,7 @@ export async function sendMessage(
     await set(newMessageRef, message);
 
     // 채팅방의 마지막 메시지 정보 업데이트
-    const roomRef = ref(rtdb, `vibe/chat/rooms/${roomId}`);
+    const roomRef = ref(rtdb, `${ROOT_FOLDER}/chat/rooms/${roomId}`);
     const roomSnapshot = await get(roomRef);
     if (roomSnapshot.exists()) {
       const roomData = roomSnapshot.val();
@@ -158,7 +159,7 @@ export async function sendMessage(
 
 /**
  * 채팅방의 모든 메시지를 조회합니다.
- * 조회 위치: /vibe/chat/messages/<room-id>
+ * 조회 위치: /{ROOT_FOLDER}/chat/messages/<room-id>
  *
  * @param roomId - 채팅방 ID
  * @returns 메시지 배열 또는 null
@@ -169,7 +170,7 @@ export async function getMessages(roomId: string): Promise<ChatMessage[]> {
       return [];
     }
 
-    const messagesRef = ref(rtdb, `vibe/chat/messages/${roomId}`);
+    const messagesRef = ref(rtdb, `${ROOT_FOLDER}/chat/messages/${roomId}`);
     const snapshot = await get(messagesRef);
 
     if (snapshot.exists()) {
@@ -199,7 +200,7 @@ export async function getMessages(roomId: string): Promise<ChatMessage[]> {
 
 /**
  * 채팅방의 메시지를 실시간으로 구독합니다.
- * 조회 위치: /vibe/chat/messages/<room-id>
+ * 조회 위치: /{ROOT_FOLDER}/chat/messages/<room-id>
  *
  * @param roomId - 채팅방 ID
  * @param callback - 메시지 변경 시 호출할 콜백 함수
@@ -214,7 +215,7 @@ export function subscribeToMessages(
       return null;
     }
 
-    const messagesRef = ref(rtdb, `vibe/chat/messages/${roomId}`);
+    const messagesRef = ref(rtdb, `${ROOT_FOLDER}/chat/messages/${roomId}`);
 
     const unsubscribe = onValue(
       messagesRef,
@@ -251,7 +252,7 @@ export function subscribeToMessages(
 
 /**
  * 사용자의 채팅방 목록을 조회합니다.
- * 조회 위치: /vibe/chat/rooms
+ * 조회 위치: /{ROOT_FOLDER}/chat/rooms
  *
  * @param uid - 사용자 ID
  * @returns 사용자가 참여 중인 채팅방 배열
@@ -262,7 +263,7 @@ export async function getUserChatRooms(uid: string): Promise<ChatRoom[]> {
       return [];
     }
 
-    const roomsRef = ref(rtdb, "vibe/chat/rooms");
+    const roomsRef = ref(rtdb, `${ROOT_FOLDER}/chat/rooms`);
     const snapshot = await get(roomsRef);
 
     if (snapshot.exists()) {
@@ -296,7 +297,7 @@ export async function getUserChatRooms(uid: string): Promise<ChatRoom[]> {
 
 /**
  * 채팅방 정보를 조회합니다.
- * 조회 위치: /vibe/chat/rooms/<room-id>
+ * 조회 위치: /{ROOT_FOLDER}/chat/rooms/<room-id>
  *
  * @param roomId - 채팅방 ID
  * @returns 채팅방 정보 또는 null
@@ -309,7 +310,7 @@ export async function getChatRoom(
       return null;
     }
 
-    const roomRef = ref(rtdb, `vibe/chat/rooms/${roomId}`);
+    const roomRef = ref(rtdb, `${ROOT_FOLDER}/chat/rooms/${roomId}`);
     const snapshot = await get(roomRef);
 
     if (snapshot.exists()) {

@@ -24,7 +24,7 @@ Vibe 프로젝트의 **채팅 시스템**은 다음 기술 스택을 활용합�
 - **Firebase Authentication**: 사용자 인증
 - **Firebase Realtime Database (RTDB)**: 채팅 메시지 및 채팅방 정보 저장
 
-**⚠️ 중요**: 모든 채팅 관련 데이터는 Firebase Realtime Database의 **`/vibe/chat/`** 경로 아래에 저장됩니다.
+**⚠️ 중요**: 모든 채팅 관련 데이터는 Firebase Realtime Database의 **`/{ROOT_FOLDER}/chat/`** 경로 아래에 저장됩니다. `ROOT_FOLDER`는 프로젝트 설정 상수로, 현재 기본값은 `"vibe"`입니다 (실제 경로: `/{ROOT_FOLDER}/chat/`).
 
 ### 핵심 개념
 
@@ -43,7 +43,7 @@ Vibe 프로젝트의 **채팅 시스템**은 다음 기술 스택을 활용합�
 2. **채팅방 목록 실시간 업데이트**
    - 사용자가 채팅방 목록을 보고 있을 때, 다른 사용자가 메시지를 보내면 마지막 메시지가 즉시 업데이트
    - 새로운 채팅방이 생성되면 목록에 즉시 추가
-   - `/vibe/chat/joins/<myUid>` 경로를 실시간으로 구독
+   - `/{ROOT_FOLDER}/chat/joins/<myUid>` 경로를 실시간으로 구독
 
 3. **채팅방 입장/나가기 실시간 반영**
    - 그룹 채팅에서 사용자가 입장하거나 나가면 즉시 반영
@@ -58,23 +58,23 @@ Vibe 프로젝트의 **채팅 시스템**은 다음 기술 스택을 활용합�
 채팅 시스템에는 **1:1 채팅방**과 **그룹 채팅방** 두 가지 유형이 있습니다.
 
 **1:1 채팅방 (현재 구현)**:
-- `/vibe/chat/joins/<login-uid>/<room-id>`에서 채팅방 참여 정보 관리
+- `/{ROOT_FOLDER}/chat/joins/<login-uid>/<room-id>`에서 채팅방 참여 정보 관리
 - `roomId`에 사용자 정보가 포함되어 있어 `users` 필드 불필요
-- `/vibe/chat/rooms`를 참조하지 않음
-- 채팅방 목록은 `/vibe/chat/joins/<myUid>` 하위 경로에서 `singleOrder` 필드로 정렬하여 조회
+- `/{ROOT_FOLDER}/chat/rooms`를 참조하지 않음
+- 채팅방 목록은 `/{ROOT_FOLDER}/chat/joins/<myUid>` 하위 경로에서 `singleOrder` 필드로 정렬하여 조회
 
 **그룹 채팅방 (향후 구현)**:
-- `/vibe/chat/rooms/<room-id>`에 채팅방 정보 저장
+- `/{ROOT_FOLDER}/chat/rooms/<room-id>`에 채팅방 정보 저장
 - `users` 필드로 참여 사용자 관리
 - 3명 이상 참여 가능
-- `/vibe/chat/joins`와 `/vibe/chat/rooms` 모두 사용
-- 채팅방 목록은 `/vibe/chat/joins/<myUid>` 하위 경로에서 `groupOrder` 필드로 정렬하여 조회
+- `/{ROOT_FOLDER}/chat/joins`와 `/{ROOT_FOLDER}/chat/rooms` 모두 사용
+- 채팅방 목록은 `/{ROOT_FOLDER}/chat/joins/<myUid>` 하위 경로에서 `groupOrder` 필드로 정렬하여 조회
 
 **오픈 채팅방 (그룹 채팅의 특수 유형)**:
 - `open: true` 속성을 가진 그룹 채팅방
 - 오픈 채팅방 목록에 공개적으로 표시됨
 - 누구나 입장 가능 (비밀번호 미설정 시)
-- `/vibe/chat/rooms`에서 `open: true` 필터링으로 조회
+- `/{ROOT_FOLDER}/chat/rooms`에서 `open: true` 필터링으로 조회
 
 **비밀번호 보호 채팅방**:
 - `password` 속성이 설정된 채팅방
@@ -100,7 +100,7 @@ interface ChatMessage {
 
 ### 채팅방 참여 정보 인터페이스 (모든 채팅방)
 
-**경로**: `/vibe/chat/joins/<login-uid>/<room-id>`
+**경로**: `/{ROOT_FOLDER}/chat/joins/<login-uid>/<room-id>`
 
 ```typescript
 interface ChatJoin {
@@ -115,10 +115,10 @@ interface ChatJoin {
 ```
 
 **설명**:
-- `/vibe/chat/joins`는 **1:1 채팅뿐만 아니라 모든 채팅방 입장 정보를 담음**
+- `/{ROOT_FOLDER}/chat/joins`는 **1:1 채팅뿐만 아니라 모든 채팅방 입장 정보를 담음**
 - 사용자가 입장한 모든 채팅방의 relation 정보 저장
 - `users` 필드는 없음 (1:1 채팅의 경우 roomId에 `<myUid---otherUid>` 형식으로 사용자 정보가 포함됨)
-- 로그인한 사용자의 채팅방 목록을 `/vibe/chat/joins/<myUid>` 경로에서 조회
+- 로그인한 사용자의 채팅방 목록을 `/{ROOT_FOLDER}/chat/joins/<myUid>` 경로에서 조회
 
 **정렬 필드 (Firebase Cloud Functions 자동 관리)**:
 - `order`: 모든 채팅방을 함께 정렬할 때 사용
@@ -128,7 +128,7 @@ interface ChatJoin {
 
 ### 그룹 채팅방 정보 인터페이스
 
-**경로**: `/vibe/chat/rooms/<room-id>` (그룹 채팅 전용)
+**경로**: `/{ROOT_FOLDER}/chat/rooms/<room-id>` (그룹 채팅 전용)
 
 ```typescript
 interface ChatRoom {
@@ -143,7 +143,7 @@ interface ChatRoom {
 ```
 
 **설명**:
-- `/vibe/chat/rooms`는 **그룹 채팅 전용**
+- `/{ROOT_FOLDER}/chat/rooms`는 **그룹 채팅 전용**
 - `users` 필드로 어떤 사용자가 채팅방에 입장해 있는지 관리
 - `open` 속성이 `true`면 **오픈 채팅방** 목록에 표시됨
 - `password` 속성이 설정되면 입장 시 비밀번호 입력 필요
@@ -151,7 +151,7 @@ interface ChatRoom {
 ### RTDB 구조
 
 ```
-/vibe/chat/
+/{ROOT_FOLDER}/chat/
 ├── messages/                     # 모든 채팅 메시지 (1:1 및 그룹)
 │   └── <room-id>/                # 예: "abc123xyz---def456uvw" (1:1) 또는 "group-abc123" (그룹)
 │       └── <message-id>/         # Firebase가 자동 생성
@@ -184,11 +184,11 @@ interface ChatRoom {
 
 **구조 설명**:
 
-1. **`/vibe/chat/messages/<room-id>`**
+1. **`/{ROOT_FOLDER}/chat/messages/<room-id>`**
    - 모든 채팅 메시지 저장 (1:1 및 그룹 공통)
    - 필드: `sender`, `senderName`, `text`, `sentAt`
 
-2. **`/vibe/chat/joins/<login-uid>/<room-id>`** (모든 채팅방)
+2. **`/{ROOT_FOLDER}/chat/joins/<login-uid>/<room-id>`** (모든 채팅방)
    - 사용자가 입장한 모든 채팅방의 참여 정보 (relation)
    - 1:1 채팅뿐만 아니라 그룹 채팅 입장 정보도 포함
    - 필드: `roomId`, `createdAt`, `lastMessage`, `lastMessageSentAt`, `order`, `singleOrder`, `groupOrder`
@@ -199,7 +199,7 @@ interface ChatRoom {
      - `groupOrder`: 그룹 채팅방만 정렬 (그룹 채팅방인 경우 `order`와 동일한 값)
    - ⚠️ 정렬 필드는 **Firebase Cloud Functions에서 자동 업데이트**
 
-3. **`/vibe/chat/rooms/<room-id>`** (그룹 채팅 전용)
+3. **`/{ROOT_FOLDER}/chat/rooms/<room-id>`** (그룹 채팅 전용)
    - 그룹 채팅방 정보만 저장
    - 필드: `roomId`, `users`, `createdAt`, `lastMessage`, `lastMessageSentAt`, `open`, `password`
    - `users` 필드로 어떤 사용자가 채팅방에 입장해 있는지 관리
@@ -212,16 +212,16 @@ interface ChatRoom {
 
 **자동 업데이트되는 필드**:
 
-1. **`/vibe/chat/joins/<uid>/<roomId>/order`**
+1. **`/{ROOT_FOLDER}/chat/joins/<uid>/<roomId>/order`**
    - 모든 채팅방을 함께 정렬할 때 사용하는 시간 값
    - 메시지가 전송될 때마다 자동 업데이트
 
-2. **`/vibe/chat/joins/<uid>/<roomId>/singleOrder`**
+2. **`/{ROOT_FOLDER}/chat/joins/<uid>/<roomId>/singleOrder`**
    - 1:1 채팅방만 따로 목록할 때 사용하는 시간 값
    - 1:1 채팅방인 경우에만 `order`와 동일한 값으로 자동 저장
    - 그룹 채팅방인 경우 이 필드는 존재하지 않음
 
-3. **`/vibe/chat/joins/<uid>/<roomId>/groupOrder`**
+3. **`/{ROOT_FOLDER}/chat/joins/<uid>/<roomId>/groupOrder`**
    - 그룹 채팅방만 따로 목록할 때 사용하는 시간 값
    - 그룹 채팅방인 경우에만 `order`와 동일한 값으로 자동 저장
    - 1:1 채팅방인 경우 이 필드는 존재하지 않음
@@ -235,7 +235,7 @@ await sendMessage(roomId, senderId, senderName, text);
 // → Cloud Functions가 order, singleOrder, groupOrder 자동 업데이트
 
 // ❌ 잘못된 방법: 클라이언트에서 직접 업데이트하지 마세요
-// set(ref(rtdb, `/vibe/chat/joins/${uid}/${roomId}/order`), Date.now());
+// set(ref(rtdb, `/{ROOT_FOLDER}/chat/joins/${uid}/${roomId}/order`), Date.now());
 ```
 
 ---
@@ -287,7 +287,7 @@ async function createChatRoom(
 - `roomId` (string): 생성되거나 기존 채팅방 ID
 - `error` (string): 오류 메시지 (선택)
 
-**저장 위치**: `/vibe/chat/rooms/<room-id>`
+**저장 위치**: `/{ROOT_FOLDER}/chat/rooms/<room-id>`
 
 **사용 예제**:
 ```typescript
@@ -323,7 +323,7 @@ async function sendMessage(
 - `messageId` (string): Firebase가 생성한 메시지 ID
 - `error` (string): 오류 메시지 (선택)
 
-**저장 위치**: `/vibe/chat/messages/<room-id>/<message-id>`
+**저장 위치**: `/{ROOT_FOLDER}/chat/messages/<room-id>/<message-id>`
 
 **사용 예제**:
 ```typescript
@@ -354,7 +354,7 @@ async function getMessages(roomId: string): Promise<ChatMessage[]>
 **반환값**:
 - `ChatMessage[]`: 타임스탬프 기준으로 정렬된 메시지 배열
 
-**조회 위치**: `/vibe/chat/messages/<room-id>`
+**조회 위치**: `/{ROOT_FOLDER}/chat/messages/<room-id>`
 
 **사용 예제**:
 ```typescript
@@ -415,7 +415,7 @@ async function getUserChatRooms(uid: string): Promise<ChatRoom[]>
 **반환값**:
 - `ChatRoom[]`: 사용자가 참여 중인 채팅방 배열 (최신순 정렬)
 
-**조회 위치**: `/vibe/chat/rooms`
+**조회 위치**: `/{ROOT_FOLDER}/chat/rooms`
 
 **사용 예제**:
 ```typescript
@@ -441,7 +441,7 @@ async function getChatRoom(roomId: string): Promise<ChatRoom | null>
 **반환값**:
 - `ChatRoom | null`: 채팅방 정보 또는 null
 
-**조회 위치**: `/vibe/chat/rooms/<room-id>`
+**조회 위치**: `/{ROOT_FOLDER}/chat/rooms/<room-id>`
 
 **사용 예제**:
 ```typescript
@@ -475,7 +475,7 @@ if (room) {
 
 ## Firebase Realtime Database 구조
 
-### `/vibe/chat/messages/<room-id>`
+### `/{ROOT_FOLDER}/chat/messages/<room-id>`
 
 **용도**: 특정 채팅방의 모든 메시지 저장 (1:1 및 그룹 공통)
 
@@ -499,7 +499,7 @@ if (room) {
 }
 ```
 
-### `/vibe/chat/joins/<login-uid>/<room-id>`
+### `/{ROOT_FOLDER}/chat/joins/<login-uid>/<room-id>`
 
 **용도**: 로그인한 사용자의 채팅방 참여 목록 (모든 채팅방)
 
@@ -539,7 +539,7 @@ if (room) {
 - `order`, `singleOrder`, `groupOrder`는 Firebase Cloud Functions에서 자동 업데이트
 - 1:1 채팅방은 `singleOrder`만, 그룹 채팅방은 `groupOrder`만 존재
 
-### `/vibe/chat/rooms/<room-id>`
+### `/{ROOT_FOLDER}/chat/rooms/<room-id>`
 
 **용도**: 그룹 채팅방 정보 저장 (그룹 채팅 전용)
 
@@ -660,12 +660,12 @@ if (unsubscribe) {
 ### 구현 대상
 
 1. **채팅방 목록 페이지**
-   - `/vibe/chat/joins/<myUid>` 경로의 채팅방 목록
+   - `/{ROOT_FOLDER}/chat/joins/<myUid>` 경로의 채팅방 목록
    - 한 번에 10~20개씩 로드
    - 스크롤 시 다음 페이지 로드
 
 2. **채팅 메시지 페이지**
-   - `/vibe/chat/messages/<room-id>` 경로의 메시지 목록
+   - `/{ROOT_FOLDER}/chat/messages/<room-id>` 경로의 메시지 목록
    - 한 번에 20~50개씩 로드
    - 스크롤 시 이전 메시지 로드 (역순 스크롤)
 
@@ -679,14 +679,14 @@ import { rtdb } from "@/lib/firebase";
 
 // 첫 페이지 로드 (최신 20개)
 const firstPageQuery = query(
-  ref(rtdb, `/vibe/chat/joins/${myUid}`),
+  ref(rtdb, `/{ROOT_FOLDER}/chat/joins/${myUid}`),
   orderByChild('lastMessageSentAt'),
   limitToLast(20)
 );
 
 // 다음 페이지 로드 (이전 20개)
 const nextPageQuery = query(
-  ref(rtdb, `/vibe/chat/joins/${myUid}`),
+  ref(rtdb, `/{ROOT_FOLDER}/chat/joins/${myUid}`),
   orderByChild('lastMessageSentAt'),
   endBefore(oldestTimestamp),
   limitToLast(20)
@@ -701,14 +701,14 @@ import { rtdb } from "@/lib/firebase";
 
 // 첫 페이지 로드 (최신 50개 메시지)
 const firstPageQuery = query(
-  ref(rtdb, `/vibe/chat/messages/${roomId}`),
+  ref(rtdb, `/{ROOT_FOLDER}/chat/messages/${roomId}`),
   orderByChild('sentAt'),
   limitToLast(50)
 );
 
 // 다음 페이지 로드 (이전 50개 메시지)
 const nextPageQuery = query(
-  ref(rtdb, `/vibe/chat/messages/${roomId}`),
+  ref(rtdb, `/{ROOT_FOLDER}/chat/messages/${roomId}`),
   orderByChild('sentAt'),
   endBefore(oldestMessageTimestamp),
   limitToLast(50)
@@ -733,7 +733,7 @@ export default function ChatRoomList({ myUid }: { myUid: string }) {
   // 첫 페이지 로드
   useEffect(() => {
     const firstPageQuery = query(
-      ref(rtdb, `/vibe/chat/joins/${myUid}`),
+      ref(rtdb, `/{ROOT_FOLDER}/chat/joins/${myUid}`),
       orderByChild('lastMessageSentAt'),
       limitToLast(20)
     );
@@ -769,7 +769,7 @@ export default function ChatRoomList({ myUid }: { myUid: string }) {
     const oldestTimestamp = chatRooms[chatRooms.length - 1].lastMessageSentAt;
 
     const nextPageQuery = query(
-      ref(rtdb, `/vibe/chat/joins/${myUid}`),
+      ref(rtdb, `/{ROOT_FOLDER}/chat/joins/${myUid}`),
       orderByChild('lastMessageSentAt'),
       endBefore(oldestTimestamp),
       limitToLast(20)

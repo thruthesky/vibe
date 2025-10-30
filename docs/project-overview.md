@@ -511,8 +511,10 @@ useEffect(() => {
 
 ### Realtime Database (RTDB) 구조
 
+**참고**: 이 문서에서 사용하는 경로는 모두 `/{ROOT_FOLDER}/` 접두사를 사용합니다. `ROOT_FOLDER`는 설정 상수로, 현재 기본값은 `"vibe"`입니다.
+
 ```
-/vibe/
+/{ROOT_FOLDER}/
 │
 ├── users/                          # 사용자 정보
 │   └── <uid>/                      # 사용자 UID
@@ -614,7 +616,7 @@ posts/                              # 게시글 컬렉션
 
 ### 💬 2. 채팅 기능 확장
 - [ ] **채팅방 목록 표시**
-  - `/vibe/chat/joins/<user-uid>` 경로에 참여 채팅방 저장
+  - `/{ROOT_FOLDER}/chat/joins/<user-uid>` 경로에 참여 채팅방 저장
   - 채팅방 목록 페이지 생성
   - 마지막 메시지, 시간, 읽지 않은 메시지 수 표시
   

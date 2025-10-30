@@ -2,10 +2,11 @@
 
 import { rtdb } from "./firebase";
 import { ref, set, get } from "firebase/database";
+import { ROOT_FOLDER } from "@/app/app.config";
 
 /**
  * 사용자의 displayName을 RTDB에 저장합니다.
- * 저장 위치: /vibe/users/<uid>/displayName
+ * 저장 위치: /{ROOT_FOLDER}/users/<uid>/displayName
  *
  * @param uid - 사용자의 고유 ID (Firebase UID)
  * @param displayName - 사용자의 표시 이름
@@ -17,8 +18,8 @@ export async function saveUserDisplayName(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     // RTDB에 사용자 displayName 저장
-    // 경로: /vibe/users/<uid>/displayName
-    const userRef = ref(rtdb, `vibe/users/${uid}/displayName`);
+    // 경로: /{ROOT_FOLDER}/users/<uid>/displayName
+    const userRef = ref(rtdb, `${ROOT_FOLDER}/users/${uid}/displayName`);
     await set(userRef, displayName);
 
     return {
@@ -35,7 +36,7 @@ export async function saveUserDisplayName(
 
 /**
  * 사용자의 displayName을 RTDB에서 조회합니다.
- * 조회 위치: /vibe/users/<uid>/displayName
+ * 조회 위치: /{ROOT_FOLDER}/users/<uid>/displayName
  *
  * @param uid - 사용자의 고유 ID (Firebase UID)
  * @returns 저장된 displayName 또는 null
@@ -43,8 +44,8 @@ export async function saveUserDisplayName(
 export async function getUserDisplayName(uid: string): Promise<string | null> {
   try {
     // RTDB에서 사용자 displayName 조회
-    // 경로: /vibe/users/<uid>/displayName
-    const userRef = ref(rtdb, `vibe/users/${uid}/displayName`);
+    // 경로: /{ROOT_FOLDER}/users/<uid>/displayName
+    const userRef = ref(rtdb, `${ROOT_FOLDER}/users/${uid}/displayName`);
     const snapshot = await get(userRef);
 
     if (snapshot.exists()) {
@@ -60,7 +61,7 @@ export async function getUserDisplayName(uid: string): Promise<string | null> {
 
 /**
  * 사용자의 모든 정보를 RTDB에서 조회합니다.
- * 조회 위치: /vibe/users/<uid>
+ * 조회 위치: /{ROOT_FOLDER}/users/<uid>
  *
  * @param uid - 사용자의 고유 ID (Firebase UID)
  * @returns 저장된 사용자 정보 객체 또는 null
@@ -70,8 +71,8 @@ export async function getUserData(
 ): Promise<{ [key: string]: any } | null> {
   try {
     // RTDB에서 사용자 전체 정보 조회
-    // 경로: /vibe/users/<uid>
-    const userRef = ref(rtdb, `vibe/users/${uid}`);
+    // 경로: /{ROOT_FOLDER}/users/<uid>
+    const userRef = ref(rtdb, `${ROOT_FOLDER}/users/${uid}`);
     const snapshot = await get(userRef);
 
     if (snapshot.exists()) {
@@ -87,7 +88,7 @@ export async function getUserData(
 
 /**
  * 사용자의 전체 정보를 RTDB에 저장합니다.
- * 저장 위치: /vibe/users/<uid>
+ * 저장 위치: /{ROOT_FOLDER}/users/<uid>
  *
  * @param uid - 사용자의 고유 ID (Firebase UID)
  * @param userData - 저장할 사용자 정보 객체
@@ -99,8 +100,8 @@ export async function saveUserData(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     // RTDB에 사용자 정보 저장
-    // 경로: /vibe/users/<uid>
-    const userRef = ref(rtdb, `vibe/users/${uid}`);
+    // 경로: /{ROOT_FOLDER}/users/<uid>
+    const userRef = ref(rtdb, `${ROOT_FOLDER}/users/${uid}`);
     await set(userRef, userData);
 
     return {
@@ -117,7 +118,7 @@ export async function saveUserData(
 
 /**
  * 모든 사용자의 정보를 RTDB에서 조회합니다.
- * 조회 위치: /vibe/users
+ * 조회 위치: /{ROOT_FOLDER}/users
  *
  * @returns 모든 사용자 정보 객체 또는 null
  *          { uid1: {...}, uid2: {...}, ... } 형태
@@ -127,8 +128,8 @@ export async function getAllUsers(): Promise<{
 } | null> {
   try {
     // RTDB에서 모든 사용자 정보 조회
-    // 경로: /vibe/users
-    const usersRef = ref(rtdb, "vibe/users");
+    // 경로: /{ROOT_FOLDER}/users
+    const usersRef = ref(rtdb, `${ROOT_FOLDER}/users`);
     const snapshot = await get(usersRef);
 
     if (snapshot.exists()) {

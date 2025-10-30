@@ -10,10 +10,11 @@ import {
   MESSAGE_CHUNK_SIZE,
   MESSAGE_DRY_RUN,
   ROOM_SEPARATOR,
+  ROOT_FOLDER,
   UID,
-} from "./config";
+} from "./firebase.config";
 
-import { FCM_TOKENS_PATH } from "./config";
+import { FCM_TOKENS_PATH } from "./firebase.config";
 import {
   getMessaging,
   Notification,
@@ -116,8 +117,9 @@ export async function updateOnMessageCreatedForSingleChat(
     joinUpdates[joinPath(receiverUid, roomId, "lastMessage")] = lastMessage;
     joinUpdates[joinPath(receiverUid, roomId, "userDisplayName")] =
       senderData?.nickname || "";
-    joinUpdates[joinPath(receiverUid, roomId, "userDisplayNameLowerCase")] =
-      (senderData?.nickname || "").toLowerCase();
+    joinUpdates[joinPath(receiverUid, roomId, "userDisplayNameLowerCase")] = (
+      senderData?.nickname || ""
+    ).toLowerCase();
     joinUpdates[joinPath(receiverUid, roomId, "userPhotoUrl")] =
       senderData?.photoUrl || null;
 
@@ -127,8 +129,9 @@ export async function updateOnMessageCreatedForSingleChat(
     joinUpdates[joinPath(senderUid, roomId, "lastMessage")] = lastMessage;
     joinUpdates[joinPath(senderUid, roomId, "userDisplayName")] =
       receiverData?.nickname || "";
-    joinUpdates[joinPath(senderUid, roomId, "userDisplayNameLowerCase")] =
-      (receiverData?.nickname || "").toLowerCase();
+    joinUpdates[joinPath(senderUid, roomId, "userDisplayNameLowerCase")] = (
+      receiverData?.nickname || ""
+    ).toLowerCase();
     joinUpdates[joinPath(senderUid, roomId, "userPhotoUrl")] =
       receiverData?.photoUrl || null;
 
@@ -292,7 +295,7 @@ export function makeSingleChatRoomId(uid1: string, uid2: string): string {
  * joinPath("user123", "room-abc", "order") // Returns "vibe/chat/joins/user123/room-abc/order"
  */
 export function joinPath(uid: string, roomId: string, field?: string): string {
-  const basePath = `vibe/chat/joins/${uid}/${roomId}`;
+  const basePath = `${ROOT_FOLDER}/chat/joins/${uid}/${roomId}`;
   return field ? `${basePath}/${field}` : basePath;
 }
 
@@ -316,7 +319,7 @@ export function joinPropsPath(
   category: string,
   key?: string
 ): string {
-  const basePath = `vibe/chat/join-props/${uid}/${category}`;
+  const basePath = `${ROOT_FOLDER}/chat/join-props/${uid}/${category}`;
   return key ? `${basePath}/${key}` : basePath;
 }
 
@@ -335,7 +338,7 @@ export function joinPropsPath(
  * userPath("user123", "chatUnreadCount") // Returns "vibe/users/user123/chatUnreadCount"
  */
 export function userPath(uid: string, field?: string): string {
-  const basePath = `vibe/users/${uid}`;
+  const basePath = `${ROOT_FOLDER}/users/${uid}`;
   return field ? `${basePath}/${field}` : basePath;
 }
 
@@ -359,7 +362,7 @@ export function messagePath(
   messageId: string,
   field?: string
 ): string {
-  const basePath = `vibe/chat/messages/${roomId}/${messageId}`;
+  const basePath = `${ROOT_FOLDER}/chat/messages/${roomId}/${messageId}`;
   return field ? `${basePath}/${field}` : basePath;
 }
 

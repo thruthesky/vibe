@@ -27,9 +27,11 @@
 파이어베이스 클라우드 함수는 서버리스 환경에서 백엔드 코드를 실행할 수 있는 기능을 제공합니다. Vibe 프로젝트에서는 채팅 메시지 생성 시 자동으로 실행되는 백그라운드 함수를 구현하여 다음과 같은 작업을 자동화합니다:
 
 - **채팅방 정보 업데이트**: 마지막 메시지, 시간 등
-- **사용자 참여 정보 업데이트**: 채팅방 목록 (`/vibe/chat/joins`)의 정렬 필드 (`order`, `singleOrder`, `groupOrder`) 자동 업데이트
+- **사용자 참여 정보 업데이트**: 채팅방 목록 (`/{ROOT_FOLDER}/chat/joins`)의 정렬 필드 (`order`, `singleOrder`, `groupOrder`) 자동 업데이트
 - **읽지 않은 메시지 수 관리**: 사용자별 unread count 자동 계산
 - **프로토콜 메시지 필터링**: 시스템 메시지 제외
+
+**참고**: 이 문서에서 사용하는 경로는 모두 `/{ROOT_FOLDER}/` 접두사를 사용합니다. `ROOT_FOLDER`는 `firebase/functions/src/firebase.config.ts`에 정의된 상수로, 현재 기본값은 `"vibe"`입니다. 따라서 실제 경로는 `/{ROOT_FOLDER}/chat/joins` 형태가 됩니다.
 
 이 문서에서는 파이어베이스 클라우드 함수를 개발할 때 따라야 할 지침들을 안내합니다.
 
@@ -255,7 +257,7 @@ export const onChatMessageCreated = onValueCreated(
 
 #### 트리거 경로
 
-`/vibe/chat/messages/{roomId}/{messageId}`
+`/{ROOT_FOLDER}/chat/messages/{roomId}/{messageId}`
 
 - 이 경로에 **새로운 데이터가 생성**되면 자동으로 함수 실행
 - `{roomId}`, `{messageId}`는 와일드카드 파라미터
@@ -312,12 +314,12 @@ await updateOnMessageCreatedForSingleChat(roomId, messageId, messageData);
 
 **처리 내역**:
 - 채팅방 lastMessage, lastMessageSentAt 업데이트
-- 사용자별 `/vibe/chat/joins/<uid>/<roomId>` 업데이트:
+- 사용자별 `/{ROOT_FOLDER}/chat/joins/<uid>/<roomId>` 업데이트:
   - `order`: 모든 채팅방 정렬용
   - `singleOrder`: 1:1 채팅방 정렬용
   - `lastMessage`, `lastMessageSentAt`: 최신 메시지 정보
 - 읽지 않은 메시지 수 (`unreadCount`) 관리
-- 에러 발생 시 `/vibe/chat/joins/<uid>/<roomId>/error` 경로에 에러 저장 (Error Saving 패턴)
+- 에러 발생 시 `/{ROOT_FOLDER}/chat/joins/<uid>/<roomId>/error` 경로에 에러 저장 (Error Saving 패턴)
 
 ---
 
@@ -417,8 +419,8 @@ Region이 일치하지 않으면 함수가 트리거되지 않습니다!
 
 - **1:1 채팅방 roomId**: `uid1---uid2` (세 개의 대시 `---`)
 - **그룹 채팅방 roomId**: `group-xxx` (예: `group-abc123`)
-- **메시지 경로**: `/vibe/chat/messages/<room-id>/<message-id>`
-- **참여 정보 경로**: `/vibe/chat/joins/<login-uid>/<room-id>`
+- **메시지 경로**: `/{ROOT_FOLDER}/chat/messages/<room-id>/<message-id>`
+- **참여 정보 경로**: `/{ROOT_FOLDER}/chat/joins/<login-uid>/<room-id>`
 
 ### 7.5 Firebase Admin 모듈
 

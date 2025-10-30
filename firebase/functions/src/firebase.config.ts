@@ -1,3 +1,4 @@
+export const ROOT_FOLDER = "vibe";
 export const UID = "uid";
 export const USERS = "users";
 export const FCM_TOKENS_PATH = "fcm-tokens";

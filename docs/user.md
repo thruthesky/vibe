@@ -49,7 +49,7 @@ Vibe 프로젝트의 **사용자 관리 시스템**은 다음 두 가지 기술 
 ### RTDB의 사용자 정보 구조
 
 ```
-/vibe/users/
+/{ROOT_FOLDER}/users/
 ├── <uid1>/
 │   ├── displayName: "사용자1"
 │   ├── email: "user1@example.com"
@@ -79,7 +79,7 @@ Vibe 프로젝트의 **사용자 관리 시스템**은 다음 두 가지 기술 
 4. 저장 버튼 클릭 시 RTDB에 저장
 5. 저장 완료 후 홈페이지로 리다이렉트
 
-**저장 위치**: `/vibe/users/<uid>/displayName`
+**저장 위치**: `/{ROOT_FOLDER}/users/<uid>/displayName`
 
 **수정할 수 있는 정보**:
 - ✅ displayName (사용자 이름)
@@ -120,7 +120,7 @@ async function saveUserDisplayName(
 - `success` (boolean): 저장 성공 여부
 - `error` (string, 선택): 오류 메시지
 
-**저장 위치**: `/vibe/users/<uid>/displayName`
+**저장 위치**: `/{ROOT_FOLDER}/users/<uid>/displayName`
 
 **사용 예제**:
 ```typescript
@@ -148,7 +148,7 @@ async function getUserDisplayName(uid: string): Promise<string | null>
 **반환값**:
 - `string | null`: 저장된 displayName, 없으면 null
 
-**조회 위치**: `/vibe/users/<uid>/displayName`
+**조회 위치**: `/{ROOT_FOLDER}/users/<uid>/displayName`
 
 **사용 예제**:
 ```typescript
@@ -178,7 +178,7 @@ async function getUserData(
 **반환값**:
 - `{ [key: string]: any } | null`: 사용자 정보 객체, 없으면 null
 
-**조회 위치**: `/vibe/users/<uid>`
+**조회 위치**: `/{ROOT_FOLDER}/users/<uid>`
 
 **사용 예제**:
 ```typescript
@@ -210,7 +210,7 @@ async function saveUserData(
 - `success` (boolean): 저장 성공 여부
 - `error` (string, 선택): 오류 메시지
 
-**저장 위치**: `/vibe/users/<uid>`
+**저장 위치**: `/{ROOT_FOLDER}/users/<uid>`
 
 **사용 예제**:
 ```typescript
@@ -234,7 +234,7 @@ if (result.success) {
 - **파일**: `/app/auth/signup/page.tsx`
 - **기능**: 새로운 사용자 계정 생성
 - **입력**: 이메일, 비밀번호, displayName
-- **저장 위치**: Firebase Authentication + RTDB `/vibe/users/<uid>`
+- **저장 위치**: Firebase Authentication + RTDB `/{ROOT_FOLDER}/users/<uid>`
 
 ### `/auth/login` - 로그인
 - **파일**: `/app/auth/login/page.tsx`
@@ -252,16 +252,18 @@ if (result.success) {
 - **파일**: `/app/profile/page.tsx`
 - **기능**: displayName 수정
 - **입력**: 새로운 displayName
-- **저장 위치**: RTDB `/vibe/users/<uid>/displayName`
+- **저장 위치**: RTDB `/{ROOT_FOLDER}/users/<uid>/displayName`
 - **접근 제한**: 로그인한 사용자만 가능
 
 ---
 
 ## Firebase Realtime Database 구조
 
+**참고**: 이 문서에서 사용하는 경로는 모두 `/{ROOT_FOLDER}/` 접두사를 사용합니다. `ROOT_FOLDER`는 `app/app.config.ts`에 정의된 상수로, 현재 기본값은 `"vibe"`입니다. 따라서 실제 경로는 `/vibe/users` 형태가 됩니다.
+
 ### RTDB 경로 설명
 
-#### `/vibe/users/<uid>/displayName`
+#### `/{ROOT_FOLDER}/users/<uid>/displayName`
 
 **용도**: 사용자의 표시 이름 저장
 
@@ -269,8 +271,8 @@ if (result.success) {
 
 **예시**:
 ```
-/vibe/users/abc123xyz/displayName = "홍길동"
-/vibe/users/def456uvw/displayName = "김유신"
+/{ROOT_FOLDER}/users/abc123xyz/displayName = "홍길동"
+/{ROOT_FOLDER}/users/def456uvw/displayName = "김유신"
 ```
 
 **생성 시점**: 회원가입 또는 `/profile` 페이지에서 처음 저장 시
@@ -279,7 +281,7 @@ if (result.success) {
 1. `/profile` 페이지에서 수정
 2. 직접 `saveUserDisplayName()` 함수 호출
 
-#### `/vibe/users/<uid>` (전체 사용자 데이터)
+#### `/{ROOT_FOLDER}/users/<uid>` (전체 사용자 데이터)
 
 **용도**: 사용자의 모든 정보 저장
 
