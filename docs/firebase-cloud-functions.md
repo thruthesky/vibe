@@ -27,7 +27,7 @@
 파이어베이스 클라우드 함수는 서버리스 환경에서 백엔드 코드를 실행할 수 있는 기능을 제공합니다. Vibe 프로젝트에서는 채팅 메시지 생성 시 자동으로 실행되는 백그라운드 함수를 구현하여 다음과 같은 작업을 자동화합니다:
 
 - **채팅방 정보 업데이트**: 마지막 메시지, 시간 등
-- **사용자 참여 정보 업데이트**: 채팅방 목록 (`/chat/joins`)의 정렬 필드 (`order`, `singleOrder`, `groupOrder`) 자동 업데이트
+- **사용자 참여 정보 업데이트**: 채팅방 목록 (`/vibe/chat/joins`)의 정렬 필드 (`order`, `singleOrder`, `groupOrder`) 자동 업데이트
 - **읽지 않은 메시지 수 관리**: 사용자별 unread count 자동 계산
 - **프로토콜 메시지 필터링**: 시스템 메시지 제외
 
@@ -246,7 +246,7 @@ if (!admin.apps.length) {
 
 ```typescript
 export const onChatMessageCreated = onValueCreated(
-  "/chat/messages/{roomId}/{messageId}",
+  "/vibe/chat/messages/{roomId}/{messageId}",
   async (event: DatabaseEvent<DataSnapshot>) => {
     // 함수 본문
   }
@@ -255,7 +255,7 @@ export const onChatMessageCreated = onValueCreated(
 
 #### 트리거 경로
 
-`/chat/messages/{roomId}/{messageId}`
+`/vibe/chat/messages/{roomId}/{messageId}`
 
 - 이 경로에 **새로운 데이터가 생성**되면 자동으로 함수 실행
 - `{roomId}`, `{messageId}`는 와일드카드 파라미터
@@ -312,12 +312,12 @@ await updateOnMessageCreatedForSingleChat(roomId, messageId, messageData);
 
 **처리 내역**:
 - 채팅방 lastMessage, lastMessageSentAt 업데이트
-- 사용자별 `/chat/joins/<uid>/<roomId>` 업데이트:
+- 사용자별 `/vibe/chat/joins/<uid>/<roomId>` 업데이트:
   - `order`: 모든 채팅방 정렬용
   - `singleOrder`: 1:1 채팅방 정렬용
   - `lastMessage`, `lastMessageSentAt`: 최신 메시지 정보
 - 읽지 않은 메시지 수 (`unreadCount`) 관리
-- 에러 발생 시 `/chat/joins/<uid>/<roomId>/error` 경로에 에러 저장 (Error Saving 패턴)
+- 에러 발생 시 `/vibe/chat/joins/<uid>/<roomId>/error` 경로에 에러 저장 (Error Saving 패턴)
 
 ---
 
@@ -347,7 +347,7 @@ await updateOnMessageCreatedForSingleChat(roomId, messageId, messageData);
 ```typescript
 // index.ts (트리거 함수) - 단순하게!
 export const onChatMessageCreated = onValueCreated(
-  "/chat/messages/{roomId}/{messageId}",
+  "/vibe/chat/messages/{roomId}/{messageId}",
   async (event) => {
     const roomId = event.params.roomId;
     const messageData = event.data.val();
