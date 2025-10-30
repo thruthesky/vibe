@@ -28,7 +28,7 @@ Vibe 프로젝트의 **채팅 시스템**은 다음 기술 스택을 활용합�
 
 ### 핵심 개념
 
-- **채팅방 ID (roomId)**: `uid1-uid2` 형식 (알파벳 순서로 정렬된 두 UID)
+- **채팅방 ID (roomId)**: 1:1 채팅에서는 `uid1---uid2` 형식 (알파벳 순서로 정렬된 두 UID를 `---`로 연결)
 - **메시지**: 발신자, 메시지 내용, 전송 시간 포함
 - **실시간 동기화**: Firebase의 `onValue` 함수를 사용한 실시간 메시지 수신
 
@@ -104,7 +104,7 @@ interface ChatMessage {
 
 ```typescript
 interface ChatJoin {
-  roomId: string;                  // 채팅방 ID (uid1-uid2 또는 그룹 채팅방 ID)
+  roomId: string;                  // 채팅방 ID (1:1 채팅: uid1---uid2, 그룹 채팅: group-xxx)
   createdAt: number;               // 채팅방 생성 시간
   lastMessage?: string;            // 마지막 메시지 내용
   lastMessageSentAt?: number;      // 마지막 메시지 전송 시간
@@ -117,7 +117,7 @@ interface ChatJoin {
 **설명**:
 - `/vibe/chat/joins`는 **1:1 채팅뿐만 아니라 모든 채팅방 입장 정보를 담음**
 - 사용자가 입장한 모든 채팅방의 relation 정보 저장
-- `users` 필드는 없음 (1:1 채팅의 경우 roomId에 `<myUid-otherUid>` 형식으로 사용자 정보가 포함됨)
+- `users` 필드는 없음 (1:1 채팅의 경우 roomId에 `<myUid---otherUid>` 형식으로 사용자 정보가 포함됨)
 - 로그인한 사용자의 채팅방 목록을 `/vibe/chat/joins/<myUid>` 경로에서 조회
 
 **정렬 필드 (Firebase Cloud Functions 자동 관리)**:
@@ -153,7 +153,7 @@ interface ChatRoom {
 ```
 /vibe/chat/
 ├── messages/                     # 모든 채팅 메시지 (1:1 및 그룹)
-│   └── <room-id>/                # 예: "abc123xyz-def456uvw"
+│   └── <room-id>/                # 예: "abc123xyz---def456uvw" (1:1) 또는 "group-abc123" (그룹)
 │       └── <message-id>/         # Firebase가 자동 생성
 │           ├── sender: "abc123xyz"
 │           ├── senderName: "홍길동"
@@ -163,7 +163,7 @@ interface ChatRoom {
 ├── joins/                        # 사용자별 채팅방 참여 목록 (모든 채팅방)
 │   └── <login-uid>/              # 로그인한 사용자 UID
 │       └── <room-id>/            # 참여한 채팅방 ID
-│           ├── roomId: "abc123xyz-def456uvw"
+│           ├── roomId: "abc123xyz---def456uvw"
 │           ├── createdAt: 1698473000000
 │           ├── lastMessage: "안녕하세요!"
 │           ├── lastMessageSentAt: 1698473000000
@@ -192,7 +192,7 @@ interface ChatRoom {
    - 사용자가 입장한 모든 채팅방의 참여 정보 (relation)
    - 1:1 채팅뿐만 아니라 그룹 채팅 입장 정보도 포함
    - 필드: `roomId`, `createdAt`, `lastMessage`, `lastMessageSentAt`, `order`, `singleOrder`, `groupOrder`
-   - **`users` 필드 없음** (1:1 채팅의 경우 roomId에 `<myUid-otherUid>` 형식으로 포함)
+   - **`users` 필드 없음** (1:1 채팅의 경우 roomId에 `<myUid---otherUid>` 형식으로 포함)
    - **정렬 필드**:
      - `order`: 모든 채팅방 함께 정렬
      - `singleOrder`: 1:1 채팅방만 정렬 (1:1 채팅방인 경우 `order`와 동일한 값)
@@ -262,7 +262,7 @@ function generateRoomId(uid1: string, uid2: string): string
 **예시**:
 ```typescript
 const roomId = generateRoomId("user123", "user456");
-// 결과: "user123-user456" 또는 "user456-user123" (알파벳 순서)
+// 결과: "user123---user456" 또는 "user456---user123" (알파벳 순서)
 ```
 
 ---
@@ -328,7 +328,7 @@ async function sendMessage(
 **사용 예제**:
 ```typescript
 const result = await sendMessage(
-  "abc123xyz-def456uvw",
+  "abc123xyz---def456uvw",
   "user123",
   "홍길동",
   "안녕하세요!"
@@ -358,7 +358,7 @@ async function getMessages(roomId: string): Promise<ChatMessage[]>
 
 **사용 예제**:
 ```typescript
-const messages = await getMessages("abc123xyz-def456uvw");
+const messages = await getMessages("abc123xyz---def456uvw");
 messages.forEach((msg) => {
   console.log(`${msg.senderName}: ${msg.text}`);
 });
@@ -387,7 +387,7 @@ function subscribeToMessages(
 **사용 예제**:
 ```typescript
 const unsubscribe = subscribeToMessages(
-  "abc123xyz-def456uvw",
+  "abc123xyz---def456uvw",
   (messages) => {
     console.log("업데이트된 메시지:", messages);
   }
@@ -445,7 +445,7 @@ async function getChatRoom(roomId: string): Promise<ChatRoom | null>
 
 **사용 예제**:
 ```typescript
-const room = await getChatRoom("abc123xyz-def456uvw");
+const room = await getChatRoom("abc123xyz---def456uvw");
 if (room) {
   console.log("채팅방 생성 시간:", new Date(room.createdAt));
 }
@@ -508,8 +508,8 @@ if (room) {
 **예시 (1:1 채팅방)**:
 ```json
 {
-  "abc123xyz-def456uvw": {
-    "roomId": "abc123xyz-def456uvw",
+  "abc123xyz---def456uvw": {
+    "roomId": "abc123xyz---def456uvw",
     "createdAt": 1698473000000,
     "lastMessage": "안녕하세요! 잘 지내세요?",
     "lastMessageSentAt": 1698473010000,
@@ -610,7 +610,7 @@ import { sendMessage } from "@/lib/chat";
 
 // 메시지 전송
 const result = await sendMessage(
-  "abc123xyz-def456uvw",
+  "abc123xyz---def456uvw",
   "user123",
   "홍길동",
   "안녕하세요!"
@@ -630,7 +630,7 @@ import { subscribeToMessages } from "@/lib/chat";
 
 // 메시지 실시간 구독
 const unsubscribe = subscribeToMessages(
-  "abc123xyz-def456uvw",
+  "abc123xyz---def456uvw",
   (messages) => {
     console.log("최신 메시지 목록:");
     messages.forEach((msg) => {
