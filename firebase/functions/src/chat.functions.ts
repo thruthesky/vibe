@@ -1,5 +1,9 @@
 import * as admin from "firebase-admin";
-import type { CreateChatMessageParams, UpdateInterface } from "./interfaces";
+import type {
+  CreateChatMessageParams,
+  UpdateInterface,
+} from "./chat.interfaces";
+import { getUser } from "./user.functions";
 
 import {
   FCM_SUBSCRIPTIONS_PATH,
@@ -22,7 +26,7 @@ import {
   MessageRequest,
   SendMessageToSubscription,
   SendMessageToUidsRequest,
-} from "./interfaces";
+} from "./chat.interfaces";
 
 /**
  * Handles chat message creation logic for single (1:1) chats.
@@ -88,83 +92,79 @@ export async function updateOnMessageCreatedForSingleChat(
       `[updateOnMessageCreatedForSingleChat] ✓ sentAt added to message ${messageId}`
     );
 
-    // Step 2: Get both users' displayName from chat/joins
-    const [senderJoinSnapshot, receiverJoinSnapshot] = await Promise.all([
-      admin
-        .database()
-        .ref(joinPath(senderUid, roomId, "displayName"))
-        .once("value"),
-      admin
-        .database()
-        .ref(joinPath(receiverUid, roomId, "displayName"))
-        .once("value"),
+    // Step 2: /users/<uid>에서 두 사용자의 displayName을 조회합니다
+    const [senderUserData, receiverUserData] = await Promise.all([
+      getUser(senderUid),
+      getUser(receiverUid),
     ]);
 
-    const senderDisplayName = senderJoinSnapshot.val() || "Unknown";
-    const receiverDisplayName = receiverJoinSnapshot.val() || "Unknown";
+    const senderDisplayName = senderUserData?.displayName || "사용자";
+    const receiverDisplayName = receiverUserData?.displayName || "사용자";
 
-    // Step 3: Prepare timestamps with "10" prefix for ordering
-    // By prefixing with "10", new messages appear at the top of the chat list
+    // Step 3: 정렬을 위해 "10" 접두사가 있는 타임스탐프를 준비합니다
+    // "10" 접두사를 붙이면 새 메시지가 채팅 목록의 맨 위에 표시됩니다
     const orderTimestamp = parseInt("10" + now);
 
-    // Step 4: Update chat joins for both users
+    // Step 4: 두 사용자의 chat joins를 업데이트합니다
     const joinUpdates: UpdateInterface = {};
 
-    // Update for receiver (person who receives the message)
+    // 수신자(메시지를 받는 사람)를 위한 업데이트
     joinUpdates[joinPath(receiverUid, roomId, "id")] = roomId;
     joinUpdates[joinPath(receiverUid, roomId, "text")] = messageData.text || "";
     joinUpdates[joinPath(receiverUid, roomId, "sentAt")] = now;
     joinUpdates[joinPath(receiverUid, roomId, "senderUid")] = senderUid;
     joinUpdates[joinPath(receiverUid, roomId, "otherName")] = senderDisplayName;
+    joinUpdates[joinPath(receiverUid, roomId, "otherNameLowerCase")] = senderDisplayName.toLowerCase();
     joinUpdates[joinPath(receiverUid, roomId, "order")] = orderTimestamp;
     joinUpdates[joinPath(receiverUid, roomId, "singleOrder")] = orderTimestamp;
 
-    // Update for sender (person who sent the message)
+    // 발신자(메시지를 보낸 사람)를 위한 업데이트
     joinUpdates[joinPath(senderUid, roomId, "id")] = roomId;
     joinUpdates[joinPath(senderUid, roomId, "text")] = messageData.text || "";
     joinUpdates[joinPath(senderUid, roomId, "sentAt")] = now;
     joinUpdates[joinPath(senderUid, roomId, "senderUid")] = senderUid;
     joinUpdates[joinPath(senderUid, roomId, "otherName")] = receiverDisplayName;
+    joinUpdates[joinPath(senderUid, roomId, "otherNameLowerCase")] = receiverDisplayName.toLowerCase();
     joinUpdates[joinPath(senderUid, roomId, "order")] = orderTimestamp;
     joinUpdates[joinPath(senderUid, roomId, "singleOrder")] = orderTimestamp;
 
-    // Step 5: Unread count management
-    // Receiver: increment unread count
-    // Sender: reset to 0
+    // Step 5: 읽지 않은 메시지 수 관리
+    // 수신자: 읽지 않은 메시지 수 증가
+    // 발신자: 0으로 초기화
     joinUpdates[joinPath(receiverUid, roomId, "unread")] =
       admin.database.ServerValue.increment(1);
     joinUpdates[joinPath(senderUid, roomId, "unread")] = 0;
 
-    // Store unread in join-props for performance
-    // IMPORTANT: Use roomId (not otherUid) as key
+    // 성능 최적화를 위해 join-props에 읽지 않은 메시지 수를 저장합니다
+    // 중요: roomId를 키로 사용합니다 (otherUid가 아닌)
     joinUpdates[joinPropsPath(receiverUid, "unread", roomId)] =
       admin.database.ServerValue.increment(1);
     joinUpdates[joinPropsPath(senderUid, "unread", roomId)] = 0;
 
-    // Execute batch update
+    // 일괄 업데이트 실행
     console.log(
-      `[updateOnMessageCreatedForSingleChat] Executing batch update for room ${roomId}`
+      `[updateOnMessageCreatedForSingleChat] 채팅방 ${roomId}에 대한 일괄 업데이트 실행 중`
     );
     console.log(
-      "[updateOnMessageCreatedForSingleChat] Update paths:",
+      "[updateOnMessageCreatedForSingleChat] 업데이트 경로:",
       Object.keys(joinUpdates)
     );
     await admin.database().ref().update(joinUpdates);
     console.log(
-      "[updateOnMessageCreatedForSingleChat] ✓ Single chat joins updated successfully"
+      "[updateOnMessageCreatedForSingleChat] ✓ 1:1 채팅 joins가 성공적으로 업데이트되었습니다"
     );
 
-    // Update users' total unread counts
+    // 사용자의 전체 읽지 않은 메시지 수 업데이트
     console.log(
-      `[updateOnMessageCreatedForSingleChat] Calling updateUsersUnreadCount for sender:${senderUid}, receiver:${receiverUid}`
+      `[updateOnMessageCreatedForSingleChat] 발신자:${senderUid}, 수신자:${receiverUid}에 대해 updateUsersUnreadCount 호출 중`
     );
     await updateUsersUnreadCount([senderUid, receiverUid]);
     console.log(
-      "[updateOnMessageCreatedForSingleChat] ✓ User unread counts updated successfully"
+      "[updateOnMessageCreatedForSingleChat] ✓ 사용자 읽지 않은 메시지 수가 성공적으로 업데이트되었습니다"
     );
 
-    // Step 6: Send notification to the receiver
-    console.log(`Sending notification to user ${receiverUid}`);
+    // Step 6: 수신자에게 알림 전송
+    console.log(`사용자 ${receiverUid}에게 알림 전송 중`);
     if (receiverUid && receiverUid !== senderUid) {
       await sendNotificationToUids({
         uids: [receiverUid],
@@ -183,15 +183,16 @@ export async function updateOnMessageCreatedForSingleChat(
   } catch (error) {
     const timestamp = Date.now();
     const errorMessage =
-      error instanceof Error ? error.message : "Unknown error occurred";
+      error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다";
 
+    // 에러 저장 패턴: 데이터베이스에 오류 정보를 저장합니다
     await admin
       .database()
       .ref(messagePath(roomId, messageId, `errors/${timestamp}`))
       .set(errorMessage);
 
     console.error(
-      `Error processing single chat message ${messageId}:`,
+      `1:1 채팅 메시지 ${messageId} 처리 중 오류 발생:`,
       errorMessage
     );
     throw error;
@@ -199,24 +200,23 @@ export async function updateOnMessageCreatedForSingleChat(
 }
 
 /**
- * Checks if the provided roomId is a single chat room id.
- * @param {string} roomId - The chat room id to check
- * @return {boolean} True if the roomId is a single chat room id,
- * otherwise false.
+ * 주어진 roomId가 1:1 채팅방 ID인지 확인합니다.
+ * @param {string} roomId - 확인할 채팅방 ID
+ * @return {boolean} roomId가 1:1 채팅방 ID인 경우 true, 그렇지 않으면 false
  */
 export function isSingleChatRoomId(roomId: string): boolean {
   return roomId.includes(ROOM_SEPARATOR);
 }
 
 /**
- * Returns the other user's uid from the 1:1 chat room ID.
- * If it is a group chat room ID, it returns null.
- * If the user didn't login, it returns null.
- * If the user chat him self, return his id.
+ * 1:1 채팅방 ID에서 다른 사용자의 uid를 반환합니다.
+ * 그룹 채팅방 ID인 경우 null을 반환합니다.
+ * 사용자가 로그인하지 않은 경우 null을 반환합니다.
+ * 사용자가 자신과 채팅하는 경우 자신의 ID를 반환합니다.
  *
- * @param {string} roomId - The chat room id.
- * @param {string} myUid - The user's Firebase Auth UID.
- * @return {string|null} The other user's UID or null
+ * @param {string} roomId - 채팅방 ID
+ * @param {string} myUid - 사용자의 Firebase Auth UID
+ * @return {string|null} 다른 사용자의 UID 또는 null
  */
 export function getOtherUserUidFromRoomId(
   roomId: string,
@@ -238,19 +238,18 @@ export function getOtherUserUidFromRoomId(
 }
 
 /**
- * Generate a single chat room ID from two user IDs
+ * 두 사용자 ID에서 1:1 채팅방 ID를 생성합니다
  *
- * Creates a deterministic room ID for 1:1 chats by sorting the UIDs.
- * This ensures the same room ID is generated regardless of the order
- * the UIDs are provided.
+ * UID를 정렬하여 1:1 채팅에 대한 결정론적 채팅방 ID를 생성합니다.
+ * 이를 통해 UID가 제공되는 순서와 관계없이 동일한 채팅방 ID가 생성됩니다.
  *
- * @param {string} uid1 - First user ID
- * @param {string} uid2 - Second user ID
- * @return {string} Room ID in format "uid1---uid2" (sorted)
+ * @param {string} uid1 - 첫 번째 사용자 ID
+ * @param {string} uid2 - 두 번째 사용자 ID
+ * @return {string} "uid1---uid2" 형식의 채팅방 ID (정렬됨)
  *
  * @example
- * makeSingleChatRoomId("user123", "user456") // Returns "user123---user456"
- * makeSingleChatRoomId("user456", "user123") // Returns "user123---user456" (same)
+ * makeSingleChatRoomId("user123", "user456") // "user123---user456" 반환
+ * makeSingleChatRoomId("user456", "user123") // "user123---user456" 반환 (동일)
  */
 export function makeSingleChatRoomId(uid1: string, uid2: string): string {
   if (uid1 === uid2) {
@@ -261,19 +260,19 @@ export function makeSingleChatRoomId(uid1: string, uid2: string): string {
 }
 
 /**
- * Generate path for chat joins
+ * 채팅 joins 경로를 생성합니다
  *
- * Returns the database path for a user's chat join entry.
- * Optionally include a specific field within the join.
+ * 사용자의 채팅 joins 엔트리에 대한 데이터베이스 경로를 반환합니다.
+ * 선택적으로 join 내의 특정 필드를 포함할 수 있습니다.
  *
- * @param {string} uid - User ID
- * @param {string} roomId - Room ID
- * @param {string} [field] - Optional field name within the join
- * @return {string} Database path for chat join
+ * @param {string} uid - 사용자 ID
+ * @param {string} roomId - 채팅방 ID
+ * @param {string} [field] - join 내의 선택적 필드명
+ * @return {string} 채팅 joins의 데이터베이스 경로
  *
  * @example
- * joinPath("user123", "room-abc") // Returns "{ROOT_FOLDER}/chat/joins/user123/room-abc"
- * joinPath("user123", "room-abc", "order") // Returns "{ROOT_FOLDER}/chat/joins/user123/room-abc/order"
+ * joinPath("user123", "room-abc") // "{ROOT_FOLDER}/chat/joins/user123/room-abc" 반환
+ * joinPath("user123", "room-abc", "order") // "{ROOT_FOLDER}/chat/joins/user123/room-abc/order" 반환
  */
 export function joinPath(uid: string, roomId: string, field?: string): string {
   const basePath = `${ROOT_FOLDER}/chat/joins/${uid}/${roomId}`;
@@ -281,19 +280,19 @@ export function joinPath(uid: string, roomId: string, field?: string): string {
 }
 
 /**
- * Generate path for chat join properties
+ * 채팅 join 속성 경로를 생성합니다
  *
- * Returns the database path for chat join properties.
- * These properties are stored separately from joins for efficient querying.
+ * 채팅 join 속성에 대한 데이터베이스 경로를 반환합니다.
+ * 이러한 속성들은 효율적인 쿼리를 위해 joins와 별도로 저장됩니다.
  *
- * @param {string} uid - User ID
- * @param {string} field - Property field name (e.g., "unread", "singleOrder")
- * @param {string} [key] - Optional key within the field
- * @return {string} Database path for chat join property
+ * @param {string} uid - 사용자 ID
+ * @param {string} field - 속성 필드명 (예: "unread", "singleOrder")
+ * @param {string} [key] - 필드 내의 선택적 키
+ * @return {string} 채팅 join 속성의 데이터베이스 경로
  *
  * @example
- * joinPropsPath("user123", "unread") // Returns "{ROOT_FOLDER}/chat/join-props/user123/unread"
- * joinPropsPath("user123", "unread", "user456") // Returns "{ROOT_FOLDER}/chat/join-props/user123/unread/user456"
+ * joinPropsPath("user123", "unread") // "{ROOT_FOLDER}/chat/join-props/user123/unread" 반환
+ * joinPropsPath("user123", "unread", "user456") // "{ROOT_FOLDER}/chat/join-props/user123/unread/user456" 반환
  */
 export function joinPropsPath(
   uid: string,
@@ -305,18 +304,18 @@ export function joinPropsPath(
 }
 
 /**
- * Generate path for user data
+ * 사용자 데이터 경로를 생성합니다
  *
- * Returns the database path for a user's data.
- * Optionally include a specific field within the user data.
+ * 사용자 데이터에 대한 데이터베이스 경로를 반환합니다.
+ * 선택적으로 사용자 데이터 내의 특정 필드를 포함할 수 있습니다.
  *
- * @param {string} uid - User ID
- * @param {string} [field] - Optional field name within the user data
- * @return {string} Database path for user data
+ * @param {string} uid - 사용자 ID
+ * @param {string} [field] - 사용자 데이터 내의 선택적 필드명
+ * @return {string} 사용자 데이터의 데이터베이스 경로
  *
  * @example
- * userPath("user123") // Returns "{ROOT_FOLDER}/users/user123"
- * userPath("user123", "chatUnreadCount") // Returns "{ROOT_FOLDER}/users/user123/chatUnreadCount"
+ * userPath("user123") // "{ROOT_FOLDER}/users/user123" 반환
+ * userPath("user123", "chatUnreadCount") // "{ROOT_FOLDER}/users/user123/chatUnreadCount" 반환
  */
 export function userPath(uid: string, field?: string): string {
   const basePath = `${ROOT_FOLDER}/users/${uid}`;
@@ -324,19 +323,19 @@ export function userPath(uid: string, field?: string): string {
 }
 
 /**
- * Generate path for chat messages
+ * 채팅 메시지 경로를 생성합니다
  *
- * Returns the database path for a chat message.
- * Optionally include a specific field within the message.
+ * 채팅 메시지에 대한 데이터베이스 경로를 반환합니다.
+ * 선택적으로 메시지 내의 특정 필드를 포함할 수 있습니다.
  *
- * @param {string} roomId - Room ID
- * @param {string} messageId - Message ID
- * @param {string} [field] - Optional field name within the message
- * @return {string} Database path for chat message
+ * @param {string} roomId - 채팅방 ID
+ * @param {string} messageId - 메시지 ID
+ * @param {string} [field] - 메시지 내의 선택적 필드명
+ * @return {string} 채팅 메시지의 데이터베이스 경로
  *
  * @example
- * messagePath("room-abc", "msg-123") // Returns "{ROOT_FOLDER}/chat/messages/room-abc/msg-123"
- * messagePath("room-abc", "msg-123", "errors/1234567890") // Returns "{ROOT_FOLDER}/chat/messages/room-abc/msg-123/errors/1234567890"
+ * messagePath("room-abc", "msg-123") // "{ROOT_FOLDER}/chat/messages/room-abc/msg-123" 반환
+ * messagePath("room-abc", "msg-123", "errors/1234567890") // "{ROOT_FOLDER}/chat/messages/room-abc/msg-123/errors/1234567890" 반환
  */
 export function messagePath(
   roomId: string,
@@ -348,33 +347,33 @@ export function messagePath(
 }
 
 /**
- * Extracts the first image URL from the message data.
- * If no image URLs are present, returns null.
+ * 메시지 데이터에서 첫 번째 이미지 URL을 추출합니다.
+ * 이미지 URL이 없으면 null을 반환합니다.
  *
  *
  * @example
  * ```typescript
  * const messageDataWithImages: CreateChatMessageParams = {
  *   id: "msg-123",
- *   text: "Check out these images",
+ *   text: "이 이미지들을 확인하세요",
  *   senderUid: "user-456",
  *   createdAt: Date.now(),
  *   urls: ["https://example.com/image1.jpg", "https://example.com/image2.jpg"]
  * };
  * const firstImageUrl = getFirstImageUrlFromMessageData(messageDataWithImages);
- * // firstImageUrl will be "https://example.com/image1.jpg"
+ * // firstImageUrl은 "https://example.com/image1.jpg"
  *
  * const messageDataWithoutImages: CreateChatMessageParams = {
  *   id: "msg-124",
- *   text: "No images here",
+ *   text: "여기에 이미지가 없습니다",
  *   senderUid: "user-789",
  *   createdAt: Date.now()
  * };
  * const noImageUrl = getFirstImageUrlFromMessageData(messageDataWithoutImages);
- * // noImageUrl will be null
+ * // noImageUrl은 null
  * ```
- * @param {CreateChatMessageParams} messageData - The message data
- * @return {string | null} The first image URL or null if none exist
+ * @param {CreateChatMessageParams} messageData - 메시지 데이터
+ * @return {string | null} 첫 번째 이미지 URL 또는 없으면 null
  */
 export function getFirstImageUrlFromMessageData(
   messageData: CreateChatMessageParams

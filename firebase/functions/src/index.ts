@@ -12,8 +12,8 @@ import { setGlobalOptions } from "firebase-functions";
 import { onValueCreated } from "firebase-functions/v2/database";
 import { DataSnapshot } from "firebase-admin/database";
 import type { DatabaseEvent } from "firebase-functions/v2/database";
-import { CreateChatMessageParams } from "./interfaces";
-import { updateOnMessageCreatedForSingleChat } from "./functions";
+import { CreateChatMessageParams } from "./chat.interfaces";
+import { updateOnMessageCreatedForSingleChat } from "./chat.functions";
 import { ROOT_FOLDER } from "./firebase.config";
 
 // 환경에 따른 설정
@@ -102,7 +102,9 @@ export const onVibeChatMessageCreated = onValueCreated(
 
     // 단계 1: 프로토콜 메시지 건너뛰기 (join/leave와 같은 시스템 메시지)
     if (messageData.protocol) {
-      console.log(`채팅방 ${roomId}의 프로토콜 메시지 ${messageId}를 건너뜁니다`);
+      console.log(
+        `채팅방 ${roomId}의 프로토콜 메시지 ${messageId}를 건너뜁니다`
+      );
       return;
     }
 

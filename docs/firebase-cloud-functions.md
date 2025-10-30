@@ -368,14 +368,14 @@ await admin.database().ref().update(messageUpdates);
 **Step 2: 양측 사용자의 chat/joins 업데이트**
 
 ```typescript
-// chat/joins에서 displayName 조회
-const [senderJoinSnapshot, receiverJoinSnapshot] = await Promise.all([
-  admin.database().ref(joinPath(senderUid, roomId, "displayName")).once("value"),
-  admin.database().ref(joinPath(receiverUid, roomId, "displayName")).once("value"),
+// /users/<uid>에서 displayName 조회
+const [senderUserData, receiverUserData] = await Promise.all([
+  getUser(senderUid),
+  getUser(receiverUid),
 ]);
 
-const senderDisplayName = senderJoinSnapshot.val() || "Unknown";
-const receiverDisplayName = receiverJoinSnapshot.val() || "Unknown";
+const senderDisplayName = senderUserData?.displayName || "사용자";
+const receiverDisplayName = receiverUserData?.displayName || "사용자";
 
 // order timestamp에 "10" 접두사 추가
 const orderTimestamp = parseInt("10" + now);
@@ -389,7 +389,7 @@ joinUpdates[joinPath(receiverUid, roomId, "text")] = messageData.text || "";
 joinUpdates[joinPath(receiverUid, roomId, "sentAt")] = now;
 joinUpdates[joinPath(receiverUid, roomId, "senderUid")] = senderUid;
 joinUpdates[joinPath(receiverUid, roomId, "otherName")] = senderDisplayName;
-joinUpdates[joinPath(receiverUid, roomId, "otherName_LowerCase")] = senderDisplayName.toLowerCase();
+joinUpdates[joinPath(receiverUid, roomId, "otherNameLowerCase")] = senderDisplayName.toLowerCase();
 joinUpdates[joinPath(receiverUid, roomId, "order")] = orderTimestamp;
 joinUpdates[joinPath(receiverUid, roomId, "singleOrder")] = orderTimestamp;
 joinUpdates[joinPath(receiverUid, roomId, "unread")] = admin.database.ServerValue.increment(1);
@@ -400,7 +400,7 @@ joinUpdates[joinPath(senderUid, roomId, "text")] = messageData.text || "";
 joinUpdates[joinPath(senderUid, roomId, "sentAt")] = now;
 joinUpdates[joinPath(senderUid, roomId, "senderUid")] = senderUid;
 joinUpdates[joinPath(senderUid, roomId, "otherName")] = receiverDisplayName;
-joinUpdates[joinPath(senderUid, roomId, "otherName_LowerCase")] = receiverDisplayName.toLowerCase();
+joinUpdates[joinPath(senderUid, roomId, "otherNameLowerCase")] = receiverDisplayName.toLowerCase();
 joinUpdates[joinPath(senderUid, roomId, "order")] = orderTimestamp;
 joinUpdates[joinPath(senderUid, roomId, "singleOrder")] = orderTimestamp;
 joinUpdates[joinPath(senderUid, roomId, "unread")] = 0;
@@ -418,7 +418,7 @@ await admin.database().ref().update(joinUpdates);
       sentAt: 1698473000000
       senderUid: "user-A-uid"
       otherName: "User B"          ← 상대방 이름
-      otherName_LowerCase: "user b"
+      otherNameLowerCase: "user b"
       order: 101698473000000       ← "10" 접두사
       singleOrder: 101698473000000
       unread: 0                    ← 발신자는 0
@@ -430,7 +430,7 @@ await admin.database().ref().update(joinUpdates);
       sentAt: 1698473000000
       senderUid: "user-A-uid"
       otherName: "User A"          ← 상대방 이름
-      otherName_LowerCase: "user a"
+      otherNameLowerCase: "user a"
       order: 101698473000000       ← "10" 접두사
       singleOrder: 101698473000000
       unread: 1                    ← 수신자는 +1
@@ -489,8 +489,9 @@ const orderTimestamp = parseInt("10" + timestamp);
 **각 사용자의 chat/joins에 상대방 이름을 저장하는 이유**:
 
 1. **성능 최적화**:
-   - 채팅방 목록 조회 시 상대방 이름을 바로 표시 가능
-   - 별도의 `users/{uid}/displayName` 조회 불필요 → 네트워크 요청 감소
+   - 채팅방 목록 조회 시 `chat/joins` 정보에서 상대방 이름을 바로 표시 가능
+   - 채팅방 목록 페이지에서 추가 조회 불필요 → 페이지 로딩 속도 향상
+   - Cloud Functions에서 자동으로 저장되므로 클라이언트가 별도로 처리할 필요 없음
 
 2. **데이터 구조**:
    ```typescript
@@ -504,7 +505,7 @@ const orderTimestamp = parseInt("10" + timestamp);
    ```
 
 3. **검색 최적화**:
-   - `otherName_LowerCase` 필드로 대소문자 무관 검색 지원
+   - `otherNameLowerCase` 필드로 대소문자 무관 검색 지원
    - 채팅방 목록에서 상대방 이름으로 필터링 가능
 
 ---

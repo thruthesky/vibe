@@ -277,22 +277,22 @@ await sendMessage(roomId, senderUid, text);
   text: "안녕하세요"
   sentAt: 1234567890
   senderUid: "userA"
-  otherName: "B의이름"           ← 상대방 이름 (채팅방 목록에 표시)
-  otherName_LowerCase: "b의이름"  ← 대소문자 구분 없이 검색용
-  order: 101234567890            ← "10" + timestamp (정렬용)
-  singleOrder: 101234567890      ← 1:1 채팅 정렬용
-  unread: 0                      ← 발신자는 0
+  otherName: "B의이름"              ← 상대방 이름 (채팅방 목록에 표시)
+  otherNameLowerCase: "b의이름"     ← 대소문자 구분 없이 검색용
+  order: 101234567890               ← "10" + timestamp (정렬용)
+  singleOrder: 101234567890         ← 1:1 채팅 정렬용
+  unread: 0                         ← 발신자는 0
 
 /{ROOT_FOLDER}/chat/joins/userB/A---B:
   id: "A---B"
   text: "안녕하세요"
   sentAt: 1234567890
   senderUid: "userA"
-  otherName: "A의이름"           ← 상대방 이름
-  otherName_LowerCase: "a의이름"
-  order: 101234567890            ← 동일한 timestamp
+  otherName: "A의이름"              ← 상대방 이름
+  otherNameLowerCase: "a의이름"     ← 대소문자 구분 없이 검색용
+  order: 101234567890               ← 동일한 timestamp
   singleOrder: 101234567890
-  unread: 1                      ← 수신자는 +1
+  unread: 1                         ← 수신자는 +1
 ```
 
 **`order` 필드에 "10" prefix를 사용하는 이유**:
@@ -395,8 +395,7 @@ async function joinChatRoom(
 {
   roomId: "myUid---otherUid",
   createdAt: timestamp,
-  order: timestamp,
-  displayName: otherDisplayName  // 상대방 이름
+  order: timestamp
 }
 ```
 
