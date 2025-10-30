@@ -7,8 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { auth } from "@/lib/firebase";
 import { getUserDisplayName } from "@/lib/user";
 import {
-  generateRoomId,
-  createChatRoom,
+  joinChatRoom,
   sendMessage,
   getMessages,
   subscribeToMessages,
@@ -98,21 +97,21 @@ function ChatRoomContent() {
     fetchOtherUserName();
   }, [otherId]);
 
-  // 채팅방 생성 및 메시지 로드
+  // 채팅방 입장 및 메시지 로드
   useEffect(() => {
-    if (!currentUserId || !otherId) return;
+    if (!currentUserId || !otherId || !otherUserName) return;
 
     async function initializeChat() {
       try {
         setError("");
 
-        // 채팅방 생성 (이미 위에서 null 체크를 했으므로 타입 단언 사용)
-        const createResult = await createChatRoom(currentUserId!, otherId!);
-        if (!createResult.success || !createResult.roomId) {
-          throw new Error("채팅방 생성에 실패했습니다.");
+        // 채팅방 입장 (본인의 chat/joins에만 저장)
+        const joinResult = await joinChatRoom(currentUserId!, otherId!, otherUserName);
+        if (!joinResult.success || !joinResult.roomId) {
+          throw new Error("채팅방 입장에 실패했습니다.");
         }
 
-        const newRoomId = createResult.roomId;
+        const newRoomId = joinResult.roomId;
         setRoomId(newRoomId);
 
         // 기존 메시지 로드
@@ -140,7 +139,7 @@ function ChatRoomContent() {
     }
 
     initializeChat();
-  }, [currentUserId, otherId]);
+  }, [currentUserId, otherId, otherUserName]);
 
   // 메시지 자동 스크롤
   useEffect(() => {

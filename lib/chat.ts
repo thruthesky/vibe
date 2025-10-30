@@ -55,38 +55,66 @@ export function generateRoomId(uid1: string, uid2: string): string {
 }
 
 /**
- * 1:1 채팅방 ID를 생성하고 반환합니다.
- * ⚠️ 주의: 1:1 채팅은 chat/rooms에 저장하지 않습니다.
- * Firebase Cloud Functions가 첫 메시지 전송 시 chat/joins에 자동으로 생성합니다.
+ * 1:1 채팅방에 입장합니다.
+ * ⚠️ 주의: 본인(myUid)의 chat/joins에만 저장하고, 상대방에게는 아무것도 생성하지 않습니다.
+ * 상대방의 chat/joins는 Firebase Cloud Functions가 메시지 전송 시 자동으로 생성합니다.
  *
- * @param uid1 - 첫 번째 사용자 ID
- * @param uid2 - 두 번째 사용자 ID
+ * 저장 위치: /{ROOT_FOLDER}/chat/joins/<myUid>/<roomId>
+ *
+ * @param myUid - 현재 사용자 ID
+ * @param otherUid - 상대방 사용자 ID
+ * @param otherDisplayName - 상대방 표시 이름
  * @returns 생성된 채팅방 ID
  */
-export async function createChatRoom(
-  uid1: string,
-  uid2: string
+export async function joinChatRoom(
+  myUid: string,
+  otherUid: string,
+  otherDisplayName: string
 ): Promise<{ success: boolean; roomId?: string; error?: string }> {
   try {
-    if (!uid1 || !uid2) {
+    if (!myUid || !otherUid) {
       return {
         success: false,
         error: "사용자 ID가 필요합니다.",
       };
     }
 
-    // 1:1 채팅방 ID 생성 (chat/rooms에 저장하지 않음)
-    const roomId = generateRoomId(uid1, uid2);
+    // 1:1 채팅방 ID 생성
+    const roomId = generateRoomId(myUid, otherUid);
+
+    // 본인(myUid)의 chat/joins에만 저장
+    const joinRef = ref(rtdb, `${ROOT_FOLDER}/chat/joins/${myUid}/${roomId}`);
+
+    // 기존에 이미 입장한 채팅방인지 확인
+    const snapshot = await get(joinRef);
+    if (snapshot.exists()) {
+      // 이미 입장한 채팅방이면 기존 데이터 유지
+      return {
+        success: true,
+        roomId,
+      };
+    }
+
+    // 새로 입장하는 채팅방이면 생성
+    const timestamp = Date.now();
+    const joinData = {
+      roomId,
+      createdAt: timestamp,
+      order: timestamp,
+      displayName: otherDisplayName, // 상대방 이름 저장
+    };
+
+    await set(joinRef, joinData);
 
     return {
       success: true,
       roomId,
     };
   } catch (error: any) {
-    console.error("채팅방 ID 생성 실패:", error);
+    console.error("채팅방 입장 실패:", error);
     return {
       success: false,
-      error: error.message || "채팅방 ID 생성에 실패했습니다.",
+      error: error.message || "채팅방 입장에 실패했습니다.",
     };
   }
 }
