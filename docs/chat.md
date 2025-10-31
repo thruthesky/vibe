@@ -126,6 +126,80 @@ interface ChatJoin {
 - `groupOrder`: 그룹 채팅방만 따로 목록할 때 사용 (그룹 채팅방인 경우에만 `order`와 동일한 값 저장)
 - ⚠️ **중요**: 이 정렬 필드들은 Firebase Cloud Functions에서 자동으로 업데이트되므로 React.js 클라이언트에서 직접 업데이트할 필요 없음
 
+#### 왜 `chat/joins`에 중복 데이터를 저장하는가?
+
+`/{ROOT_FOLDER}/chat/joins/<uid>/<room-id>`에는 다른 경로에서도 조회할 수 있는 데이터들이 중복 저장됩니다. 이는 성능 최적화와 편의성을 위한 의도적인 설계입니다.
+
+**1. `displayName`, `displayNameLowerCase` 저장 이유**
+
+- **원본 위치**: `/{ROOT_FOLDER}/users/<otherUid>/displayName`
+- **중복 저장 위치**: `/{ROOT_FOLDER}/chat/joins/<myUid>/<room-id>/otherName`, `otherNameLowerCase`
+
+**왜 중복 저장하는가?**
+- ✅ **검색 기능**: 1:1 채팅방 목록에서 상대방 이름으로 검색할 때 필요
+- ✅ **실시간 필터링**: `otherNameLowerCase`를 사용하여 대소문자 구분 없이 빠르게 검색 가능
+- ✅ **성능 향상**: 채팅방 목록을 표시할 때마다 `/users/<otherUid>`를 조회하지 않아도 됨
+- ✅ **네트워크 최적화**: 한 번의 조회로 채팅방 목록과 상대방 이름을 모두 가져올 수 있음
+
+**예시**:
+```typescript
+// ❌ 중복 저장하지 않은 경우: N번의 조회 필요
+const chatRooms = await getChatRooms(myUid);  // 10개 채팅방
+for (const room of chatRooms) {
+  const otherUid = room.roomId.split('---').find(id => id !== myUid);
+  const otherUser = await getUser(otherUid);  // 10번 조회 (비효율적!)
+  console.log(otherUser.displayName);
+}
+
+// ✅ 중복 저장한 경우: 1번의 조회로 모든 정보 획득
+const chatRooms = await getChatRooms(myUid);  // 1번 조회
+for (const room of chatRooms) {
+  console.log(room.otherName);  // 이미 포함되어 있음 (효율적!)
+}
+
+// ✅ 검색 기능
+const filtered = chatRooms.filter(room =>
+  room.otherNameLowerCase.includes(searchText.toLowerCase())
+);
+```
+
+**2. `text` (마지막 메시지) 저장 이유**
+
+- **원본 위치**: `/{ROOT_FOLDER}/chat/messages/<room-id>/<message-id>/text`
+- **중복 저장 위치**: `/{ROOT_FOLDER}/chat/joins/<uid>/<room-id>/text`
+
+**왜 중복 저장하는가?**
+- ✅ **실시간 업데이트 관리**: 채팅방 목록에서 마지막 메시지를 실시간으로 listen(watch) 하기 편함
+- ✅ **성능 향상**: 채팅방 목록을 표시할 때마다 `/chat/messages/<room-id>`의 마지막 메시지를 조회하지 않아도 됨
+- ✅ **단일 리스너**: `chat/joins/<myUid>` 하나만 구독하면 모든 채팅방의 마지막 메시지 업데이트를 받을 수 있음
+- ✅ **효율적인 쿼리**: 여러 채팅방의 마지막 메시지를 각각 조회하지 않고 한 번에 가져올 수 있음
+
+**예시**:
+```typescript
+// ❌ 중복 저장하지 않은 경우: 복잡한 리스너 관리
+const chatRooms = await getChatRooms(myUid);
+for (const room of chatRooms) {
+  // 각 채팅방마다 별도 리스너 설정 (10개 리스너 = 비효율적!)
+  subscribeToLastMessage(room.roomId, (lastMsg) => {
+    updateChatRoomList(room.roomId, lastMsg);
+  });
+}
+
+// ✅ 중복 저장한 경우: 단일 리스너로 모든 업데이트 수신
+subscribeToJoins(myUid, (chatRooms) => {
+  // 모든 채팅방의 마지막 메시지가 이미 포함되어 있음
+  chatRooms.forEach(room => {
+    console.log(room.text);  // 마지막 메시지
+    console.log(room.sentAt);  // 전송 시간
+  });
+});
+```
+
+**데이터 일관성 관리**:
+- Firebase Cloud Functions가 메시지 전송 시 자동으로 `chat/joins`의 `text`, `sentAt` 필드를 업데이트
+- 클라이언트는 중복 데이터를 직접 관리할 필요 없음
+- 실시간 리스너만 설정하면 자동으로 최신 상태 유지
+
 ### 그룹 채팅방 정보 인터페이스
 
 **경로**: `/{ROOT_FOLDER}/chat/rooms/<room-id>` (그룹 채팅 전용)
