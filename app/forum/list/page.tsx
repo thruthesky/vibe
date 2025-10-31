@@ -5,8 +5,10 @@
 // 현재는 게시글이 없으므로 "게시글이 없습니다" 메시지를 표시합니다.
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { auth } from "@/lib/firebase";
+import { createPost, listenToPosts, type ForumPost } from "@/lib/forum";
+import { getUserDisplayName } from "@/lib/user";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -30,20 +32,32 @@ import { MessageSquarePlus } from "lucide-react";
 
 export default function ForumListPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [userId, setUserId] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string>("");
   const [authLoading, setAuthLoading] = useState(true);
+
+  // 쿼리 파라미터에서 카테고리 가져오기
+  const currentCategory = searchParams.get("category") || "community";
 
   // 글쓰기 모달 상태
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [postCategory, setPostCategory] = useState("");
   const [postTitle, setPostTitle] = useState("");
   const [postContent, setPostContent] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // 게시글 목록 상태
+  const [posts, setPosts] = useState<ForumPost[]>([]);
 
   // Firebase 인증 상태 확인
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
         setUserId(user.uid);
+        // 사용자 이름 가져오기
+        const displayName = await getUserDisplayName(user.uid);
+        setUserName(displayName || user.displayName || user.email || "익명");
       }
       // 인증 상태 확인 완료
       setAuthLoading(false);
@@ -51,6 +65,17 @@ export default function ForumListPage() {
 
     return () => unsubscribe();
   }, []);
+
+  // 게시글 목록 실시간 리스너
+  useEffect(() => {
+    // 현재 카테고리의 게시글 목록 리스너 설정
+    const unsubscribe = listenToPosts(currentCategory, 10, (posts) => {
+      setPosts(posts);
+    });
+
+    // 컴포넌트 언마운트 시 리스너 해제
+    return () => unsubscribe();
+  }, [currentCategory]);
 
   // 인증 상태 확인 중일 때 로딩 화면 표시
   if (authLoading) {
@@ -81,7 +106,7 @@ export default function ForumListPage() {
   };
 
   // 글쓰기 전송 핸들러
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!postCategory) {
       alert("카테고리를 선택해주세요.");
       return;
@@ -95,14 +120,43 @@ export default function ForumListPage() {
       return;
     }
 
-    // TODO: Firebase RTDB에 게시글 저장
-    alert(`카테고리: ${postCategory}\n제목: ${postTitle}\n내용: ${postContent}\n\n게시글 저장 기능은 곧 구현됩니다.`);
+    if (!userId || !userName) {
+      alert("로그인 정보를 확인할 수 없습니다.");
+      return;
+    }
 
-    // 모달 닫기 및 초기화
-    setIsDialogOpen(false);
-    setPostCategory("");
-    setPostTitle("");
-    setPostContent("");
+    // 전송 중 상태 활성화
+    setIsSubmitting(true);
+
+    try {
+      // Firebase RTDB에 게시글 저장
+      const result = await createPost(
+        postCategory,
+        userId,
+        userName,
+        postTitle,
+        postContent
+      );
+
+      if (result.success) {
+        // 모달 닫기 및 초기화
+        setIsDialogOpen(false);
+        setPostCategory("");
+        setPostTitle("");
+        setPostContent("");
+
+        // 해당 카테고리 페이지로 이동
+        router.push(`/forum/list?category=${postCategory}`);
+      } else {
+        alert(`게시글 저장 실패: ${result.error}`);
+      }
+    } catch (error) {
+      console.error("게시글 저장 오류:", error);
+      alert("게시글 저장 중 오류가 발생했습니다.");
+    } finally {
+      // 전송 중 상태 해제
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -125,16 +179,53 @@ export default function ForumListPage() {
         </div>
 
         {/* 게시글 목록 영역 */}
-        <div className="bg-slate-50 border border-slate-200 rounded-lg p-12">
-          <div className="text-center">
-            <p className="text-muted-foreground text-base">
-              게시글이 없습니다
-            </p>
-            <p className="text-muted-foreground text-sm mt-2">
-              첫 번째 게시글을 작성해보세요!
-            </p>
+        {posts.length === 0 ? (
+          <div className="bg-slate-50 border border-slate-200 rounded-lg p-12">
+            <div className="text-center">
+              <p className="text-muted-foreground text-base">
+                게시글이 없습니다
+              </p>
+              <p className="text-muted-foreground text-sm mt-2">
+                첫 번째 게시글을 작성해보세요!
+              </p>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="space-y-4">
+            {posts.map((post) => (
+              <div
+                key={post.postId}
+                className="bg-white border border-slate-200 rounded-lg p-6 hover:shadow-md transition-shadow cursor-pointer"
+              >
+                {/* 게시글 제목 */}
+                <h3 className="text-lg font-semibold text-slate-900 mb-2">
+                  {post.title}
+                </h3>
+
+                {/* 게시글 내용 미리보기 */}
+                <p className="text-sm text-slate-600 mb-4 line-clamp-2">
+                  {post.content}
+                </p>
+
+                {/* 게시글 메타 정보 */}
+                <div className="flex items-center justify-between text-xs text-slate-500">
+                  <div className="flex items-center gap-4">
+                    <span>작성자: {post.author}</span>
+                    <span>
+                      {new Date(post.createdAt).toLocaleDateString("ko-KR", {
+                        year: "numeric",
+                        month: "2-digit",
+                        day: "2-digit",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* 글쓰기 모달 다이얼로그 */}
@@ -190,10 +281,12 @@ export default function ForumListPage() {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={handleCancel}>
+            <Button variant="outline" onClick={handleCancel} disabled={isSubmitting}>
               취소
             </Button>
-            <Button onClick={handleSubmit}>전송</Button>
+            <Button onClick={handleSubmit} disabled={isSubmitting}>
+              {isSubmitting ? "전송 중..." : "전송"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
