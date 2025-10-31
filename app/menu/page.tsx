@@ -103,6 +103,16 @@ export default function MenuPage() {
                   <span>채팅</span>
                 </Link>
               </Button>
+
+              <Button
+                asChild
+                variant="ghost"
+                className="w-full justify-start rounded-2xl border border-transparent bg-[#fff4e6] py-3 text-sm font-semibold text-[#c24a00] hover:bg-[#ffe8d1]"
+              >
+                <Link href="/admin">
+                  <span>관리자 페이지</span>
+                </Link>
+              </Button>
             </div>
 
             {/* 로그아웃 버튼 */}
