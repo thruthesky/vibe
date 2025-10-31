@@ -3,6 +3,7 @@
 
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -16,29 +17,31 @@ import {
 import { Home, User, MessageCircle, FileText, Settings } from "lucide-react";
 
 export default function DesignPage() {
+  const t = useTranslations();
+
   return (
     <div className="relative min-h-screen bg-[#f0f2f5]">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(198,219,255,0.35),transparent_55%),radial-gradient(circle_at_bottom,_rgba(214,233,218,0.3),transparent_60%)]" />
       <div className="relative max-w-5xl mx-auto px-6 py-10 space-y-12">
         {/* 페이지 제목 */}
         <div className="space-y-3">
-          <h1 className="text-4xl font-bold text-foreground">Design Components</h1>
+          <h1 className="text-4xl font-bold text-foreground">{t("dev.design.title")}</h1>
           <p className="text-lg text-muted-foreground">
-            프로젝트에서 사용하는 디자인 컴포넌트와 스타일을 미리 확인할 수 있습니다.
+            {t("dev.design.subtitle")}
           </p>
           <div className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/90 px-3 py-1 text-xs font-medium text-[#1877f2] shadow-sm shadow-[#cfdbf4]/50 backdrop-blur">
             <span className="inline-flex h-2 w-2 rounded-full bg-[#44c46f] shadow-[0_0_6px_rgba(68,196,111,0.45)]" />
-            최신 UI 가이드 스냅샷
+            {t("dev.design.updateIndicator")}
           </div>
         </div>
 
         {/* 색상 팔레트 */}
         <section className="space-y-4">
-          <h2 className="text-2xl font-semibold text-foreground">색상 팔레트</h2>
+          <h2 className="text-2xl font-semibold text-foreground">{t("dev.design.colorPalette")}</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {/* Slate 색상 */}
             <div className="space-y-2">
-              <p className="text-sm font-medium">Slate</p>
+              <p className="text-sm font-medium">{t("dev.design.colorSlate")}</p>
               <div className="space-y-2">
                 <div className="rounded-xl border border-[#e4e6eb] bg-white p-3 text-xs font-mono shadow-sm">
                   slate-50
@@ -66,7 +69,7 @@ export default function DesignPage() {
 
             {/* Background 색상 */}
             <div className="space-y-2">
-              <p className="text-sm font-medium">Background</p>
+              <p className="text-sm font-medium">{t("dev.design.colorBackground")}</p>
               <div className="space-y-2">
                 <div className="rounded-xl border border-[#e4e6eb] bg-white p-3 text-xs font-mono shadow-sm">
                   background
@@ -79,7 +82,7 @@ export default function DesignPage() {
 
             {/* Text 색상 */}
             <div className="space-y-2">
-              <p className="text-sm font-medium">Text</p>
+              <p className="text-sm font-medium">{t("dev.design.colorText")}</p>
               <div className="space-y-2">
                 <div className="border border-slate-200 rounded p-3">
                   <p className="text-foreground text-xs font-mono">foreground</p>
@@ -92,7 +95,7 @@ export default function DesignPage() {
 
             {/* 상태 색상 */}
             <div className="space-y-2">
-              <p className="text-sm font-medium">상태</p>
+              <p className="text-sm font-medium">{t("dev.design.colorState")}</p>
               <div className="space-y-2">
                 <div className="bg-red-50 border border-red-200 rounded p-3 text-xs font-mono text-red-700">
                   red (error)
@@ -113,7 +116,7 @@ export default function DesignPage() {
 
         {/* 버튼 컴포넌트 */}
         <section className="space-y-4">
-          <h2 className="text-2xl font-semibold text-foreground">버튼</h2>
+          <h2 className="text-2xl font-semibold text-foreground">{t("dev.design.buttons")}</h2>
           <div className="rounded-2xl border border-[#e4e6eb] bg-white p-6 shadow-sm">
             <div className="space-y-4">
               {/* 기본 버튼 */}
@@ -136,15 +139,15 @@ export default function DesignPage() {
               <div className="flex flex-wrap gap-3 items-center">
                 <Button>
                   <Home className="mr-2 h-4 w-4" />
-                  홈
+                  {t("navigation.home")}
                 </Button>
                 <Button variant="outline">
                   <User className="mr-2 h-4 w-4" />
-                  프로필
+                  {t("navigation.profile")}
                 </Button>
                 <Button variant="ghost">
                   <MessageCircle className="mr-2 h-4 w-4" />
-                  채팅
+                  {t("navigation.chat")}
                 </Button>
               </div>
 
@@ -166,37 +169,37 @@ export default function DesignPage() {
 
         {/* 카드/섹션 레이아웃 */}
         <section className="space-y-4">
-          <h2 className="text-2xl font-semibold text-foreground">카드 & 섹션</h2>
+          <h2 className="text-2xl font-semibold text-foreground">{t("dev.design.cards")}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Slate-50 카드 */}
             <div className="rounded-2xl border border-[#e4e6eb] bg-white p-6 shadow-sm space-y-4">
-              <h3 className="text-lg font-semibold text-foreground">Slate-50 카드</h3>
+              <h3 className="text-lg font-semibold text-foreground">{t("dev.design.card1.title")}</h3>
               <p className="text-muted-foreground">
-                가장 많이 사용하는 기본 카드입니다. 밝은 배경과 부드러운 그림자를 사용합니다.
+                {t("dev.design.card1.description")}
               </p>
             </div>
 
             {/* Slate-100 카드 */}
             <div className="rounded-2xl border border-[#dfe1e6] bg-[#f5f6f7] p-6 shadow-sm space-y-4">
-              <h3 className="text-lg font-semibold text-foreground">Slate-100 카드</h3>
+              <h3 className="text-lg font-semibold text-foreground">{t("dev.design.card2.title")}</h3>
               <p className="text-muted-foreground">
-                프로젝트 개요 등에 쓰이는 톤 다운된 카드 스타일입니다.
+                {t("dev.design.card2.description")}
               </p>
             </div>
 
             {/* White 카드 */}
             <div className="rounded-2xl border border-[#e4e6eb] bg-white p-6 shadow-sm space-y-4">
-              <h3 className="text-lg font-semibold text-foreground">White 카드</h3>
+              <h3 className="text-lg font-semibold text-foreground">{t("dev.design.card3.title")}</h3>
               <p className="text-muted-foreground">
-                깔끔한 흰색 배경 카드로 정보 위계를 강조할 때 활용합니다.
+                {t("dev.design.card3.description")}
               </p>
             </div>
 
             {/* Accent 카드 */}
             <div className="rounded-2xl border border-[#d8e8ff] bg-[#e7f3ff] p-6 shadow-sm space-y-4">
-              <h3 className="text-lg font-semibold text-foreground">Accent 카드</h3>
+              <h3 className="text-lg font-semibold text-foreground">{t("dev.design.card4.title")}</h3>
               <p className="text-muted-foreground">
-                통계나 하이라이트 영역에 사용하는 파스텔 톤 카드입니다.
+                {t("dev.design.card4.description")}
               </p>
             </div>
           </div>
@@ -204,7 +207,7 @@ export default function DesignPage() {
 
         {/* 아바타 */}
         <section className="space-y-4">
-          <h2 className="text-2xl font-semibold text-foreground">아바타</h2>
+          <h2 className="text-2xl font-semibold text-foreground">{t("dev.design.avatars")}</h2>
           <div className="rounded-2xl border border-[#e4e6eb] bg-white p-6 shadow-sm">
             <div className="flex flex-wrap gap-4 items-center">
               <Avatar className="h-8 w-8">
@@ -225,33 +228,33 @@ export default function DesignPage() {
 
         {/* 드롭다운 메뉴 */}
         <section className="space-y-4">
-          <h2 className="text-2xl font-semibold text-foreground">드롭다운 메뉴</h2>
+          <h2 className="text-2xl font-semibold text-foreground">{t("dev.design.dropdown")}</h2>
           <div className="rounded-2xl border border-[#e4e6eb] bg-white p-6 shadow-sm">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline">
                   <Settings className="mr-2 h-4 w-4" />
-                  메뉴 열기
+                  {t("dev.design.dropdownOpen")}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56">
-                <DropdownMenuLabel>내 계정</DropdownMenuLabel>
+                <DropdownMenuLabel>{t("menu.currentUser")}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>
                   <User className="mr-2 h-4 w-4" />
-                  <span>프로필</span>
+                  <span>{t("navigation.profile")}</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                   <MessageCircle className="mr-2 h-4 w-4" />
-                  <span>채팅</span>
+                  <span>{t("navigation.chat")}</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                   <FileText className="mr-2 h-4 w-4" />
-                  <span>게시글</span>
+                  <span>{t("forum.posts")}</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem className="text-red-600">
-                  로그아웃
+                  {t("auth.logout")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -260,20 +263,20 @@ export default function DesignPage() {
 
         {/* 입력 필드 */}
         <section className="space-y-4">
-          <h2 className="text-2xl font-semibold text-foreground">입력 필드</h2>
+          <h2 className="text-2xl font-semibold text-foreground">{t("dev.design.input")}</h2>
           <div className="rounded-2xl border border-[#e4e6eb] bg-white p-6 shadow-sm space-y-4">
             <input
               type="text"
-              placeholder="기본 입력 필드"
+              placeholder={t("dev.design.inputPlaceholder1")}
               className="w-full rounded-xl border border-[#dfe1e6] bg-white px-4 py-3 text-[#050505] shadow-sm placeholder:text-[#8d949e] focus:border-[#1877f2] focus:outline-none focus:ring-2 focus:ring-[#99c2ff]"
             />
             <input
               type="email"
-              placeholder="이메일 입력"
+              placeholder={t("dev.design.inputPlaceholder2")}
               className="w-full rounded-xl border border-[#dfe1e6] bg-white px-4 py-3 text-[#050505] shadow-sm placeholder:text-[#8d949e] focus:border-[#1877f2] focus:outline-none focus:ring-2 focus:ring-[#99c2ff]"
             />
             <textarea
-              placeholder="텍스트 영역"
+              placeholder={t("dev.design.inputPlaceholder3")}
               rows={4}
               className="w-full resize-none rounded-2xl border border-[#dfe1e6] bg-white px-4 py-3 text-[#050505] shadow-sm placeholder:text-[#8d949e] focus:border-[#1877f2] focus:outline-none focus:ring-2 focus:ring-[#99c2ff]"
             />
@@ -282,7 +285,7 @@ export default function DesignPage() {
 
         {/* 타이포그래피 */}
         <section className="space-y-4">
-          <h2 className="text-2xl font-semibold text-foreground">타이포그래피</h2>
+          <h2 className="text-2xl font-semibold text-foreground">{t("dev.design.typography")}</h2>
           <div className="rounded-2xl border border-[#e4e6eb] bg-white p-6 shadow-sm space-y-4">
             <h1 className="text-4xl font-bold text-foreground">Heading 1 (4xl)</h1>
             <h2 className="text-3xl font-bold text-foreground">Heading 2 (3xl)</h2>
@@ -293,14 +296,14 @@ export default function DesignPage() {
             <p className="text-sm text-muted-foreground">Small text (sm)</p>
             <p className="text-xs text-muted-foreground">Extra small text (xs)</p>
             <code className="rounded bg-[#f0f2f5] px-2 py-1 text-xs font-mono text-[#050505] shadow-inner">
-              코드 텍스트
+              {t("dev.design.codeText")}
             </code>
           </div>
         </section>
 
         {/* 아이콘 */}
         <section className="space-y-4">
-          <h2 className="text-2xl font-semibold text-foreground">아이콘 (Lucide React)</h2>
+          <h2 className="text-2xl font-semibold text-foreground">{t("dev.design.icons")}</h2>
           <div className="rounded-2xl border border-[#e4e6eb] bg-white p-6 shadow-sm">
             <div className="flex flex-wrap gap-6">
               <div className="flex flex-col items-center gap-2">
@@ -329,20 +332,20 @@ export default function DesignPage() {
 
         {/* 배지/태그 */}
         <section className="space-y-4">
-          <h2 className="text-2xl font-semibold text-foreground">배지 & 태그</h2>
+          <h2 className="text-2xl font-semibold text-foreground">{t("dev.design.badges")}</h2>
           <div className="rounded-2xl border border-[#e4e6eb] bg-white p-6 shadow-sm">
             <div className="flex flex-wrap gap-2">
               <span className="inline-block rounded-full border border-[#dfe1e6] bg-white px-3 py-1 text-sm text-[#65676b]">
-                💬 소스 코딩 금지
+                {t("home.overview.tag1")}
               </span>
               <span className="inline-block rounded-full border border-[#dfe1e6] bg-white px-3 py-1 text-sm text-[#65676b]">
-                🤝 실전 협업
+                {t("home.overview.tag2")}
               </span>
               <span className="inline-block rounded-full border border-[#dfe1e6] bg-white px-3 py-1 text-sm text-[#65676b]">
-                🎯 실용적 기능
+                {t("home.overview.tag3")}
               </span>
               <span className="inline-block rounded-full border border-[#dfe1e6] bg-white px-3 py-1 text-sm text-[#65676b]">
-                📚 함께 성장
+                {t("home.overview.tag4")}
               </span>
             </div>
           </div>

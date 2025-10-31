@@ -8,13 +8,44 @@
     "menu": "Menu"
   },
   "auth": {
-    "login": "Login",
-    "signup": "Sign Up",
+    "login": {
+      "title": "Login",
+      "subtitle": "Log in to your account and continue the conversation.",
+      "description": "Reconnect with the Vibe community in seconds.",
+      "email": "Email",
+      "emailPlaceholder": "Enter your email",
+      "password": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "submit": "Login",
+      "submitting": "Processing...",
+      "signupPrompt": "Don't have an account yet?",
+      "signupLink": "Sign Up",
+      "error": "An error occurred during processing."
+    },
+    "signup": {
+      "title": "Sign Up",
+      "subtitle": "Create a new account and join the Vibe community.",
+      "description": "Meet community updates and conversations in one place.",
+      "displayName": "Name",
+      "displayNamePlaceholder": "Enter your name",
+      "email": "Email",
+      "emailPlaceholder": "Enter your email",
+      "password": "Password",
+      "passwordPlaceholder": "Enter your password (min 6 characters)",
+      "passwordConfirm": "Confirm Password",
+      "passwordConfirmPlaceholder": "Re-enter your password",
+      "submit": "Sign Up",
+      "submitting": "Signing up...",
+      "loginPrompt": "Already have an account?",
+      "loginLink": "Login",
+      "error": {
+        "passwordMismatch": "Passwords do not match.",
+        "passwordLength": "Password must be at least 6 characters.",
+        "failed": "Sign up failed."
+      }
+    },
     "logout": "Logout",
     "myAccount": "My Account",
-    "email": "Email",
-    "password": "Password",
-    "displayName": "Display Name",
     "getStarted": "Get Started"
   },
   "buttons": {
@@ -48,7 +79,24 @@
     "languageSettings": "Language Settings"
   },
   "menu": {
+    "loading": "Loading...",
     "title": "Menu",
+    "subtitle": "Select the feature you want to navigate to quickly.",
+    "currentUser": "Current User",
+    "userMenu": "User Menu",
+    "profile": "Edit Profile",
+    "users": "User List",
+    "chat": "Chat",
+    "admin": "Admin Page",
+    "logout": "Logout",
+    "auth": "Authentication",
+    "login": "Login",
+    "signup": "Sign Up",
+    "language": {
+      "title": "Language Settings",
+      "description": "Select your preferred language."
+    },
+    "back": "Go Back",
     "settings": "Settings",
     "help": "Help",
     "about": "About",
@@ -57,7 +105,38 @@
     "selectLanguage": "Select Language"
   },
   "forum": {
+    "loading": "Loading...",
     "title": "Forum",
+    "subtitle": "A space to freely share opinions",
+    "writeButton": "Write Post",
+    "empty": {
+      "title": "No posts yet",
+      "description": "Write the first post!"
+    },
+    "post": {
+      "author": "Author: {author}"
+    },
+    "dialog": {
+      "title": "Create New Post",
+      "description": "Enter the title and content of your post.",
+      "category": "Category",
+      "categoryPlaceholder": "Select a category",
+      "postTitle": "Title",
+      "titlePlaceholder": "Enter title",
+      "content": "Content",
+      "contentPlaceholder": "Enter content",
+      "cancel": "Cancel",
+      "submit": "Submit",
+      "submitting": "Submitting..."
+    },
+    "alert": {
+      "selectCategory": "Please select a category.",
+      "enterTitle": "Please enter a title.",
+      "enterContent": "Please enter content.",
+      "noAuth": "Unable to verify login information.",
+      "saveFailed": "Failed to save post: {error}",
+      "saveError": "An error occurred while saving the post."
+    },
     "categories": "Categories",
     "community": "Community",
     "qna": "Q&A",
@@ -72,6 +151,44 @@
     "likes": "Likes"
   },
   "chat": {
+    "list": {
+      "loading": "Loading chat list...",
+      "error": {
+        "load": "Unable to load chat list",
+        "fetch": "An error occurred while loading chat rooms"
+      },
+      "title": "Chat",
+      "empty": "No chat rooms",
+      "unknownUser": "Unknown User",
+      "noMessage": "(No message)",
+      "time": {
+        "minutesAgo": "{minutes}m ago",
+        "hoursAgo": "{hours}h ago",
+        "daysAgo": "{days}d ago"
+      }
+    },
+    "room": {
+      "loading": {
+        "auth": "Verifying authentication...",
+        "room": "Loading chat room...",
+        "user": "Loading..."
+      },
+      "error": {
+        "noOtherId": "Please specify a chat partner.",
+        "selfChat": "You cannot chat with yourself.",
+        "join": "Failed to join chat room.",
+        "load": "Unable to load chat room.",
+        "send": "Failed to send message."
+      },
+      "defaultUser": "User",
+      "realtime": "Real-time sync",
+      "back": "← Go Back",
+      "empty": "No messages yet.",
+      "emptyInvite": "Start a conversation with {name}!",
+      "inputPlaceholder": "Type a message...",
+      "send": "Send",
+      "sending": "Sending..."
+    },
     "title": "Chat",
     "rooms": "Chat Rooms",
     "messages": "Messages",
@@ -82,7 +199,26 @@
     "chatList": "Chat List"
   },
   "users": {
-    "title": "Users",
+    "loading": "Loading user list...",
+    "title": "User List",
+    "subtitle": "View registered user information and start chatting.",
+    "totalCount": "Total users: {count}",
+    "realtimeIndicator": "Real-time list",
+    "clickToChat": "Click on a user to go directly to 1:1 chat room.",
+    "empty": "No registered users.",
+    "table": {
+      "name": "Name",
+      "uid": "UID",
+      "email": "Email"
+    },
+    "defaultName": "No Name",
+    "dataLocation": {
+      "title": "📍 Data Storage Location:",
+      "path": "Firebase Realtime Database: {path}",
+      "description": "Latest data is loaded on each query."
+    },
+    "error": "An error occurred: {error}",
+    "errorMessage": "Unable to load user list.",
     "userList": "User List",
     "findUsers": "Find Users",
     "totalUsers": "Total Users",
@@ -91,10 +227,33 @@
     "sendMessage": "Send Message"
   },
   "profile": {
-    "title": "Profile",
+    "loading": "Loading...",
+    "title": "Edit Profile",
+    "subtitle": "Keep your username up to date.",
+    "photo": {
+      "label": "Profile Photo",
+      "noPhoto": "No Photo",
+      "change": "Change Photo",
+      "uploading": "Uploading...",
+      "success": "Profile photo uploaded successfully!",
+      "error": "Failed to upload photo."
+    },
+    "displayName": {
+      "label": "Name",
+      "placeholder": "Enter your username"
+    },
+    "submit": "Save",
+    "submitting": "Saving...",
+    "cancel": "Cancel",
+    "success": "Name updated successfully!",
+    "error": {
+      "empty": "Please enter a name.",
+      "noUserId": "User ID not found.",
+      "failed": "Failed to update name."
+    },
+    "dataLocation": "Saved name is stored in Firebase Realtime Database at {path}.",
     "editProfile": "Edit Profile",
     "myProfile": "My Profile",
-    "displayName": "Display Name",
     "email": "Email",
     "photoURL": "Profile Photo",
     "bio": "Bio",
@@ -109,8 +268,170 @@
     "chatMessages": "Chat Messages"
   },
   "home": {
-    "welcome": "Welcome to Vibe",
-    "description": "Built entirely with AI-powered Vibe Coding",
-    "aiTruth": "The Truth of AI Era"
+    "vibeBanner": "🤖 This site was built 100% with Vibe Coding only.",
+    "aiTruth": {
+      "title": "💡 The Truth of AI Era",
+      "item1": {
+        "title": "What doesn't change in the AI era is you.",
+        "content": "More powerful AI, tools, and agents are pouring out every day. How are you changing every day?"
+      },
+      "item2": {
+        "title": "AI alone cannot do anything.",
+        "content": "Creating practical web/apps requires a lot of human intervention. AI ultimately just produces output when given input without thinking.",
+        "hint": "AI is just a tool, you must provide direction and control to create the desired result."
+      },
+      "item3": {
+        "title": "Web/apps created with AI have no copyright.",
+        "content": "Copyright restrictions are much greater than creating music with AI. Hundreds/thousands of open-source library modules are used to develop simple software.",
+        "gpl": "All software using GPL license must be released as open source.",
+        "hint": "Have you checked the copyright of all libraries used by the software you create? Otherwise, you may be violating copyright without knowing it."
+      }
+    },
+    "title": "Vibe Coding Study Project",
+    "description": {
+      "part1": "Anyone can participate. Submit a PR or join",
+      "linkText": "Hanbabo",
+      "part2": "chat room."
+    },
+    "link": "Hanbabo",
+    "todo": {
+      "item1": {
+        "label": "Design",
+        "description": "Display logged-in user info in topbar."
+      },
+      "item2": {
+        "label": "Edit Member Info",
+        "description": "Register member photo. Real-time update of member info"
+      },
+      "item3": {
+        "label": "Chat Room Join List",
+        "description": "Store in vibe/chat/joins, display chat room list, click to enter.",
+        "subitem1": "Group Chat: Create, edit, delete, invite",
+        "subitem2": "Open Chat: Enter chat room without login, but login required to send messages"
+      },
+      "item4": {
+        "label": "API-fy all functions"
+      },
+      "item5": {
+        "label": "Forum",
+        "subitem1": "Save forum posts/comments to RTDB (sync)",
+        "subitem2": "Cache RTDB posts to Supabase for SEO.",
+        "subitem3": "Always fetch data from Supabase when rendering on server.",
+        "subitem4": "After client Hydration, fetch posts from RTDB and Reboot (render)"
+      },
+      "item6": {
+        "label": "Push Notifications",
+        "subitem1": "Subscribe to chat room notifications (optional)",
+        "subitem2": "Push notification when comment is posted"
+      },
+      "item7": {
+        "label": "Flutter iOS/Android app development",
+        "subitem1": "Implement all web features"
+      },
+      "title": "📋 TODO"
+    },
+    "overview": {
+      "brand": "Hanbabo (Korea Vibe Boss)",
+      "description": " is an open-source study community that creates practical social web applications with AI-based Vibe coding. Leave coding to AI, focus on design and planning, and experience collaboration through Git and actual deployment. Implement practical features such as authentication, forums, chat, notifications, and develop sustainable development skills and AI control capabilities.",
+      "badge1": "No Source Coding",
+      "badge2": "Real Collaboration",
+      "badge3": "Practical Features",
+      "badge4": "Grow Together",
+      "title": "Collaborative Development Experience with AI"
+    },
+    "aiChange": {
+      "title": "🚀 In the AI era, what doesn't change is you",
+      "content1": "Artificial intelligence continues to evolve, various tools continue to upgrade, and agents and AI-related processes continue to update rapidly.",
+      "content2": "However, the one thing that doesn't change is {highlight}. You must upgrade yourself to fit the AI era.",
+      "highlight": "yourself",
+      "note": "💡 AI is just a tool, what creates true value is your thinking and execution.",
+      "description": "Artificial intelligence continues to evolve, various tools continue to upgrade, and agents and AI-related processes continue to update rapidly.",
+      "emphasis": "However, the one thing that doesn't change is",
+      "conclusio": ". You must upgrade yourself to fit the AI era.",
+      "hint": "AI is just a tool, what creates true value is your thinking and execution."
+    }
+  },
+  "admin": {
+    "title": "Admin Page",
+    "subtitle": "Navigate to admin tools needed for operation.",
+    "testData": {
+      "title": "Test Data Management",
+      "description": "Generate dummy data for forum to quickly verify features.",
+      "button": "Generate Test Data",
+      "pageTitle": "Admin Page - Test Data Generation",
+      "pageDescription": "Generate 100 random news posts in the news category.",
+      "generateButton": "Generate 100 News Posts",
+      "generating": "Generating... ({progress}/100)",
+      "progress": "{progress}% Complete",
+      "log": {
+        "start": "Starting to generate 100 test posts in news category...",
+        "progress": "[{current}/100] Created: {title}",
+        "success": "✅ 100 test posts generation complete!",
+        "error": "❌ Error occurred: {error}"
+      },
+      "alert": {
+        "success": "100 test posts generation completed!",
+        "error": "An error occurred while generating posts."
+      }
+    }
+  },
+  "dev": {
+    "history": {
+      "title": "📝 Study Log",
+      "subtitle": "Recording development progress of Hanbabo project.",
+      "updateIndicator": "Latest updates auto-sync",
+      "seminar1": {
+        "date": "2025-10-27 (First Seminar)",
+        "completed": "✅ Completed",
+        "item1": "Basic project setup (Next.js 16, React 19, TypeScript)",
+        "item2": "Firebase setup and authentication implementation",
+        "item3": "Email/password signup & login",
+        "item4": "Edit member info (profile update)",
+        "item5": "1:1 chat feature (real-time message sync)",
+        "learned": "💡 What We Learned",
+        "learned1": "Understanding Next.js App Router structure",
+        "learned2": "How to use Firebase Authentication",
+        "learned3": "Firebase Realtime Database real-time sync",
+        "learned4": "Collaboration through Git PR"
+      },
+      "upcoming": "More study logs will be added..."
+    },
+    "design": {
+      "title": "Design Components",
+      "subtitle": "Preview design components and styles used in the project.",
+      "updateIndicator": "Latest UI guide snapshot",
+      "colorPalette": "Color Palette",
+      "colorSlate": "Slate",
+      "colorBackground": "Background",
+      "colorText": "Text",
+      "colorState": "State",
+      "buttons": "Buttons",
+      "cards": "Cards & Sections",
+      "card1": {
+        "title": "Slate-50 Card",
+        "description": "The most commonly used basic card. Uses light background and soft shadow."
+      },
+      "card2": {
+        "title": "Slate-100 Card",
+        "description": "Toned down card style used for project overview, etc."
+      },
+      "card3": {
+        "title": "White Card",
+        "description": "Clean white background card used to emphasize information hierarchy."
+      },
+      "card4": {
+        "title": "Accent Card",
+        "description": "Pastel tone card used for statistics or highlight areas."
+      },
+      "avatars": "Avatars",
+      "dropdown": "Dropdown Menu",
+      "input": "Input Fields",
+      "inputPlaceholder1": "Basic input field",
+      "inputPlaceholder2": "Email input",
+      "inputPlaceholder3": "Text area",
+      "typography": "Typography",
+      "icons": "Icons (Lucide React)",
+      "badges": "Badges & Tags"
+    }
   }
 }

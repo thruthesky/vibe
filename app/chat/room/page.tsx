@@ -4,6 +4,7 @@
 
 import { useEffect, useState, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { auth } from "@/lib/firebase";
 import { getUserDisplayName } from "@/lib/user";
 import {
@@ -16,6 +17,7 @@ import {
 
 // useSearchParams()를 사용하는 실제 채팅 컴포넌트
 function ChatRoomContent() {
+  const t = useTranslations();
   const router = useRouter();
   const searchParams = useSearchParams();
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -23,7 +25,7 @@ function ChatRoomContent() {
 
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [otherId, setOtherId] = useState<string | null>(null);
-  const [otherUserName, setOtherUserName] = useState<string>("로딩 중...");
+  const [otherUserName, setOtherUserName] = useState<string>(t("common.loading"));
   const [roomId, setRoomId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [messageText, setMessageText] = useState("");
@@ -54,13 +56,13 @@ function ChatRoomContent() {
     const otherUserIdParam = searchParams.get("otherId");
 
     if (!otherUserIdParam) {
-      setError("채팅 대상을 지정해주세요.");
+      setError(t("chat.room.error.noOtherId"));
       setLoading(false);
       return;
     }
 
     if (currentUserId === otherUserIdParam) {
-      setError("자신과 채팅할 수 없습니다.");
+      setError(t("chat.room.error.selfChat"));
       setLoading(false);
       return;
     }
@@ -79,11 +81,11 @@ function ChatRoomContent() {
         if (displayName) {
           setOtherUserName(displayName);
         } else {
-          setOtherUserName("사용자");
+          setOtherUserName(t("chat.room.defaultUser"));
         }
       } catch (err) {
         console.error("사용자 정보 조회 실패:", err);
-        setOtherUserName("사용자");
+        setOtherUserName(t("chat.room.defaultUser"));
       }
     }
 
@@ -102,7 +104,7 @@ function ChatRoomContent() {
         // 채팅방 입장 (본인의 chat/joins에만 저장)
         const joinResult = await joinChatRoom(currentUserId!, otherId!, otherUserName);
         if (!joinResult.success || !joinResult.roomId) {
-          throw new Error("채팅방 입장에 실패했습니다.");
+          throw new Error(t("chat.room.error.join"));
         }
 
         const newRoomId = joinResult.roomId;
@@ -127,13 +129,13 @@ function ChatRoomContent() {
         };
       } catch (err: any) {
         console.error("채팅방 초기화 실패:", err);
-        setError(err.message || "채팅방을 불러올 수 없습니다.");
+        setError(err.message || t("chat.room.error.load"));
         setLoading(false);
       }
     }
 
     initializeChat();
-  }, [currentUserId, otherId, otherUserName]);
+  }, [currentUserId, otherId, otherUserName, t]);
 
   // 메시지 자동 스크롤
   useEffect(() => {
@@ -173,11 +175,11 @@ function ChatRoomContent() {
           messageInputRef.current?.focus();
         });
       } else {
-        setError(result.error || "메시지 전송에 실패했습니다.");
+        setError(result.error || t("chat.room.error.send"));
       }
     } catch (err: any) {
       console.error("메시지 전송 실패:", err);
-      setError(err.message || "메시지 전송 중 오류가 발생했습니다.");
+      setError(err.message || t("chat.room.error.send"));
     } finally {
       setIsSending(false);
     }
@@ -187,7 +189,7 @@ function ChatRoomContent() {
   if (authLoading) {
     return (
       <div className="flex h-screen items-center justify-center bg-[#f0f2f5]">
-        <p className="text-sm text-[#65676b]">인증 정보를 확인하는 중...</p>
+        <p className="text-sm text-[#65676b]">{t("chat.room.loading.auth")}</p>
       </div>
     );
   }
@@ -196,7 +198,7 @@ function ChatRoomContent() {
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center bg-[#f0f2f5]">
-        <p className="text-sm text-[#65676b]">채팅방을 불러오는 중...</p>
+        <p className="text-sm text-[#65676b]">{t("chat.room.loading.room")}</p>
       </div>
     );
   }
@@ -213,7 +215,7 @@ function ChatRoomContent() {
             onClick={() => router.back()}
             className="w-full rounded-xl border border-[#dfe1e6] bg-white py-3 text-sm font-semibold text-[#1877f2] shadow-sm transition-colors hover:bg-[#e7f3ff]"
           >
-            돌아가기
+            {t("chat.room.back")}
           </button>
         </div>
       </div>
@@ -233,14 +235,14 @@ function ChatRoomContent() {
             </p>
             <div className="mt-2 flex items-center gap-2 text-xs font-medium text-[#6f7682]">
               <span className="inline-flex h-2 w-2 rounded-full bg-[#4cc46b] shadow-[0_0_6px_rgba(76,196,107,0.45)]" />
-              <span>실시간 동기화 중</span>
+              <span>{t("chat.room.realtime")}</span>
             </div>
           </div>
           <button
             onClick={() => router.back()}
             className="rounded-xl border border-[#dfe1e6] bg-white px-4 py-2 text-sm font-semibold text-[#1877f2] shadow-sm transition-colors hover:bg-[#e7f3ff]"
           >
-            ← 돌아가기
+            ← {t("common.back")}
           </button>
         </div>
 
@@ -255,9 +257,9 @@ function ChatRoomContent() {
         <div className="flex-1 space-y-5 overflow-y-auto px-4 py-6 lg:px-6">
           {messages.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center rounded-3xl border border-dashed border-[#dfe1e6] bg-white/70 p-6 text-center text-sm text-[#5d6472] shadow-inner">
-              <p className="font-semibold text-[#050505]">아직 메시지가 없습니다.</p>
+              <p className="font-semibold text-[#050505]">{t("chat.room.empty")}</p>
               <p className="mt-1 text-sm">
-                {otherUserName}님과의 대화를 시작해보세요!
+                {t("chat.room.emptyInvite", { name: otherUserName })}
               </p>
             </div>
           ) : (
@@ -304,7 +306,7 @@ function ChatRoomContent() {
               type="text"
               value={messageText}
               onChange={(e) => setMessageText(e.target.value)}
-              placeholder="메시지를 입력하세요..."
+              placeholder={t("chat.room.inputPlaceholder")}
               disabled={isSending}
               className="flex-1 rounded-full border border-[#dfe1e6] bg-white/90 px-5 py-3 text-sm text-[#050505] shadow-inner shadow-white/70 placeholder:text-[#8d949e] focus:border-[#1877f2] focus:outline-none focus:ring-2 focus:ring-[#99c2ff] disabled:cursor-not-allowed disabled:text-[#8d949e]"
             />
@@ -313,7 +315,7 @@ function ChatRoomContent() {
               disabled={!messageText.trim() || isSending}
               className="rounded-full bg-[#1877f2] px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-[#99b5f7]/60 transition-colors hover:bg-[#166fe5] disabled:cursor-not-allowed disabled:bg-[#c3dafb]"
             >
-              {isSending ? "전송 중..." : "전송"}
+              {isSending ? t("chat.room.sending") : t("chat.room.send")}
             </button>
           </form>
         </div>
@@ -328,7 +330,7 @@ export default function ChatRoomPage() {
     <Suspense
       fallback={
         <div className="flex h-screen items-center justify-center bg-[#f0f2f5]">
-          <p className="text-sm text-[#5d6472]">채팅방을 불러오는 중...</p>
+          <p className="text-sm text-[#5d6472]">로딩 중...</p>
         </div>
       }
     >

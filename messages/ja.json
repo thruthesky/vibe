@@ -8,13 +8,44 @@
     "menu": "メニュー"
   },
   "auth": {
-    "login": "ログイン",
-    "signup": "新規登録",
+    "login": {
+      "title": "ログイン",
+      "subtitle": "アカウントにログインして会話を続けましょう。",
+      "description": "数秒でVibeコミュニティに再接続します。",
+      "email": "メールアドレス",
+      "emailPlaceholder": "メールアドレスを入力",
+      "password": "パスワード",
+      "passwordPlaceholder": "パスワードを入力",
+      "submit": "ログイン",
+      "submitting": "処理中...",
+      "signupPrompt": "まだアカウントをお持ちでないですか?",
+      "signupLink": "新規登録",
+      "error": "処理中にエラーが発生しました。"
+    },
+    "signup": {
+      "title": "新規登録",
+      "subtitle": "新しいアカウントを作成してVibeコミュニティに参加しましょう。",
+      "description": "コミュニティの最新情報と会話を一つの画面で。",
+      "displayName": "名前",
+      "displayNamePlaceholder": "名前を入力",
+      "email": "メールアドレス",
+      "emailPlaceholder": "メールアドレスを入力",
+      "password": "パスワード",
+      "passwordPlaceholder": "パスワードを入力 (最低6文字)",
+      "passwordConfirm": "パスワード確認",
+      "passwordConfirmPlaceholder": "パスワードを再入力",
+      "submit": "新規登録",
+      "submitting": "登録中...",
+      "loginPrompt": "既にアカウントをお持ちですか?",
+      "loginLink": "ログイン",
+      "error": {
+        "passwordMismatch": "パスワードが一致しません。",
+        "passwordLength": "パスワードは最低6文字必要です。",
+        "failed": "登録に失敗しました。"
+      }
+    },
     "logout": "ログアウト",
     "myAccount": "マイアカウント",
-    "email": "メールアドレス",
-    "password": "パスワード",
-    "displayName": "表示名",
     "getStarted": "始める"
   },
   "buttons": {
@@ -48,7 +79,24 @@
     "languageSettings": "言語設定"
   },
   "menu": {
+    "loading": "読み込み中...",
     "title": "メニュー",
+    "subtitle": "素早く移動したい機能を選択してください。",
+    "currentUser": "現在のログインユーザー",
+    "userMenu": "ユーザーメニュー",
+    "profile": "プロフィール編集",
+    "users": "ユーザーリスト",
+    "chat": "チャット",
+    "admin": "管理者ページ",
+    "logout": "ログアウト",
+    "auth": "認証",
+    "login": "ログイン",
+    "signup": "新規登録",
+    "language": {
+      "title": "言語設定",
+      "description": "お好みの言語を選択してください。"
+    },
+    "back": "戻る",
     "settings": "設定",
     "help": "ヘルプ",
     "about": "について",
@@ -57,7 +105,38 @@
     "selectLanguage": "言語を選択"
   },
   "forum": {
+    "loading": "読み込み中...",
     "title": "フォーラム",
+    "subtitle": "自由に意見を共有する場所です",
+    "writeButton": "投稿する",
+    "empty": {
+      "title": "投稿がありません",
+      "description": "最初の投稿を作成しましょう!"
+    },
+    "post": {
+      "author": "作成者: {author}"
+    },
+    "dialog": {
+      "title": "新規投稿作成",
+      "description": "投稿のタイトルと内容を入力してください。",
+      "category": "カテゴリー",
+      "categoryPlaceholder": "カテゴリーを選択",
+      "postTitle": "タイトル",
+      "titlePlaceholder": "タイトルを入力",
+      "content": "内容",
+      "contentPlaceholder": "内容を入力",
+      "cancel": "キャンセル",
+      "submit": "送信",
+      "submitting": "送信中..."
+    },
+    "alert": {
+      "selectCategory": "カテゴリーを選択してください。",
+      "enterTitle": "タイトルを入力してください。",
+      "enterContent": "内容を入力してください。",
+      "noAuth": "ログイン情報を確認できません。",
+      "saveFailed": "投稿の保存に失敗しました: {error}",
+      "saveError": "投稿の保存中にエラーが発生しました。"
+    },
     "categories": "カテゴリー",
     "community": "コミュニティ",
     "qna": "Q&A",
@@ -72,6 +151,44 @@
     "likes": "いいね"
   },
   "chat": {
+    "list": {
+      "loading": "チャットリストを読み込み中...",
+      "error": {
+        "load": "チャットリストを読み込めません",
+        "fetch": "チャットルームの読み込み中にエラーが発生しました"
+      },
+      "title": "チャット",
+      "empty": "チャットルームがありません",
+      "unknownUser": "不明なユーザー",
+      "noMessage": "(メッセージなし)",
+      "time": {
+        "minutesAgo": "{minutes}分前",
+        "hoursAgo": "{hours}時間前",
+        "daysAgo": "{days}日前"
+      }
+    },
+    "room": {
+      "loading": {
+        "auth": "認証情報を確認中...",
+        "room": "チャットルームを読み込み中...",
+        "user": "読み込み中..."
+      },
+      "error": {
+        "noOtherId": "チャット相手を指定してください。",
+        "selfChat": "自分とチャットすることはできません。",
+        "join": "チャットルームへの参加に失敗しました。",
+        "load": "チャットルームを読み込めません。",
+        "send": "メッセージの送信に失敗しました。"
+      },
+      "defaultUser": "ユーザー",
+      "realtime": "リアルタイム同期中",
+      "back": "← 戻る",
+      "empty": "まだメッセージがありません。",
+      "emptyInvite": "{name}さんとの会話を始めましょう!",
+      "inputPlaceholder": "メッセージを入力...",
+      "send": "送信",
+      "sending": "送信中..."
+    },
     "title": "チャット",
     "rooms": "チャットルーム",
     "messages": "メッセージ",
@@ -82,7 +199,26 @@
     "chatList": "チャットリスト"
   },
   "users": {
-    "title": "ユーザー",
+    "loading": "ユーザーリストを読み込み中...",
+    "title": "ユーザーリスト",
+    "subtitle": "登録されたユーザー情報を確認してチャットを始めましょう。",
+    "totalCount": "総ユーザー数: {count}名",
+    "realtimeIndicator": "リアルタイムリスト",
+    "clickToChat": "ユーザーをクリックすると1:1チャットルームに移動します。",
+    "empty": "登録されたユーザーがいません。",
+    "table": {
+      "name": "名前",
+      "uid": "UID",
+      "email": "メールアドレス"
+    },
+    "defaultName": "名前なし",
+    "dataLocation": {
+      "title": "📍 データ保存場所:",
+      "path": "Firebase Realtime Database: {path}",
+      "description": "照会の度に最新データを読み込みます。"
+    },
+    "error": "エラーが発生しました: {error}",
+    "errorMessage": "ユーザーリストを読み込めません。",
     "userList": "ユーザーリスト",
     "findUsers": "ユーザーを探す",
     "totalUsers": "総ユーザー数",
@@ -91,10 +227,33 @@
     "sendMessage": "メッセージを送る"
   },
   "profile": {
-    "title": "プロフィール",
+    "loading": "読み込み中...",
+    "title": "プロフィール編集",
+    "subtitle": "ユーザー名を最新の状態に保ちましょう。",
+    "photo": {
+      "label": "プロフィール写真",
+      "noPhoto": "写真なし",
+      "change": "写真を変更",
+      "uploading": "アップロード中...",
+      "success": "プロフィール写真が正常にアップロードされました!",
+      "error": "写真のアップロードに失敗しました。"
+    },
+    "displayName": {
+      "label": "名前",
+      "placeholder": "ユーザー名を入力"
+    },
+    "submit": "保存",
+    "submitting": "保存中...",
+    "cancel": "キャンセル",
+    "success": "名前が正常に更新されました!",
+    "error": {
+      "empty": "名前を入力してください。",
+      "noUserId": "ユーザーIDが見つかりません。",
+      "failed": "名前の更新に失敗しました。"
+    },
+    "dataLocation": "保存された名前はFirebase Realtime Databaseの{path}に保管されます。",
     "editProfile": "プロフィール編集",
     "myProfile": "マイプロフィール",
-    "displayName": "表示名",
     "email": "メールアドレス",
     "photoURL": "プロフィール写真",
     "bio": "自己紹介",
@@ -109,8 +268,170 @@
     "chatMessages": "チャットメッセージ"
   },
   "home": {
-    "welcome": "Vibeへようこそ",
-    "description": "AI駆動のVibeコーディングで完全に構築",
-    "aiTruth": "AI時代の真実"
+    "vibeBanner": "🤖 このサイトは100% Vibeコーディングのみで作られました。",
+    "aiTruth": {
+      "title": "💡 AI時代の真実",
+      "item1": {
+        "title": "AI時代に変わらないものはあなたです。",
+        "content": "毎日より強力な人工知能、ツール、エージェントが次々と登場しています。皆さんは毎日どのように変化していますか?"
+      },
+      "item2": {
+        "title": "AIだけでできることは何もありません。",
+        "content": "実用的な Web/アプリを作成するには、大量の人間の干渉が必要です。AI は結局のところ、入力に基づいて思考せずに出力を生成するだけです。",
+        "hint": "AI は単なるツールです。希望の結果を作成するには、方向と制御を提供する必要があります。"
+      },
+      "item3": {
+        "title": "AIで作ったウェブ/アプリには著作権がありません。",
+        "content": "AI で作成した Web/アプリは、AI で音楽を作成するよりも著作権制限がはるかに大きいです。簡単なソフトウェアを作成するには、数百/数千のオープンソース ライブラリ モジュールが必要です。",
+        "gpl": "GPL ライセンスを使用するすべてのソフトウェアはオープンソースとしてリリースされる必要があります。",
+        "hint": "ソフトウェアが使用するすべてのライブラリの著作権を確認しましたか? そうでない場合、知らないうちに著作権侵害をしている可能性があります。"
+      }
+    },
+    "title": "Vibeコーディングスタディプロジェクト",
+    "description": {
+      "part1": "誰でも参加できます。PR を提出するか、",
+      "linkText": "韓バボ",
+      "part2": "チャットルームに参加してください。"
+    },
+    "link": "Hanbabo",
+    "todo": {
+      "item1": {
+        "label": "デザイン",
+        "description": "トップバーにログイン済みユーザー情報を表示します。"
+      },
+      "item2": {
+        "label": "メンバー情報の編集",
+        "description": "メンバー写真を登録します。メンバー情報のリアルタイム更新"
+      },
+      "item3": {
+        "label": "チャットルーム参加リスト",
+        "description": "vibe/chat/joins に保存し、チャットルームリストを表示し、クリックして入室します。",
+        "subitem1": "グループチャット：作成、編集、削除、招待",
+        "subitem2": "オープンチャット：ログインなしで入室可能、ただしメッセージ送信にはログインが必要"
+      },
+      "item4": {
+        "label": "すべての関数を API 化する"
+      },
+      "item5": {
+        "label": "フォーラム",
+        "subitem1": "フォーラム投稿/コメントを RTDB に保存（同期）",
+        "subitem2": "SEO のために、RTDB 投稿を Supabase にキャッシュします。",
+        "subitem3": "サーバー側レンダリング時は、常に Supabase からデータを取得します。",
+        "subitem4": "クライアント側ハイドレーション後、RTDB から投稿を取得して再起動（レンダリング）"
+      },
+      "item6": {
+        "label": "プッシュ通知",
+        "subitem1": "チャットルーム通知を購読（オプション）",
+        "subitem2": "コメント投稿時にプッシュ通知"
+      },
+      "item7": {
+        "label": "Flutter iOS/Android アプリ開発",
+        "subitem1": "すべての Web 機能を実装"
+      },
+      "title": "📋 TODO"
+    },
+    "overview": {
+      "brand": "韓バボ（韓国 Vibe ボス）",
+      "description": "は、AI ベースの Vibe コーディングで実用的なソーシャル Web アプリケーションを作成するオープンソース学習コミュニティです。コーディングを AI に任せ、設計と計画に集中し、Git による協力と実際のデプロイを経験します。認証、フォーラム、チャット、通知などの実用的な機能を実装し、持続可能な開発スキルと AI 制御機能を開発します。",
+      "badge1": "ソースコーディング禁止",
+      "badge2": "実践的協力",
+      "badge3": "実用的機能",
+      "badge4": "一緒に成長する",
+      "title": "AIとの協業開発体験"
+    },
+    "aiChange": {
+      "title": "🚀 AI時代、変わらないものはあなた自身です",
+      "content1": "人工知能は進化を続け、各種ツールもアップグレードし続け、エージェントやAI関連プロセスも急速に更新されています。",
+      "content2": "ただし、一つ変わらないものは{highlight}です。AI時代に合わせて自分自身もアップグレードする必要があります。",
+      "highlight": "あなた自身",
+      "note": "💡 AIはツールに過ぎず、真の価値を生み出すのはあなたの思考と実行力です。",
+      "description": "人工知能は絶えず進化し、様々なツールは絶えずアップグレードされ、エージェントと AI 関連プロセスも絶えず急速に更新されています。",
+      "emphasis": "しかし、変わらないことが 1 つあります。それは",
+      "conclusio": "です。AI 時代に対応するには、自分自身もアップグレードする必要があります。",
+      "hint": "AI は単なるツールです。真の価値を生み出すのはあなたの思考と実行です。"
+    }
+  },
+  "admin": {
+    "title": "管理者ページ",
+    "subtitle": "運営に必要な管理者ツールに移動します。",
+    "testData": {
+      "title": "テストデータ管理",
+      "description": "フォーラム用ダミーデータを生成し、機能を素早く検証します。",
+      "button": "テストデータ生成",
+      "pageTitle": "管理者ページ - テストデータ生成",
+      "pageDescription": "newsカテゴリーに100個のランダムニュース投稿を生成します。",
+      "generateButton": "ニュース投稿100個を生成",
+      "generating": "生成中... ({progress}/100)",
+      "progress": "{progress}% 完了",
+      "log": {
+        "start": "newsカテゴリーにテスト投稿100個の生成を開始します...",
+        "progress": "[{current}/100] 生成完了: {title}",
+        "success": "✅ 100個のテスト投稿生成完了!",
+        "error": "❌ エラーが発生しました: {error}"
+      },
+      "alert": {
+        "success": "テスト投稿100個の生成が完了しました!",
+        "error": "投稿生成中にエラーが発生しました。"
+      }
+    }
+  },
+  "dev": {
+    "history": {
+      "title": "📝 スタディログ",
+      "subtitle": "Hanbaboプロジェクトの開発進捗を記録します。",
+      "updateIndicator": "最新アップデート自動同期",
+      "seminar1": {
+        "date": "2025-10-27 (第1回セミナー)",
+        "completed": "✅ 実装完了",
+        "item1": "基本プロジェクトセットアップ (Next.js 16, React 19, TypeScript)",
+        "item2": "Firebase設定と認証実装",
+        "item3": "メール/パスワード登録 & ログイン",
+        "item4": "会員情報編集 (プロフィール更新)",
+        "item5": "1:1チャット機能 (リアルタイムメッセージ同期)",
+        "learned": "💡 学んだこと",
+        "learned1": "Next.js App Router構造の理解",
+        "learned2": "Firebase Authenticationの使い方",
+        "learned3": "Firebase Realtime Databaseリアルタイム同期",
+        "learned4": "Git PRを通じた協業方式"
+      },
+      "upcoming": "さらに多くのスタディログが追加される予定です..."
+    },
+    "design": {
+      "title": "デザインコンポーネント",
+      "subtitle": "プロジェクトで使用するデザインコンポーネントとスタイルを事前に確認できます。",
+      "updateIndicator": "最新UIガイドスナップショット",
+      "colorPalette": "カラーパレット",
+      "colorSlate": "Slate",
+      "colorBackground": "Background",
+      "colorText": "Text",
+      "colorState": "状態",
+      "buttons": "ボタン",
+      "cards": "カード & セクション",
+      "card1": {
+        "title": "Slate-50 カード",
+        "description": "最もよく使用される基本カードです。明るい背景と柔らかい影を使用します。"
+      },
+      "card2": {
+        "title": "Slate-100 カード",
+        "description": "プロジェクト概要などに使用されるトーンダウンしたカードスタイルです。"
+      },
+      "card3": {
+        "title": "White カード",
+        "description": "清潔な白背景カードで情報階層を強調する際に活用します。"
+      },
+      "card4": {
+        "title": "Accent カード",
+        "description": "統計やハイライト領域に使用するパステルトーンカードです。"
+      },
+      "avatars": "アバター",
+      "dropdown": "ドロップダウンメニュー",
+      "input": "入力フィールド",
+      "inputPlaceholder1": "基本入力フィールド",
+      "inputPlaceholder2": "メール入力",
+      "inputPlaceholder3": "テキストエリア",
+      "typography": "タイポグラフィ",
+      "icons": "アイコン (Lucide React)",
+      "badges": "バッジ & タグ"
+    }
   }
 }

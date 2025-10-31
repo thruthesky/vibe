@@ -4,6 +4,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { auth } from "@/lib/firebase";
 import { getAllUsers } from "@/lib/user";
@@ -17,6 +18,7 @@ interface UserInfo {
 }
 
 export default function UsersPage() {
+  const t = useTranslations();
   const router = useRouter();
   const [users, setUsers] = useState<UserInfo[]>([]);
   const [loading, setLoading] = useState(true);
@@ -53,7 +55,7 @@ export default function UsersPage() {
           setUsers([]);
         }
       } catch (err: any) {
-        setError(err.message || "사용자 목록을 불러올 수 없습니다.");
+        setError(err.message || t("users.loadingError"));
       } finally {
         setLoading(false);
       }
@@ -78,7 +80,7 @@ export default function UsersPage() {
     return (
       <div className="relative min-h-screen bg-[#f0f2f5] flex items-center justify-center">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(198,219,255,0.35),transparent_55%),radial-gradient(circle_at_bottom,_rgba(214,233,218,0.3),transparent_60%)]" />
-        <p className="relative text-sm text-[#5d6472]">회원 목록을 불러오는 중...</p>
+        <p className="relative text-sm text-[#5d6472]">{t("users.loading")}</p>
       </div>
     );
   }
@@ -89,9 +91,9 @@ export default function UsersPage() {
       <div className="relative min-h-screen bg-[#f0f2f5] p-6">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(198,219,255,0.35),transparent_55%),radial-gradient(circle_at_bottom,_rgba(214,233,218,0.3),transparent_60%)]" />
         <div className="relative mx-auto max-w-3xl space-y-4">
-          <h1 className="text-3xl font-bold tracking-tight text-[#050505]">회원 목록</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-[#050505]">{t("users.title")}</h1>
           <div className="rounded-3xl border border-[#f28b82] bg-[#fdecea] p-4 text-sm text-[#b3261e] shadow-xl shadow-[#f5d4d0]/50 backdrop-blur">
-            오류가 발생했습니다: {error}
+            {t("users.errorLabel")}{error}
           </div>
         </div>
       </div>
@@ -104,14 +106,14 @@ export default function UsersPage() {
       <div className="relative mx-auto max-w-3xl space-y-6">
         {/* 페이지 제목 */}
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-[#050505]">회원 목록</h1>
-          <p className="mt-2 text-sm text-[#5d6472]">현재 등록된 회원 정보를 확인하고 채팅을 시작하세요.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-[#050505]">{t("users.title")}</h1>
+          <p className="mt-2 text-sm text-[#5d6472]">{t("users.subtitle")}</p>
         </div>
 
         {/* 회원 수 표시 */}
         <div className="rounded-3xl border border-white/60 bg-white/95 p-4 shadow-xl shadow-[#ccd9f0]/45 backdrop-blur">
           <p className="text-sm text-[#5d6472]">
-            <strong className="text-[#050505]">총 회원 수: {users.length}명</strong>
+            <strong className="text-[#050505]">{t("users.count")}{users.length}{t("users.countSuffix")}</strong>
           </p>
         </div>
 
@@ -119,17 +121,17 @@ export default function UsersPage() {
         <div className="rounded-3xl border border-white/60 bg-white/90 p-4 text-sm text-[#5d6472] shadow-md shadow-[#d7e1f5]/40 backdrop-blur flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
           <span className="inline-flex items-center gap-2 font-semibold text-[#1877f2]">
             <span className="inline-flex h-2.5 w-2.5 rounded-full bg-[#1877f2] shadow-[0_0_6px_rgba(24,119,242,0.5)]" />
-            실시간 목록
+            {t("users.liveList")}
           </span>
           <span className="text-xs sm:text-sm">
-            회원을 클릭하면 바로 1:1 채팅방으로 이동합니다.
+            {t("users.clickHint")}
           </span>
         </div>
 
         {/* 회원이 없을 경우 */}
         {users.length === 0 ? (
           <div className="rounded-3xl border border-white/60 bg-white/95 p-8 text-center text-sm text-[#5d6472] shadow-xl shadow-[#ccd9f0]/45 backdrop-blur">
-            등록된 회원이 없습니다.
+            {t("users.noUsers")}
           </div>
         ) : (
           // 회원 목록을 테이블로 표시
@@ -138,13 +140,13 @@ export default function UsersPage() {
               <thead>
                 <tr className="border-b border-[#dfe1e6] bg-[#f5f6f7]">
                   <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-[#5d6472]">
-                    이름
+                    {t("users.nameHeader")}
                   </th>
                   <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-[#5d6472]">
                     UID
                   </th>
                   <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-[#5d6472]">
-                    이메일
+                    {t("users.emailHeader")}
                   </th>
                 </tr>
               </thead>
@@ -201,15 +203,15 @@ export default function UsersPage() {
 
         {/* 데이터 설명 */}
         <div className="rounded-3xl border border-white/60 bg-white/95 p-4 text-sm text-[#5d6472] shadow-xl shadow-[#ccd9f0]/45 backdrop-blur space-y-2">
-          <p className="font-semibold text-[#050505]">📍 데이터 저장 위치:</p>
+          <p className="font-semibold text-[#050505]">📍 {t("users.dataLocationLabel")}</p>
           <ul className="space-y-1 text-[#5d6472]">
             <li>
-              Firebase Realtime Database:{" "}
+              {t("users.dataLocation")}{" "}
               <code className="rounded bg-[#f0f2f5] px-1 py-0.5 text-xs text-[#050505] shadow-inner shadow-white">
                 /vibe/users/&lt;uid&gt;
               </code>
             </li>
-            <li>조회 시마다 최신 데이터를 불러옵니다.</li>
+            <li>{t("users.dataRefresh")}</li>
           </ul>
         </div>
       </div>

@@ -4,6 +4,7 @@
 // news 카테고리에 100개의 랜덤 뉴스 글을 생성합니다.
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { rtdb } from "@/lib/firebase";
 import { ref, push, set } from "firebase/database";
 import { Button } from "@/components/ui/button";
@@ -59,6 +60,7 @@ const authors = [
 ];
 
 export default function AdminTestDataPage() {
+  const t = useTranslations();
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
   const [log, setLog] = useState<string[]>([]);
@@ -107,23 +109,23 @@ export default function AdminTestDataPage() {
     setLog([]);
 
     try {
-      addLog("뉴스 카테고리에 테스트 게시글 100개 생성을 시작합니다...");
+      addLog(t("admin.testData.log.start"));
 
       for (let i = 0; i < 100; i++) {
         const title = await createTestPost(i);
         setProgress(i + 1);
-        addLog(`[${i + 1}/100] 생성 완료: ${title}`);
+        addLog(t("admin.testData.log.progress", { current: i + 1, title }));
 
         // API 호출 제한을 피하기 위해 약간의 지연
         await new Promise((resolve) => setTimeout(resolve, 100));
       }
 
-      addLog("✅ 100개의 테스트 게시글 생성 완료!");
-      alert("테스트 게시글 100개 생성이 완료되었습니다!");
+      addLog(t("admin.testData.log.success"));
+      alert(t("admin.testData.alert.success"));
     } catch (error) {
       console.error("게시글 생성 오류:", error);
-      addLog(`❌ 오류 발생: ${error instanceof Error ? error.message : "알 수 없는 오류"}`);
-      alert("게시글 생성 중 오류가 발생했습니다.");
+      addLog(t("admin.testData.log.error", { error: error instanceof Error ? error.message : "Unknown error" }));
+      alert(t("admin.testData.alert.error"));
     } finally {
       setIsGenerating(false);
     }
@@ -138,10 +140,10 @@ export default function AdminTestDataPage() {
     <div className="min-h-screen bg-background p-8">
       <div className="container mx-auto max-w-4xl">
         <h1 className="text-3xl font-bold text-foreground mb-2">
-          관리자 페이지 - 테스트 데이터 생성
+          {t("admin.testData.pageTitle")}
         </h1>
         <p className="text-sm text-muted-foreground mb-8">
-          news 카테고리에 100개의 랜덤 뉴스 글을 생성합니다.
+          {t("admin.testData.pageDescription")}
         </p>
 
         {/* 생성 버튼 */}
@@ -153,8 +155,8 @@ export default function AdminTestDataPage() {
             className="w-full"
           >
             {isGenerating
-              ? `생성 중... (${progress}/100)`
-              : "뉴스 게시글 100개 생성하기"}
+              ? t("admin.testData.generating", { progress })
+              : t("admin.testData.generateButton")}
           </Button>
 
           {isGenerating && (
@@ -166,7 +168,7 @@ export default function AdminTestDataPage() {
                 />
               </div>
               <p className="text-center text-sm text-slate-600 mt-2">
-                {progress}% 완료
+                {t("admin.testData.progress", { progress })}
               </p>
             </div>
           )}

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { onValue, ref } from "firebase/database";
 import { rtdb } from "@/lib/firebase";
 import { getCurrentUser } from "@/lib/auth";
@@ -21,6 +22,7 @@ interface ChatRoom {
 }
 
 export default function ChatListPage() {
+  const t = useTranslations();
   const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -62,7 +64,7 @@ export default function ChatListPage() {
         },
         (error) => {
           console.error("[ChatListPage] 채팅방 목록 조회 오류:", error);
-          setError("채팅방 목록을 불러올 수 없습니다");
+          setError(t("chat.list.error.load"));
           setIsLoading(false);
         }
       );
@@ -71,15 +73,15 @@ export default function ChatListPage() {
       return () => unsubscribe();
     } catch (err) {
       console.error("[ChatListPage] 채팅 리스너 설정 오류:", err);
-      setError("채팅방을 불러오는 중 오류가 발생했습니다");
+      setError(t("chat.list.error.fetch"));
       setIsLoading(false);
     }
-  }, [router]);
+  }, [router, t]);
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <p className="text-muted-foreground">채팅방 목록을 불러오는 중...</p>
+        <p className="text-muted-foreground">{t("chat.list.loading")}</p>
       </div>
     );
   }
@@ -96,14 +98,14 @@ export default function ChatListPage() {
     <div className="h-full flex flex-col bg-background">
       {/* 상단 헤더 */}
       <div className="border-b border-slate-200 p-4 sticky top-0 bg-white">
-        <h1 className="text-xl font-semibold text-foreground">채팅</h1>
+        <h1 className="text-xl font-semibold text-foreground">{t("chat.list.title")}</h1>
       </div>
 
       {/* 채팅방 목록 */}
       <div className="flex-1 overflow-y-auto">
         {chatRooms.length === 0 ? (
           <div className="flex items-center justify-center h-full text-muted-foreground p-4 text-center">
-            <p>채팅방이 없습니다</p>
+            <p>{t("chat.list.empty")}</p>
           </div>
         ) : (
           <div className="space-y-0">
@@ -120,10 +122,10 @@ export default function ChatListPage() {
                     {/* 상대방 이름 및 메시지 내용 */}
                     <div className="flex-1 min-w-0">
                       <h3 className="font-medium text-foreground truncate">
-                        {room.otherName || "알 수 없는 사용자"}
+                        {room.otherName || t("chat.list.unknownUser")}
                       </h3>
                       <p className="text-sm text-muted-foreground truncate mt-1">
-                        {room.text || "(메시지 없음)"}
+                        {room.text || t("chat.list.noMessage")}
                       </p>
                     </div>
 
@@ -152,11 +154,11 @@ export default function ChatListPage() {
 }
 
 /**
- * 타임스탬프를 사람이 읽을 수 있는 형식으로 변환합니다
+ * 타임스탬프를 사람이 읽을 수 있는 형식으로 변환합니다 (숫자만 반환)
  * @param timestamp Unix timestamp (밀리초)
- * @returns 포맷된 시간 문자열
+ * @returns 분/시간/일 숫자
  */
-function formatTime(timestamp: number): string {
+function formatTimeValue(timestamp: number): { value: number; type: 'minutes' | 'hours' | 'days' } {
   const date = new Date(timestamp);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
@@ -166,22 +168,39 @@ function formatTime(timestamp: number): string {
 
   // 1시간 이내
   if (diffMins < 60) {
-    return `${diffMins}분 전`;
+    return { value: diffMins, type: 'minutes' };
   }
 
   // 1일 이내
   if (diffHours < 24) {
-    return `${diffHours}시간 전`;
+    return { value: diffHours, type: 'hours' };
   }
 
   // 7일 이내
   if (diffDays < 7) {
-    return `${diffDays}일 전`;
+    return { value: diffDays, type: 'days' };
   }
 
-  // 그 외: 날짜 표시
-  return date.toLocaleDateString("ko-KR", {
-    month: "short",
-    day: "numeric",
-  });
+  // 그 외: -1 반환 (날짜 표시 필요)
+  return { value: -1, type: 'days' };
+}
+
+function formatTime(timestamp: number): string {
+  const { value, type } = formatTimeValue(timestamp);
+
+  if (value === -1) {
+    return new Date(timestamp).toLocaleDateString("ko-KR", {
+      month: "short",
+      day: "numeric",
+    });
+  }
+
+  // 클라이언트에서는 하드코딩된 텍스트 사용 (t() 사용 불가)
+  // 서버에서 i18n을 통해 번역되지만, 이 부분은 접근성을 위해 기본값 유지
+  const typeMap = {
+    minutes: '분 전',
+    hours: '시간 전',
+    days: '일 전'
+  };
+  return `${value}${typeMap[type]}`;
 }

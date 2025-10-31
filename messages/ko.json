@@ -8,13 +8,44 @@
     "menu": "메뉴"
   },
   "auth": {
-    "login": "로그인",
-    "signup": "회원가입",
+    "login": {
+      "title": "로그인",
+      "subtitle": "계정에 로그인하고 대화를 이어가세요.",
+      "description": "몇 초 만에 바이브 커뮤니티와 다시 연결하세요.",
+      "email": "이메일",
+      "emailPlaceholder": "이메일을 입력하세요",
+      "password": "비밀번호",
+      "passwordPlaceholder": "비밀번호를 입력하세요",
+      "submit": "로그인",
+      "submitting": "처리 중...",
+      "signupPrompt": "아직 계정이 없으신가요?",
+      "signupLink": "회원가입",
+      "error": "처리 중 오류가 발생했습니다."
+    },
+    "signup": {
+      "title": "회원가입",
+      "subtitle": "새 계정을 만들고 바이브 커뮤니티에 참여하세요.",
+      "description": "커뮤니티 업데이트와 대화를 한 화면에서 만나보세요.",
+      "displayName": "이름",
+      "displayNamePlaceholder": "이름을 입력하세요",
+      "email": "이메일",
+      "emailPlaceholder": "이메일을 입력하세요",
+      "password": "비밀번호",
+      "passwordPlaceholder": "비밀번호를 입력하세요 (최소 6자)",
+      "passwordConfirm": "비밀번호 확인",
+      "passwordConfirmPlaceholder": "비밀번호를 다시 입력하세요",
+      "submit": "회원가입",
+      "submitting": "회원가입 중...",
+      "loginPrompt": "이미 계정이 있으신가요?",
+      "loginLink": "로그인",
+      "error": {
+        "passwordMismatch": "비밀번호가 일치하지 않습니다.",
+        "passwordLength": "비밀번호는 최소 6자 이상이어야 합니다.",
+        "failed": "회원가입에 실패했습니다."
+      }
+    },
     "logout": "로그아웃",
     "myAccount": "내 계정",
-    "email": "이메일",
-    "password": "비밀번호",
-    "displayName": "표시 이름",
     "getStarted": "시작하기"
   },
   "buttons": {
@@ -48,7 +79,24 @@
     "languageSettings": "언어 설정"
   },
   "menu": {
+    "loading": "로딩 중...",
     "title": "메뉴",
+    "subtitle": "빠르게 이동하고 싶은 기능을 선택하세요.",
+    "currentUser": "현재 로그인 사용자",
+    "userMenu": "회원 메뉴",
+    "profile": "회원 정보 수정",
+    "users": "회원 목록",
+    "chat": "채팅",
+    "admin": "관리자 페이지",
+    "logout": "로그아웃",
+    "auth": "인증",
+    "login": "로그인",
+    "signup": "회원가입",
+    "language": {
+      "title": "언어 설정",
+      "description": "원하는 언어를 선택하세요."
+    },
+    "back": "뒤로가기",
     "settings": "설정",
     "help": "도움말",
     "about": "정보",
@@ -57,7 +105,38 @@
     "selectLanguage": "언어 선택"
   },
   "forum": {
+    "loading": "로딩 중...",
     "title": "포럼",
+    "subtitle": "자유롭게 의견을 나누는 공간입니다",
+    "writeButton": "글쓰기",
+    "empty": {
+      "title": "게시글이 없습니다",
+      "description": "첫 번째 게시글을 작성해보세요!"
+    },
+    "post": {
+      "author": "작성자: {author}"
+    },
+    "dialog": {
+      "title": "새 게시글 작성",
+      "description": "게시글의 제목과 내용을 입력해주세요.",
+      "category": "카테고리",
+      "categoryPlaceholder": "카테고리를 선택하세요",
+      "postTitle": "제목",
+      "titlePlaceholder": "제목을 입력하세요",
+      "content": "내용",
+      "contentPlaceholder": "내용을 입력하세요",
+      "cancel": "취소",
+      "submit": "전송",
+      "submitting": "전송 중..."
+    },
+    "alert": {
+      "selectCategory": "카테고리를 선택해주세요.",
+      "enterTitle": "제목을 입력해주세요.",
+      "enterContent": "내용을 입력해주세요.",
+      "noAuth": "로그인 정보를 확인할 수 없습니다.",
+      "saveFailed": "게시글 저장 실패: {error}",
+      "saveError": "게시글 저장 중 오류가 발생했습니다."
+    },
     "categories": "카테고리",
     "community": "커뮤니티",
     "qna": "질문과답변",
@@ -72,6 +151,44 @@
     "likes": "좋아요"
   },
   "chat": {
+    "list": {
+      "loading": "채팅방 목록을 불러오는 중...",
+      "error": {
+        "load": "채팅방 목록을 불러올 수 없습니다",
+        "fetch": "채팅방을 불러오는 중 오류가 발생했습니다"
+      },
+      "title": "채팅",
+      "empty": "채팅방이 없습니다",
+      "unknownUser": "알 수 없는 사용자",
+      "noMessage": "(메시지 없음)",
+      "time": {
+        "minutesAgo": "{minutes}분 전",
+        "hoursAgo": "{hours}시간 전",
+        "daysAgo": "{days}일 전"
+      }
+    },
+    "room": {
+      "loading": {
+        "auth": "인증 정보를 확인하는 중...",
+        "room": "채팅방을 불러오는 중...",
+        "user": "로딩 중..."
+      },
+      "error": {
+        "noOtherId": "채팅 대상을 지정해주세요.",
+        "selfChat": "자신과 채팅할 수 없습니다.",
+        "join": "채팅방 입장에 실패했습니다.",
+        "load": "채팅방을 불러올 수 없습니다.",
+        "send": "메시지 전송에 실패했습니다."
+      },
+      "defaultUser": "사용자",
+      "realtime": "실시간 동기화 중",
+      "back": "← 돌아가기",
+      "empty": "아직 메시지가 없습니다.",
+      "emptyInvite": "{name}님과의 대화를 시작해보세요!",
+      "inputPlaceholder": "메시지를 입력하세요...",
+      "send": "전송",
+      "sending": "전송 중..."
+    },
     "title": "채팅",
     "rooms": "채팅방",
     "messages": "메시지",
@@ -82,7 +199,26 @@
     "chatList": "채팅 목록"
   },
   "users": {
-    "title": "사용자",
+    "loading": "회원 목록을 불러오는 중...",
+    "title": "회원 목록",
+    "subtitle": "현재 등록된 회원 정보를 확인하고 채팅을 시작하세요.",
+    "totalCount": "총 회원 수: {count}명",
+    "realtimeIndicator": "실시간 목록",
+    "clickToChat": "회원을 클릭하면 바로 1:1 채팅방으로 이동합니다.",
+    "empty": "등록된 회원이 없습니다.",
+    "table": {
+      "name": "이름",
+      "uid": "UID",
+      "email": "이메일"
+    },
+    "defaultName": "이름 없음",
+    "dataLocation": {
+      "title": "📍 데이터 저장 위치:",
+      "path": "Firebase Realtime Database: {path}",
+      "description": "조회 시마다 최신 데이터를 불러옵니다."
+    },
+    "error": "오류가 발생했습니다: {error}",
+    "errorMessage": "사용자 목록을 불러올 수 없습니다.",
     "userList": "사용자 목록",
     "findUsers": "사용자 찾기",
     "totalUsers": "전체 사용자",
@@ -91,10 +227,33 @@
     "sendMessage": "메시지 보내기"
   },
   "profile": {
-    "title": "프로필",
+    "loading": "로딩 중...",
+    "title": "회원 정보 수정",
+    "subtitle": "사용자 이름을 최신 상태로 유지하세요.",
+    "photo": {
+      "label": "프로필 사진",
+      "noPhoto": "사진 없음",
+      "change": "사진 변경",
+      "uploading": "업로드 중...",
+      "success": "프로필 사진이 성공적으로 업로드되었습니다!",
+      "error": "사진 업로드에 실패했습니다."
+    },
+    "displayName": {
+      "label": "이름",
+      "placeholder": "사용자 이름을 입력하세요"
+    },
+    "submit": "저장",
+    "submitting": "저장 중...",
+    "cancel": "취소",
+    "success": "이름이 성공적으로 수정되었습니다!",
+    "error": {
+      "empty": "이름을 입력해주세요.",
+      "noUserId": "사용자 ID를 찾을 수 없습니다.",
+      "failed": "이름 수정에 실패했습니다."
+    },
+    "dataLocation": "저장된 이름은 Firebase Realtime Database의 {path} 경로에 보관됩니다.",
     "editProfile": "프로필 수정",
     "myProfile": "내 프로필",
-    "displayName": "표시 이름",
     "email": "이메일",
     "photoURL": "프로필 사진",
     "bio": "소개",
@@ -109,8 +268,166 @@
     "chatMessages": "채팅 메시지"
   },
   "home": {
-    "welcome": "바이브에 오신 것을 환영합니다",
-    "description": "바이브 코딩으로만 만들어졌습니다",
-    "aiTruth": "AI 시대의 진실"
+    "vibeBanner": "🤖 현재 보시고 계시는 이 사이트는 100% 바이브 코딩으로만 만들어졌습니다.",
+    "aiTruth": {
+      "title": "💡 AI 시대의 진실",
+      "item1": {
+        "title": "AI 시대에 변하지 않는 것은 당신입니다.",
+        "content": "매일 더욱 더 강력한 인공지능, 툴, 에이전트가 쏟아지고 있습니다. 여러분들은 매일 어떻게 변하고 있나요?"
+      },
+      "item2": {
+        "title": "AI 만으로 할 수 있는 것은 아무 것도 없습니다.",
+        "content": "실용적인 웹/앱을 만들기 위해서는 인간의 수 많은 개입이 필요합니다. AI 는 결국 생각없이 입력이 주어지면 그에 따른 출력을 할 뿐입니다.",
+        "hint": "AI 는 도구일 뿐, 원하는 결과물이 만들어지도록 방향을 제시하고 통제해야 합니다."
+      },
+      "item3": {
+        "title": "AI 로 만든 웹/앱에는 저작권이 없습니다.",
+        "content": "음악을 인공지능(AI)으로 만드는 것 보다 훨씬 저작권 제약이 큽니다. 간단한 소프트웨어를 개발하기 위해서는 수백/수천 개의 오픈소스 라이브러리 모듈이 사용됩니다.",
+        "gpl": "GPL 라이센스를 쓰는 모든 소프트웨어는 오픈소스로 공개되어야 합니다.",
+        "hint": "여러분들이 만드는 소프트웨어가 쓰는 모든 라이브러리의 저작권을 확인하셨나요? 그렇지 않으면 여러분은 자신도 모르게 저작권 위반을 하고 계신 것입니다."
+      }
+    },
+    "title": "바이브 코딩 스터디 프로젝트",
+    "description": {
+      "part1": "누구든지 참여를 할 수 있습니다. PR 하시거나,",
+      "linkText": "한바보",
+      "part2": "단톡방에 참여해주세요."
+    },
+    "todo": {
+      "item1": {
+        "label": "디자인",
+        "description": "탑바에 로그인 사용자 정보 표시."
+      },
+      "item2": {
+        "label": "회원 정보 수정",
+        "description": "회원 사진 등록. 회원 정보 실시간 업데이트"
+      },
+      "item3": {
+        "label": "대화방 참여 목록",
+        "description": "vibe/chat/joins 에 저장해서, 채팅방 목록을 표시하고, 클릭하여 입장.",
+        "subitem1": "그룹 채팅: 생성, 수정, 삭제, 초대",
+        "subitem2": "오픈 채팅: 로그인 없이 채팅방 입장 가능, 단 메시지 전송은 로그인 필요"
+      },
+      "item4": {
+        "label": "모든 함수를 API 화 시키기"
+      },
+      "item5": {
+        "label": "게시판",
+        "subitem1": "게시판 글/코멘트을 RTDB 에 저장(sync)",
+        "subitem2": "게시를 SEO 를 위해서, RTDB 글을 Supabase 로 캐시.",
+        "subitem3": "서버에서 렌더링하는 경우는 무조건 Supabase 에서 데이터 가져오기.",
+        "subitem4": "클라이언트에서 Hydration 후, RTDB 에서 글 가져와 Reboot (렌더링)"
+      },
+      "item6": {
+        "label": "푸시 알림",
+        "subitem1": "채팅방에 알림 구독(선택)",
+        "subitem2": "댓글이 달린 경우, 푸시 알림"
+      },
+      "item7": {
+        "label": "Flutter iOS/Android 앱 개발",
+        "subitem1": "웹의 모든 기능을 구현"
+      },
+      "title": "📋 해야할 일 (TODO)"
+    },
+    "overview": {
+      "brand": "한바보(한국 바이버 보스)",
+      "description": "는 AI 기반 바이브 코딩으로 실전 소셜 웹 애플리케이션을 만드는 오픈소스 스터디 커뮤니티입니다. 코드는 AI에게 맡기고, 설계와 기획에 집중하며, Git을 통한 협업과 실제 배포까지 경험합니다. 인증, 게시판, 채팅, 알림 등 실용적인 기능을 구현하며, 지속 가능한 개발 능력과 AI 컨트롤 역량을 기릅니다.",
+      "badge1": "소스 코딩 금지",
+      "badge2": "실전 협업",
+      "badge3": "실용적 기능",
+      "badge4": "함께 성장",
+      "title": "AI와 함께하는 협업 개발 경험"
+    },
+    "aiChange": {
+      "title": "🚀 AI 시대, 변하지 않는 것은 바로 당신입니다",
+      "description": "인공지능은 계속해서 발전하고 있고, 각종 툴도 계속해서 업그레이드되고 있으며, 에이전트나 인공지능 관련 프로세스들도 계속해서 빠르게 업데이트 중입니다.",
+      "emphasis": "다만 한 가지 변하지 않는 것은 바로",
+      "highlight": "여러분 자신",
+      "conclusio": "입니다. 인공지능 시대에 맞게 여러분 자신도 업그레이드해야 할 것입니다.",
+      "hint": "AI는 도구일 뿐, 진정한 가치를 만드는 것은 당신의 생각과 실행력입니다."
+    }
+  },
+  "admin": {
+    "title": "관리자 페이지",
+    "subtitle": "운영에 필요한 관리자 도구로 이동하세요.",
+    "testData": {
+      "title": "테스트 데이터 관리",
+      "description": "포럼용 더미 데이터를 생성해 기능을 빠르게 검증합니다.",
+      "button": "테스트 데이터 생성",
+      "pageTitle": "관리자 페이지 - 테스트 데이터 생성",
+      "pageDescription": "news 카테고리에 100개의 랜덤 뉴스 글을 생성합니다.",
+      "generateButton": "뉴스 게시글 100개 생성하기",
+      "generating": "생성 중... ({progress}/100)",
+      "progress": "{progress}% 완료",
+      "log": {
+        "start": "뉴스 카테고리에 테스트 게시글 100개 생성을 시작합니다...",
+        "progress": "[{current}/100] 생성 완료: {title}",
+        "success": "✅ 100개의 테스트 게시글 생성 완료!",
+        "error": "❌ 오류 발생: {error}"
+      },
+      "alert": {
+        "success": "테스트 게시글 100개 생성이 완료되었습니다!",
+        "error": "게시글 생성 중 오류가 발생했습니다."
+      }
+    }
+  },
+  "dev": {
+    "history": {
+      "title": "📝 스터디 로그",
+      "subtitle": "한바보 프로젝트의 개발 진행 현황을 기록합니다.",
+      "updateIndicator": "최신 업데이트 자동 동기화",
+      "seminar1": {
+        "date": "2025-10-27 (첫 번째 세미나)",
+        "completed": "✅ 구현 완료",
+        "item1": "기본 프로젝트 셋업 (Next.js 16, React 19, TypeScript)",
+        "item2": "Firebase 설정 및 인증 구현",
+        "item3": "이메일/비밀번호 회원가입 & 로그인",
+        "item4": "회원 정보 수정 (프로필 업데이트)",
+        "item5": "1:1 채팅 기능 (실시간 메시지 동기화)",
+        "learned": "💡 배운 것들",
+        "learned1": "Next.js App Router 구조 이해",
+        "learned2": "Firebase Authentication 사용법",
+        "learned3": "Firebase Realtime Database 실시간 동기화",
+        "learned4": "Git PR을 통한 협업 방식"
+      },
+      "upcoming": "더 많은 스터디 로그가 추가될 예정입니다..."
+    },
+    "design": {
+      "title": "Design Components",
+      "subtitle": "프로젝트에서 사용하는 디자인 컴포넌트와 스타일을 미리 확인할 수 있습니다.",
+      "updateIndicator": "최신 UI 가이드 스냅샷",
+      "colorPalette": "색상 팔레트",
+      "colorSlate": "Slate",
+      "colorBackground": "Background",
+      "colorText": "Text",
+      "colorState": "상태",
+      "buttons": "버튼",
+      "cards": "카드 & 섹션",
+      "card1": {
+        "title": "Slate-50 카드",
+        "description": "가장 많이 사용하는 기본 카드입니다. 밝은 배경과 부드러운 그림자를 사용합니다."
+      },
+      "card2": {
+        "title": "Slate-100 카드",
+        "description": "프로젝트 개요 등에 쓰이는 톤 다운된 카드 스타일입니다."
+      },
+      "card3": {
+        "title": "White 카드",
+        "description": "깔끔한 흰색 배경 카드로 정보 위계를 강조할 때 활용합니다."
+      },
+      "card4": {
+        "title": "Accent 카드",
+        "description": "통계나 하이라이트 영역에 사용하는 파스텔 톤 카드입니다."
+      },
+      "avatars": "아바타",
+      "dropdown": "드롭다운 메뉴",
+      "input": "입력 필드",
+      "inputPlaceholder1": "기본 입력 필드",
+      "inputPlaceholder2": "이메일 입력",
+      "inputPlaceholder3": "텍스트 영역",
+      "typography": "타이포그래피",
+      "icons": "아이콘 (Lucide React)",
+      "badges": "배지 & 태그"
+    }
   }
 }

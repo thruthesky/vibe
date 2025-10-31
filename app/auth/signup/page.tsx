@@ -2,10 +2,12 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { useTranslations } from "next-intl";
 import { signUp } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 
 export default function SignUpPage() {
+  const t = useTranslations();
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -20,12 +22,12 @@ export default function SignUpPage() {
 
     // 비밀번호 확인
     if (password !== passwordConfirm) {
-      setError("비밀번호가 일치하지 않습니다.");
+      setError(t("auth.signup.passwordMismatch"));
       return;
     }
 
     if (password.length < 6) {
-      setError("비밀번호는 최소 6자 이상이어야 합니다.");
+      setError(t("auth.signup.passwordTooShort"));
       return;
     }
 
@@ -38,7 +40,7 @@ export default function SignUpPage() {
       router.push("/");
     } else {
       // 회원가입 실패
-      setError(result.error || "회원가입에 실패했습니다.");
+      setError(result.error || t("auth.signup.signupFailed"));
     }
 
     setLoading(false);
@@ -53,9 +55,9 @@ export default function SignUpPage() {
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#e8f1ff] text-[#1877f2] shadow-inner shadow-white">
             <span className="text-xl font-bold">V</span>
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-[#050505]">회원가입</h1>
-          <p className="text-sm text-[#5d6472]">새 계정을 만들고 바이브 커뮤니티에 참여하세요.</p>
-          <p className="text-xs text-[#8d949e]">커뮤니티 업데이트와 대화를 한 화면에서 만나보세요.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-[#050505]">{t("auth.signup.title")}</h1>
+          <p className="text-sm text-[#5d6472]">{t("auth.signup.subtitle")}</p>
+          <p className="text-xs text-[#8d949e]">{t("auth.signup.description")}</p>
         </div>
 
         {/* 오류 메시지 */}
@@ -70,14 +72,14 @@ export default function SignUpPage() {
           {/* 이름 입력 */}
           <div className="space-y-2">
             <label htmlFor="displayName" className="block text-sm font-semibold text-[#050505]">
-              이름
+              {t("auth.signup.nameLabe l")}
             </label>
             <input
               id="displayName"
               type="text"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
-              placeholder="이름을 입력하세요"
+              placeholder={t("auth.signup.namePlaceholder")}
               required
               className="w-full rounded-2xl border border-[#dfe1e6] bg-white/95 px-4 py-3 text-[#050505] shadow-inner shadow-white placeholder:text-[#8d949e] focus:border-[#1877f2] focus:outline-none focus:ring-2 focus:ring-[#99c2ff]"
             />
@@ -86,14 +88,14 @@ export default function SignUpPage() {
           {/* 이메일 입력 */}
           <div className="space-y-2">
             <label htmlFor="email" className="block text-sm font-semibold text-[#050505]">
-              이메일
+              {t("auth.signup.emailLabel")}
             </label>
             <input
               id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="이메일을 입력하세요"
+              placeholder={t("auth.signup.emailPlaceholder")}
               required
               className="w-full rounded-2xl border border-[#dfe1e6] bg-white/95 px-4 py-3 text-[#050505] shadow-inner shadow-white placeholder:text-[#8d949e] focus:border-[#1877f2] focus:outline-none focus:ring-2 focus:ring-[#99c2ff]"
             />
@@ -102,14 +104,14 @@ export default function SignUpPage() {
           {/* 비밀번호 입력 */}
           <div className="space-y-2">
             <label htmlFor="password" className="block text-sm font-semibold text-[#050505]">
-              비밀번호
+              {t("auth.signup.passwordLabel")}
             </label>
             <input
               id="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="비밀번호를 입력하세요 (최소 6자)"
+              placeholder={t("auth.signup.passwordPlaceholder")}
               required
               className="w-full rounded-2xl border border-[#dfe1e6] bg-white/95 px-4 py-3 text-[#050505] shadow-inner shadow-white placeholder:text-[#8d949e] focus:border-[#1877f2] focus:outline-none focus:ring-2 focus:ring-[#99c2ff]"
             />
@@ -118,14 +120,14 @@ export default function SignUpPage() {
           {/* 비밀번호 확인 입력 */}
           <div className="space-y-2">
             <label htmlFor="passwordConfirm" className="block text-sm font-semibold text-[#050505]">
-              비밀번호 확인
+              {t("auth.signup.passwordConfirmLabel")}
             </label>
             <input
               id="passwordConfirm"
               type="password"
               value={passwordConfirm}
               onChange={(e) => setPasswordConfirm(e.target.value)}
-              placeholder="비밀번호를 다시 입력하세요"
+              placeholder={t("auth.signup.passwordConfirmPlaceholder")}
               required
               className="w-full rounded-2xl border border-[#dfe1e6] bg-white/95 px-4 py-3 text-[#050505] shadow-inner shadow-white placeholder:text-[#8d949e] focus:border-[#1877f2] focus:outline-none focus:ring-2 focus:ring-[#99c2ff]"
             />
@@ -137,7 +139,7 @@ export default function SignUpPage() {
             disabled={loading}
             className="w-full rounded-2xl bg-[#1877f2] py-3 text-sm font-semibold text-white shadow-lg shadow-[#99b5f7]/60 transition-transform transition-colors hover:-translate-y-[1px] hover:bg-[#166fe5] disabled:cursor-not-allowed disabled:bg-[#c3dafb]"
           >
-            {loading ? "회원가입 중..." : "회원가입"}
+            {loading ? t("auth.signup.submitting") : t("auth.signup.submitButton")}
           </button>
         </form>
 
@@ -145,9 +147,9 @@ export default function SignUpPage() {
 
         {/* 로그인 링크 */}
         <p className="mt-8 text-center text-sm text-[#5d6472]">
-          이미 계정이 있으신가요?{" "}
+          {t("auth.signup.hasAccount")}{" "}
           <a href="/auth/login" className="font-semibold text-[#1877f2] hover:underline">
-            로그인
+            {t("auth.signup.loginLink")}
           </a>
         </p>
       </div>

@@ -6,6 +6,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { auth } from "@/lib/firebase";
 import { User, onAuthStateChanged } from "firebase/auth";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ import { logOut } from "@/lib/auth";
 import { LanguageSwitcher } from "@/components/language-switcher";
 
 export default function MenuPage() {
+  const t = useTranslations();
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -43,9 +45,9 @@ export default function MenuPage() {
       <div className="relative mx-auto max-w-2xl px-6">
         {/* 페이지 제목 */}
         <div className="mb-10 space-y-3">
-          <h1 className="text-4xl font-bold tracking-tight text-[#050505]">메뉴</h1>
+          <h1 className="text-4xl font-bold tracking-tight text-[#050505]">{t("menu.title")}</h1>
           <p className="text-sm text-[#5d6472]">
-            빠르게 이동하고 싶은 기능을 선택하세요.
+            {t("menu.subtitle")}
           </p>
           <div className="h-px w-full bg-gradient-to-r from-transparent via-[#dfe3ec] to-transparent" />
         </div>
@@ -53,7 +55,7 @@ export default function MenuPage() {
         {/* 로딩 상태 */}
         {loading && (
           <div className="rounded-3xl border border-white/60 bg-white/90 py-12 text-center text-sm text-[#5d6472] shadow-xl shadow-[#ccd9f0]/45 backdrop-blur">
-            로딩 중...
+            {t("menu.loading")}
           </div>
         )}
 
@@ -63,7 +65,7 @@ export default function MenuPage() {
             {/* 사용자 정보 섹션 */}
             <div className="rounded-3xl border border-white/60 bg-white/95 p-6 shadow-xl shadow-[#cbd8f2]/45 backdrop-blur">
               <h2 className="text-lg font-semibold text-[#050505]">
-                현재 로그인 사용자
+                {t("menu.currentUser")}
               </h2>
               <p className="mt-2 text-sm text-[#5d6472]">
                 <strong className="text-[#050505]">{user.displayName || user.email}</strong>
@@ -73,7 +75,7 @@ export default function MenuPage() {
             {/* 사용자 메뉴 */}
             <div className="rounded-3xl border border-white/60 bg-white/95 p-6 shadow-xl shadow-[#cbd8f2]/45 backdrop-blur space-y-3">
               <h2 className="text-lg font-semibold text-[#050505]">
-                회원 메뉴
+                {t("menu.userMenu")}
               </h2>
 
               <Button
@@ -81,7 +83,7 @@ export default function MenuPage() {
                 className="w-full justify-start rounded-2xl bg-[#1877f2] py-3 text-sm font-semibold shadow-lg shadow-[#99b5f7]/60 hover:bg-[#166fe5]"
               >
                 <Link href="/profile">
-                  <span>회원 정보 수정</span>
+                  <span>{t("menu.profile")}</span>
                 </Link>
               </Button>
 
@@ -91,7 +93,7 @@ export default function MenuPage() {
                 className="w-full justify-start rounded-2xl border border-transparent bg-[#e7f3ff] py-3 text-sm font-semibold text-[#1877f2] hover:bg-[#d8e8ff]"
               >
                 <Link href="/users">
-                  <span>회원 목록</span>
+                  <span>{t("menu.users")}</span>
                 </Link>
               </Button>
 
@@ -101,7 +103,7 @@ export default function MenuPage() {
                 className="w-full justify-start rounded-2xl border border-transparent bg-[#f5f6f7] py-3 text-sm font-semibold text-[#050505] hover:bg-[#e9ebee]"
               >
                 <Link href="/chat/room">
-                  <span>채팅</span>
+                  <span>{t("menu.chat")}</span>
                 </Link>
               </Button>
 
@@ -111,7 +113,7 @@ export default function MenuPage() {
                 className="w-full justify-start rounded-2xl border border-transparent bg-[#fff4e6] py-3 text-sm font-semibold text-[#c24a00] hover:bg-[#ffe8d1]"
               >
                 <Link href="/admin">
-                  <span>관리자 페이지</span>
+                  <span>{t("menu.admin")}</span>
                 </Link>
               </Button>
             </div>
@@ -124,7 +126,7 @@ export default function MenuPage() {
                 className="w-full justify-center gap-2 rounded-2xl border border-[#dfe1e6] bg-white py-3 text-sm font-semibold text-[#1877f2] hover:bg-[#e7f3ff]"
               >
                 <LogOut className="h-4 w-4" />
-                로그아웃
+                {t("auth.logout")}
               </Button>
             </div>
           </div>
@@ -136,7 +138,7 @@ export default function MenuPage() {
             {/* 로그인/회원가입 섹션 */}
             <div className="rounded-3xl border border-white/60 bg-white/95 p-6 shadow-xl shadow-[#cbd8f2]/45 backdrop-blur space-y-3">
               <h2 className="text-lg font-semibold text-[#050505]">
-                인증
+                {t("menu.auth")}
               </h2>
 
               <Button
@@ -144,7 +146,7 @@ export default function MenuPage() {
                 className="w-full justify-start rounded-2xl bg-[#1877f2] py-3 text-sm font-semibold shadow-lg shadow-[#99b5f7]/60 hover:bg-[#166fe5]"
               >
                 <Link href="/auth/login">
-                  <span>로그인</span>
+                  <span>{t("menu.login")}</span>
                 </Link>
               </Button>
 
@@ -154,7 +156,7 @@ export default function MenuPage() {
                 className="w-full justify-start rounded-2xl border border-[#dfe1e6] bg-white py-3 text-sm font-semibold text-[#1877f2] hover:bg-[#e7f3ff]"
               >
                 <Link href="/auth/signup">
-                  <span>회원가입</span>
+                  <span>{t("menu.signup")}</span>
                 </Link>
               </Button>
             </div>
@@ -162,7 +164,7 @@ export default function MenuPage() {
             {/* 회원 목록 섹션 */}
             <div className="rounded-3xl border border-white/60 bg-white/95 p-6 shadow-xl shadow-[#cbd8f2]/45 backdrop-blur">
               <h2 className="text-lg font-semibold text-[#050505]">
-                회원
+                {t("navigation.users")}
               </h2>
 
               <Button
@@ -171,7 +173,7 @@ export default function MenuPage() {
                 className="w-full justify-start rounded-2xl border border-transparent bg-[#f5f6f7] py-3 text-sm font-semibold text-[#050505] hover:bg-[#e9ebee]"
               >
                 <Link href="/users">
-                  <span>회원 목록</span>
+                  <span>{t("menu.users")}</span>
                 </Link>
               </Button>
             </div>
@@ -181,10 +183,10 @@ export default function MenuPage() {
         {/* 언어 설정 섹션 */}
         <div className="mt-6 rounded-3xl border border-white/60 bg-white/95 p-6 shadow-xl shadow-[#cbd8f2]/45 backdrop-blur">
           <h2 className="text-lg font-semibold text-[#050505] mb-4">
-            언어 설정
+            {t("menu.languageSettings")}
           </h2>
           <p className="text-sm text-[#5d6472] mb-4">
-            원하는 언어를 선택하세요.
+            {t("menu.language.description")}
           </p>
           <LanguageSwitcher />
         </div>
@@ -196,7 +198,7 @@ export default function MenuPage() {
             onClick={() => router.back()}
             className="w-full justify-center rounded-2xl border border-[#dfe1e6] bg-white py-3 text-sm font-semibold text-[#050505] shadow-lg shadow-[#d5deef]/50 hover:bg-[#f5f6f7]"
           >
-            뒤로가기
+            {t("menu.back")}
           </Button>
         </div>
       </div>

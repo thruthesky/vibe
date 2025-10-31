@@ -6,6 +6,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { auth } from "@/lib/firebase";
 import { createPost, listenToPosts, type ForumPost } from "@/lib/forum";
@@ -33,6 +34,7 @@ import {
 import { MessageSquarePlus } from "lucide-react";
 
 export default function ForumListPage() {
+  const t = useTranslations();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [userId, setUserId] = useState<string | null>(null);
@@ -83,7 +85,7 @@ export default function ForumListPage() {
   if (authLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
-        <p className="text-sm text-muted-foreground">로딩 중...</p>
+        <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
       </div>
     );
   }
@@ -110,20 +112,20 @@ export default function ForumListPage() {
   // 글쓰기 전송 핸들러
   const handleSubmit = async () => {
     if (!postCategory) {
-      alert("카테고리를 선택해주세요.");
+      alert(t("forum.alert.selectCategory"));
       return;
     }
     if (!postTitle.trim()) {
-      alert("제목을 입력해주세요.");
+      alert(t("forum.alert.enterTitle"));
       return;
     }
     if (!postContent.trim()) {
-      alert("내용을 입력해주세요.");
+      alert(t("forum.alert.enterContent"));
       return;
     }
 
     if (!userId || !userName) {
-      alert("로그인 정보를 확인할 수 없습니다.");
+      alert(t("forum.alert.noAuth"));
       return;
     }
 
@@ -150,11 +152,11 @@ export default function ForumListPage() {
         // 해당 카테고리 페이지로 이동
         router.push(`/forum/list?category=${postCategory}`);
       } else {
-        alert(`게시글 저장 실패: ${result.error}`);
+        alert(t("forum.alert.saveFailed", { error: result.error || "Unknown error" }));
       }
     } catch (error) {
       console.error("게시글 저장 오류:", error);
-      alert("게시글 저장 중 오류가 발생했습니다.");
+      alert(t("forum.alert.saveError"));
     } finally {
       // 전송 중 상태 해제
       setIsSubmitting(false);
@@ -167,16 +169,16 @@ export default function ForumListPage() {
         {/* 헤더 영역 */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">포럼</h1>
+            <h1 className="text-3xl font-bold text-foreground">{t("forum.title")}</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              자유롭게 의견을 나누는 공간입니다
+              {t("forum.subtitle")}
             </p>
           </div>
 
           {/* 게시글 작성 버튼 */}
           <Button onClick={handleCreatePost} className="gap-2">
             <MessageSquarePlus className="h-4 w-4" />
-            글쓰기
+            {t("forum.writeButton")}
           </Button>
         </div>
 
@@ -202,10 +204,10 @@ export default function ForumListPage() {
           <div className="bg-slate-50 border border-slate-200 rounded-lg p-12">
             <div className="text-center">
               <p className="text-muted-foreground text-base">
-                게시글이 없습니다
+                {t("forum.empty.title")}
               </p>
               <p className="text-muted-foreground text-sm mt-2">
-                첫 번째 게시글을 작성해보세요!
+                {t("forum.empty.description")}
               </p>
             </div>
           </div>
@@ -229,7 +231,7 @@ export default function ForumListPage() {
                 {/* 게시글 메타 정보 */}
                 <div className="flex items-center justify-between text-xs text-slate-500">
                   <div className="flex items-center gap-4">
-                    <span>작성자: {post.author}</span>
+                    <span>{t("forum.post.author", { author: post.author })}</span>
                     <span>
                       {new Date(post.createdAt).toLocaleDateString("ko-KR", {
                         year: "numeric",
@@ -251,19 +253,19 @@ export default function ForumListPage() {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
-            <DialogTitle>새 게시글 작성</DialogTitle>
+            <DialogTitle>{t("forum.dialog.title")}</DialogTitle>
             <DialogDescription>
-              게시글의 제목과 내용을 입력해주세요.
+              {t("forum.dialog.description")}
             </DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-4 py-4">
             {/* 카테고리 선택 */}
             <div className="grid gap-2">
-              <Label htmlFor="category">카테고리</Label>
+              <Label htmlFor="category">{t("forum.dialog.category")}</Label>
               <Select value={postCategory} onValueChange={setPostCategory}>
                 <SelectTrigger id="category">
-                  <SelectValue placeholder="카테고리를 선택하세요" />
+                  <SelectValue placeholder={t("forum.dialog.categoryPlaceholder")} />
                 </SelectTrigger>
                 <SelectContent>
                   {FORUM_CATEGORIES.map((category) => (
@@ -277,10 +279,10 @@ export default function ForumListPage() {
 
             {/* 제목 입력 */}
             <div className="grid gap-2">
-              <Label htmlFor="title">제목</Label>
+              <Label htmlFor="title">{t("forum.dialog.postTitle")}</Label>
               <Input
                 id="title"
-                placeholder="제목을 입력하세요"
+                placeholder={t("forum.dialog.titlePlaceholder")}
                 value={postTitle}
                 onChange={(e) => setPostTitle(e.target.value)}
               />
@@ -288,10 +290,10 @@ export default function ForumListPage() {
 
             {/* 내용 입력 */}
             <div className="grid gap-2">
-              <Label htmlFor="content">내용</Label>
+              <Label htmlFor="content">{t("forum.dialog.content")}</Label>
               <Textarea
                 id="content"
-                placeholder="내용을 입력하세요"
+                placeholder={t("forum.dialog.contentPlaceholder")}
                 value={postContent}
                 onChange={(e) => setPostContent(e.target.value)}
                 rows={8}
@@ -302,10 +304,10 @@ export default function ForumListPage() {
 
           <DialogFooter>
             <Button variant="outline" onClick={handleCancel} disabled={isSubmitting}>
-              취소
+              {t("forum.dialog.cancel")}
             </Button>
             <Button onClick={handleSubmit} disabled={isSubmitting}>
-              {isSubmitting ? "전송 중..." : "전송"}
+              {isSubmitting ? t("forum.dialog.submitting") : t("forum.dialog.submit")}
             </Button>
           </DialogFooter>
         </DialogContent>

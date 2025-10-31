@@ -4,10 +4,12 @@
 
 import { FormEvent, useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { auth } from "@/lib/firebase";
 import { saveUserDisplayName, getUserDisplayName, uploadProfilePhoto, getUserPhotoUrl } from "@/lib/user";
 
 export default function ProfilePage() {
+  const t = useTranslations();
   const [displayName, setDisplayName] = useState("");
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -67,12 +69,12 @@ export default function ProfilePage() {
 
       if (result.success && result.photoUrl) {
         setPhotoUrl(result.photoUrl);
-        setSuccess("프로필 사진이 성공적으로 업로드되었습니다!");
+        setSuccess(t("profile.photo.success"));
       } else {
-        setError(result.error || "사진 업로드에 실패했습니다.");
+        setError(result.error || t("profile.photo.error"));
       }
     } catch (err: any) {
-      setError(err.message || "사진 업로드 중 오류가 발생했습니다.");
+      setError(err.message || t("profile.photo.error"));
     }
 
     setPhotoLoading(false);
@@ -90,7 +92,7 @@ export default function ProfilePage() {
     setSuccess("");
 
     if (!displayName.trim()) {
-      setError("이름을 입력해주세요.");
+      setError(t("profile.error.empty"));
       return;
     }
 
@@ -98,7 +100,7 @@ export default function ProfilePage() {
 
     try {
       if (!userId) {
-        throw new Error("사용자 ID를 찾을 수 없습니다.");
+        throw new Error(t("profile.error.noUserId"));
       }
 
       // RTDB에 displayName 저장
@@ -106,17 +108,17 @@ export default function ProfilePage() {
       const result = await saveUserDisplayName(userId, displayName.trim());
 
       if (result.success) {
-        setSuccess("이름이 성공적으로 수정되었습니다!");
+        setSuccess(t("profile.success"));
 
         // 3초 후 홈페이지로 이동
         setTimeout(() => {
           router.push("/");
         }, 3000);
       } else {
-        setError(result.error || "이름 수정에 실패했습니다.");
+        setError(result.error || t("profile.error.failed"));
       }
     } catch (err: any) {
-      setError(err.message || "이름 수정 중 오류가 발생했습니다.");
+      setError(err.message || t("profile.error.failed"));
     }
 
     setLoading(false);
@@ -127,7 +129,7 @@ export default function ProfilePage() {
     return (
       <div className="relative min-h-screen bg-[#f0f2f5] flex items-center justify-center">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(198,219,255,0.35),transparent_55%),radial-gradient(circle_at_bottom,_rgba(206,230,208,0.25),transparent_65%)]" />
-        <p className="relative text-sm text-[#5d6472]">로딩 중...</p>
+        <p className="relative text-sm text-[#5d6472]">{t("profile.loading")}</p>
       </div>
     );
   }
@@ -141,8 +143,8 @@ export default function ProfilePage() {
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#e8f1ff] text-[#1877f2] shadow-inner shadow-white">
             <span className="text-xl font-bold">V</span>
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-[#050505]">회원 정보 수정</h1>
-          <p className="text-sm text-[#5d6472]">사용자 이름을 최신 상태로 유지하세요.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-[#050505]">{t("profile.title")}</h1>
+          <p className="text-sm text-[#5d6472]">{t("profile.subtitle")}</p>
         </div>
 
         {/* 오류 메시지 */}
@@ -161,21 +163,21 @@ export default function ProfilePage() {
 
         {/* 프로필 사진 섹션 */}
         <div className="mb-6 space-y-3 text-center">
-          <label className="block text-sm font-semibold text-[#050505]">프로필 사진</label>
+          <label className="block text-sm font-semibold text-[#050505]">{t("profile.photo.label")}</label>
 
           {/* 현재 사진 미리보기 */}
           {photoUrl ? (
             <div className="flex justify-center">
               <img
                 src={photoUrl}
-                alt="프로필 사진"
+                alt={t("profile.photo.label")}
                 className="h-32 w-32 rounded-full border-2 border-[#1877f2] object-cover shadow-md"
               />
             </div>
           ) : (
             <div className="flex justify-center">
               <div className="flex h-32 w-32 items-center justify-center rounded-full border-2 border-[#dfe1e6] bg-slate-300 text-slate-700 font-semibold">
-                <span className="text-sm">사진 없음</span>
+                <span className="text-sm">{t("profile.photo.noPhoto")}</span>
               </div>
             </div>
           )}
@@ -187,7 +189,7 @@ export default function ProfilePage() {
             onClick={() => fileInputRef.current?.click()}
             className="w-full rounded-2xl border border-[#dfe1e6] bg-white px-4 py-2 text-sm font-semibold text-[#050505] transition-colors hover:bg-[#f0f2f5] disabled:cursor-not-allowed disabled:text-[#8d949e]"
           >
-            {photoLoading ? "업로드 중..." : "사진 변경"}
+            {photoLoading ? t("profile.photo.uploading") : t("profile.photo.change")}
           </button>
 
           {/* 숨겨진 파일 입력 */}
@@ -206,14 +208,14 @@ export default function ProfilePage() {
           {/* 이름 입력 */}
           <div className="space-y-2 text-left">
             <label htmlFor="displayName" className="block text-sm font-semibold text-[#050505]">
-              이름
+              {t("profile.displayName.label")}
             </label>
             <input
               id="displayName"
               type="text"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
-              placeholder="사용자 이름을 입력하세요"
+              placeholder={t("profile.displayName.placeholder")}
               disabled={loading}
               required
               className="w-full rounded-2xl border border-[#dfe1e6] bg-white px-4 py-3 text-[#050505] shadow-inner shadow-white placeholder:text-[#8d949e] focus:border-[#1877f2] focus:outline-none focus:ring-2 focus:ring-[#99c2ff] disabled:cursor-not-allowed disabled:bg-[#f0f2f5] disabled:text-[#8d949e]"
@@ -228,7 +230,7 @@ export default function ProfilePage() {
               disabled={loading}
               className="flex-1 rounded-2xl bg-[#1877f2] py-3 text-sm font-semibold text-white shadow-lg shadow-[#99b5f7]/60 transition-colors hover:bg-[#166fe5] disabled:cursor-not-allowed disabled:bg-[#c3dafb]"
             >
-              {loading ? "저장 중..." : "저장"}
+              {loading ? t("profile.submitting") : t("profile.submit")}
             </button>
 
             {/* 취소 버튼 */}
@@ -238,18 +240,14 @@ export default function ProfilePage() {
               disabled={loading}
               className="flex-1 rounded-2xl border border-[#dfe1e6] bg-white py-3 text-sm font-semibold text-[#1877f2] transition-colors hover:bg-[#e7f3ff] disabled:cursor-not-allowed disabled:text-[#8d949e]"
             >
-              취소
+              {t("profile.cancel")}
             </button>
           </div>
         </form>
 
         {/* 정보 텍스트 */}
         <p className="mt-8 text-center text-xs text-[#5d6472]">
-          저장된 이름은 Firebase Realtime Database의{" "}
-          <code className="rounded bg-[#f0f2f5] px-1 py-0.5 text-[11px] text-[#050505] shadow-inner shadow-white">
-            /vibe/users/&lt;uid&gt;/displayName
-          </code>{" "}
-          경로에 보관됩니다.
+          {t("profile.dataLocation", { path: "/vibe/users/<uid>/displayName" })}
         </p>
       </div>
     </div>
