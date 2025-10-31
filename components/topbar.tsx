@@ -5,6 +5,7 @@
 // 사용자의 displayName과 photoUrl을 RTDB에서 실시간으로 감시하여 표시합니다.
 
 import { useState, useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { User, onAuthStateChanged } from "firebase/auth";
@@ -31,6 +32,7 @@ import {
 } from "lucide-react";
 
 export function Topbar() {
+  const t = useTranslations();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   // RTDB에서 실시간으로 가져오는 사용자 정보
@@ -164,7 +166,7 @@ export function Topbar() {
                 <Button variant="ghost" size="sm" asChild>
                   <Link href="/forum/list">
                     <LayoutGrid className="h-4 w-4 mr-2" />
-                    포럼
+                    {t("navigation.forum")}
                   </Link>
                 </Button>
 
@@ -172,7 +174,7 @@ export function Topbar() {
                 <Button variant="ghost" size="sm" asChild>
                   <Link href="/chat/list">
                     <MessageCircle className="h-4 w-4 mr-2" />
-                    채팅
+                    {t("navigation.chat")}
                   </Link>
                 </Button>
 
@@ -180,7 +182,7 @@ export function Topbar() {
                 <Button variant="ghost" size="sm" asChild>
                   <Link href="/users">
                     <Users className="h-4 w-4 mr-2" />
-                    사용자찾기
+                    {t("users.findUsers")}
                   </Link>
                 </Button>
 
@@ -198,18 +200,18 @@ export function Topbar() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>내 계정</DropdownMenuLabel>
+                    <DropdownMenuLabel>{t("auth.myAccount")}</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
                       <Link href="/profile">
                         <UserIcon className="mr-2 h-4 w-4" />
-                        프로필 수정
+                        {t("profile.editProfile")}
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout}>
                       <LogOut className="mr-2 h-4 w-4" />
-                      로그아웃
+                      {t("auth.logout")}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -276,15 +278,15 @@ export function Topbar() {
                 <Button variant="ghost" size="sm" asChild>
                   <Link href="/forum/list">
                     <LayoutGrid className="h-4 w-4 mr-2" />
-                    포럼
+                    {t("navigation.forum")}
                   </Link>
                 </Button>
 
                 <Button variant="ghost" size="sm" asChild>
-                  <Link href="/auth/login">로그인</Link>
+                  <Link href="/auth/login">{t("auth.login.title")}</Link>
                 </Button>
                 <Button size="sm" asChild>
-                  <Link href="/auth/signup">회원가입</Link>
+                  <Link href="/auth/signup">{t("auth.signup.title")}</Link>
                 </Button>
                 {/* 메뉴 아이콘 */}
                 <Button variant="ghost" size="sm" asChild>

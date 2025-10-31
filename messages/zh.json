@@ -26,23 +26,21 @@
       "title": "注册",
       "subtitle": "创建新帐户并加入 Vibe 社区。",
       "description": "在一个屏幕上查看社区更新和对话。",
-      "displayName": "姓名",
-      "displayNamePlaceholder": "请输入姓名",
-      "email": "电子邮箱",
+      "nameLabel": "姓名",
+      "namePlaceholder": "请输入姓名",
+      "emailLabel": "电子邮箱",
       "emailPlaceholder": "请输入电子邮箱",
-      "password": "密码",
+      "passwordLabel": "密码",
       "passwordPlaceholder": "请输入密码 (最少6个字符)",
-      "passwordConfirm": "确认密码",
+      "passwordConfirmLabel": "确认密码",
       "passwordConfirmPlaceholder": "请再次输入密码",
-      "submit": "注册",
+      "submitButton": "注册",
       "submitting": "注册中...",
-      "loginPrompt": "已经有帐户?",
-      "loginLink": "登录",
-      "error": {
-        "passwordMismatch": "密码不匹配。",
-        "passwordLength": "密码必须至少6个字符。",
-        "failed": "注册失败。"
-      }
+      "passwordMismatch": "密码不匹配。",
+      "passwordTooShort": "密码必须至少6个字符。",
+      "signupFailed": "注册失败。",
+      "hasAccount": "已经有帐户?",
+      "loginLink": "登录"
     },
     "logout": "退出",
     "myAccount": "我的账户",
@@ -71,12 +69,21 @@
   },
   "sidebar": {
     "quickMenu": "快捷菜单",
+    "home": "首页",
+    "chat": "聊天",
     "userList": "用户列表",
+    "myProfile": "我的资料",
+    "forum": "论坛 (准备中)",
+    "editMemberInfo": "编辑会员信息",
+    "memberList": "会员列表",
     "projectGithub": "项目 GitHub",
+    "hanbaboChatroom": "加入韩巴博聊天",
+    "devHistory": "开发历史",
     "joinKakaoChat": "加入 Kakao 聊天",
     "developerInfo": "开发者信息",
     "buildVersion": "构建版本",
-    "languageSettings": "语言设置"
+    "languageSettings": "语言设置",
+    "copyleft": "代码由AI创建，无版权。"
   },
   "menu": {
     "loading": "加载中...",
@@ -265,7 +272,9 @@
     "totalUsers": "总用户数",
     "currentOnline": "当前在线",
     "totalPosts": "总帖子数",
-    "chatMessages": "聊天消息"
+    "chatMessages": "聊天消息",
+    "preparing": "准备中",
+    "realtimeUpdate": "统计数据实时更新。"
   },
   "home": {
     "vibeBanner": "🤖 本网站100%仅使用Vibe编码构建。",

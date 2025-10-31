@@ -72,7 +72,7 @@ export default function SignUpPage() {
           {/* 이름 입력 */}
           <div className="space-y-2">
             <label htmlFor="displayName" className="block text-sm font-semibold text-[#050505]">
-              {t("auth.signup.nameLabe l")}
+              {t("auth.signup.nameLabel")}
             </label>
             <input
               id="displayName"

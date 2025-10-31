@@ -4,9 +4,11 @@
 // 통계 정보를 표시합니다.
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { User, FileText, MessageCircle, TrendingUp } from "lucide-react";
 
 export function RightSidebar() {
+  const t = useTranslations();
   // 통계 데이터 (향후 실제 Firebase 데이터로 교체)
   const [stats, setStats] = useState({
     totalUsers: 0,
@@ -32,7 +34,7 @@ export function RightSidebar() {
       <div className="sticky top-20 space-y-6">
         {/* 통계 헤더 */}
         <div>
-          <h2 className="text-lg font-bold mb-4">통계</h2>
+          <h2 className="text-lg font-bold mb-4">{t("stats.title")}</h2>
         </div>
 
         {/* 통계 카드 */}
@@ -42,7 +44,7 @@ export function RightSidebar() {
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <User className="h-5 w-5 text-blue-500" />
-                <span className="text-sm font-medium">전체 사용자</span>
+                <span className="text-sm font-medium">{t("stats.totalUsers")}</span>
               </div>
             </div>
             <p className="text-2xl font-bold">{stats.totalUsers}</p>
@@ -53,7 +55,7 @@ export function RightSidebar() {
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <TrendingUp className="h-5 w-5 text-green-500" />
-                <span className="text-sm font-medium">현재 접속</span>
+                <span className="text-sm font-medium">{t("stats.currentOnline")}</span>
               </div>
             </div>
             <p className="text-2xl font-bold">{stats.onlineUsers}</p>
@@ -64,11 +66,11 @@ export function RightSidebar() {
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <FileText className="h-5 w-5 text-purple-500" />
-                <span className="text-sm font-medium">전체 글</span>
+                <span className="text-sm font-medium">{t("stats.totalPosts")}</span>
               </div>
             </div>
             <p className="text-2xl font-bold">{stats.totalPosts}</p>
-            <p className="text-xs text-muted-foreground mt-1">준비 중</p>
+            <p className="text-xs text-muted-foreground mt-1">{t("stats.preparing")}</p>
           </div>
 
           {/* 전체 메시지 수 */}
@@ -76,7 +78,7 @@ export function RightSidebar() {
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <MessageCircle className="h-5 w-5 text-orange-500" />
-                <span className="text-sm font-medium">채팅 메시지</span>
+                <span className="text-sm font-medium">{t("stats.chatMessages")}</span>
               </div>
             </div>
             <p className="text-2xl font-bold">{stats.totalMessages}</p>
@@ -88,7 +90,7 @@ export function RightSidebar() {
 
         {/* 추가 정보 */}
         <div className="text-xs text-muted-foreground space-y-1">
-          <p>통계는 실시간으로 업데이트됩니다.</p>
+          <p>{t("stats.realtimeUpdate")}</p>
         </div>
       </div>
     </aside>

@@ -26,23 +26,21 @@
       "title": "Sign Up",
       "subtitle": "Create a new account and join the Vibe community.",
       "description": "Meet community updates and conversations in one place.",
-      "displayName": "Name",
-      "displayNamePlaceholder": "Enter your name",
-      "email": "Email",
+      "nameLabel": "Name",
+      "namePlaceholder": "Enter your name",
+      "emailLabel": "Email",
       "emailPlaceholder": "Enter your email",
-      "password": "Password",
+      "passwordLabel": "Password",
       "passwordPlaceholder": "Enter your password (min 6 characters)",
-      "passwordConfirm": "Confirm Password",
+      "passwordConfirmLabel": "Confirm Password",
       "passwordConfirmPlaceholder": "Re-enter your password",
-      "submit": "Sign Up",
+      "submitButton": "Sign Up",
       "submitting": "Signing up...",
-      "loginPrompt": "Already have an account?",
-      "loginLink": "Login",
-      "error": {
-        "passwordMismatch": "Passwords do not match.",
-        "passwordLength": "Password must be at least 6 characters.",
-        "failed": "Sign up failed."
-      }
+      "passwordMismatch": "Passwords do not match.",
+      "passwordTooShort": "Password must be at least 6 characters.",
+      "signupFailed": "Sign up failed.",
+      "hasAccount": "Already have an account?",
+      "loginLink": "Login"
     },
     "logout": "Logout",
     "myAccount": "My Account",
@@ -71,12 +69,21 @@
   },
   "sidebar": {
     "quickMenu": "Quick Menu",
+    "home": "Home",
+    "chat": "Chat",
     "userList": "User List",
+    "myProfile": "My Profile",
+    "forum": "Forum (Coming Soon)",
+    "editMemberInfo": "Edit Profile",
+    "memberList": "Member List",
     "projectGithub": "Project GitHub",
+    "hanbaboChatroom": "Join Hanbabo Chat",
+    "devHistory": "Dev History",
     "joinKakaoChat": "Join Kakao Chat",
     "developerInfo": "Developer Info",
     "buildVersion": "Build Version",
-    "languageSettings": "Language Settings"
+    "languageSettings": "Language Settings",
+    "copyleft": "No copyright as code is created by AI."
   },
   "menu": {
     "loading": "Loading...",
@@ -265,7 +272,9 @@
     "totalUsers": "Total Users",
     "currentOnline": "Currently Online",
     "totalPosts": "Total Posts",
-    "chatMessages": "Chat Messages"
+    "chatMessages": "Chat Messages",
+    "preparing": "Coming Soon",
+    "realtimeUpdate": "Statistics are updated in real-time."
   },
   "home": {
     "vibeBanner": "🤖 This site was built 100% with Vibe Coding only.",
