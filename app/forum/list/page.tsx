@@ -6,9 +6,11 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { auth } from "@/lib/firebase";
 import { createPost, listenToPosts, type ForumPost } from "@/lib/forum";
 import { getUserDisplayName } from "@/lib/user";
+import { FORUM_CATEGORIES } from "@/app/app.config";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -178,6 +180,23 @@ export default function ForumListPage() {
           </Button>
         </div>
 
+        {/* 카테고리 탭 */}
+        <div className="flex items-center gap-2 mb-6 border-b border-slate-200 pb-2">
+          {FORUM_CATEGORIES.map((category) => (
+            <Link
+              key={category.value}
+              href={`/forum/list?category=${category.value}`}
+              className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${
+                currentCategory === category.value
+                  ? "bg-slate-900 text-white"
+                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+              }`}
+            >
+              {category.label}
+            </Link>
+          ))}
+        </div>
+
         {/* 게시글 목록 영역 */}
         {posts.length === 0 ? (
           <div className="bg-slate-50 border border-slate-200 rounded-lg p-12">
@@ -247,10 +266,11 @@ export default function ForumListPage() {
                   <SelectValue placeholder="카테고리를 선택하세요" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="community">커뮤니티</SelectItem>
-                  <SelectItem value="qna">질문과답변</SelectItem>
-                  <SelectItem value="news">뉴스</SelectItem>
-                  <SelectItem value="market">회원장터</SelectItem>
+                  {FORUM_CATEGORIES.map((category) => (
+                    <SelectItem key={category.value} value={category.value}>
+                      {category.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
