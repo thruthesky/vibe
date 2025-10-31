@@ -160,6 +160,14 @@ export function Topbar() {
             <>
               {/* 데스크톱 메뉴 */}
               <div className="hidden md:flex items-center gap-2">
+                {/* 포럼 버튼 */}
+                <Button variant="ghost" size="sm" asChild>
+                  <Link href="/forum/list">
+                    <LayoutGrid className="h-4 w-4 mr-2" />
+                    포럼
+                  </Link>
+                </Button>
+
                 {/* 채팅 버튼 */}
                 <Button variant="ghost" size="sm" asChild>
                   <Link href="/chat/list">
@@ -216,9 +224,9 @@ export function Topbar() {
 
               {/* 모바일 메뉴 아이콘 */}
               <div className="md:hidden flex items-center gap-1">
-                {/* 홈 아이콘 */}
+                {/* 포럼 아이콘 */}
                 <Button variant="ghost" size="sm" asChild>
-                  <Link href="/">
+                  <Link href="/forum/list">
                     <LayoutGrid className="h-5 w-5" />
                   </Link>
                 </Button>
@@ -264,6 +272,14 @@ export function Topbar() {
             <div className="flex items-center gap-1">
               {/* 데스크톱 메뉴 */}
               <div className="hidden md:flex items-center gap-2">
+                {/* 포럼 버튼 */}
+                <Button variant="ghost" size="sm" asChild>
+                  <Link href="/forum/list">
+                    <LayoutGrid className="h-4 w-4 mr-2" />
+                    포럼
+                  </Link>
+                </Button>
+
                 <Button variant="ghost" size="sm" asChild>
                   <Link href="/auth/login">로그인</Link>
                 </Button>
@@ -280,9 +296,9 @@ export function Topbar() {
 
               {/* 모바일 메뉴 */}
               <div className="md:hidden flex items-center gap-1">
-                {/* 홈 아이콘 */}
+                {/* 포럼 아이콘 */}
                 <Button variant="ghost" size="sm" asChild>
-                  <Link href="/">
+                  <Link href="/forum/list">
                     <LayoutGrid className="h-5 w-5" />
                   </Link>
                 </Button>
