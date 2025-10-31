@@ -19,6 +19,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { MessageSquarePlus } from "lucide-react";
 
 export default function ForumListPage() {
@@ -28,6 +35,7 @@ export default function ForumListPage() {
 
   // 글쓰기 모달 상태
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [postCategory, setPostCategory] = useState("");
   const [postTitle, setPostTitle] = useState("");
   const [postContent, setPostContent] = useState("");
 
@@ -67,12 +75,17 @@ export default function ForumListPage() {
   // 글쓰기 모달 취소 핸들러
   const handleCancel = () => {
     setIsDialogOpen(false);
+    setPostCategory("");
     setPostTitle("");
     setPostContent("");
   };
 
   // 글쓰기 전송 핸들러
   const handleSubmit = () => {
+    if (!postCategory) {
+      alert("카테고리를 선택해주세요.");
+      return;
+    }
     if (!postTitle.trim()) {
       alert("제목을 입력해주세요.");
       return;
@@ -83,10 +96,11 @@ export default function ForumListPage() {
     }
 
     // TODO: Firebase RTDB에 게시글 저장
-    alert(`제목: ${postTitle}\n내용: ${postContent}\n\n게시글 저장 기능은 곧 구현됩니다.`);
+    alert(`카테고리: ${postCategory}\n제목: ${postTitle}\n내용: ${postContent}\n\n게시글 저장 기능은 곧 구현됩니다.`);
 
     // 모달 닫기 및 초기화
     setIsDialogOpen(false);
+    setPostCategory("");
     setPostTitle("");
     setPostContent("");
   };
@@ -134,6 +148,22 @@ export default function ForumListPage() {
           </DialogHeader>
 
           <div className="grid gap-4 py-4">
+            {/* 카테고리 선택 */}
+            <div className="grid gap-2">
+              <Label htmlFor="category">카테고리</Label>
+              <Select value={postCategory} onValueChange={setPostCategory}>
+                <SelectTrigger id="category">
+                  <SelectValue placeholder="카테고리를 선택하세요" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="community">커뮤니티</SelectItem>
+                  <SelectItem value="qna">질문과답변</SelectItem>
+                  <SelectItem value="news">뉴스</SelectItem>
+                  <SelectItem value="market">회원장터</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             {/* 제목 입력 */}
             <div className="grid gap-2">
               <Label htmlFor="title">제목</Label>
@@ -142,7 +172,6 @@ export default function ForumListPage() {
                 placeholder="제목을 입력하세요"
                 value={postTitle}
                 onChange={(e) => setPostTitle(e.target.value)}
-                autoFocus
               />
             </div>
 
