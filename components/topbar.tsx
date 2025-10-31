@@ -27,6 +27,7 @@ import {
   Menu,
   LogOut,
   User as UserIcon,
+  LayoutGrid,
 } from "lucide-react";
 
 export function Topbar() {
@@ -214,7 +215,28 @@ export function Topbar() {
               </div>
 
               {/* 모바일 메뉴 아이콘 */}
-              <div className="md:hidden flex items-center gap-2">
+              <div className="md:hidden flex items-center gap-1">
+                {/* 홈 아이콘 */}
+                <Button variant="ghost" size="sm" asChild>
+                  <Link href="/">
+                    <LayoutGrid className="h-5 w-5" />
+                  </Link>
+                </Button>
+
+                {/* 사용자 찾기 아이콘 */}
+                <Button variant="ghost" size="sm" asChild>
+                  <Link href="/users">
+                    <Users className="h-5 w-5" />
+                  </Link>
+                </Button>
+
+                {/* 채팅 아이콘 */}
+                <Button variant="ghost" size="sm" asChild>
+                  <Link href="/chat/list">
+                    <MessageCircle className="h-5 w-5" />
+                  </Link>
+                </Button>
+
                 {/* 프로필 아이콘 */}
                 <Button variant="ghost" size="sm" asChild>
                   <Link href="/profile">
@@ -227,10 +249,10 @@ export function Topbar() {
                   </Link>
                 </Button>
 
-                {/* 메뉴 아이콘 - /menu 페이지로 이동 */}
-                <Button variant="ghost" size="lg" asChild>
+                {/* 메뉴 아이콘 */}
+                <Button variant="ghost" size="sm" asChild>
                   <Link href="/menu">
-                    <Menu className="h-7 w-7" />
+                    <Menu className="h-6 w-6" />
                   </Link>
                 </Button>
               </div>
@@ -257,7 +279,28 @@ export function Topbar() {
               </div>
 
               {/* 모바일 메뉴 */}
-              <div className="md:hidden flex items-center gap-2">
+              <div className="md:hidden flex items-center gap-1">
+                {/* 홈 아이콘 */}
+                <Button variant="ghost" size="sm" asChild>
+                  <Link href="/">
+                    <LayoutGrid className="h-5 w-5" />
+                  </Link>
+                </Button>
+
+                {/* 사용자 찾기 아이콘 */}
+                <Button variant="ghost" size="sm" asChild>
+                  <Link href="/users">
+                    <Users className="h-5 w-5" />
+                  </Link>
+                </Button>
+
+                {/* 채팅 아이콘 (로그인 필요) */}
+                <Button variant="ghost" size="sm" asChild>
+                  <Link href="/auth/login">
+                    <MessageCircle className="h-5 w-5" />
+                  </Link>
+                </Button>
+
                 {/* 프로필 아이콘 (로그인 페이지로) */}
                 <Button variant="ghost" size="sm" asChild>
                   <Link href="/auth/login">
@@ -267,8 +310,8 @@ export function Topbar() {
                   </Link>
                 </Button>
 
-                {/* 메뉴 아이콘 - /menu 페이지로 이동 */}
-                <Button variant="ghost" size="lg" asChild>
+                {/* 메뉴 아이콘 */}
+                <Button variant="ghost" size="sm" asChild>
                   <Link href="/menu">
                     <Menu className="h-6 w-6" />
                   </Link>
