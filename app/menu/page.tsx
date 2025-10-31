@@ -11,6 +11,7 @@ import { User, onAuthStateChanged } from "firebase/auth";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import { logOut } from "@/lib/auth";
+import { LanguageSwitcher } from "@/components/language-switcher";
 
 export default function MenuPage() {
   const router = useRouter();
@@ -177,8 +178,19 @@ export default function MenuPage() {
           </div>
         )}
 
+        {/* 언어 설정 섹션 */}
+        <div className="mt-6 rounded-3xl border border-white/60 bg-white/95 p-6 shadow-xl shadow-[#cbd8f2]/45 backdrop-blur">
+          <h2 className="text-lg font-semibold text-[#050505] mb-4">
+            언어 설정
+          </h2>
+          <p className="text-sm text-[#5d6472] mb-4">
+            원하는 언어를 선택하세요.
+          </p>
+          <LanguageSwitcher />
+        </div>
+
         {/* 뒤로가기 버튼 */}
-        <div className="mt-10">
+        <div className="mt-6">
           <Button
             variant="ghost"
             onClick={() => router.back()}

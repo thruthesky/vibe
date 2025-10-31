@@ -8,6 +8,7 @@ import Link from "next/link";
 import { User as FirebaseUser, onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { Home, MessageCircle, Users, User, FileText, ExternalLink, BookOpen, LogIn, LogOut } from "lucide-react";
+import { LanguageSwitcher } from "@/components/language-switcher";
 
 export function LeftSidebar() {
   const [user, setUser] = useState<FirebaseUser | null>(null);
@@ -166,6 +167,12 @@ export function LeftSidebar() {
             <BookOpen className="h-4 w-4" />
             <span>개발일지</span>
           </Link>
+        </div>
+
+        {/* 언어 설정 섹션 */}
+        <div className="mt-6 pt-4 border-t">
+          <h3 className="text-sm font-semibold mb-3 text-muted-foreground">언어 설정</h3>
+          <LanguageSwitcher />
         </div>
       </div>
 

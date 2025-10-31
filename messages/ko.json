@@ -1,0 +1,116 @@
+{
+  "navigation": {
+    "home": "홈",
+    "forum": "포럼",
+    "chat": "채팅",
+    "users": "사용자",
+    "profile": "프로필",
+    "menu": "메뉴"
+  },
+  "auth": {
+    "login": "로그인",
+    "signup": "회원가입",
+    "logout": "로그아웃",
+    "myAccount": "내 계정",
+    "email": "이메일",
+    "password": "비밀번호",
+    "displayName": "표시 이름",
+    "getStarted": "시작하기"
+  },
+  "buttons": {
+    "submit": "제출",
+    "cancel": "취소",
+    "save": "저장",
+    "delete": "삭제",
+    "edit": "수정",
+    "close": "닫기",
+    "send": "전송",
+    "create": "생성"
+  },
+  "common": {
+    "loading": "로딩 중...",
+    "error": "오류",
+    "success": "성공",
+    "confirm": "확인",
+    "back": "뒤로",
+    "next": "다음",
+    "search": "검색",
+    "filter": "필터",
+    "more": "더보기"
+  },
+  "sidebar": {
+    "quickMenu": "퀵 메뉴",
+    "userList": "회원 목록",
+    "projectGithub": "프로젝트 깃헙",
+    "joinKakaoChat": "한바보 참여 단톡방",
+    "developerInfo": "개발자 정보",
+    "buildVersion": "빌드 버전",
+    "languageSettings": "언어 설정"
+  },
+  "menu": {
+    "title": "메뉴",
+    "settings": "설정",
+    "help": "도움말",
+    "about": "정보",
+    "version": "버전",
+    "languageSettings": "언어 설정",
+    "selectLanguage": "언어 선택"
+  },
+  "forum": {
+    "title": "포럼",
+    "categories": "카테고리",
+    "community": "커뮤니티",
+    "qna": "질문과답변",
+    "news": "뉴스",
+    "market": "회원장터",
+    "writePost": "글쓰기",
+    "postTitle": "제목",
+    "postContent": "내용",
+    "posts": "게시글",
+    "comments": "댓글",
+    "views": "조회수",
+    "likes": "좋아요"
+  },
+  "chat": {
+    "title": "채팅",
+    "rooms": "채팅방",
+    "messages": "메시지",
+    "sendMessage": "메시지 전송",
+    "typeMessage": "메시지를 입력하세요...",
+    "online": "온라인",
+    "offline": "오프라인",
+    "chatList": "채팅 목록"
+  },
+  "users": {
+    "title": "사용자",
+    "userList": "사용자 목록",
+    "findUsers": "사용자 찾기",
+    "totalUsers": "전체 사용자",
+    "onlineUsers": "접속 중인 사용자",
+    "profile": "프로필",
+    "sendMessage": "메시지 보내기"
+  },
+  "profile": {
+    "title": "프로필",
+    "editProfile": "프로필 수정",
+    "myProfile": "내 프로필",
+    "displayName": "표시 이름",
+    "email": "이메일",
+    "photoURL": "프로필 사진",
+    "bio": "소개",
+    "saveChanges": "변경사항 저장",
+    "profileUpdated": "프로필이 성공적으로 업데이트되었습니다"
+  },
+  "stats": {
+    "title": "통계",
+    "totalUsers": "전체 사용자",
+    "currentOnline": "현재 접속",
+    "totalPosts": "전체 글",
+    "chatMessages": "채팅 메시지"
+  },
+  "home": {
+    "welcome": "바이브에 오신 것을 환영합니다",
+    "description": "바이브 코딩으로만 만들어졌습니다",
+    "aiTruth": "AI 시대의 진실"
+  }
+}

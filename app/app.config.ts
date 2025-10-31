@@ -15,3 +15,23 @@ export const FORUM_CATEGORIES = [
   { value: "news", label: "뉴스" },
   { value: "market", label: "회원장터" },
 ] as const;
+
+// 지원 언어 목록
+// 애플리케이션에서 지원하는 모든 언어 코드
+export const LOCALES = ['en', 'ko', 'zh', 'ja'] as const;
+
+// 기본 언어
+// 사용자 언어 감지 실패 시 사용되는 fallback 언어
+export const DEFAULT_LOCALE = 'en';
+
+// 언어별 정보 (국기 이모지, 언어명)
+// 언어 선택 UI에서 표시됩니다
+export const LOCALE_INFO = {
+  en: { flag: '🇺🇸', name: 'English' },
+  ko: { flag: '🇰🇷', name: '한국어' },
+  zh: { flag: '🇨🇳', name: '中文' },
+  ja: { flag: '🇯🇵', name: '日本語' }
+} as const;
+
+// 타입 정의
+export type Locale = typeof LOCALES[number];

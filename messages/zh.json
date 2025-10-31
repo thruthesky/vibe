@@ -1,0 +1,116 @@
+{
+  "navigation": {
+    "home": "首页",
+    "forum": "论坛",
+    "chat": "聊天",
+    "users": "用户",
+    "profile": "个人资料",
+    "menu": "菜单"
+  },
+  "auth": {
+    "login": "登录",
+    "signup": "注册",
+    "logout": "退出",
+    "myAccount": "我的账户",
+    "email": "电子邮箱",
+    "password": "密码",
+    "displayName": "显示名称",
+    "getStarted": "开始使用"
+  },
+  "buttons": {
+    "submit": "提交",
+    "cancel": "取消",
+    "save": "保存",
+    "delete": "删除",
+    "edit": "编辑",
+    "close": "关闭",
+    "send": "发送",
+    "create": "创建"
+  },
+  "common": {
+    "loading": "加载中...",
+    "error": "错误",
+    "success": "成功",
+    "confirm": "确认",
+    "back": "返回",
+    "next": "下一步",
+    "search": "搜索",
+    "filter": "筛选",
+    "more": "更多"
+  },
+  "sidebar": {
+    "quickMenu": "快捷菜单",
+    "userList": "用户列表",
+    "projectGithub": "项目 GitHub",
+    "joinKakaoChat": "加入 Kakao 聊天",
+    "developerInfo": "开发者信息",
+    "buildVersion": "构建版本",
+    "languageSettings": "语言设置"
+  },
+  "menu": {
+    "title": "菜单",
+    "settings": "设置",
+    "help": "帮助",
+    "about": "关于",
+    "version": "版本",
+    "languageSettings": "语言设置",
+    "selectLanguage": "选择语言"
+  },
+  "forum": {
+    "title": "论坛",
+    "categories": "分类",
+    "community": "社区",
+    "qna": "问答",
+    "news": "新闻",
+    "market": "会员市场",
+    "writePost": "发帖",
+    "postTitle": "标题",
+    "postContent": "内容",
+    "posts": "帖子",
+    "comments": "评论",
+    "views": "浏览量",
+    "likes": "点赞"
+  },
+  "chat": {
+    "title": "聊天",
+    "rooms": "聊天室",
+    "messages": "消息",
+    "sendMessage": "发送消息",
+    "typeMessage": "输入消息...",
+    "online": "在线",
+    "offline": "离线",
+    "chatList": "聊天列表"
+  },
+  "users": {
+    "title": "用户",
+    "userList": "用户列表",
+    "findUsers": "查找用户",
+    "totalUsers": "总用户数",
+    "onlineUsers": "在线用户",
+    "profile": "个人资料",
+    "sendMessage": "发送消息"
+  },
+  "profile": {
+    "title": "个人资料",
+    "editProfile": "编辑资料",
+    "myProfile": "我的资料",
+    "displayName": "显示名称",
+    "email": "电子邮箱",
+    "photoURL": "头像",
+    "bio": "简介",
+    "saveChanges": "保存更改",
+    "profileUpdated": "个人资料已成功更新"
+  },
+  "stats": {
+    "title": "统计",
+    "totalUsers": "总用户数",
+    "currentOnline": "当前在线",
+    "totalPosts": "总帖子数",
+    "chatMessages": "聊天消息"
+  },
+  "home": {
+    "welcome": "欢迎来到 Vibe",
+    "description": "完全由 AI 驱动的 Vibe 编码构建",
+    "aiTruth": "AI 时代的真相"
+  }
+}

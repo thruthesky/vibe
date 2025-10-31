@@ -1,0 +1,116 @@
+{
+  "navigation": {
+    "home": "Home",
+    "forum": "Forum",
+    "chat": "Chat",
+    "users": "Users",
+    "profile": "Profile",
+    "menu": "Menu"
+  },
+  "auth": {
+    "login": "Login",
+    "signup": "Sign Up",
+    "logout": "Logout",
+    "myAccount": "My Account",
+    "email": "Email",
+    "password": "Password",
+    "displayName": "Display Name",
+    "getStarted": "Get Started"
+  },
+  "buttons": {
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "send": "Send",
+    "create": "Create"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next",
+    "search": "Search",
+    "filter": "Filter",
+    "more": "More"
+  },
+  "sidebar": {
+    "quickMenu": "Quick Menu",
+    "userList": "User List",
+    "projectGithub": "Project GitHub",
+    "joinKakaoChat": "Join Kakao Chat",
+    "developerInfo": "Developer Info",
+    "buildVersion": "Build Version",
+    "languageSettings": "Language Settings"
+  },
+  "menu": {
+    "title": "Menu",
+    "settings": "Settings",
+    "help": "Help",
+    "about": "About",
+    "version": "Version",
+    "languageSettings": "Language Settings",
+    "selectLanguage": "Select Language"
+  },
+  "forum": {
+    "title": "Forum",
+    "categories": "Categories",
+    "community": "Community",
+    "qna": "Q&A",
+    "news": "News",
+    "market": "Marketplace",
+    "writePost": "Write Post",
+    "postTitle": "Post Title",
+    "postContent": "Post Content",
+    "posts": "Posts",
+    "comments": "Comments",
+    "views": "Views",
+    "likes": "Likes"
+  },
+  "chat": {
+    "title": "Chat",
+    "rooms": "Chat Rooms",
+    "messages": "Messages",
+    "sendMessage": "Send Message",
+    "typeMessage": "Type a message...",
+    "online": "Online",
+    "offline": "Offline",
+    "chatList": "Chat List"
+  },
+  "users": {
+    "title": "Users",
+    "userList": "User List",
+    "findUsers": "Find Users",
+    "totalUsers": "Total Users",
+    "onlineUsers": "Online Users",
+    "profile": "Profile",
+    "sendMessage": "Send Message"
+  },
+  "profile": {
+    "title": "Profile",
+    "editProfile": "Edit Profile",
+    "myProfile": "My Profile",
+    "displayName": "Display Name",
+    "email": "Email",
+    "photoURL": "Profile Photo",
+    "bio": "Bio",
+    "saveChanges": "Save Changes",
+    "profileUpdated": "Profile updated successfully"
+  },
+  "stats": {
+    "title": "Statistics",
+    "totalUsers": "Total Users",
+    "currentOnline": "Currently Online",
+    "totalPosts": "Total Posts",
+    "chatMessages": "Chat Messages"
+  },
+  "home": {
+    "welcome": "Welcome to Vibe",
+    "description": "Built entirely with AI-powered Vibe Coding",
+    "aiTruth": "The Truth of AI Era"
+  }
+}
