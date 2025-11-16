@@ -5,7 +5,7 @@
 	import { rtdb } from '$lib/firebase';
 	import { ref, push, set } from 'firebase/database';
 	import { saveTestUsersToFirebase } from '$lib/utils/admin-service';
-	import { generateTestUsers } from '$lib/utils/test-user-generator';
+	import { generateTestUsers } from '../../../../../firebase/test/src/test-user-generator';
 	import { m } from '$lib/paraglide/messages';
 
 	const categories = ['qna', 'news', 'reminder'] as const;
@@ -67,7 +67,8 @@
 			userCreationCompleted = true;
 		} catch (error) {
 			console.error('테스트 사용자 생성 실패:', error);
-			userCreationError = error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.';
+			userCreationError =
+				error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.';
 		} finally {
 			isCreatingTestUsers = false;
 		}
@@ -205,11 +206,12 @@
 	<Alert>
 		<div class="space-y-2 text-sm text-gray-700">
 			<p>
-				<strong>데이터 구조:</strong> {`{`} title, createdAt, [category]CreatedAt {`}`}
+				<strong>데이터 구조:</strong>
+				{`{`} title, createdAt, [category]CreatedAt {`}`}
 			</p>
 			<p>
-				<strong>카테고리:</strong> qna, news, reminder 중 랜덤으로 선택되며
-				각각 `qnaCreatedAt`, `newsCreatedAt`, `reminderCreatedAt` 필드로 저장됩니다.
+				<strong>카테고리:</strong> qna, news, reminder 중 랜덤으로 선택되며 각각 `qnaCreatedAt`, `newsCreatedAt`,
+				`reminderCreatedAt` 필드로 저장됩니다.
 			</p>
 			<p>• 생성된 데이터는 `/dev/test/database-list-view` 페이지에서 바로 확인할 수 있습니다.</p>
 			<p>• 한번에 최대 200개까지 생성할 수 있습니다.</p>
@@ -220,7 +222,9 @@
 		<div class="space-y-6 p-6">
 			<div class="grid gap-4 md:grid-cols-2">
 				<div>
-					<label for="targetCount" class="block text-sm font-medium text-gray-700">생성할 데이터 개수</label>
+					<label for="targetCount" class="block text-sm font-medium text-gray-700"
+						>생성할 데이터 개수</label
+					>
 					<input
 						id="targetCount"
 						type="number"
@@ -235,7 +239,9 @@
 				<div class="rounded-lg bg-gray-50 p-4">
 					<p class="text-sm text-gray-600">최근 생성 정보</p>
 					<p class="mt-1 font-semibold text-gray-900">
-						{lastCategory ? `${lastCategory} ( ${formatDate(lastTimestamp)} )` : '아직 생성되지 않았습니다.'}
+						{lastCategory
+							? `${lastCategory} ( ${formatDate(lastTimestamp)} )`
+							: '아직 생성되지 않았습니다.'}
 					</p>
 				</div>
 			</div>
@@ -253,7 +259,9 @@
 					{/if}
 				</Button>
 
-				<div class="flex flex-1 flex-col justify-center rounded-lg border border-dashed border-gray-300 p-4 text-sm text-gray-600">
+				<div
+					class="flex flex-1 flex-col justify-center rounded-lg border border-dashed border-gray-300 p-4 text-sm text-gray-600"
+				>
 					<p>
 						진행 상황: <span class="font-semibold text-gray-900">{progress}</span> / {targetCount}
 					</p>
@@ -263,7 +271,8 @@
 
 			{#if errorMessage}
 				<div class="rounded-lg bg-red-50 p-4 text-sm text-red-800">
-					<strong>오류:</strong> {errorMessage}
+					<strong>오류:</strong>
+					{errorMessage}
 				</div>
 			{/if}
 
@@ -272,7 +281,9 @@
 					<h2 class="text-lg font-semibold text-gray-900">최근 생성된 키 (최대 5개)</h2>
 					<ul class="mt-3 space-y-2 text-sm text-gray-700">
 						{#each recentKeys as key}
-							<li class="rounded border border-gray-200 bg-white px-3 py-2 font-mono text-xs text-gray-900">
+							<li
+								class="rounded border border-gray-200 bg-white px-3 py-2 font-mono text-xs text-gray-900"
+							>
 								{key}
 							</li>
 						{/each}
@@ -287,8 +298,13 @@
 			<h2 class="text-xl font-semibold text-gray-900">데이터 검증 체크리스트</h2>
 			<ul class="list-inside list-disc space-y-2">
 				<li>`Database > test > data` 경로에 새로운 노드가 생성되는지 확인합니다.</li>
-				<li>각 노드에는 `title`, `createdAt`, 카테고리 전용 타임스탬프 중 하나가 포함되어야 합니다.</li>
-				<li>카테고리별 필드 이름은 `qnaCreatedAt`, `newsCreatedAt`, `reminderCreatedAt` 형식이어야 합니다.</li>
+				<li>
+					각 노드에는 `title`, `createdAt`, 카테고리 전용 타임스탬프 중 하나가 포함되어야 합니다.
+				</li>
+				<li>
+					카테고리별 필드 이름은 `qnaCreatedAt`, `newsCreatedAt`, `reminderCreatedAt` 형식이어야
+					합니다.
+				</li>
 				<li>`/dev/test/database-list-view`에서 새 데이터가 역순으로 노출되는지 확인합니다.</li>
 			</ul>
 		</div>

@@ -15,7 +15,7 @@
 		deleteAllTemporaryUsers,
 		getTemporaryUserCount
 	} from '$lib/utils/admin-service';
-	import type { TestUser } from '$lib/utils/test-user-generator';
+	import type { TestUser } from '../../../../firebase/test/src/test-user-generator';
 	import { m } from '$lib/paraglide/messages';
 
 	// 상태 관리

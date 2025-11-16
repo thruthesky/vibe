@@ -6,8 +6,8 @@
 
 import { rtdb } from '$lib/firebase';
 import { ref, set, get, remove } from 'firebase/database';
-import type { TestUser } from './test-user-generator';
-import { testUserToFirebaseData } from './test-user-generator';
+import type { TestUser } from '../../../firebase/test/src/test-user-generator';
+import { testUserToFirebaseData } from '../../../firebase/test/src/test-user-generator';
 
 /**
  * 테스트 사용자를 Firebase Realtime Database에 저장합니다.

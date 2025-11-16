@@ -1,5 +1,5 @@
-admin.key
-**/admin.key
+admin-service-account-key.json
+**/admin-service-account-key.json
 
 
 test-results
