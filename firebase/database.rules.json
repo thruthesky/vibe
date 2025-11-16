@@ -42,10 +42,19 @@
       // createdAt과 owner 필드는 Cloud Functions에서만 설정됨
       ".read": true,
       "$roomId": {
+        // 새 채팅방 생성 규칙:
+        // 1. 인증된 사용자
+        // 2. 채팅방이 존재하지 않음 (새 채팅방 생성만 허용)
+        // 3. owner 필드가 있어야 하며, 인증된 사용자의 UID와 일치해야 함
+        // 4. members 필드는 선택적 (그룹/오픈 채팅만), 있으면 본인 UID가 true로 설정되어야 함
+        // 5. Cloud Functions 전용 필드를 포함하지 않음 (createdAt, memberCount, groupListOrder, openListOrder)
+        // 기존 채팅방: 전체 쓰기 불가 (개별 필드만 수정 가능)
+        ".write": "auth != null && !data.exists() && newData.hasChild('owner') && newData.child('owner').val() === auth.uid && (!newData.hasChild('members') || newData.child('members').child(auth.uid).val() === true) && !newData.hasChild('createdAt') && !newData.hasChild('memberCount') && !newData.hasChild('groupListOrder') && !newData.hasChild('openListOrder')",
         "owner": {
-          // 채팅방이 존재하지 않으면 본인 UID로 설정 가능, 존재하면 수정 불가
-          ".write": "!root.child('chat-rooms').child($roomId).exists() &&
-            newData.val() === auth.uid",".validate": "newData.isString()"
+          // 클라이언트가 한 번만 쓸 수 있음 (자신의 UID만 가능)
+          // Cloud Functions도 쓸 수 있음 (event.authId가 undefined일 때 대비)
+          ".write": "!data.exists() && newData.val() === auth.uid",
+          ".validate": "newData.isString()"
         },
         "createdAt": {
           // Cloud Functions에서만 설정 가능 (클라이언트는 쓰기 불가)
@@ -71,20 +80,18 @@
             newData.val() === 'open' ||
             newData.val() === 'single'"
         },
-        "open": {
-          ".write": "!data.exists()",
-          ".validate": "newData.isBoolean()"
-        },
         "password": {
           ".write": "root.child('chat-rooms').child($roomId).child('owner').val() === auth.uid",
           ".validate": "newData.isBoolean()"
         },
         "groupListOrder": {
-          ".write": "!data.exists()",
+          // Cloud Functions에서만 설정 가능 (클라이언트는 쓰기 불가)
+          ".write": false,
           ".validate": "newData.isNumber()"
         },
         "openListOrder": {
-          ".write": "!data.exists()",
+          // Cloud Functions에서만 설정 가능 (클라이언트는 쓰기 불가)
+          ".write": false,
           ".validate": "newData.isNumber()"
         },
         "memberCount": {
@@ -145,13 +152,12 @@
             root.child('chat-rooms').child(data.child('roomId').val()).child('type').val() == 'open' ||
             root.child('chat-rooms').child(data.child('roomId').val()).child('members').child(auth.uid).exists()
           )",
-
         // 쓰기 권한: 로그인한 사용자이며, 다음 조건을 모두 만족
         ".write": "auth != null &&
           (
             // 조건 1: 채팅방 접근 권한 확인
-            // - roomId에 본인 UID가 포함되거나 (1:1 채팅)
-            // - 채팅방 멤버인 경우
+        // - roomId에 본인 UID가 포함되거나 (1:1 채팅)
+        // - 채팅방 멤버인 경우
             (
               newData.child('roomId').val().contains(auth.uid) ||
               root.child('chat-rooms').child(newData.child('roomId').val()).child('members').child(auth.uid).exists()
@@ -176,9 +182,9 @@
               ) &&
               (
                 // c) 90분(5,400,000ms) 이내 메시지여야 함
-                // now: 현재 시각(밀리초)
-                // data.child('createdAt').val(): 메시지 생성 시각(밀리초)
-                // 90분 = 90 * 60 * 1000 = 5,400,000ms
+        // now: 현재 시각(밀리초)
+        // data.child('createdAt').val(): 메시지 생성 시각(밀리초)
+        // 90분 = 90 * 60 * 1000 = 5,400,000ms
                 (now - data.child('createdAt').val()) < 5400000
               )
             )

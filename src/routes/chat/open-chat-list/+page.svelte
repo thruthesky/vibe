@@ -174,8 +174,8 @@
 	<title>{m.chatTabOpenChats()}</title>
 </svelte:head>
 
-<div class="space-y-6">
-	<section class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+<div class="space-y-4 sm:space-y-6">
+	<section class="rounded-none border-none bg-transparent p-0 shadow-none md:rounded-2xl md:border md:border-gray-200 md:bg-white md:p-6 md:shadow-sm">
 		<div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
 			<div>
 				<h1 class="text-2xl font-semibold text-gray-900">{m.chatTabOpenChats()}</h1>
@@ -206,11 +206,9 @@
 			<p>{m.chatLoadingRooms()}</p>
 		</section>
 	{:else}
-		<!-- 채팅 초대 목록 -->
+		<!-- 채팅 초대 목록 (초대가 있을 때만 자동으로 표시됨) -->
 		{#if authStore.isAuthenticated}
-			<section class="rounded-2xl border border-blue-200 bg-white shadow-sm">
-				<ChatInvitationList />
-			</section>
+			<ChatInvitationList />
 		{/if}
 
 		<section class="rounded-2xl border border-gray-200 bg-white p-0 shadow-sm">
@@ -244,7 +242,7 @@
 					{@const room = (itemData.data ?? {}) as ChatRoomData}
 					{@const roomId = (itemData.key ?? '') as string}
 					{@const roomType = (room.type ?? 'open').toString()}
-					{@const isOpen = room.open === true}
+					{@const isOpen = roomType === 'open'}
 					<!--
 						// console.log('🔍 [Open Chat List Debug] Room data:', {
 						// 	roomId,

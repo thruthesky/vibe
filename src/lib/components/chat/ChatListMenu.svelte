@@ -93,9 +93,9 @@
 <svelte:window onclick={handleClickOutside} />
 
 <!-- 탭바 -->
-<div class="mt-6 flex items-center justify-between border-b border-gray-200">
+<div class="mt-4 flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 pb-3">
 	<!-- 왼쪽 탭들 -->
-	<div class="flex gap-1">
+	<div class="flex flex-wrap gap-1">
 		<button
 			type="button"
 			class="tab-button"
@@ -123,7 +123,7 @@
 	</div>
 
 	<!-- 오른쪽 버튼들 -->
-	<div class="flex items-center gap-2">
+	<div class="flex flex-wrap items-center gap-2">
 		<!-- 친구 탭인 경우: 친구찾기 버튼 표시 -->
 		{#if selectedTab === 'friends'}
 			<Button variant="outline" size="sm" onclick={() => onFindFriends?.()}>{m.chatFindFriends()}</Button>

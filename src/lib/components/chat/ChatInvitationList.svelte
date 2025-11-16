@@ -11,25 +11,52 @@
 -->
 
 <script lang="ts">
-	import DatabaseListView from '$lib/components/DatabaseListView.svelte';
-	import { Button } from '$lib/components/ui/button';
-	import { authStore } from '$lib/stores/auth.svelte';
-	import { acceptInvitation, rejectInvitation } from '$lib/functions/chat.functions';
-	import { rtdb } from '$lib/firebase';
-	import { m } from '$lib/paraglide/messages';
-	import { goto } from '$app/navigation';
+import DatabaseListView from '$lib/components/DatabaseListView.svelte';
+import { Button } from '$lib/components/ui/button';
+import { authStore } from '$lib/stores/auth.svelte';
+import { acceptInvitation, rejectInvitation } from '$lib/functions/chat.functions';
+import { rtdb } from '$lib/firebase';
+import { m } from '$lib/paraglide/messages';
+import { goto } from '$app/navigation';
+import { onValue, ref } from 'firebase/database';
 
-	type InvitationData = Record<string, unknown>;
+type InvitationData = Record<string, unknown>;
 
-	const PAGE_SIZE = 10;
-	const ORDER_FIELD = 'invitationOrder';
+const PAGE_SIZE = 10;
+const ORDER_FIELD = 'invitationOrder';
 
 	// 현재 로그인 사용자의 chat-invitations 경로
-	const invitationPath = $derived.by(() => {
-		const uid = authStore.user?.uid;
-		const path = uid ? `chat-invitations/${uid}` : '';
-		return path;
-	});
+const invitationPath = $derived.by(() => {
+	const uid = authStore.user?.uid;
+	const path = uid ? `chat-invitations/${uid}` : '';
+	return path;
+});
+
+let hasInvitations = $state(false);
+
+$effect(() => {
+	const uid = authStore.user?.uid;
+	if (!uid || !rtdb) {
+		hasInvitations = false;
+		return;
+	}
+
+	const invitationsRef = ref(rtdb, `chat-invitations/${uid}`);
+	const unsubscribe = onValue(
+		invitationsRef,
+		(snapshot) => {
+			hasInvitations = snapshot.exists() && snapshot.hasChildren();
+		},
+		(error) => {
+			console.error('채팅 초대 목록 구독 중 오류가 발생했습니다:', error);
+			hasInvitations = false;
+		}
+	);
+
+	return () => {
+		unsubscribe();
+	};
+});
 
 	/**
 	 * 초대 수락 핸들러
@@ -72,67 +99,74 @@
 	}
 </script>
 
-{#if authStore.isAuthenticated && invitationPath}
-	<DatabaseListView
-		path={invitationPath}
-		pageSize={PAGE_SIZE}
-		orderBy={ORDER_FIELD}
-		threshold={320}
-		reverse={true}
-	>
-		{#snippet item(itemData)}
-			{@const invitation = (itemData.data ?? {}) as InvitationData}
-			{@const roomId = (invitation.roomId ?? itemData.key ?? '') as string}
-			{@const roomName = (invitation.roomName ?? '채팅방') as string}
-			{@const inviterName = (invitation.inviterName ?? '사용자') as string}
-			{@const message = (invitation.message ?? '') as string}
+{#if authStore.isAuthenticated && invitationPath && hasInvitations}
+	<!-- 초대 목록 래퍼 - 초대가 있을 때만 표시됨 -->
+	<section class="invitation-list-wrapper">
+		<DatabaseListView
+			path={invitationPath}
+			pageSize={PAGE_SIZE}
+			orderBy={ORDER_FIELD}
+			threshold={320}
+			reverse={true}
+		>
+			{#snippet item(itemData)}
+				{@const invitation = (itemData.data ?? {}) as InvitationData}
+				{@const roomId = (invitation.roomId ?? itemData.key ?? '') as string}
+				{@const roomName = (invitation.roomName ?? '채팅방') as string}
+				{@const inviterName = (invitation.inviterName ?? '사용자') as string}
+				{@const message = (invitation.message ?? '') as string}
 
-			<!-- 초대 카드 -->
-			<div class="invitation-card">
-				<div class="invitation-content">
-					<!-- 아이콘 -->
-					<div class="invitation-icon">
-						<span>💌</span>
-					</div>
+				<!-- 초대 카드 -->
+				<div class="invitation-card">
+					<div class="invitation-content">
+						<!-- 아이콘 -->
+						<div class="invitation-icon">
+							<span>💌</span>
+						</div>
 
-					<!-- 메시지 -->
-					<div class="invitation-message">
-						<p class="invitation-text">
-							<strong>{inviterName}</strong>님이
-							<strong>{roomName}</strong>에 초대하였습니다.
-						</p>
-						{#if message}
-							<p class="invitation-detail">{message}</p>
-						{/if}
-					</div>
+						<!-- 메시지 -->
+						<div class="invitation-message">
+							<p class="invitation-text">
+								<strong>{inviterName}</strong>님이
+								<strong>{roomName}</strong>에 초대하였습니다.
+							</p>
+							{#if message}
+								<p class="invitation-detail">{message}</p>
+							{/if}
+						</div>
 
-					<!-- 버튼 -->
-					<div class="invitation-actions">
-						<Button variant="default" size="sm" onclick={() => handleAccept(roomId)}>
-							{m.chatAccept()}
-						</Button>
-						<Button variant="outline" size="sm" onclick={() => handleReject(roomId)}>
-							{m.chatReject()}
-						</Button>
+						<!-- 버튼 -->
+						<div class="invitation-actions">
+							<Button variant="default" size="sm" onclick={() => handleAccept(roomId)}>
+								{m.chatAccept()}
+							</Button>
+							<Button variant="outline" size="sm" onclick={() => handleReject(roomId)}>
+								{m.chatReject()}
+							</Button>
+						</div>
 					</div>
 				</div>
-			</div>
-		{/snippet}
+			{/snippet}
 
-		{#snippet empty()}
-			<!-- 초대가 없을 때는 아무것도 표시하지 않음 -->
-			<div style="display: none;"></div>
-		{/snippet}
+			{#snippet empty()}
+				<!-- 초대가 없을 때는 아무것도 표시하지 않음 -->
+				<div style="display: none;"></div>
+			{/snippet}
 
-		{#snippet loading()}
-			<!-- 로딩 중에도 아무것도 표시하지 않음 -->
-			<div style="display: none;"></div>
-		{/snippet}
-	</DatabaseListView>
+			{#snippet loading()}
+				<!-- 로딩 중에도 아무것도 표시하지 않음 -->
+				<div style="display: none;"></div>
+			{/snippet}
+		</DatabaseListView>
+	</section>
 {/if}
 
 <style>
 	@import 'tailwindcss' reference;
+
+	.invitation-list-wrapper {
+		@apply rounded-2xl border border-blue-200 bg-white shadow-sm;
+	}
 
 	.invitation-card {
 		@apply border-b border-blue-100 bg-blue-50;

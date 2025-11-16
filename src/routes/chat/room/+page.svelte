@@ -87,6 +87,10 @@
 	 * - 비밀번호 필요 여부 확인 (roomPasswordEnabled && !isRoomMember && !isRoomOwner)
 	 * - 비밀번호 필요: passwordPromptOpen = true
 	 * - 비밀번호 불필요: joinChatRoom 호출
+	 *
+	 * 중요: 깜빡임 방지를 위해 roomDataLoaded가 true일 때만 비밀번호 체크를 실행합니다.
+	 * Firebase 구독이 최소한 한 번 데이터를 받아온 후에만 비밀번호 프롬프트를 열어야
+	 * isRoomMember가 일시적으로 false인 상태에서 프롬프트가 열렸다 닫히는 것을 방지합니다.
 	 */
 	$effect(() => {
 		if (!activeRoomId || !authStore.user?.uid || !rtdb) return;
@@ -97,18 +101,23 @@
 			enterSingleChatRoom(rtdb, activeRoomId, authStore.user.uid);
 		} else {
 			// 그룹/오픈 채팅: 비밀번호 확인 후 입장
-			// 채팅방 정보 로드 완료 확인 (roomOwner가 null이 아니면 로드 완료)
-			if (roomOwner !== null) {
+			// 중요: roomDataLoaded가 true일 때만 비밀번호 체크 실행 (깜빡임 방지)
+			// Firebase 구독이 데이터를 한 번 이상 받아온 후에만 실행됩니다.
+			if (roomOwner !== null && roomDataLoaded) {
 				const needsPassword = roomPasswordEnabled && !isRoomMember && !isRoomOwner;
 
-				if (needsPassword) {
-					// 비밀번호 필요: 모달 표시
+				console.log('--> needsPassword: roomPasswordEnabled: ', roomPasswordEnabled, isRoomMember, isRoomOwner, 'roomDataLoaded:', roomDataLoaded);
+
+				if (needsPassword && !passwordPromptOpen) {
+					// 비밀번호 필요하고 프롬프트가 아직 열리지 않았을 때만 모달 표시
 					passwordPromptOpen = true;
 				} else if (isRoomMember || isRoomOwner) {
-					// 이미 members이거나 owner인 경우: 입장 (chat-joins 업데이트)
+					// 이미 members이거나 owner인 경우
+					// 프롬프트가 열려있으면 닫고 입장 (chat-joins 업데이트)
+					passwordPromptOpen = false;
 					joinChatRoom(rtdb, activeRoomId, authStore.user.uid);
-				} else {
-					// 비밀번호 불필요하지만 members도 아닌 경우: 자동으로 members에 추가
+				} else if (!roomPasswordEnabled) {
+					// 비밀번호가 설정되지 않은 경우: 자동으로 members에 추가
 					joinChatRoom(rtdb, activeRoomId, authStore.user.uid);
 				}
 			}
@@ -186,10 +195,12 @@
 	let selectedMessageCreatedAt = $state<number>(0);
 
 	// 채팅방 정보 구독 (owner, password 등)
-	let roomOwner = $state<string | null>(null);
-	let roomPasswordEnabled = $state(false);
-	let roomPasswordValue = $state<string>('');
-	let isRoomMember = $state(false); // 현재 사용자가 members인지 여부
+let roomOwner = $state<string | null>(null);
+let roomPasswordEnabled = $state(false);
+let roomPasswordValue = $state<string>('');
+let isRoomMember = $state(false); // 현재 사용자가 members인지 여부
+let roomName = $state<string>('');
+let roomDataLoaded = $state(false); // Firebase 구독이 데이터를 한 번 이상 받아왔는지 여부 (깜빡임 방지용)
 
 	/**
 	 * 채팅방 정보 구독 (그룹/오픈 채팅방만)
@@ -201,13 +212,21 @@
 	 * - /chat-room-passwords/{roomId}/password: 실제 비밀번호 (owner만 읽기 가능)
 	 */
 	$effect(() => {
-		if (!activeRoomId || !authStore.user?.uid || !rtdb || isSingleChat) {
-			roomOwner = null;
-			roomPasswordEnabled = false;
-			roomPasswordValue = '';
-			isRoomMember = false;
-			return;
-		}
+	if (!activeRoomId || !authStore.user?.uid || !rtdb || isSingleChat) {
+		roomOwner = null;
+		roomPasswordEnabled = false;
+		roomPasswordValue = '';
+		isRoomMember = false;
+		roomName = '';
+		roomDataLoaded = false; // 데이터 로딩 상태 초기화
+		return;
+	}
+
+	// 채팅방 이름 구독
+	const nameRef = ref(rtdb, `chat-rooms/${activeRoomId}/name`);
+	const unsubscribeName = onValue(nameRef, (snapshot) => {
+		roomName = snapshot.val() ?? '';
+	});
 
 		// 채팅방 owner 구독
 		const ownerRef = ref(rtdb, `chat-rooms/${activeRoomId}/owner`);
@@ -230,6 +249,7 @@
 		const memberRef = ref(rtdb, `chat-rooms/${activeRoomId}/members/${authStore.user.uid}`);
 		const unsubscribeMember = onValue(memberRef, (snapshot) => {
 			isRoomMember = snapshot.exists(); // 필드 존재 여부만 확인 (true/false 모두 멤버임)
+			roomDataLoaded = true; // 멤버 데이터 로딩 완료 (깜빡임 방지: Firebase에서 최소한 한 번은 데이터를 받아옴)
 		});
 
 		// 실제 비밀번호 구독 (owner만 읽기 가능)
@@ -238,12 +258,13 @@
 			roomPasswordValue = snapshot.val() ?? '';
 		});
 
-		return () => {
-			unsubscribeOwner();
-			unsubscribePasswordFlag();
-			unsubscribeMember();
-			unsubscribePasswordValue();
-		};
+	return () => {
+		unsubscribeName();
+		unsubscribeOwner();
+		unsubscribePasswordFlag();
+		unsubscribeMember();
+		unsubscribePasswordValue();
+	};
 	});
 
 	// 현재 사용자가 채팅방 owner인지 확인
@@ -1085,12 +1106,11 @@ function preventDrop(event: DragEvent) {
 						<p class="text-xs text-red-500">프로필 로드 실패</p>
 					{/if}
 				</div>
-			{:else if roomIdParam}
+			{:else if activeRoomId}
 				<!-- 그룹/오픈 채팅: 방 이름 -->
 				<div class="flex-1 overflow-hidden">
 					<h1 class="truncate text-lg font-semibold text-gray-900">
-						{m.chatRoom()}
-						{roomIdParam}
+						{roomName?.trim() ? roomName : activeRoomId}
 					</h1>
 					<p class="text-xs text-gray-500">{m.chatChatRoom()}</p>
 				</div>

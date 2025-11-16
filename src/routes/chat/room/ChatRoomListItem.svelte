@@ -90,7 +90,9 @@
 
 		<!-- 채팅방 정보 -->
 		<div class="room-info">
-			<div class="room-name">{roomData.name || roomData.roomId || roomId}</div>
+			<div class="room-name">
+				{roomData.roomName || roomData.name || roomId}
+			</div>
 			{#if roomData.lastMessage}
 				<div class="room-last-message">{roomData.lastMessage}</div>
 			{/if}

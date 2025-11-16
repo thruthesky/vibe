@@ -146,9 +146,14 @@
 			}, 5000);
 
 			// members 경로 실시간 확인
+			// 중요: snapshot.val() === true가 아닌 snapshot.exists()를 사용해야 함
+			// members/{uid}는 true/false 값을 가질 수 있으며, 둘 다 멤버를 의미함
+			// - true: 멤버이며 알림 구독
+			// - false: 멤버이지만 알림 미구독
+			// - 필드 없음: 멤버가 아님
 			onValue(memberRef, (snapshot) => {
-				if (snapshot.val() === true) {
-					// 검증 성공: members에 추가됨
+				if (snapshot.exists()) {
+					// 검증 성공: members에 추가됨 (true 또는 false 값 모두 멤버임)
 					clearInterval(intervalId);
 					clearTimeout(timeoutId);
 					off(memberRef);

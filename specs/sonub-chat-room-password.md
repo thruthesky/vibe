@@ -1,6 +1,6 @@
 ---
 title: 채팅방 비밀번호 설정 기능
-version: 1.1.0
+version: 1.4.0
 step: 53
 priority: **
 dependencies:
@@ -8,11 +8,11 @@ dependencies:
   - sonub-firebase-database-structure.md
   - sonub-firebase-security-rules.md
   - sonub-firebase-cloud-functions.md
-tags: [chat, password, security, firebase-rtdb, cloud-functions, svelte5]
+tags: [chat, password, security, firebase-rtdb, cloud-functions, svelte5, race-condition, flickering]
 author: Claude Code
 created: 2025-11-14
-updated: 2025-11-15
-status: in-progress
+updated: 2025-11-16
+status: completed
 ---
 
 # 채팅방 비밀번호 설정 기능
@@ -570,9 +570,15 @@ export const onPasswordTry = onValueWritten(
         resolve(false);
       }, 5000);
 
-      // members 확인
+      // members 경로 실시간 확인
+      // 중요: snapshot.val() === true가 아닌 snapshot.exists()를 사용해야 함
+      // members/{uid}는 true/false 값을 가질 수 있으며, 둘 다 멤버를 의미함
+      // - true: 멤버이며 알림 구독
+      // - false: 멤버이지만 알림 미구독
+      // - 필드 없음: 멤버가 아님
       onValue(memberRef, (snapshot) => {
-        if (snapshot.val() === true) {
+        if (snapshot.exists()) {
+          // 검증 성공: members에 추가됨 (true 또는 false 값 모두 멤버임)
           clearInterval(intervalId);
           clearTimeout(timeoutId);
           off(memberRef);
@@ -860,7 +866,222 @@ export const load: PageLoad = async ({ params }) => {
 
 ---
 
-## 11. 참조
+## 11. 트러블슈팅
+
+### 11.1 알림 비활성화 멤버 비밀번호 문제 (해결됨)
+
+**문제**: 이미 멤버인 사용자(`/chat-rooms/{roomId}/members/{uid}` 존재)가 채팅방 입장 시 계속 비밀번호를 요구받음
+
+**원인**: `room-password-prompt.svelte` 컴포넌트의 `waitForVerification()` 함수에서 멤버 확인 로직이 잘못 구현됨
+
+```typescript
+// ❌ 잘못된 코드 (라인 150)
+onValue(memberRef, (snapshot) => {
+  if (snapshot.val() === true) {  // false일 때 실패!
+    // ...
+  }
+});
+```
+
+**설명**:
+- `members/{uid}` 필드는 세 가지 상태를 가짐:
+  1. `true`: 멤버이며 알림 구독
+  2. `false`: 멤버이지만 알림 미구독
+  3. 필드 없음: 멤버가 아님
+- `snapshot.val() === true`는 `false` 값을 가진 멤버를 비멤버로 잘못 판단
+
+**해결 방법**: `snapshot.exists()`를 사용하여 필드 존재 여부만 확인
+
+```typescript
+// ✅ 올바른 코드 (라인 154-162)
+// members 경로 실시간 확인
+// 중요: snapshot.val() === true가 아닌 snapshot.exists()를 사용해야 함
+// members/{uid}는 true/false 값을 가질 수 있으며, 둘 다 멤버를 의미함
+// - true: 멤버이며 알림 구독
+// - false: 멤버이지만 알림 미구독
+// - 필드 없음: 멤버가 아님
+onValue(memberRef, (snapshot) => {
+  if (snapshot.exists()) {  // ✅ 필드 존재 여부로 확인
+    // 검증 성공: members에 추가됨 (true 또는 false 값 모두 멤버임)
+    clearInterval(intervalId);
+    clearTimeout(timeoutId);
+    off(memberRef);
+    resolve(true);
+  }
+});
+```
+
+**참고**: 동일한 패턴이 `+page.svelte` (라인 232)에서 올바르게 구현되어 있었음
+```typescript
+const memberRef = ref(rtdb, `chat-rooms/${activeRoomId}/members/${authStore.user.uid}`);
+const unsubscribeMember = onValue(memberRef, (snapshot) => {
+  isRoomMember = snapshot.exists(); // ✅ 올바른 구현
+});
+```
+
+**수정 파일**:
+- [room-password-prompt.svelte](../src/lib/components/chat/room-password-prompt.svelte) 라인 154-162
+
+**해결 날짜**: 2025-11-16
+
+---
+
+### 11.2 상태 업데이트 타이밍 문제 (해결됨)
+
+**문제**: 이미 멤버인 사용자가 채팅방 재입장 시 짧은 순간 비밀번호 프롬프트가 나타남
+
+**증상**:
+- 콘솔 로그에서 `isRoomMember`가 `true` → `false` → `true`로 변경
+- 비밀번호 프롬프트가 잠깐 열렸다가 자동으로 닫힘
+
+**원인**:
+`activeRoomId` 변경 시 두 개의 `$effect`가 동시에 실행되면서 발생하는 레이스 컨디션:
+
+1. **첫 번째 effect** (라인 94-124): 비밀번호 체크 및 입장 로직
+2. **두 번째 effect** (라인 205-249): Firebase 구독 설정
+
+Firebase 구독이 설정되는 동안 실제 데이터를 받아오기 전에는 `isRoomMember`가 `false`입니다. 그 짧은 순간에 비밀번호 체크 로직이 실행되어 프롬프트가 열립니다.
+
+```typescript
+// ❌ 문제가 있는 코드 (라인 109)
+if (needsPassword) {
+  passwordPromptOpen = true;  // isRoomMember가 일시적으로 false일 때 열림
+}
+```
+
+**해결 방법**:
+1. 프롬프트가 이미 열려있으면 다시 열지 않기
+2. 멤버가 되면 프롬프트 자동으로 닫기
+
+```typescript
+// ✅ 수정된 코드 (라인 109-121)
+if (needsPassword && !passwordPromptOpen) {
+  // 비밀번호 필요하고 프롬프트가 아직 열리지 않았을 때만 모달 표시
+  // 이미 열려있으면 다시 열지 않음 (isRoomMember 일시적 false 방지)
+  passwordPromptOpen = true;
+} else if (isRoomMember || isRoomOwner) {
+  // 이미 members이거나 owner인 경우
+  // 프롬프트가 열려있으면 닫고 입장 (chat-joins 업데이트)
+  passwordPromptOpen = false;
+  joinChatRoom(rtdb, activeRoomId, authStore.user.uid);
+} else if (!roomPasswordEnabled) {
+  // 비밀번호가 설정되지 않은 경우: 자동으로 members에 추가
+  joinChatRoom(rtdb, activeRoomId, authStore.user.uid);
+}
+```
+
+**시나리오별 동작**:
+
+1. **이미 멤버인 사용자**:
+   - Firebase 구독 설정 중 잠시 `isRoomMember = false`
+   - `needsPassword = true`이지만 프롬프트 열림
+   - Firebase에서 데이터 수신: `isRoomMember = true`
+   - 프롬프트 자동 닫힘 + 입장
+
+2. **새로운 사용자**:
+   - 프롬프트 열림 → 비밀번호 입력
+   - Cloud Functions가 members에 추가
+   - `isRoomMember = true`로 업데이트
+   - 프롬프트 자동 닫힘 + 입장
+
+**수정 파일**:
+- [+page.svelte](../src/routes/chat/room/+page.svelte) 라인 109-121
+
+**해결 날짜**: 2025-11-16
+
+---
+
+### 11.3 화면 깜빡임 현상 (해결됨)
+
+**문제**: 이미 멤버인 사용자가 채팅방 재입장 시 비밀번호 입력 창이 잠깐 열렸다가 자동으로 닫히면서 화면이 깜빡이는 현상
+
+**증상**:
+- 사용자가 이미 채팅방에 입장해 있는데도 비밀번호 창이 열림
+- 조금 있다가 자동으로 닫힘
+- 이 과정에서 화면 깜빡임 발생
+
+**원인**:
+11.2에서 해결한 레이스 컨디션 문제의 근본적인 원인 - Firebase 데이터가 로드되기 전에 비밀번호 체크가 실행됨
+
+**상세 분석**:
+```typescript
+// 문제가 있는 흐름:
+// 1. activeRoomId 변경
+// 2. roomOwner !== null 조건 충족 (이전 방의 데이터)
+// 3. isRoomMember는 아직 false (Firebase 구독이 데이터를 받지 못함)
+// 4. needsPassword = true → 비밀번호 프롬프트 열림
+// 5. Firebase onValue 콜백 실행: isRoomMember = true
+// 6. 프롬프트 자동 닫힘
+```
+
+**핵심 문제점**:
+- `roomOwner !== null` 조건만으로는 Firebase 데이터 로딩 완료를 보장할 수 없음
+- `isRoomMember`가 실제 값을 가지기 전에 비밀번호 체크가 실행됨
+
+**해결 방법**: `roomDataLoaded` 플래그 도입
+
+1. **상태 변수 추가** (라인 202):
+```typescript
+let roomDataLoaded = $state(false); // Firebase 구독이 데이터를 한 번 이상 받아왔는지 여부 (깜빡임 방지용)
+```
+
+2. **멤버 구독 콜백에서 플래그 설정** (라인 251):
+```typescript
+const memberRef = ref(rtdb, `chat-rooms/${activeRoomId}/members/${authStore.user.uid}`);
+const unsubscribeMember = onValue(memberRef, (snapshot) => {
+  isRoomMember = snapshot.exists(); // 필드 존재 여부만 확인 (true/false 모두 멤버임)
+  roomDataLoaded = true; // 멤버 데이터 로딩 완료 (깜빡임 방지: Firebase에서 최소한 한 번은 데이터를 받아옴)
+});
+```
+
+3. **비밀번호 체크 조건 강화** (라인 106-107):
+```typescript
+// 중요: roomDataLoaded가 true일 때만 비밀번호 체크 실행 (깜빡임 방지)
+// Firebase 구독이 데이터를 한 번 이상 받아온 후에만 실행됩니다.
+if (roomOwner !== null && roomDataLoaded) {
+  // 비밀번호 체크 로직...
+}
+```
+
+4. **방 변경 시 플래그 초기화** (라인 220):
+```typescript
+roomDataLoaded = false; // 데이터 로딩 상태 초기화
+```
+
+**해결 로직 요약**:
+- **이전**: `roomOwner !== null`일 때 즉시 비밀번호 체크 → 데이터 로딩 전에 실행
+- **현재**: `roomOwner !== null && roomDataLoaded`일 때만 체크 → 데이터 로딩 후 실행
+- **결과**: `isRoomMember`가 실제 값을 가진 상태에서 체크하므로 불필요한 프롬프트 표시 방지
+
+**시나리오별 동작**:
+
+1. **이미 멤버인 사용자 재입장**:
+   - `activeRoomId` 변경
+   - `roomDataLoaded = false` 초기화
+   - Firebase 구독 설정 중... (비밀번호 체크 실행 안 됨)
+   - Firebase에서 데이터 수신: `isRoomMember = true`, `roomDataLoaded = true`
+   - 비밀번호 체크 실행: `needsPassword = false` → 프롬프트 표시 안 함 ✅
+   - 입장 완료
+
+2. **비밀번호가 필요한 새 사용자**:
+   - `activeRoomId` 변경
+   - `roomDataLoaded = false` 초기화
+   - Firebase 구독 설정 중... (비밀번호 체크 실행 안 됨)
+   - Firebase에서 데이터 수신: `isRoomMember = false`, `roomDataLoaded = true`
+   - 비밀번호 체크 실행: `needsPassword = true` → 프롬프트 표시 ✅
+   - 비밀번호 입력 후 입장
+
+**수정 파일**:
+- [+page.svelte:202](../src/routes/chat/room/+page.svelte#L202) - `roomDataLoaded` 상태 변수 추가
+- [+page.svelte:106-107](../src/routes/chat/room/+page.svelte#L106-L107) - 비밀번호 체크 조건 강화
+- [+page.svelte:251](../src/routes/chat/room/+page.svelte#L251) - 멤버 구독 콜백에서 플래그 설정
+- [+page.svelte:220](../src/routes/chat/room/+page.svelte#L220) - 방 변경 시 플래그 초기화
+
+**해결 날짜**: 2025-11-16
+
+---
+
+## 12. 참조
 
 - [Firebase Security Rules 공식 문서](https://firebase.google.com/docs/database/security)
 - [Firebase Cloud Functions 공식 문서](https://firebase.google.com/docs/functions)
@@ -872,5 +1093,8 @@ export const load: PageLoad = async ({ params }) => {
 
 | 버전 | 날짜 | 변경 내용 | 작성자 |
 |------|------|----------|--------|
+| 1.4.0 | 2025-11-16 | 🐛 버그 수정: 화면 깜빡임 현상 제거 - `roomDataLoaded` 플래그 도입하여 Firebase 데이터 로딩 완료 전 비밀번호 체크 방지 ([+page.svelte:106-107, 202, 220, 251](../src/routes/chat/room/+page.svelte)) | Claude Code |
+| 1.3.0 | 2025-11-16 | 🐛 버그 수정: 상태 업데이트 타이밍 문제 해결 - 레이스 컨디션으로 인한 불필요한 비밀번호 프롬프트 표시 방지 ([+page.svelte](../src/routes/chat/room/+page.svelte) 라인 109-121) | Claude Code |
+| 1.2.0 | 2025-11-16 | 🐛 버그 수정: 멤버 확인 로직 개선 - `snapshot.val() === true` → `snapshot.exists()` 변경하여 `members/{uid}: false`인 사용자도 멤버로 인식하도록 수정 ([room-password-prompt.svelte](../src/lib/components/chat/room-password-prompt.svelte) 라인 154-162) | Claude Code |
 | 1.1.0 | 2025-11-15 | 비밀번호 설정 UI 개선: 토글 제거, type="text" 사용, 버튼 3개 (취소/저장/삭제) | Claude Code |
 | 1.0.0 | 2025-11-14 | 초기 버전 작성 | Claude Code |

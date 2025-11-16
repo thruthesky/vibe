@@ -15,12 +15,22 @@ import {
   onValueCreated,
   onValueDeleted,
   onValueWritten,
+  DatabaseEvent,
 } from "firebase-functions/v2/database";
+import type {DataSnapshot} from "firebase-admin/database";
 import * as logger from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 
 // 타입 임포트
 import {UserData, ChatMessage} from "./types";
+
+// Firebase Database Event에 인증 정보를 포함하는 확장 타입
+// Firebase Functions v2에서는 authType과 authId가 있지만 타입 정의에 누락됨
+interface DatabaseEventWithAuth<T = DataSnapshot, Params = Record<string, string>>
+  extends DatabaseEvent<T, Params> {
+  authType?: string;
+  authId?: string;
+}
 
 // 비즈니스 로직 핸들러 임포트
 import {
@@ -30,17 +40,15 @@ import {
   handleUserBirthYearMonthDayUpdate,
   handleUserGenderUpdate,
 } from "./handlers/user.handler";
-import {
-  handleChatMessageCreate,
-  handleChatJoinCreate,
-  handleChatRoomCreate,
-  handleChatRoomMemberJoin,
-  handleChatRoomMemberLeave,
-  handleChatRoomPinCreate,
-  handleChatRoomPinDelete,
-  handleChatInvitationCreate,
-} from "./handlers/chat.handler";
-import { handleNewMessageCountWritten } from "./handlers/chat.new-message-count.handler";
+import {handleChatMessageCreate} from "./handlers/chat.message-create.handler";
+import {handleChatRoomCreate} from "./handlers/chat.room-create.handler";
+import {handleChatJoinCreate} from "./handlers/chat.join-create.handler";
+import {handleChatRoomMemberJoin} from "./handlers/chat.room-member-join.handler";
+import {handleChatRoomMemberLeave} from "./handlers/chat.room-member-leave.handler";
+import {handleChatRoomPinCreate} from "./handlers/chat.room-pin-create.handler";
+import {handleChatRoomPinDelete} from "./handlers/chat.room-pin-delete.handler";
+import {handleChatInvitationCreate} from "./handlers/chat.invitation-create.handler";
+import {handleNewMessageCountWritten} from "./handlers/chat.new-message-count.handler";
 
 // 상수 정의
 const FIREBASE_REGION = "asia-southeast1";
@@ -338,14 +346,15 @@ export const onChatRoomCreate = onValueCreated(
   async (event) => {
     const roomId = event.params.roomId as string;
     const roomData = (event.data.val() || {}) as Record<string, unknown>;
-    // owner 필드는 보안 규칙에 의해 auth.uid와 동일하게 검증되므로 신뢰 가능
-    const ownerUid = typeof roomData.owner === "string"
-      ? roomData.owner
-      : undefined;
+    // event.authId로 채팅방 생성자 UID 확인 (Firebase Auth로 인증된 사용자)
+    // TypeScript 타입 정의에 없지만 런타임에는 존재함
+    const eventWithAuth = event as DatabaseEventWithAuth<DataSnapshot, {roomId: string}>;
+    const ownerUid = eventWithAuth.authId;
 
     logger.info("채팅방 생성 감지", {
       roomId,
       owner: ownerUid,
+      authType: eventWithAuth.authType,
       roomType: roomData.type,
     });
 

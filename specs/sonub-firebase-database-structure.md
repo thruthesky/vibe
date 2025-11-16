@@ -1,6 +1,6 @@
 ---
 name: sonub
-version: 1.0.0
+version: 1.0.1
 description: Firebase Realtime Database 구조 가이드 문서의 SED 사양
 author: JaeHo Song
 email: thruthesky@gmail.com
@@ -8,6 +8,13 @@ homepage: https://github.com/thruthesky/
 funding: ""
 license: GPL-3.0
 dependencies: []
+updated: 2025-01-16
+changelog:
+  - date: 2025-01-16
+    version: 1.0.1
+    changes:
+      - "채팅방 생성 시 클라이언트 책임 범위 업데이트: owner와 members 필드 직접 저장"
+      - "Cloud Functions 역할 명확화: 이미 저장된 필드는 재저장하지 않음"
 ---
 
 - [Firebase Realtime Database 구조 가이드](#firebase-realtime-database-구조-가이드)
@@ -17,6 +24,10 @@ dependencies: []
     - [클라이언트와 백엔드의 역할 분리](#클라이언트와-백엔드의-역할-분리)
   - [개요](#개요)
   - [데이터베이스 전체 구조](#데이터베이스-전체-구조)
+  - [통계 (stats/counters)](#통계-statscounters)
+    - [사용자 수 통계 구조](#사용자-수-통계-구조)
+    - [동작 방식](#동작-방식)
+    - [활용 예시](#활용-예시)
   - [사용자 정보 (users)](#사용자-정보-users)
     - [사용자 Realtime Database 데이터 구조](#사용자-realtime-database-데이터-구조)
     - [필드 설명](#필드-설명)
@@ -32,17 +43,51 @@ dependencies: []
     - [설명](#설명)
     - [클라이언트/서버 역할 분리](#클라이언트서버-역할-분리-2)
     - [관련 가이드](#관련-가이드-2)
-  - [FCM 토큰 (fcm-tokens)](#fcm-토큰-fcm-tokens)
+  - [채팅방 (chat-rooms)](#채팅방-chat-rooms)
     - [데이터 구조](#데이터-구조-2)
     - [필드 설명](#필드-설명-1)
     - [클라이언트/서버 역할 분리](#클라이언트서버-역할-분리-3)
+      - [채팅방 생성 시](#채팅방-생성-시)
+      - [채팅방 입장/퇴장 시](#채팅방-입장퇴장-시)
+  - [채팅 메시지 (chat-messages)](#채팅-메시지-chat-messages)
+    - [데이터 구조](#데이터-구조-3)
+    - [필드 설명](#필드-설명-2)
+    - [roomId 형식](#roomid-형식)
+    - [클라이언트/서버 역할 분리](#클라이언트서버-역할-분리-4)
+    - [관련 가이드](#관련-가이드-3)
+  - [채팅 북마크 (chat-favorites)](#채팅-북마크-chat-favorites)
+    - [데이터 구조](#데이터-구조-4)
+    - [필드 설명](#필드-설명-3)
+    - [folderOrder 필드](#folderorder-필드)
+    - [클라이언트/서버 역할 분리](#클라이언트서버-역할-분리-5)
+    - [사용 예시](#사용-예시)
+    - [관련 가이드](#관련-가이드-4)
+  - [채팅방 참여 (chat-joins)](#채팅방-참여-chat-joins)
+    - [데이터 구조](#데이터-구조-5)
+    - [필드 설명](#필드-설명-4)
+    - [🔥 정렬 필드 상세 설명](#-정렬-필드-상세-설명)
+      - [정렬 필드 개요](#정렬-필드-개요)
+      - [왜 정렬 필드가 필요한가?](#왜-정렬-필드가-필요한가)
+      - [정렬 필드 계산 방식 (Cloud Functions)](#정렬-필드-계산-방식-cloud-functions)
+      - [prefix 규칙](#prefix-규칙)
+      - [정렬 원리](#정렬-원리)
+      - [읽음 처리 (정렬 필드 업데이트)](#읽음-처리-정렬-필드-업데이트)
+      - [핀 처리 (채팅방 고정 기능)](#핀-처리-채팅방-고정-기능)
+      - [클라이언트에서 사용 예시](#클라이언트에서-사용-예시)
+      - [주의사항](#주의사항)
+    - [클라이언트/서버 역할 분리](#클라이언트서버-역할-분리-6)
+    - [관련 가이드](#관련-가이드-5)
+  - [FCM 토큰 (fcm-tokens)](#fcm-토큰-fcm-tokens)
+    - [데이터 구조](#데이터-구조-6)
+    - [필드 설명](#필드-설명-5)
+    - [클라이언트/서버 역할 분리](#클라이언트서버-역할-분리-7)
     - [저장 목적 및 운영 시나리오](#저장-목적-및-운영-시나리오)
   - [주요 설계 원칙](#주요-설계-원칙)
     - [1. Flat Style 구조](#1-flat-style-구조)
     - [2. 속성 분리](#2-속성-분리)
     - [3. Cloud Functions 활용](#3-cloud-functions-활용)
     - [4. 보안 규칙](#4-보안-규칙)
-  - [주의사항](#주의사항)
+  - [주의사항](#주의사항-1)
     - [Firebase Auth vs RTDB 필드명 차이](#firebase-auth-vs-rtdb-필드명-차이)
   - [관련 가이드 문서](#관련-가이드-문서)
   - [참고 자료](#참고-자료)
@@ -360,7 +405,7 @@ Firebase Authentication의 다음 필드들은 `/users/<uid>` 노드에 **저장
 
 ## 채팅방 (chat-rooms)
 
-채팅방 메타데이터는 `/chat-rooms/<roomId>/` 경로에 저장됩니다. 클라이언트는 방 이름, 설명, 공개 여부 등 기본 정보와 함께 `owner` 필드를 설정하며, 보안 규칙이 `owner`가 `auth.uid`와 일치하는지 검증합니다. Cloud Functions는 `createdAt`, `members` (owner 자동 추가), `memberCount` 필드를 자동으로 생성하고, `members` 필드 변경 시 `memberCount`를 자동으로 동기화합니다. 클라이언트는 자기 자신의 uid를 `members`에 추가/수정하여 채팅방 입장/퇴장 및 메시지 알림 설정을 관리합니다.
+채팅방 메타데이터는 `/chat-rooms/<roomId>/` 경로에 저장됩니다. 클라이언트는 방 이름, 설명, 채팅방 타입(`type`) 등 기본 정보와 함께 `owner` 필드를 설정하며, 보안 규칙이 `owner`가 `auth.uid`와 일치하는지 검증합니다. Cloud Functions는 `createdAt`, `members` (owner 자동 추가), `memberCount` 필드를 자동으로 생성하고, `members` 필드 변경 시 `memberCount`를 자동으로 동기화합니다. 클라이언트는 자기 자신의 uid를 `members`에 추가/수정하여 채팅방 입장/퇴장 및 메시지 알림 설정을 관리합니다.
 
 ### 데이터 구조
 
@@ -369,7 +414,6 @@ Firebase Authentication의 다음 필드들은 `/users/<uid>` 노드에 **저장
 ├── group-team123/
 │   ├── name: "팀 채팅방"
 │   ├── description: "Sprint 24 진행 채널"
-│   ├── open: false
 │   ├── type: "group"
 │   ├── owner: "uid_creator"              // 클라이언트가 설정 (보안 규칙으로 검증)
 │   ├── createdAt: 1698473000000          // Cloud Functions에서 자동 설정
@@ -383,7 +427,6 @@ Firebase Authentication의 다음 필드들은 `/users/<uid>` 노드에 **저장
 │       └── messageCount: 120
 └── open-general/
     ├── name: "오픈 커뮤니티"
-    ├── open: true
     ├── type: "open"
     ├── owner: "uid_creator"              // 클라이언트가 설정 (보안 규칙으로 검증)
     ├── createdAt: 1698474000000          // Cloud Functions에서 자동 설정
@@ -402,13 +445,12 @@ Firebase Authentication의 다음 필드들은 `/users/<uid>` 노드에 **저장
 |------|------|------|------|
 | `name` | string | ✅ | 채팅방 이름, 최대 50자 |
 | `description` | string | ❌ | 소개 문구, 최대 200자 |
-| `type` | string | ✅ | 채팅방 유형 (`group`, `open`, `single`) |
-| `open` | boolean | ✅ | 오픈 챗 여부 (`true`면 전체 공개) |
+| `type` | string | ✅ | 채팅방 유형 (`group`, `open`, `single`). `open` 타입이 곧 공개 채팅방을 의미 |
 | `owner` | string | ✅ | 방 생성자 UID. **클라이언트가 설정** (보안 규칙으로 `auth.uid`와 일치 검증) |
 | `createdAt` | number | ✅ | 생성 시간 (Unix timestamp ms). **Cloud Functions에서만 설정** |
 | `updatedAt` | number | ✅ | 수정 시간 (Unix timestamp ms) |
 | `groupListOrder` | string/number | ❌ | 그룹 챗 정렬용 order. 클라이언트가 `-Date.now()` 형식으로 설정 |
-| `openListOrder` | string/number | ❌ | 오픈 챗 정렬용 order. `open: true`일 때만 생성 |
+| `openListOrder` | string/number | ❌ | 오픈 챗 정렬용 order. `type === 'open'`일 때만 생성 |
 | `members` | object | ✅ | 참여자 및 알림 설정 객체 (`{uid: boolean}`). **Cloud Functions에서 owner 자동 추가**, **클라이언트는 자기 자신만 추가/수정/삭제 가능**. `true`=메시지 알림 받음, `false`=알림 안 받음, `삭제됨`=채팅방에서 완전히 나감 |
 | `memberCount` | number | ✅ | 전체 참여자 수. **Cloud Functions에서 자동 계산** (`members` 객체의 모든 uid 개수, true/false 구분 없이) |
 | `stats` | object | ❌ | 메시지 수 등 확장 가능한 통계 필드 |
@@ -417,16 +459,32 @@ Firebase Authentication의 다음 필드들은 `/users/<uid>` 노드에 **저장
 
 #### 채팅방 생성 시
 
-- **클라이언트**
-  - `/chat-rooms/{roomId}`에 `name`, `description`, `open`, `type`, `owner` 등 기본 정보를 작성
-  - `owner` 필드를 `auth.uid`로 설정 (보안 규칙이 `auth.uid`와 일치하는지 검증)
-  - `createdAt`, `memberCount`, `members` 필드는 **작성하지 않음** (Cloud Functions에서만 설정)
-- **Cloud Functions**
+- **클라이언트 (2025-01-16 업데이트)**
+  - `/chat-rooms/{roomId}`에 다음 필드를 저장:
+    - `name`: 채팅방 이름 (필수)
+    - `description`: 채팅방 설명 (선택)
+    - `type`: 채팅방 타입 (필수, `group` | `open`)
+    - `owner`: 채팅방 소유자 UID (필수, `auth.uid`로 설정, 보안 규칙으로 검증)
+    - `members`: 참여자 목록 (선택, 그룹/오픈 채팅만, `{ [auth.uid]: true }` 형태)
+  - `createdAt`, `memberCount`, `groupListOrder`, `openListOrder` 필드는 **작성하지 않음** (Cloud Functions 전용)
+  - 보안 규칙:
+    - `owner`는 `auth.uid`와 일치해야 함
+    - `members`가 있으면 본인 UID(`auth.uid`)만 `true`로 설정 가능
+    - Cloud Functions 전용 필드를 포함하면 쓰기 거부됨
+
+- **Cloud Functions (2025-01-16 업데이트)**
   - `onValueCreated("/chat-rooms/{roomId}")` 트리거 실행
-  - `owner` 값을 읽어 생성자 UID 확인 (보안 규칙으로 이미 검증됨)
-  - `createdAt` 필드를 현재 타임스탬프로 설정
-  - `members` 객체에 `{owner: true}` 추가
-  - `memberCount`를 1로 설정 (초기값)
+  - **owner 필드**: 클라이언트가 이미 저장했으면 패스, 없으면 `event.authId`로 설정 (fallback)
+  - **members 필드**: 클라이언트가 이미 저장했으면 패스, 없으면 `{owner: true}` 추가 (그룹/오픈 채팅만)
+  - **createdAt 필드**: 현재 타임스탬프로 설정
+  - **memberCount 필드**: `members` 객체의 모든 uid 개수로 설정 (true/false 구분 없이)
+  - **groupListOrder/openListOrder 필드**: type에 따라 `-timestamp` 값으로 설정 (최신순 정렬)
+
+- **변경 이유 (2025-01-16)**
+  - Firebase Realtime Database Cloud Functions v2에서 `event.authId`가 항상 보장되지 않는 문제 발견
+  - 클라이언트가 `owner`와 `members`를 직접 저장하도록 변경하여 안정성 향상
+  - 보안 규칙으로 엄격히 제한하여 보안 수준 유지
+  - Cloud Functions는 fallback 및 나머지 필드 자동 설정만 담당
 
 #### 채팅방 입장/퇴장 시
 
@@ -1093,22 +1151,3 @@ query.on('value', (snapshot) => {
 - [Firebase Realtime Database 공식 문서](https://firebase.google.com/docs/database)
 - [Firebase Security Rules 공식 문서](https://firebase.google.com/docs/rules)
 - [Firebase Cloud Functions 공식 문서](https://firebase.google.com/docs/functions)
-
----
-
-## 작업 이력 (SED Log)
-
-| 날짜 | 작업자 | 내용 |
-| ---- | ------ | ---- |
-| 2025-11-13 | Codex Agent | `/fcm-tokens/{tokenId}` 스펙을 신설하여 데이터 트리, 목차, 섹션(데이터 구조/필드 설명/역할 분리/운영 시나리오)에 FCM 토큰 저장 규칙과 토큰을 키로 사용하는 중복 방지 이유를 명시했습니다. |
-| 2025-11-12 | Codex Agent | `/chat-rooms` 섹션을 신설하고 Cloud Functions + Security Rules가 owner/createdBy를 자동 설정·검증하는 과정을 상세화하여 채팅방 데이터 흐름을 명시. |
-| 2025-11-12 | Claude Code | `roomTitle` 필드를 사양에 맞게 `roomName`으로 통일. 클라이언트(ChatCreateDialog.svelte)와 Firebase Functions 타입 정의(types/index.ts)에서 `roomTitle`을 `roomName`으로 변경. 후방 호환성을 위해 읽기 함수(resolveRoomTitle)는 `roomTitle`과 `roomName` 둘 다 체크하도록 유지. |
-| 2025-11-12 | Claude Code | `listOrder` 필드를 모든 소스 코드와 스펙 문서에서 완전히 제거. 채팅방 타입별 전용 정렬 필드 사용으로 변경: 1) types/index.ts에서 `listOrder` 필드 삭제 2) chat.handler.ts의 멤버 입장 로직에서 타입별 정렬 필드 자동 설정 (groupChatListOrder, openChatListOrder, openAndGroupChatListOrder, allChatListOrder) 3) chat/list/+page.svelte에서 `allChatListOrder` 사용 (모든 채팅 통합 목록) 4) group-chat-list/+page.svelte에서 `openAndGroupChatListOrder` 사용 (그룹+오픈 통합 목록) 5) database.rules.json 인덱스 업데이트 6) Firebase Functions 배포 완료. |
-| 2025-11-12 | Claude Code | `handleChatJoinCreate` 함수 보완하여 클라이언트가 `chat-joins/{uid}/{roomId}` 노드를 직접 생성할 때 타입별 정렬 필드가 자동 생성되도록 수정: 1) 1:1 채팅 감지 로직 추가 (`isSingleChat()` 활용) 2) 1:1 채팅 시 `singleChatListOrder`, `allChatListOrder`, `partnerUid`, `roomType` 자동 설정 3) 그룹/오픈 채팅 시 `chat-rooms` 조회 후 `roomType`, `roomName`, `allChatListOrder` 및 타입별 정렬 필드 설정 4) 이미 완전히 설정된 경우 (`joinedAt` + `roomType` 존재) 건너뛰기 최적화 5) `index.ts`의 `onChatJoinCreate` JSDoc 주석 업데이트하여 새 로직 반영 6) Firebase Functions 배포 완료. |
-| 2025-11-13 | Claude Code | 친구 페이지(chat/list) 정렬 필드 수정: 1:1 채팅방만 표시하도록 `allChatListOrder` → `singleChatListOrder` 변경. `chat/list/+page.svelte`의 `JOIN_ORDER_FIELD` 상수 및 템플릿 내 변수명 업데이트. |
-| 2025-11-13 | Claude Code | 클라이언트 채팅방 입장 함수 수정 및 `displayNameLowerCase` 자동 생성 로직 개선: 1) `chat.functions.ts`의 `createSingleChatJoin` 함수명을 `enterSingleChatRoom`으로 변경하고 `set()` 대신 `update()` 사용으로 기존 데이터 보존하도록 수정 2) `user.handler.ts`의 `handleUserUpdate`에서 `displayNameLowerCase` 필드가 없으면 자동 생성하도록 로직 개선 (기존: displayName 변경 시에만 생성 → 개선: displayNameLowerCase 필드 없거나 displayName 변경 시 생성) 3) `types/index.ts`의 `UserData` 인터페이스에 `displayNameLowerCase` 필드 추가 4) Firebase Functions 배포 완료. |
-| 2025-11-13 | Claude Code | `handleChatRoomMemberJoin` 함수 개선: 사용자가 채팅방에 입장할 때 마지막 메시지 정보를 자동으로 저장하도록 수정. 1) `chat-messages`에서 `roomOrder` 필드로 해당 채팅방의 마지막 메시지 조회 (limitToLast(1) 사용) 2) 마지막 메시지의 `text`와 `createdAt` 값을 읽어서 `lastMessageText`, `lastMessageAt`으로 변환 3) `chat-joins/{uid}/{roomId}`에 마지막 메시지 정보 저장 (메시지가 있는 경우에만) 4) 함수 JSDoc 주석 업데이트 5) Firebase Functions 빌드 및 배포 완료. |
-| 2025-11-13 | Claude Code | `/chat-joins/` 데이터 구조 예제 보완: 누락되었던 정렬 필드들을 모든 채팅방 타입 예제에 추가하여 문서 완성도 향상. 1) 1:1 채팅 예제에 `singleChatListOrder`, `allChatListOrder` 추가 2) 그룹 채팅 예제에 `groupChatListOrder`, `openAndGroupChatListOrder`, `allChatListOrder` 및 `roomName` 추가 3) 오픈 채팅 예제 신규 추가 (`open-discussion`) - `openChatListOrder`, `openAndGroupChatListOrder`, `allChatListOrder` 포함 4) 각 정렬 필드에 설명 주석 추가 (읽지 않은 메시지 개수, 용도 등) 5) `listOrder` 필드에 사용 중단 예정 주석 추가. 이로써 데이터 구조 예제가 필드 설명 테이블과 일치하게 되어 개발자가 실제 구조를 더 잘 이해할 수 있게 됨. |
-| 2025-11-13 | Claude Code | 채팅방 입장 시 `newMessageCount` 자동 초기화 기능 구현: 사용자가 채팅방에 입장할 때마다 `/chat-joins/{uid}/{roomId}/newMessageCount`를 0으로 초기화하여 메시지를 모두 읽은 것으로 표시. 1) `enterSingleChatRoom()` 함수 수정 (1:1 채팅용) - `chat-joins` 업데이트 시 `newMessageCount: 0` 추가 2) `joinChatRoom()` 함수 수정 (그룹/오픈 채팅용) - members 등록 후 `chat-joins`에도 `newMessageCount: 0` 설정 추가 3) 두 함수의 JSDoc 주석 업데이트하여 새 동작 문서화. 이로써 사용자가 채팅방 페이지(`/chat/room`)에 들어갈 때마다 `$effect` 훅이 자동으로 실행되어 읽지 않은 메시지 카운트가 0으로 초기화됨. 수정 파일: `src/lib/functions/chat.functions.ts` |
-| 2025-11-13 | Claude Code | 채팅방 헤더 메뉴 기능 구현: `/chat/room` 페이지 상단에 네비게이션 및 메뉴 추가. 1) **헤더 구조**: 뒤로가기 버튼, 채팅 정보 (1:1: 프로필 사진+이름 / 그룹·오픈: 방 이름), 메뉴 버튼을 가로로 배치 2) **드롭다운 메뉴**: shadcn-svelte의 `DropdownMenu` 컴포넌트 활용하여 7개 메뉴 항목 구현 (북마크, 핀: 상단고정, URL 복사, 멤버 목록, 방 탈퇴하기, 신고하고 탈퇴하기, 닫기) 3) **기능 구현**: `handleGoBack()` (채팅 목록으로 이동), `handleCopyUrl()` (현재 URL 클립보드 복사), `handleLeaveRoom()` (`leaveChatRoom()` 호출 후 목록 이동, 확인 다이얼로그 포함) 4) **타입 유틸리티 추가**: `$lib/utils.ts`에 shadcn-svelte 컴포넌트용 타입 추가 (`WithElementRef`, `WithoutChild`, `WithoutChildrenOrChild`) 5) **shadcn-svelte 설치**: `npx shadcn-svelte add dropdown-menu` 실행 6) 일부 메뉴는 TODO placeholder로 향후 구현 예정 (북마크, 핀, 멤버 목록, 신고). 수정 파일: `src/routes/chat/room/+page.svelte`, `src/lib/utils.ts` |
-| 2025-11-13 | Claude Sonnet 4.5 | 채팅방 핀 기능 Critical Bug 수정: `onValueUpdated` 트리거가 pin 필드 생성/삭제 시 작동하지 않는 문제 해결. 1) `handleChatRoomPinUpdate` 함수를 `handleChatRoomPinCreate`와 `handleChatRoomPinDelete` 두 개의 함수로 분리 (chat.handler.ts) 2) `onValueUpdated` 트리거를 `onValueCreated`와 `onValueDeleted` 두 개의 트리거로 분리 (index.ts) 3) 각 트리거에서 적절한 비즈니스 로직 핸들러 호출 4) 상세한 JSDoc 주석 추가하여 트리거 조건, 수행 작업, prefix 규칙 명시 5) Firebase Functions 배포 완료 (기존 onChatRoomPinUpdate 삭제, 새 함수 2개 생성). 문서 업데이트: 핀 처리 섹션에 트리거 분리 이유 추가, Cloud Functions 자동 처리 예제 코드 업데이트. |

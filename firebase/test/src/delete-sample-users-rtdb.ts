@@ -3,23 +3,14 @@
  * `tsx delete-sample-users-rtdb.ts` 명령으로 실행하며, 동일 디렉터리의 `admin.key` 파일을 사용합니다.
  */
 
-import admin, { type ServiceAccount } from 'firebase-admin';
+import admin from 'firebase-admin';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { readFile } from 'node:fs/promises';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const SERVICE_ACCOUNT_PATH = path.resolve(__dirname, '../admin-service-account-key.json');
-const USERS_PATH = 'users';
 
-/**
- * service account JSON을 로드합니다.
- */
-async function loadServiceAccount(): Promise<ServiceAccount> {
-	const json = await readFile(SERVICE_ACCOUNT_PATH, 'utf-8');
-	return JSON.parse(json) as ServiceAccount;
-}
+const USERS_PATH = 'users';
 
 /**
  * Firebase Admin 초기화
@@ -29,15 +20,19 @@ async function initializeFirebase(): Promise<void> {
 		return;
 	}
 
-	const serviceAccount = await loadServiceAccount();
+	// GOOGLE_APPLICATION_CREDENTIALS 환경변수 설정
+	const serviceAccountPath = path.resolve(__dirname, '../admin-service-account-key.json');
+	process.env.GOOGLE_APPLICATION_CREDENTIALS = serviceAccountPath;
+
+	// Application Default Credentials 사용
 	admin.initializeApp({
-		credential: admin.credential.cert(serviceAccount),
-		databaseURL: `https://${serviceAccount.project_id}-default-rtdb.firebaseio.com`
+		credential: admin.credential.applicationDefault(),
+		databaseURL: 'https://sonub-firebase-default-rtdb.firebaseio.com'
 	});
 
-	const projectId = (serviceAccount as { project_id?: string }).project_id ?? '알 수 없음';
-	console.info(`Firebase Admin 초기화 완료 (project: ${projectId})`);
-	console.info(`Realtime Database URL: https://${serviceAccount.project_id}-default-rtdb.firebaseio.com`);
+	console.info(`Firebase Admin 초기화 완료`);
+	console.info(`Service Account: ${serviceAccountPath}`);
+	console.info(`Realtime Database URL: https://sonub-firebase-default-rtdb.firebaseio.com`);
 }
 
 /**

@@ -266,6 +266,7 @@ async function rejectInvitation(
 - DatabaseListView를 사용한 실시간 초대 목록 표시
 - 수락/거절 버튼 제공
 - 초대가 없으면 아무것도 표시하지 않음 (empty 상태 숨김)
+- 초대 존재 여부를 별도 구독으로 확인하여, 데이터가 없을 때는 컴포넌트 자체를 렌더링하지 않아 상위 카드가 비지 않음
 - 반응형 디자인 (모바일에서는 세로 레이아웃)
 
 **코드 예시:**
@@ -629,6 +630,10 @@ firebase deploy --only database
 - [Chat Functions](./sonub-functions-chat-functions.md)
 
 ## 변경 이력
+
+### 2025-11-16 (v1.1.1)
+- ChatInvitationList.svelte에 `chat-invitations/{uid}` 경로를 실시간 구독하는 로직을 추가하여 초대가 없으면 컴포넌트가 렌더링되지 않도록 개선.
+- 모든 채팅 목록 페이지에서 빈 카드가 남지 않고 자연스럽게 숨김 처리됨.
 
 ### 2025-01-14 (v1.1.0)
 - **클라이언트 로직 최소화 개선**

@@ -83,9 +83,6 @@
 		errorMessage = '';
 
 		try {
-			const currentUid = authStore.user.uid;
-			const now = Date.now();
-
 			// 1. chat-rooms에 새 채팅방 생성
 			const chatRoomsRef = ref(rtdb, 'chat-rooms');
 			const newRoomRef = push(chatRoomsRef);
@@ -95,49 +92,35 @@
 				throw new Error('Failed to generate room ID');
 			}
 
-		// 채팅방 데이터 (type에 따라 동적 생성)
-			// createdAt과 memberCount는 Cloud Functions에서 자동으로 설정됨
+			// 채팅방 데이터
+			// ⚠️ 중요: 클라이언트는 5개 필드를 저장합니다:
+			//    - name: 채팅방 이름
+			//    - description: 채팅방 설명
+			//    - type: 채팅방 타입 (group/open)
+			//    - owner: 채팅방 소유자 UID
+			//    - members: 참여자 목록 { uid: true } (그룹/오픈 채팅만)
+			// ⚠️ 다른 모든 필드는 Cloud Functions에서 자동으로 설정됩니다:
+			//    - createdAt: 생성 시각
+			//    - memberCount: 참여자 수 (그룹/오픈 채팅만)
+			//    - groupListOrder/openListOrder: 정렬 순서
+			// ⚠️ owner와 members는 클라이언트가 저장하지만, 보안 규칙으로 제한됨
 			const roomData: Record<string, unknown> = {
 				name: trimmedName,
 				description: roomDescription.trim() || '',
 				type: type,
-				open: isOpenChat, // 그룹챗은 비공개, 오픈챗은 공개
-				owner: currentUid // 채팅방 소유자 UID
+				owner: authStore.user.uid
 			};
 
-			// type에 따른 추가 필드
-			if (isGroupChat) {
-				roomData.groupListOrder = -now; // 최신순 정렬을 위한 음수 타임스탬프
-			} else {
-				roomData.openListOrder = -now;
-				roomData.memberCount = 1; // 생성자 포함
+			// 그룹/오픈 채팅일 경우 members 필드 추가
+			if (type === 'group' || type === 'open') {
+				roomData.members = {
+					[authStore.user.uid]: true
+				};
 			}
+
+			console.log(`✅ ${isGroupChat ? '그룹' : '오픈'} 채팅방 생성 시작:`, roomData);
 
 			await set(newRoomRef, roomData);
-
-			// 2. 생성자를 chat-joins에 추가
-			const joinRef = ref(rtdb, `chat-joins/${currentUid}/${roomId}`);
-			const joinData: Record<string, unknown> = {
-				roomId,
-				roomType: type,
-				roomName: trimmedName,
-				joinedAt: now,
-				lastMessageAt: now
-			};
-
-			// type에 따른 추가 필드
-			if (isGroupChat) {
-				joinData.groupListOrder = -now;
-			} else {
-				joinData.openListOrder = -now;
-			}
-
-			await set(joinRef, joinData);
-
-			// console.log(`✅ ${isGroupChat ? '그룹' : '오픈'} 채팅방 생성 완료:`, {
-			// 	roomId,
-			// 	roomData
-			// });
 
 			// 폼 초기화
 			roomName = '';
@@ -267,7 +250,13 @@
 			{/if}
 
 			<DialogFooter class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-				<Button type="button" variant="ghost" class="w-full sm:w-auto" onclick={handleCancel} disabled={isCreating}>
+				<Button
+					type="button"
+					variant="ghost"
+					class="w-full sm:w-auto"
+					onclick={handleCancel}
+					disabled={isCreating}
+				>
 					취소
 				</Button>
 				<Button type="submit" class="w-full sm:w-auto" disabled={isCreating}>
@@ -290,11 +279,11 @@
 	}
 
 	.chat-create-dialog :global(.form-input) {
-		@apply w-full rounded-xl border border-gray-300 px-4 py-3 text-base text-gray-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:bg-gray-100;
+		@apply w-full rounded-xl border border-gray-300 px-4 py-3 text-base text-gray-900 transition-colors focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none disabled:cursor-not-allowed disabled:bg-gray-100;
 	}
 
 	.chat-create-dialog :global(.form-textarea) {
-		@apply w-full rounded-xl border border-gray-300 px-4 py-3 text-base text-gray-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:bg-gray-100;
+		@apply w-full rounded-xl border border-gray-300 px-4 py-3 text-base text-gray-900 transition-colors focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none disabled:cursor-not-allowed disabled:bg-gray-100;
 	}
 
 	.chat-create-dialog :global(.hint-text) {

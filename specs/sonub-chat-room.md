@@ -1,9 +1,19 @@
 ---
 name: sonub-chat-room
-version: 1.0.0
+version: 1.1.0
 description: 채팅방 UI 및 RTDB 연동 사양
 dependencies:
   - sonub-firebase-database-structure.md
+updated: 2025-01-16
+changelog:
+  - date: 2025-01-16
+    version: 1.1.0
+    changes:
+      - "채팅방 생성 시 클라이언트가 owner와 members 필드를 직접 저장하도록 변경"
+      - "Firebase Functions v2 event.authId undefined 문제 해결"
+      - "보안 규칙 강화: owner와 members 필드 검증 추가"
+      - "Cloud Functions 로직 개선: 이미 저장된 필드는 재저장하지 않음"
+      - "그룹/오픈 채팅방 생성 규칙 섹션 추가 (5개 필드 저장 명시)"
 ---
 # Sonub 채팅방 기능 사양
 
@@ -2336,9 +2346,335 @@ function handleScrollToBottom() {
 
 이 구현 가이드를 따르면 `/src/routes/chat/room/+page.svelte` 파일을 완벽히 재구현할 수 있습니다!
 
+---
+
+## 그룹/오픈 채팅방 생성 규칙
+
+### 클라이언트 책임 범위
+
+그룹/오픈 채팅방을 생성할 때, **클라이언트는 필수 정보만 저장**해야 합니다.
+
+#### 필수 저장 필드 (클라이언트)
+
+**⚠️ 중요**: 클라이언트는 아래 **5개 필드만** 저장해야 하며, 그 외 다른 필드를 저장해서는 안 됩니다.
+
+```typescript
+// ✅ 허용되는 필드 (5개)
+const roomData = {
+  name: string,              // 채팅방 이름 (필수)
+  description: string,       // 채팅방 설명 (선택, 빈 문자열 가능)
+  type: 'group' | 'open',    // 채팅방 타입 (필수)
+  owner: string,             // 채팅방 소유자 UID (필수, 자신의 UID만 가능)
+  members?: {                // 참여자 목록 (그룹/오픈 채팅만, 선택)
+    [uid: string]: true
+  }
+};
+
+// ❌ 금지: 이외의 모든 필드는 Cloud Functions에서 자동 설정됨
+// createdAt, memberCount, groupListOrder, openListOrder 등
+```
+
+#### 구현 예시
+
+```typescript
+// ✅ 올바른 구현 (ChatCreateDialog.svelte)
+const roomData: Record<string, unknown> = {
+  name: trimmedName,
+  description: roomDescription.trim() || '',
+  type: type,
+  owner: authStore.user.uid
+};
+
+// 그룹/오픈 채팅일 경우 members 필드 추가
+if (type === 'group' || type === 'open') {
+  roomData.members = {
+    [authStore.user.uid]: true
+  };
+}
+
+await set(newRoomRef, roomData);
+```
+
+```typescript
+// ❌ 잘못된 구현 - Cloud Functions 전용 필드 저장 금지
+const roomData: Record<string, unknown> = {
+  name: trimmedName,
+  description: roomDescription.trim() || '',
+  type: type,
+  owner: currentUid,           // ✅ 허용됨
+  members: { [uid]: true },    // ✅ 허용됨 (그룹/오픈 채팅만)
+  groupListOrder: -now,        // ❌ 금지: Cloud Functions에서 설정
+  openListOrder: -now,         // ❌ 금지: Cloud Functions에서 설정
+  createdAt: Date.now(),       // ❌ 금지: Cloud Functions에서 설정
+  memberCount: 1               // ❌ 금지: Cloud Functions에서 설정
+};
+```
+
+### Cloud Functions 책임 범위
+
+Cloud Functions에서 **자동으로 설정**되는 필드들:
+
+```typescript
+// chat-rooms/{roomId}/
+{
+  // 클라이언트 제공 필드
+  name: string,
+  description: string,
+  type: 'group' | 'open',
+  owner: string,              // 클라이언트가 저장 (보안 규칙으로 자신의 UID만 가능)
+  members?: {                 // 클라이언트가 저장 (그룹/오픈 채팅만, 선택)
+    [ownerUid]: true
+  },
+
+  // Cloud Functions 자동 설정 필드
+  createdAt: number,          // 서버 타임스탬프
+  memberCount: number,        // 참여자 수 (그룹/오픈 채팅만)
+  groupListOrder?: number,    // 그룹 채팅 정렬 순서 (type='group'인 경우)
+  openListOrder?: number      // 오픈 채팅 정렬 순서 (type='open'인 경우)
+}
+```
+
+#### Cloud Functions 처리 로직
+
+1. **owner 필드**: 클라이언트가 이미 저장했으면 패스, 없으면 `event.authId`로 설정 (fallback)
+2. **members 필드**: 클라이언트가 이미 저장했으면 패스, 없으면 `{ [ownerUid]: true }` 설정 (그룹/오픈 채팅만)
+3. **createdAt 필드**: 항상 Cloud Functions에서 설정
+4. **memberCount 필드**: members 객체의 모든 uid 개수로 설정
+5. **groupListOrder/openListOrder 필드**: type에 따라 `-timestamp` 값으로 설정 (최신순 정렬)
+
+### Firebase Security Rules
+
+```json
+{
+  "chat-rooms": {
+    "$roomId": {
+      // 새 채팅방 생성 규칙:
+      // 1. 인증된 사용자
+      // 2. 채팅방이 존재하지 않음 (새 채팅방 생성만 허용)
+      // 3. owner 필드가 있어야 하며, 인증된 사용자의 UID와 일치해야 함
+      // 4. members 필드는 선택적 (그룹/오픈 채팅만), 있으면 본인 UID가 true로 설정되어야 함
+      // 5. Cloud Functions 전용 필드를 포함하지 않음 (createdAt, memberCount, groupListOrder, openListOrder)
+      ".write": "auth != null && !data.exists() && newData.hasChild('owner') && newData.child('owner').val() === auth.uid && (!newData.hasChild('members') || newData.child('members').child(auth.uid).val() === true) && !newData.hasChild('createdAt') && !newData.hasChild('memberCount') && !newData.hasChild('groupListOrder') && !newData.hasChild('openListOrder')",
+
+      "name": {
+        // 채팅방이 존재하지 않으면 누구나 쓰기 가능, 존재하면 owner만 수정 가능
+        ".write": "!root.child('chat-rooms').child($roomId).exists() ||
+          root.child('chat-rooms').child($roomId).child('owner').val() === auth.uid"
+      },
+      "description": {
+        // 채팅방이 존재하지 않으면 누구나 쓰기 가능, 존재하면 owner만 수정 가능
+        ".write": "!root.child('chat-rooms').child($roomId).exists() ||
+          root.child('chat-rooms').child($roomId).child('owner').val() === auth.uid"
+      },
+      "type": {
+        // 한 번만 설정 가능 (수정 불가)
+        ".write": "!data.exists()"
+      },
+      "owner": {
+        // 클라이언트가 한 번만 쓸 수 있음 (자신의 UID만 가능)
+        // Cloud Functions도 쓸 수 있음 (event.authId가 undefined일 때 대비)
+        ".write": "!data.exists() && newData.val() === auth.uid"
+      },
+      "members": {
+        // 그룹/오픈 채팅만 사용, 클라이언트가 채팅방 생성 시 저장 가능
+        // 보안 규칙: 본인 UID만 true로 설정 가능
+        // (개별 멤버 추가/삭제는 별도 규칙 참고)
+      },
+      "createdAt": {
+        // Cloud Functions에서만 설정 가능 (클라이언트는 쓰기 불가)
+        ".write": false
+      },
+      "memberCount": {
+        // Cloud Functions에서만 설정 가능 (클라이언트는 쓰기 불가)
+        ".write": false
+      },
+      "groupListOrder": {
+        // 한 번만 설정 가능 (수정 불가)
+        ".write": "!data.exists()"
+      },
+      "openListOrder": {
+        // 한 번만 설정 가능 (수정 불가)
+        ".write": "!data.exists()"
+      }
+    }
+  }
+}
+```
+
+### 설계 원칙
+
+이 설계는 다음 원칙을 따릅니다:
+
+1. **최소 권한 원칙 (Principle of Least Privilege)**
+   - 클라이언트는 최소한의 데이터만 작성
+   - 보안/검증이 필요한 모든 필드는 백엔드에서 처리
+
+2. **단일 책임 원칙 (Single Responsibility Principle)**
+   - 클라이언트: UI 입력 데이터 수집 및 전송
+   - 백엔드: 데이터 검증, 보안 필드 설정, 비즈니스 로직 처리
+
+3. **불변성 보장 (Immutability)**
+   - `owner`: 채팅방 소유자는 인증 시스템에서 자동 설정, 변조 불가
+   - `createdAt`: 서버 타임스탬프로 시간 조작 방지
+   - `type`: 한 번 설정 후 변경 불가
+
+4. **보안 우선 (Security First)** ⚡ 업데이트 (2025-01-16)
+   - 클라이언트가 `owner`를 설정하되, 보안 규칙으로 자신의 UID만 가능하도록 제한
+   - 클라이언트가 `members`를 설정하되, 본인 UID만 true로 설정 가능
+   - Cloud Functions는 fallback 및 검증 역할 수행
+   - 타임스탬프, 멤버 수 등 중요 필드는 서버에서만 관리
+   - 안정성 향상: `event.authId`에 의존하지 않아 더 안정적
+
+### 관련 파일
+
+- **클라이언트**: [src/lib/components/chat/ChatCreateDialog.svelte](../src/lib/components/chat/ChatCreateDialog.svelte)
+- **백엔드**: [firebase/functions/src/handlers/chat.room-create.handler.ts](../firebase/functions/src/handlers/chat.room-create.handler.ts)
+- **보안 규칙**: [firebase/database.rules.json](../firebase/database.rules.json)
+
+---
+
 ## 작업 이력 (SED Log)
 
 | 날짜 | 작업자 | 변경 내용 |
 | ---- | ------ | -------- |
 | 2025-11-15 | Claude Code | 채팅 입력창을 input에서 textarea로 변경: Shift+Enter 줄바꿈 지원, 최대 3줄 자동 높이 조정 |
 | 2025-11-15 | Claude Code | Shift+Enter 줄바꿈 무제한 허용, 입력창 최대 높이 4줄로 확장, 4줄 초과 시 스크롤바 표시 |
+| 2025-01-16 | Claude Code | 채팅방 생성 아키텍처 변경: 클라이언트가 owner와 members 필드 직접 저장, event.authId undefined 문제 해결 |
+
+---
+
+## 상세 변경 이력 (2025-01-16)
+
+### 변경 배경
+
+**문제 상황:**
+- Firebase Realtime Database Cloud Functions v2에서 `event.authId`가 항상 보장되지 않음
+- 채팅방 생성 시 Cloud Functions에서 owner 필드를 설정하려 했으나 `event.authId`가 `undefined`인 경우 발생
+- 로그 확인 결과: `"owner가 설정되지 않은 채팅방 생성 시도 (인증 실패)"`
+
+**기술적 근거:**
+- Firebase Functions v2의 Database Event에서 `authId`와 `authType`은 TypeScript 타입 정의에 없지만 런타임에 존재할 수 있음
+- 그러나 모든 경우에 보장되지 않아 안정성 문제 발생
+
+### 해결 방안
+
+**아키텍처 변경:**
+1. 클라이언트가 채팅방 생성 시 `owner`와 `members` 필드를 직접 저장
+2. 보안 규칙으로 엄격히 제한하여 보안 수준 유지
+3. Cloud Functions는 fallback 및 나머지 필드 자동 설정만 담당
+
+### 구현 변경 사항
+
+#### 1. 클라이언트 (ChatCreateDialog.svelte)
+
+**변경 전 (3개 필드 저장):**
+```typescript
+const roomData = {
+  name: trimmedName,
+  description: roomDescription.trim() || '',
+  type: type
+};
+```
+
+**변경 후 (5개 필드 저장):**
+```typescript
+const roomData = {
+  name: trimmedName,
+  description: roomDescription.trim() || '',
+  type: type,
+  owner: authStore.user.uid  // ✨ 추가
+};
+
+// 그룹/오픈 채팅일 경우 members 필드 추가
+if (type === 'group' || type === 'open') {
+  roomData.members = {
+    [authStore.user.uid]: true  // ✨ 추가
+  };
+}
+```
+
+#### 2. Firebase Security Rules (database.rules.json)
+
+**owner 필드 규칙:**
+```json
+"owner": {
+  // 변경 전: ".write": false (Cloud Functions 전용)
+  // 변경 후: 클라이언트가 한 번만 쓸 수 있음 (자신의 UID만 가능)
+  ".write": "!data.exists() && newData.val() === auth.uid"
+}
+```
+
+**채팅방 생성 규칙 ($roomId 레벨):**
+```json
+".write": "auth != null && !data.exists() &&
+  newData.hasChild('owner') &&
+  newData.child('owner').val() === auth.uid &&
+  (!newData.hasChild('members') || newData.child('members').child(auth.uid).val() === true) &&
+  !newData.hasChild('createdAt') &&
+  !newData.hasChild('memberCount') &&
+  !newData.hasChild('groupListOrder') &&
+  !newData.hasChild('openListOrder')"
+```
+
+**주요 검증 항목:**
+- ✅ 인증된 사용자만 생성 가능
+- ✅ owner 필드가 반드시 있어야 하며, auth.uid와 일치해야 함
+- ✅ members 필드가 있으면 본인 UID만 true로 설정 가능
+- ✅ Cloud Functions 전용 필드(createdAt, memberCount, groupListOrder, openListOrder)를 포함하면 거부됨
+
+#### 3. Cloud Functions (chat.room-create.handler.ts)
+
+**변경 전:**
+```typescript
+// owner 필드를 무조건 설정
+updates[`chat-rooms/${roomId}/owner`] = ownerUid;
+
+// members 필드를 무조건 설정
+updates[`chat-rooms/${roomId}/members`] = {[ownerUid]: true};
+```
+
+**변경 후:**
+```typescript
+// owner 필드: 클라이언트가 이미 저장했으면 패스
+if (ownerSnapshot.exists()) {
+  finalOwnerUid = ownerSnapshot.val() as string;
+  logger.info("owner 필드가 클라이언트에 의해 이미 설정됨", {...});
+} else if (ownerUid && ownerUid.trim().length > 0) {
+  finalOwnerUid = ownerUid;  // fallback: event.authId 사용
+  updates[`chat-rooms/${roomId}/owner`] = finalOwnerUid;
+}
+
+// members 필드: 클라이언트가 이미 저장했으면 패스
+if (!membersSnapshot.exists()) {
+  const membersData: Record<string, boolean> = {};
+  membersData[finalOwnerUid] = true;
+  updates[`chat-rooms/${roomId}/members`] = membersData;
+  logger.info("members 필드 생성 (클라이언트가 저장하지 않음)", {...});
+} else {
+  logger.info("members 필드가 클라이언트에 의해 이미 설정됨", {...});
+}
+```
+
+### 설계 원칙 업데이트
+
+**기존 원칙 (변경 전):**
+- 보안 우선: 클라이언트가 owner를 설정할 수 없도록 방지
+- Cloud Functions에서 event.authId로 인증된 사용자만 owner로 설정
+
+**업데이트된 원칙 (변경 후):**
+- 보안 우선: 클라이언트가 owner를 설정하되, 보안 규칙으로 자신의 UID만 가능하도록 제한
+- Cloud Functions는 fallback 및 검증 역할 수행
+- 안정성 향상: event.authId에 의존하지 않아 더 안정적
+
+### 배포 완료
+
+- ✅ Firebase Database Rules 배포 완료
+- ✅ Firebase Functions 배포 완료 (15개 함수 업데이트)
+- ✅ 소스 코드 검사 완료 (에러 0개)
+
+### 테스트 필요 사항
+
+- [ ] 그룹 채팅방 생성 후 모든 필드 확인 (owner, members, createdAt, memberCount, groupListOrder)
+- [ ] 오픈 채팅방 생성 후 모든 필드 확인 (owner, members, createdAt, memberCount, openListOrder)
+- [ ] 보안 규칙 검증: 다른 사용자 UID로 owner 설정 시도 시 거부되는지 확인
+- [ ] Cloud Functions 로그 확인: owner와 members가 클라이언트에 의해 설정되었는지 확인

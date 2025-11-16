@@ -264,10 +264,6 @@ firebase deploy --only database
           ".write": "!data.exists()",
           ".validate": "newData.isNumber()"
         },
-        "open": {
-          ".write": "!data.exists()",
-          ".validate": "newData.isBoolean()"
-        },
         "groupListOrder": {
           ".write": "!data.exists()",
           ".validate": "newData.isNumber()"
@@ -306,9 +302,8 @@ firebase deploy --only database
 | **name** | owner만 | 1-50자 문자열 | 채팅방 이름. owner만 수정 가능 |
 | **description** | owner만 | 최대 200자 문자열 | 채팅방 설명. owner만 수정 가능 |
 | **type** | 생성 시만 | 'group', 'open', 'single' | 채팅방 타입. 생성 후 변경 불가 |
-| **open** | 생성 시만 | boolean | 공개 여부. 생성 후 변경 불가 |
 | **groupListOrder** | 생성 시만 | 숫자 | 그룹 채팅 정렬 순서. 생성 후 변경 불가 |
-| **openListOrder** | 생성 시만 | 숫자 | 오픈 채팅 정렬 순서. 생성 후 변경 불가 |
+| **openListOrder** | 생성 시만 | 숫자 | 오픈 채팅 정렬 순서. `type === 'open'`일 때만 생성 |
 | **memberCount** | Cloud Functions만 | 0 이상의 숫자 | 멤버 수. 서버에서 자동 관리 |
 | **members/$uid** | 본인 또는 owner | boolean / null | 방 참여 여부와 알림 설정. 사용자는 스스로 true/false 설정, owner는 구성원 관리 가능, null은 퇴장 처리 |
 | **$other** | 허용 안 함 | - | 정의되지 않은 필드는 생성 불가 |
@@ -407,4 +402,12 @@ firebase deploy --only storage
 - 보안 규칙 배포 전에 반드시 문법을 확인하세요.
 - 배포 후 Firebase Console에서 규칙이 올바르게 적용되었는지 확인하세요.
 - 규칙 변경은 즉시 적용되므로 프로덕션 환경에서는 신중하게 배포하세요.
+
+---
+
+## 작업 이력 (SED Log)
+
+| 날짜 | 작업자 | 내용 |
+| ---- | ------ | ---- |
+| 2025-11-16 | Codex Agent | `/chat-rooms/{roomId}` 규칙에서 `open` 불리언 필드를 완전히 제거하고, 문서 내 예제 JSON과 필드 설명 표를 모두 업데이트했습니다. 오픈 여부는 `type` 필드만으로 판별하며 `openListOrder`는 `type === 'open'`일 때만 생성된다는 점을 명확히 했습니다. |
 

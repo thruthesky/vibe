@@ -180,8 +180,8 @@
 	<title>{m.pageTitleChat()}</title>
 </svelte:head>
 
-<div class="space-y-6">
-	<section class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+<div class="space-y-4 sm:space-y-6">
+	<section class="rounded-none border-none bg-transparent p-0 shadow-none md:rounded-2xl md:border md:border-gray-200 md:bg-white md:p-6 md:shadow-sm">
 		<div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
 			<div>
 				<h1 class="text-2xl font-semibold text-gray-900">{m.chatMyRoomsTitle()}</h1>
@@ -221,10 +221,8 @@
 			<p class="text-sm text-gray-500">{m.chatSelectConversation()}</p>
 		</section>
 	{:else}
-		<!-- 채팅 초대 목록 -->
-		<section class="rounded-2xl border border-blue-200 bg-white shadow-sm">
-			<ChatInvitationList />
-		</section>
+		<!-- 채팅 초대 목록 (초대가 있을 때만 자동으로 표시됨) -->
+		<ChatInvitationList />
 
 		<section class="rounded-2xl border border-gray-200 bg-white p-0 shadow-sm">
 			{#key chatJoinPath}

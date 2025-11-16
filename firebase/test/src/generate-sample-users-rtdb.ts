@@ -5,15 +5,16 @@
  * 현재 디렉터리의 `admin.key` 파일을 사용합니다.
  */
 
-import admin, { type ServiceAccount } from 'firebase-admin';
+import admin, { ServiceAccount } from 'firebase-admin';
+import { generateTestUsers, testUserToFirebaseData } from './test-user-generator';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readFile } from 'node:fs/promises';
-import { generateTestUsers, testUserToFirebaseData } from './test-user-generator';
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const SERVICE_ACCOUNT_PATH = path.resolve(__dirname, '../admin-service-account-key.json');
+
 const USERS_PATH = 'users';
 const MIN_BIRTH_YEAR = 1950;
 const MAX_BIRTH_YEAR = 2010;
@@ -23,12 +24,15 @@ const MIN_BIRTH_DAY = 1;
 const MAX_BIRTH_DAY = 28;
 
 /**
- * service account JSON을 로드합니다.
+ * service account JSON 을 로드합니다.
  */
 async function loadServiceAccount(): Promise<ServiceAccount> {
-	const json = await readFile(SERVICE_ACCOUNT_PATH, 'utf-8');
+	const serviceAccountPath = path.resolve(__dirname, '../admin-service-account-key.json');
+	console.info(`Service Account: ${serviceAccountPath}`);
+	const json = await readFile(serviceAccountPath, 'utf-8');
 	return JSON.parse(json) as ServiceAccount;
 }
+
 
 /**
  * Firebase Admin 인스턴스를 초기화합니다.
@@ -37,16 +41,15 @@ async function initializeFirebase(): Promise<void> {
 	if (admin.apps.length > 0) {
 		return;
 	}
-
-	const serviceAccount = await loadServiceAccount();
-	admin.initializeApp({
+		const serviceAccount = await loadServiceAccount();
+	  admin.initializeApp({
 		credential: admin.credential.cert(serviceAccount),
-		databaseURL: `https://${serviceAccount.project_id}-default-rtdb.firebaseio.com`
+		databaseURL: 'https://sonub-firebase-default-rtdb.asia-southeast1.firebasedatabase.app'
 	});
 
-	const projectId = (serviceAccount as { project_id?: string }).project_id ?? '알 수 없음';
-	console.info(`Firebase Admin 초기화 완료 (project: ${projectId})`);
-	console.info(`Realtime Database URL: https://${serviceAccount.project_id}-default-rtdb.firebaseio.com`);
+	
+	console.info(`Firebase Admin 초기화 완료`);
+	console.info(`Realtime Database URL: https://sonub-firebase-default-rtdb.asia-southeast1.firebasedatabase.app`);
 }
 
 /**
