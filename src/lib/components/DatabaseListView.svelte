@@ -757,10 +757,11 @@
 
     // 약간의 지연 후 리스너를 활성화 (기존 아이템들의 child_added 이벤트를 건너뛰기 위해)
     // Firebase는 리스너 설정 직후 기존 아이템들에 대해 child_added를 발생시킴
+    // 100ms로 단축하여 새로 생성된 아이템을 빠르게 감지
     setTimeout(() => {
       childAddedListenerReady = true;
       // console.log('DatabaseListView: child_added listener is now ready to accept new children');
-    }, 1000);
+    }, 100);
   }
 
   /**

@@ -8,10 +8,15 @@
 	 */
 
 	import * as Card from '$lib/components/ui/card/index.js';
+	import { onMount, onDestroy } from 'svelte';
 	import { BUILD_VERSION } from '$lib/version';
 	import { getLocale, setLocale, locales } from '$lib/paraglide/runtime';
 	import { m } from '$lib/paraglide/messages';
 	import { page } from '$app/stores';
+	import { authStore } from '$lib/stores/auth.svelte';
+	import { rtdb } from '$lib/firebase';
+	import { formatShortDate } from '$lib/functions/date.functions';
+	import { get, limitToLast, onValue, orderByChild, query, ref, type DatabaseReference } from 'firebase/database';
 
 	// 언어 이름 매핑
 	const localeNames: Record<string, string> = {
@@ -26,6 +31,28 @@ const devHighlights = [
 	{ order: '9', label: () => m.sidebarDevHighlightAttachment() },
 	{ order: '10', label: () => m.sidebarDevHighlightPassword() }
 ];
+
+	type UserPreview = {
+		uid: string;
+		displayName: string;
+		photoUrl: string | null;
+		sortRecentWithPhoto: number;
+	};
+
+	type OpenChatPreview = {
+		roomId: string;
+		roomName: string;
+		lastMessageText: string;
+		lastMessageAt: number;
+		orderValue: number;
+	};
+
+	let recentUsers: UserPreview[] = [];
+	let isLoadingRecentUsers = true;
+	let recentOpenChats: OpenChatPreview[] = [];
+	let isLoadingRecentOpenChats = true;
+	let userUid: string | null = null;
+	let openChatsUnsubscribe: (() => void) | null = null;
 
 	/**
 	 * 현재 경로가 주어진 경로와 일치하는지 확인
@@ -48,6 +75,139 @@ const devHighlights = [
 		// - 기본값으로 페이지 새로고침하여 모든 메시지 업데이트
 		setLocale(newLocale);
 	}
+
+	async function fetchRecentUsers() {
+		if (!rtdb) {
+			isLoadingRecentUsers = false;
+			return;
+		}
+
+		try {
+			const usersRef: DatabaseReference = ref(rtdb, 'users');
+			const recentQuery = query(usersRef, orderByChild('sort_recentWithPhoto'), limitToLast(5));
+			const snapshot = await get(recentQuery);
+			const users: UserPreview[] = [];
+
+			snapshot.forEach((child) => {
+				const value = child.val();
+				users.push({
+					uid: child.key ?? '',
+					displayName: value?.displayName ?? '',
+					photoUrl: value?.photoUrl ?? null,
+					sortRecentWithPhoto: value?.sort_recentWithPhoto ?? 0
+				});
+			});
+
+			users.sort((a, b) => (b.sortRecentWithPhoto ?? 0) - (a.sortRecentWithPhoto ?? 0));
+			recentUsers = users.filter((user) => Boolean(user.photoUrl));
+		} catch (error) {
+			console.error('[Sidebar] 최근 사용자 로드 실패:', error);
+			recentUsers = [];
+		} finally {
+			isLoadingRecentUsers = false;
+		}
+	}
+
+	function resolveOrderValue(value: unknown): number {
+		if (typeof value === 'number') {
+			return value;
+		}
+
+		if (typeof value === 'string') {
+			let boost = 0;
+			let normalized = value;
+
+			if (value.startsWith('500')) {
+				boost = 2;
+				normalized = value.slice(3);
+			} else if (value.startsWith('200')) {
+				boost = 1;
+				normalized = value.slice(3);
+			}
+
+			const base = Number.parseInt(normalized, 10);
+			return boost * 1e15 + (Number.isFinite(base) ? base : 0);
+		}
+
+		return 0;
+	}
+
+	function teardownOpenChatListener() {
+		if (openChatsUnsubscribe) {
+			openChatsUnsubscribe();
+			openChatsUnsubscribe = null;
+		}
+	}
+
+	function setupOpenChatListener() {
+		teardownOpenChatListener();
+
+		if (!userUid || !rtdb) {
+			recentOpenChats = [];
+			isLoadingRecentOpenChats = false;
+			return;
+		}
+
+		isLoadingRecentOpenChats = true;
+
+		const joinsRef = ref(rtdb, `chat-joins/${userUid}`);
+		const openQuery = query(joinsRef, orderByChild('openChatListOrder'), limitToLast(5));
+
+		openChatsUnsubscribe = onValue(
+			openQuery,
+			(snapshot) => {
+				const items: OpenChatPreview[] = [];
+
+				snapshot.forEach((child) => {
+					const value = child.val() ?? {};
+
+					if (value?.roomType !== 'open') {
+						return;
+					}
+
+					const orderValue = resolveOrderValue(value?.openChatListOrder);
+					const roomId = child.key ?? '';
+
+					items.push({
+						roomId,
+						roomName: (value?.roomName as string) || roomId || 'Open Chat',
+						lastMessageText: (value?.lastMessageText as string) || '',
+						lastMessageAt: Number(value?.lastMessageAt) || 0,
+						orderValue
+					});
+				});
+
+				items.sort((a, b) => b.orderValue - a.orderValue);
+				recentOpenChats = items.slice(0, 5);
+				isLoadingRecentOpenChats = false;
+			},
+			(error) => {
+				console.error('[Sidebar] 최근 오픈 채팅 구독 실패:', error);
+				recentOpenChats = [];
+				isLoadingRecentOpenChats = false;
+			}
+		);
+	}
+
+	onMount(() => {
+		fetchRecentUsers();
+
+		return () => {
+			teardownOpenChatListener();
+		};
+	});
+
+	// authStore.user 변화를 감지하여 오픈 채팅 리스너 재설정
+	$effect(() => {
+		const nextUid = authStore.user?.uid ?? null;
+		if (nextUid === userUid) return;
+		userUid = nextUid;
+		setupOpenChatListener();
+	});
+
+	onDestroy(() => {
+		teardownOpenChatListener();
+	});
 </script>
 
 <aside class="hidden lg:block lg:w-64 xl:w-72">
@@ -79,6 +239,79 @@ const devHighlights = [
 					</svg>
 					{m.navHome()}
 				</a>
+			</Card.Content>
+		</Card.Root>
+
+		<!-- 최근 사용자 카드 -->
+		<Card.Root class="sidebar-card">
+			<Card.Header>
+				<Card.Title class="flex items-center gap-2 text-base">
+					<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0zM4 21v-2a4 4 0 014-4h8a4 4 0 014 4v2" />
+					</svg>
+					{m.homeSectionRecentUsers()}
+				</Card.Title>
+			</Card.Header>
+			<Card.Content>
+				{#if isLoadingRecentUsers}
+					<p class="sidebar-placeholder-text">{m.commonLoading()}</p>
+				{:else if recentUsers.length === 0}
+					<p class="sidebar-placeholder-text">{m.homeSectionRecentUsersDesc()}</p>
+				{:else}
+					<div class="stacked-wrapper">
+						<div class="stacked-avatars" aria-label={m.homeSectionRecentUsers()}>
+							{#each recentUsers as user, index (user.uid)}
+								<img
+									src={user.photoUrl ?? ''}
+									alt={user.displayName || 'recent user'}
+									class="stacked-avatar"
+									style={`z-index: ${recentUsers.length - index};`}
+									loading="lazy"
+								/>
+							{/each}
+						</div>
+						<p class="stacked-caption">
+							{m.homeSectionRecentUsersCount({ count: recentUsers.length })}
+						</p>
+					</div>
+				{/if}
+			</Card.Content>
+		</Card.Root>
+
+		<!-- 최근 오픈 채팅 -->
+		<Card.Root class="sidebar-card">
+			<Card.Header>
+				<Card.Title class="flex items-center gap-2 text-base">
+					<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8a9 9 0 100-18 9 9 0 000 18z" />
+					</svg>
+					{m.homeSectionRecentOpenChat()}
+				</Card.Title>
+			</Card.Header>
+			<Card.Content>
+				{#if !userUid}
+					<p class="sidebar-placeholder-text">{m.homeSectionRecentOpenChatLogin()}</p>
+				{:else if isLoadingRecentOpenChats}
+					<p class="sidebar-placeholder-text">{m.commonLoading()}</p>
+				{:else if recentOpenChats.length === 0}
+					<p class="sidebar-placeholder-text">{m.homeSectionRecentOpenChatEmpty()}</p>
+				{:else}
+					<ul class="sidebar-open-chat-list">
+						{#each recentOpenChats as chat}
+							<li class="sidebar-open-chat-item">
+								<div class="open-chat-head">
+									<span class="open-chat-room">{chat.roomName}</span>
+									{#if chat.lastMessageAt}
+										<span class="open-chat-time">{formatShortDate(chat.lastMessageAt)}</span>
+									{/if}
+								</div>
+								<p class="open-chat-body">
+									{chat.lastMessageText || m.homeOpenChatNoMessage()}
+								</p>
+							</li>
+						{/each}
+					</ul>
+				{/if}
 			</Card.Content>
 		</Card.Root>
 
@@ -236,6 +469,55 @@ const devHighlights = [
 		@apply bg-gradient-to-r from-indigo-50 to-indigo-100 text-indigo-700 shadow-sm;
 		border-left: 3px solid theme('colors.indigo.600');
 		padding-left: calc(0.75rem - 3px);
+	}
+
+	.sidebar-placeholder-text {
+		@apply text-sm text-gray-500;
+	}
+
+	.stacked-wrapper {
+		@apply flex flex-col gap-3;
+	}
+
+	.stacked-avatars {
+		@apply flex items-center;
+	}
+
+	.stacked-avatar {
+		@apply h-10 w-10 rounded-full border-2 border-white object-cover shadow ring-1 ring-gray-200;
+		margin-left: -0.5rem;
+	}
+
+	.stacked-avatar:first-child {
+		margin-left: 0;
+	}
+
+	.stacked-caption {
+		@apply text-xs font-medium text-gray-700;
+	}
+
+	.sidebar-open-chat-list {
+		@apply space-y-3;
+	}
+
+	.sidebar-open-chat-item {
+		@apply rounded-lg border border-blue-100 bg-blue-50/80 p-3 shadow-sm;
+	}
+
+	.open-chat-head {
+		@apply flex items-center justify-between gap-2;
+	}
+
+	.open-chat-room {
+		@apply text-sm font-semibold text-blue-900;
+	}
+
+	.open-chat-time {
+		@apply text-xs text-gray-500;
+	}
+
+	.open-chat-body {
+		@apply mt-1 text-xs text-gray-700;
 	}
 
 	/* 개발 기능 요약 스타일 */

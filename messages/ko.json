@@ -294,5 +294,17 @@
 	"chatPasswordIncorrect": "비밀번호가 올바르지 않습니다",
 	"chatPasswordVerifyFailure": "비밀번호 검증에 실패했습니다",
 	"chatPasswordDelete": "비밀번호 삭제",
-	"chatPasswordDeleteSuccess": "비밀번호가 삭제되었습니다"
+	"chatPasswordDeleteSuccess": "비밀번호가 삭제되었습니다",
+	"chatCategoryLabel": "카테고리",
+	"chatCategorySelect": "카테고리 선택",
+	"chatCategoryFreeDiscussion": "자유토론",
+	"chatCategoryQna": "질문",
+	"chatCategoryNews": "뉴스",
+	"chatCategoryInformation": "정보",
+	"chatCategoryForSale": "판매",
+	"chatCategoryJobs": "구인구직",
+	"chatCategoryTravel": "여행",
+	"chatCategoryFood": "먹방",
+	"chatCategoryRealEstate": "부동산",
+	"chatCategoryHobby": "취미"
 }

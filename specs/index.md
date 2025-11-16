@@ -103,6 +103,22 @@ This document provides a detailed index of all specifications related to the son
   - shared 순수 함수 철학, 사용 예시(`shared/date.pure-functions.ts`, `shared/chat.pure-functions.ts`)
   - 개발·배포·운영·유지보수 가이드 및 피드백 경로(GitHub Issues)
 
+## Product Planning
+
+### Sonub Next Version Plan
+- **File**: [sonub-update-next-version.md](./sonub-update-next-version.md)
+- **Title**: Sonub 차기 버전 작업 계획
+- **Description**: 채팅 기능의 데이터 저장소 전략과 Firestore ↔ Realtime Database 비용 비교를 통해 차기 버전 마이그레이션 기준을 정의한 로드맵 메모
+- **Version**: 1.0.0
+- **Step**: 90
+- **Priority**: *
+- **Tags**: roadmap, planning, firebase, rtdb, firestore, 비용
+- **핵심 내용**:
+  - 채팅 메시지·조인 데이터의 fan-out 특성과 Firestore 초과 비용을 정량 비교하며, 현재 버전은 **RTDB 100% 사용**을 기본 전략으로 명시
+  - 저장/다운로드 요율, 읽기·쓰기 건당 과금, 동시 연결 모델 등 Firestore vs RTDB 비용 표를 제공하여 의사결정 근거 확보
+  - 차기 버전에서의 조건부 마이그레이션 원칙: fan-out이 없는 노드(`chat-rooms`, `chat-messages`, `users`)는 Firestore 이전 후보, `chat-joins`, `chat-invitations` 등 fan-out 노드는 RTDB에 고정
+  - RTDB 비용이 월 \$500 이상이거나 고급 검색/대용량 저장이 필요할 때 하이브리드 이전을 검토하고, Cloud Functions 레이어에서 동기화·보상 처리 시 고려 사항을 나열
+
 ## Design and Styling
 
 ### Sonub Design Workflow

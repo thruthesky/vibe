@@ -41,6 +41,7 @@ import {
   handleUserGenderUpdate,
 } from "./handlers/user.handler";
 import {handleChatMessageCreate} from "./handlers/chat.message-create.handler";
+import {handleChatMessageCategoryWrite} from "./handlers/chat.message-category.handler";
 import {handleChatRoomCreate} from "./handlers/chat.room-create.handler";
 import {handleChatJoinCreate} from "./handlers/chat.join-create.handler";
 import {handleChatRoomMemberJoin} from "./handlers/chat.room-member-join.handler";
@@ -667,6 +668,51 @@ export const onNewMessageCountWrite = onValueWritten(
 
     // 비즈니스 로직 핸들러 호출
     return await handleNewMessageCountWritten(uid, roomId, beforeValue, afterValue);
+  }
+);
+
+/**
+ * 채팅 메시지 카테고리 필드 생성/수정/삭제 시 트리거
+ *
+ * 트리거 경로: /chat-messages/{messageId}/category
+ * 트리거 이벤트: onValueWritten (생성, 수정, 삭제 모두 감지)
+ *
+ * 수행 작업:
+ * 1. 카테고리 유효성 검사
+ * 2. categoryOrder 필드 자동 생성: "{category}-{timestamp}"
+ * 3. 카테고리 삭제 시 categoryOrder도 함께 삭제
+ *
+ * 참고:
+ * - 클라이언트는 category 필드만 저장
+ * - Cloud Functions가 categoryOrder를 자동 생성
+ * - categoryOrder 형식: "qna-1234567890"
+ * - 이를 통해 카테고리별 메시지 목록을 효율적으로 쿼리 가능
+ *
+ * 비즈니스 로직은 handlers/chat.message-category.handler.ts의 handleChatMessageCategoryWrite() 참조
+ */
+export const onChatMessageCategoryWrite = onValueWritten(
+  {
+    ref: "/chat-messages/{messageId}/category",
+    region: FIREBASE_REGION,
+  },
+  async (event) => {
+    const messageId = event.params.messageId as string;
+    const category = event.data.after.val() as string | null;
+
+    // 메시지의 createdAt 필드를 읽어오기
+    const messageRef = admin.database().ref(`chat-messages/${messageId}`);
+    const messageSnapshot = await messageRef.once("value");
+    const messageData = messageSnapshot.val() as ChatMessage | null;
+    const createdAt = messageData?.createdAt;
+
+    logger.info("채팅 메시지 카테고리 필드 변경 감지", {
+      messageId,
+      category,
+      createdAt,
+    });
+
+    // 비즈니스 로직 핸들러 호출
+    return await handleChatMessageCategoryWrite(messageId, category, createdAt);
   }
 );
 

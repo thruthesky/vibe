@@ -290,5 +290,17 @@
 	"chatPasswordIncorrect": "Incorrect password",
 	"chatPasswordVerifyFailure": "Password verification failed",
 	"chatPasswordDelete": "Delete Password",
-	"chatPasswordDeleteSuccess": "Password has been deleted"
+	"chatPasswordDeleteSuccess": "Password has been deleted",
+	"chatCategoryLabel": "Category",
+	"chatCategorySelect": "Select Category",
+	"chatCategoryFreeDiscussion": "Free Discussion",
+	"chatCategoryQna": "Q&A",
+	"chatCategoryNews": "News",
+	"chatCategoryInformation": "Information",
+	"chatCategoryForSale": "For Sale",
+	"chatCategoryJobs": "Jobs",
+	"chatCategoryTravel": "Travel",
+	"chatCategoryFood": "Food & Dining",
+	"chatCategoryRealEstate": "Real Estate",
+	"chatCategoryHobby": "Hobbies"
 }

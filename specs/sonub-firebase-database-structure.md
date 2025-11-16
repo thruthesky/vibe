@@ -527,14 +527,12 @@ Firebase Authentication의 다음 필드들은 `/users/<uid>` 노드에 **저장
 /chat-messages/
 ├── <messageId1>/
 │   ├── roomId: "single-uid1-uid2"
-│   ├── type: "text"
 │   ├── text: "안녕하세요!"
 │   ├── senderUid: "uid1"
 │   ├── createdAt: 1698473000000
 │   └── protocol: null
 └── <messageId2>/
     ├── roomId: "group-roomid"
-    ├── type: "image"
     ├── text: ""
     ├── imageUrl: "https://..."
     ├── senderUid: "uid2"
@@ -547,13 +545,15 @@ Firebase Authentication의 다음 필드들은 `/users/<uid>` 노드에 **저장
 | 필드 | 타입 | 필수 | 설명 |
 |------|------|------|------|
 | `roomId` | string | ✅ | 채팅방 ID (1:1, 그룹, 오픈 채팅) |
-| `type` | string | ✅ | 메시지 유형 (text, image, file 등) |
-| `text` | string | ❌ | 메시지 텍스트 내용 |
+| `type` | string | ❌ | 게시글 타입 표시 필드. **오직 Cloud Functions에서만 저장**되며, `category` 필드가 있는 메시지에만 자동으로 "post" 값이 설정됩니다. 클라이언트에서 직접 저장하지 않습니다. |
 | `senderUid` | string | ✅ | 발신자 UID |
 | `createdAt` | number | ✅ | 메시지 생성 시간 (Unix timestamp, 밀리초) |
 | `protocol` | string | ❌ | 프로토콜 메시지 유형 (join, leave 등 시스템 메시지) |
 | `imageUrl` | string | ❌ | 이미지 메시지의 경우 이미지 URL |
 | `fileUrl` | string | ❌ | 파일 메시지의 경우 파일 다운로드 URL |
+| `category` | string | ❌ | 게시판 카테고리 (discussion, qna, news, info, selling, hiring, travel, mukbang, realestate, hobby) |
+| `categoryOrder` | string | ❌ | 카테고리별 정렬 필드 (형식: `{category}-{timestamp}`, Cloud Functions 자동 생성) |
+| `allCategoryOrder` | number | ❌ | 모든 카테고리 글 통합 정렬 필드 (timestamp, Cloud Functions 자동 생성) |
 
 ### roomId 형식
 
@@ -570,11 +570,21 @@ Firebase Authentication의 다음 필드들은 `/users/<uid>` 노드에 **저장
 ### 클라이언트/서버 역할 분리
 
 채팅 메시지의 경우:
-- **클라이언트는** `roomId`, `type`, `text`, `senderUid`, `createdAt` 등 메시지 기본 정보를 저장합니다.
+- **클라이언트는** `roomId`, `type`, `text`, `senderUid`, `createdAt`, `category` 등 메시지 기본 정보를 저장합니다.
+  - **메시지 타입**: 일반 채팅 메시지의 경우 `type`을 직접 저장 (예: "text", "image", "file")
+  - **게시판 카테고리**: 사용자가 카테고리를 선택하면 `category` 필드에 저장 (예: "qna", "discussion")
+  - 카테고리 목록: discussion(자유토론), qna(질문), news(뉴스), info(정보), selling(판매), hiring(구인구직), travel(여행), mukbang(먹방), realestate(부동산), hobby(취미)
 - **서버는** 메시지 생성을 감지하여 다음 작업을 자동으로 수행합니다:
   - 1:1 채팅의 경우 양쪽 사용자의 `chat-joins` 자동 생성/업데이트 (Cloud Functions)
   - 그룹/오픈 채팅의 경우 참여자 목록 기반 `chat-joins` 업데이트 (추후 구현)
   - 읽지 않은 메시지 카운터 업데이트 (추후 구현)
+  - **카테고리 필드 파생**:
+    - `category` 필드가 생성/수정되면 다음 필드들을 자동 생성:
+      - `categoryOrder`: `{category}-{timestamp}` 형식 (예: "qna-1234567890")
+      - `allCategoryOrder`: `timestamp` 값 (모든 카테고리 통합 정렬용)
+      - `type`: "post" (게시글 타입 표시)
+    - 이를 통해 카테고리별 메시지 목록을 효율적으로 쿼리 가능 (`orderByChild('categoryOrder').startAt('qna-').endAt('qna-\uf8ff')`)
+    - `category` 필드가 삭제되면 `categoryOrder`, `allCategoryOrder`, `type` 필드도 함께 삭제됨
 
 ### 관련 가이드
 

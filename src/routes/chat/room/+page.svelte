@@ -44,12 +44,8 @@
 	import RoomPasswordSetting from '$lib/components/chat/room-password-setting.svelte';
 	import RoomPasswordPrompt from '$lib/components/chat/room-password-prompt.svelte';
 	import MessageEditModal from '$lib/components/chat/MessageEditModal.svelte';
-	import {
-		Dialog,
-		DialogContent,
-		DialogHeader,
-		DialogTitle
-	} from '$lib/components/ui/dialog';
+	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
+	import { FORUM_CATEGORIES, type ForumCategory } from '$shared/categories';
 
 	// GET 파라미터 추출
 	const uidParam = $derived.by(() => $page.url.searchParams.get('uid') ?? '');
@@ -106,7 +102,14 @@
 			if (roomOwner !== null && roomDataLoaded) {
 				const needsPassword = roomPasswordEnabled && !isRoomMember && !isRoomOwner;
 
-				console.log('--> needsPassword: roomPasswordEnabled: ', roomPasswordEnabled, isRoomMember, isRoomOwner, 'roomDataLoaded:', roomDataLoaded);
+				console.log(
+					'--> needsPassword: roomPasswordEnabled: ',
+					roomPasswordEnabled,
+					isRoomMember,
+					isRoomOwner,
+					'roomDataLoaded:',
+					roomDataLoaded
+				);
 
 				if (needsPassword && !passwordPromptOpen) {
 					// 비밀번호 필요하고 프롬프트가 아직 열리지 않았을 때만 모달 표시
@@ -163,6 +166,26 @@
 	let isSending = $state(false);
 	let sendError = $state<string | null>(null);
 
+	// 카테고리 선택 상태
+	let selectedCategory = $state<ForumCategory | null>(null);
+
+	// 카테고리 이름을 i18n 메시지 함수로 변환
+	const getCategoryMessage = (category: ForumCategory) => {
+		const categoryMap: Record<ForumCategory, () => string> = {
+			discussion: m.chatCategoryFreeDiscussion,
+			qna: m.chatCategoryQna,
+			news: m.chatCategoryNews,
+			info: m.chatCategoryInformation,
+			selling: m.chatCategoryForSale,
+			hiring: m.chatCategoryJobs,
+			travel: m.chatCategoryTravel,
+			mukbang: m.chatCategoryFood,
+			realestate: m.chatCategoryRealEstate,
+			hobby: m.chatCategoryHobby
+		};
+		return categoryMap[category]();
+	};
+
 	// 파일 업로드 상태
 	let fileInputRef: HTMLInputElement | null = $state(null);
 	let uploadingFiles: FileUploadStatus[] = $state([]);
@@ -195,12 +218,12 @@
 	let selectedMessageCreatedAt = $state<number>(0);
 
 	// 채팅방 정보 구독 (owner, password 등)
-let roomOwner = $state<string | null>(null);
-let roomPasswordEnabled = $state(false);
-let roomPasswordValue = $state<string>('');
-let isRoomMember = $state(false); // 현재 사용자가 members인지 여부
-let roomName = $state<string>('');
-let roomDataLoaded = $state(false); // Firebase 구독이 데이터를 한 번 이상 받아왔는지 여부 (깜빡임 방지용)
+	let roomOwner = $state<string | null>(null);
+	let roomPasswordEnabled = $state(false);
+	let roomPasswordValue = $state<string>('');
+	let isRoomMember = $state(false); // 현재 사용자가 members인지 여부
+	let roomName = $state<string>('');
+	let roomDataLoaded = $state(false); // Firebase 구독이 데이터를 한 번 이상 받아왔는지 여부 (깜빡임 방지용)
 
 	/**
 	 * 채팅방 정보 구독 (그룹/오픈 채팅방만)
@@ -212,21 +235,21 @@ let roomDataLoaded = $state(false); // Firebase 구독이 데이터를 한 번 �
 	 * - /chat-room-passwords/{roomId}/password: 실제 비밀번호 (owner만 읽기 가능)
 	 */
 	$effect(() => {
-	if (!activeRoomId || !authStore.user?.uid || !rtdb || isSingleChat) {
-		roomOwner = null;
-		roomPasswordEnabled = false;
-		roomPasswordValue = '';
-		isRoomMember = false;
-		roomName = '';
-		roomDataLoaded = false; // 데이터 로딩 상태 초기화
-		return;
-	}
+		if (!activeRoomId || !authStore.user?.uid || !rtdb || isSingleChat) {
+			roomOwner = null;
+			roomPasswordEnabled = false;
+			roomPasswordValue = '';
+			isRoomMember = false;
+			roomName = '';
+			roomDataLoaded = false; // 데이터 로딩 상태 초기화
+			return;
+		}
 
-	// 채팅방 이름 구독
-	const nameRef = ref(rtdb, `chat-rooms/${activeRoomId}/name`);
-	const unsubscribeName = onValue(nameRef, (snapshot) => {
-		roomName = snapshot.val() ?? '';
-	});
+		// 채팅방 이름 구독
+		const nameRef = ref(rtdb, `chat-rooms/${activeRoomId}/name`);
+		const unsubscribeName = onValue(nameRef, (snapshot) => {
+			roomName = snapshot.val() ?? '';
+		});
 
 		// 채팅방 owner 구독
 		const ownerRef = ref(rtdb, `chat-rooms/${activeRoomId}/owner`);
@@ -258,13 +281,13 @@ let roomDataLoaded = $state(false); // Firebase 구독이 데이터를 한 번 �
 			roomPasswordValue = snapshot.val() ?? '';
 		});
 
-	return () => {
-		unsubscribeName();
-		unsubscribeOwner();
-		unsubscribePasswordFlag();
-		unsubscribeMember();
-		unsubscribePasswordValue();
-	};
+		return () => {
+			unsubscribeName();
+			unsubscribeOwner();
+			unsubscribePasswordFlag();
+			unsubscribeMember();
+			unsubscribePasswordValue();
+		};
 	});
 
 	// 현재 사용자가 채팅방 owner인지 확인
@@ -467,7 +490,7 @@ let roomDataLoaded = $state(false); // Firebase 구독이 데이터를 한 번 �
 			const trimmed = composerText.trim();
 			const timestamp = Date.now();
 
-			const payload = {
+			const payload: Record<string, any> = {
 				roomId: activeRoomId,
 				type: 'message',
 				text: trimmed,
@@ -480,6 +503,11 @@ let roomDataLoaded = $state(false); // Firebase 구독이 데이터를 한 번 �
 				rootOrder: `-${activeRoomId}-${timestamp}`
 			};
 
+			// 카테고리가 선택되었으면 payload에 추가
+			if (selectedCategory) {
+				payload.category = selectedCategory;
+			}
+
 			const result = await pushData(messagePath, payload);
 
 			if (!result.success) {
@@ -488,12 +516,15 @@ let roomDataLoaded = $state(false); // Firebase 구독이 데이터를 한 번 �
 			} else {
 				// 메시지 전송 성공 시
 				composerText = '';
-		composerRows = 1; // textarea 줄 수 초기화
+				composerRows = 1; // textarea 줄 수 초기화
 				sendError = null;
 				isSending = false;
 
 				// 업로드된 파일 목록 초기화 (이미 Storage에 업로드되어 있음)
 				uploadingFiles = [];
+
+				// 선택된 카테고리 초기화
+				selectedCategory = null;
 
 				// 전송 소리 재생
 				try {
@@ -993,9 +1024,9 @@ let roomDataLoaded = $state(false); // Firebase 구독이 데이터를 한 번 �
 	 * 드롭 (drop)
 	 * - 파일을 드롭할 때 호출
 	 */
-async function handleDrop(event: DragEvent) {
-	event.preventDefault();
-	event.stopPropagation();
+	async function handleDrop(event: DragEvent) {
+		event.preventDefault();
+		event.stopPropagation();
 
 		isDragging = false;
 		dragCounter = 0;
@@ -1007,17 +1038,17 @@ async function handleDrop(event: DragEvent) {
 
 		// console.log(`📦 드롭된 파일 개수: ${files.length}`);
 
-	// 파일 처리 (handleFileSelect와 동일한 로직)
-	await processFiles(Array.from(files));
-}
+		// 파일 처리 (handleFileSelect와 동일한 로직)
+		await processFiles(Array.from(files));
+	}
 
-/**
- * 메시지 리스트 등 비드랍 영역에서 기본 드롭 동작만 차단
- */
-function preventDrop(event: DragEvent) {
-	event.preventDefault();
-	event.stopPropagation();
-}
+	/**
+	 * 메시지 리스트 등 비드랍 영역에서 기본 드롭 동작만 차단
+	 */
+	function preventDrop(event: DragEvent) {
+		event.preventDefault();
+		event.stopPropagation();
+	}
 
 	/**
 	 * 파일 처리 공통 함수
@@ -1233,13 +1264,13 @@ function preventDrop(event: DragEvent) {
 		</section>
 	{:else}
 		<!-- v1.2.0: 드래그 앤 드롭 지원 메시지 목록 -->
-			<div
-				class="message-list-section"
-				role="region"
-				aria-label="채팅 메시지 영역"
-				ondragover={preventDrop}
-				ondrop={preventDrop}
-			>
+		<div
+			class="message-list-section"
+			role="region"
+			aria-label="채팅 메시지 영역"
+			ondragover={preventDrop}
+			ondrop={preventDrop}
+		>
 			{#if canRenderMessages}
 				{#key roomOrderPrefix}
 					<DatabaseListView
@@ -1272,7 +1303,9 @@ function preventDrop(event: DragEvent) {
 
 									{#if message.deleted}
 										<!-- 삭제된 메시지 표시 -->
-										<div class={`message-bubble ${mine ? 'bubble-mine' : 'bubble-theirs'} deleted-message`}>
+										<div
+											class={`message-bubble ${mine ? 'bubble-mine' : 'bubble-theirs'} deleted-message`}
+										>
 											<p class="message-text m-0 text-gray-400 italic">삭제된 메시지입니다</p>
 										</div>
 									{:else}
@@ -1298,13 +1331,13 @@ function preventDrop(event: DragEvent) {
 																<img src={url} alt="첨부 이미지" class="attachment-image" />
 															{:else if isVideoUrl(url)}
 																<!-- 동영상 첨부파일 -->
-															<video
-																src={url}
-																class="attachment-video"
-																controls
-																aria-hidden="true"
-																tabindex="-1"
-															/>
+																<video
+																	src={url}
+																	class="attachment-video"
+																	controls
+																	aria-hidden="true"
+																	tabindex="-1"
+																/>
 															{:else}
 																<!-- 일반 파일 첨부파일 -->
 																<div class="attachment-file">
@@ -1340,7 +1373,8 @@ function preventDrop(event: DragEvent) {
 
 									<!-- 타임스탬프 및 설정 아이콘 -->
 									<div class="message-footer">
-										<span class="message-timestamp">{formatChatMessageDate(message.createdAt)}</span>
+										<span class="message-timestamp">{formatChatMessageDate(message.createdAt)}</span
+										>
 
 										{#if isEditable}
 											<!-- 설정 드롭다운 (90분 이내 메시지만) -->
@@ -1428,8 +1462,7 @@ function preventDrop(event: DragEvent) {
 					</button>
 				</div>
 			{/if}
-
-			</div>
+		</div>
 
 		<!-- 파일 미리보기 Grid -->
 		{#if uploadingFiles.length > 0}
@@ -1463,13 +1496,7 @@ function preventDrop(event: DragEvent) {
 											<!-- SVG 원형 프로그레스바 -->
 											<svg class="progress-ring" width="80" height="80">
 												<!-- 배경 원 -->
-												<circle
-													class="progress-ring-bg"
-													cx="40"
-													cy="40"
-													r="32"
-													stroke-width="6"
-												/>
+												<circle class="progress-ring-bg" cx="40" cy="40" r="32" stroke-width="6" />
 												<!-- 진행률 원 -->
 												<circle
 													class="progress-ring-circle"
@@ -1491,7 +1518,9 @@ function preventDrop(event: DragEvent) {
 								<div class="file-icon">
 									<!-- v1.1.4: 파일명에서 직접 확장자 추출 (getExtensionFromFilename 사용) -->
 									<span class="file-extension"
-										>{getExtensionFromFilename(fileStatus.file.name).replace('.', '').toUpperCase()}</span
+										>{getExtensionFromFilename(fileStatus.file.name)
+											.replace('.', '')
+											.toUpperCase()}</span
 									>
 
 									<!-- v1.2.0: 원형 프로그레스바와 퍼센티지 표시 (일반 파일) -->
@@ -1500,13 +1529,7 @@ function preventDrop(event: DragEvent) {
 											<!-- SVG 원형 프로그레스바 -->
 											<svg class="progress-ring" width="80" height="80">
 												<!-- 배경 원 -->
-												<circle
-													class="progress-ring-bg"
-													cx="40"
-													cy="40"
-													r="32"
-													stroke-width="6"
-												/>
+												<circle class="progress-ring-bg" cx="40" cy="40" r="32" stroke-width="6" />
 												<!-- 진행률 원 -->
 												<circle
 													class="progress-ring-circle"
@@ -1547,14 +1570,14 @@ function preventDrop(event: DragEvent) {
 		{/if}
 
 		<!-- 입력창 폼 -->
-			<form
-				class="composer-form"
-				onsubmit={handleSendMessage}
-				ondragenter={handleDragEnter}
-				ondragover={handleDragOver}
-				ondragleave={handleDragLeave}
-				ondrop={handleDrop}
-			>
+		<form
+			class="composer-form"
+			onsubmit={handleSendMessage}
+			ondragenter={handleDragEnter}
+			ondragover={handleDragOver}
+			ondragleave={handleDragLeave}
+			ondrop={handleDrop}
+		>
 			<!-- 파일 업로드 버튼 (카메라 아이콘) -->
 			<button
 				type="button"
@@ -1570,7 +1593,11 @@ function preventDrop(event: DragEvent) {
 						stroke-linejoin="round"
 						d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
 					/>
-					<path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+					/>
 				</svg>
 			</button>
 
@@ -1584,58 +1611,93 @@ function preventDrop(event: DragEvent) {
 				style="display: none;"
 			/>
 
-		<textarea
-			bind:this={composerInputRef}
-			name="composer"
-			class="composer-input"
-			placeholder={m.chatWriteMessage()}
-			bind:value={composerText}
-			disabled={composerDisabled || isSending}
-			rows={composerRows}
-			oninput={handleComposerInput}
-			onkeydown={handleComposerKeyDown}
-		></textarea>
-				<button
-					type="submit"
-					class="composer-button cursor-pointer"
-					disabled={composerDisabled || isSending || (!composerText.trim() && uploadingFiles.length === 0)}
-					aria-label={isSending ? m.chatSending() : m.chatSend()}
-				>
+			<textarea
+				bind:this={composerInputRef}
+				name="composer"
+				class="composer-input"
+				placeholder={m.chatWriteMessage()}
+				bind:value={composerText}
+				disabled={composerDisabled || isSending}
+				rows={composerRows}
+				oninput={handleComposerInput}
+				onkeydown={handleComposerKeyDown}
+			></textarea>
+			<button
+				type="submit"
+				class="composer-button cursor-pointer"
+				disabled={composerDisabled ||
+					isSending ||
+					(!composerText.trim() && uploadingFiles.length === 0)}
+				aria-label={isSending ? m.chatSending() : m.chatSend()}
+			>
 				<!-- 전송 아이콘 (종이비행기) -->
-				<svg
-					class="w-6 h-6"
-					fill="none"
-					stroke="currentColor"
-					viewBox="0 0 24 24"
-					stroke-width="2"
-					>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"
-						/>
-					</svg>
-				</button>
+				<svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"
+					/>
+				</svg>
+			</button>
 
-				{#if isDragging}
-					<div class="drag-drop-overlay" role="region" aria-label="파일 드래그 앤 드롭 안내">
-						<div class="drag-drop-content">
-							<!-- 파일 아이콘 애니메이션 -->
-							<svg class="drag-drop-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-								/>
-							</svg>
-							<!-- 안내 텍스트 -->
-							<p class="drag-drop-title">파일을 여기에 놓으세요</p>
-							<p class="drag-drop-subtitle">이미지, 동영상, 문서 등 다양한 파일을 업로드할 수 있습니다</p>
-						</div>
+			{#if isDragging}
+				<div class="drag-drop-overlay" role="region" aria-label="파일 드래그 앤 드롭 안내">
+					<div class="drag-drop-content">
+						<!-- 파일 아이콘 애니메이션 -->
+						<svg class="drag-drop-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+							/>
+						</svg>
+						<!-- 안내 텍스트 -->
+						<p class="drag-drop-title">파일을 여기에 놓으세요</p>
+						<p class="drag-drop-subtitle">
+							이미지, 동영상, 문서 등 다양한 파일을 업로드할 수 있습니다
+						</p>
 					</div>
-				{/if}
-			</form>
+				</div>
+			{/if}
+		</form>
+
+		<!-- 카테고리 드롭다운 -->
+		<div class="mt-2">
+			<DropdownMenu.Root>
+				<DropdownMenu.Trigger
+					class="flex items-center justify-start text-sm text-muted-foreground hover:text-foreground px-1 py-0"
+				>
+					{#if selectedCategory}
+						<span class="text-primary font-medium">
+							{getCategoryMessage(selectedCategory)}
+						</span>
+					{:else}
+						{m.chatCategorySelect()}
+					{/if}
+				</DropdownMenu.Trigger>
+				<DropdownMenu.Content class="w-56">
+					<DropdownMenu.Group>
+						<DropdownMenu.Label>{m.chatCategoryLabel()}</DropdownMenu.Label>
+						<DropdownMenu.Separator />
+						{#each FORUM_CATEGORIES as category}
+							<DropdownMenu.Item onclick={() => (selectedCategory = category)}>
+								{getCategoryMessage(category)}
+								{#if selectedCategory === category}
+									<span class="ml-auto">✓</span>
+								{/if}
+							</DropdownMenu.Item>
+						{/each}
+						{#if selectedCategory}
+							<DropdownMenu.Separator />
+							<DropdownMenu.Item onclick={() => (selectedCategory = null)}>
+								{m.chatCategorySelect()} (선택 해제)
+							</DropdownMenu.Item>
+						{/if}
+					</DropdownMenu.Group>
+				</DropdownMenu.Content>
+			</DropdownMenu.Root>
+		</div>
 
 		{#if sendError}
 			<p class="composer-error">{sendError}</p>
@@ -1817,7 +1879,7 @@ function preventDrop(event: DragEvent) {
 	/* 메시지 설정 버튼 */
 	.message-settings-button {
 		@apply text-sm text-gray-400 transition-colors hover:text-gray-600;
-		@apply cursor-pointer bg-transparent border-0 p-0;
+		@apply cursor-pointer border-0 bg-transparent p-0;
 	}
 
 	/* 삭제된 메시지 스타일 */
@@ -1842,11 +1904,11 @@ function preventDrop(event: DragEvent) {
 	 * 입력창 폼 스타일
 	 * shrink-0으로 축소 방지, items-end로 하단 정렬 (textarea가 여러 줄일 때 버튼들이 하단에 정렬)
 	 */
-		.composer-form {
-			@apply relative flex items-end gap-2 md:gap-3;
-			/* 축소 방지 */
-			@apply shrink-0;
-		}
+	.composer-form {
+		@apply relative flex items-end gap-2 md:gap-3;
+		/* 축소 방지 */
+		@apply shrink-0;
+	}
 
 	/* 파일 미리보기 컨테이너 */
 	.file-preview-container {
@@ -1858,7 +1920,7 @@ function preventDrop(event: DragEvent) {
 	}
 
 	.file-preview-item {
-		@apply relative rounded-lg border-2 overflow-hidden shadow-sm;
+		@apply relative overflow-hidden rounded-lg border-2 shadow-sm;
 		@apply transition-all hover:shadow-md;
 	}
 
@@ -1881,7 +1943,7 @@ function preventDrop(event: DragEvent) {
 	}
 
 	.file-extension {
-		@apply text-4xl md:text-5xl font-bold uppercase text-gray-600;
+		@apply text-4xl font-bold text-gray-600 uppercase md:text-5xl;
 	}
 
 	/* v1.2.0: 업로드 진행률 오버레이 - 원형 프로그레스바 */
@@ -1910,7 +1972,7 @@ function preventDrop(event: DragEvent) {
 
 	/* 퍼센티지 숫자 (원형 프로그레스바 중앙) */
 	.upload-percentage {
-		@apply absolute text-2xl md:text-3xl font-bold text-white;
+		@apply absolute text-2xl font-bold text-white md:text-3xl;
 		@apply drop-shadow-lg;
 		z-index: 10;
 	}
@@ -1918,19 +1980,19 @@ function preventDrop(event: DragEvent) {
 	/* 에러 오버레이 */
 	.upload-error-overlay {
 		@apply absolute inset-0 flex items-center justify-center;
-		@apply bg-red-500/80 backdrop-blur-sm p-2;
+		@apply bg-red-500/80 p-2 backdrop-blur-sm;
 	}
 
 	.upload-error {
-		@apply text-xs text-center text-white font-semibold;
+		@apply text-center text-xs font-semibold text-white;
 	}
 
 	/* 삭제 버튼 (우측 상단 고정) */
 	.remove-file-button {
-		@apply absolute right-2 top-2 z-10;
+		@apply absolute top-2 right-2 z-10;
 		@apply flex h-8 w-8 items-center justify-center;
 		@apply rounded-full bg-red-500 text-sm font-bold text-white shadow-lg;
-		@apply transition-all hover:bg-red-600 hover:scale-110 active:scale-95;
+		@apply transition-all hover:scale-110 hover:bg-red-600 active:scale-95;
 	}
 
 	/* 파일 업로드 버튼 (카메라 아이콘) */
@@ -2014,7 +2076,7 @@ function preventDrop(event: DragEvent) {
 	}
 
 	.attachment-file-extension {
-		@apply text-xl font-bold uppercase text-gray-600;
+		@apply text-xl font-bold text-gray-600 uppercase;
 	}
 
 	.attachment-file .file-icon {

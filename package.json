@@ -70,6 +70,7 @@
 	},
 	"dependencies": {
 		"clsx": "^2.1.1",
+		"date-fns": "^4.1.0",
 		"firebase": "^12.5.0",
 		"lucide-svelte": "^0.553.0",
 		"svelte-sonner": "^1.0.6",

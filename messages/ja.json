@@ -291,5 +291,17 @@
 	"chatPasswordIncorrect": "パスワードが正しくありません",
 	"chatPasswordVerifyFailure": "パスワード検証に失敗しました",
 	"chatPasswordDelete": "パスワード削除",
-	"chatPasswordDeleteSuccess": "パスワードが削除されました"
+	"chatPasswordDeleteSuccess": "パスワードが削除されました",
+	"chatCategoryLabel": "カテゴリ",
+	"chatCategorySelect": "カテゴリを選択",
+	"chatCategoryFreeDiscussion": "自由討論",
+	"chatCategoryQna": "質問",
+	"chatCategoryNews": "ニュース",
+	"chatCategoryInformation": "情報",
+	"chatCategoryForSale": "販売",
+	"chatCategoryJobs": "求人",
+	"chatCategoryTravel": "旅行",
+	"chatCategoryFood": "グルメ",
+	"chatCategoryRealEstate": "不動産",
+	"chatCategoryHobby": "趣味"
 }

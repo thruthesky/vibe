@@ -341,5 +341,17 @@
 	"chatPasswordIncorrect": "密码不正确",
 	"chatPasswordVerifyFailure": "密码验证失败",
 	"chatPasswordDelete": "删除密码",
-	"chatPasswordDeleteSuccess": "密码已删除"
+	"chatPasswordDeleteSuccess": "密码已删除",
+	"chatCategoryLabel": "分类",
+	"chatCategorySelect": "选择分类",
+	"chatCategoryFreeDiscussion": "自由讨论",
+	"chatCategoryQna": "提问",
+	"chatCategoryNews": "新闻",
+	"chatCategoryInformation": "信息",
+	"chatCategoryForSale": "销售",
+	"chatCategoryJobs": "招聘",
+	"chatCategoryTravel": "旅游",
+	"chatCategoryFood": "美食",
+	"chatCategoryRealEstate": "房地产",
+	"chatCategoryHobby": "兴趣爱好"
 }
