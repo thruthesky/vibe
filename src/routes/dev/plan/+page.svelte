@@ -350,15 +350,6 @@
 							<li>대시보드 카드 형태로 각 카테고리의 활동량을 비교할 수 있도록 시각화</li>
 						</ul>
 					</div>
-					<div>
-						<h4 class="todo-subtitle">13-6. 팔로잉/팔로워 기반 피드</h4>
-						<ul class="todo-list">
-							<li><code>/user-following/{'{uid}'}/{'{targetUid}'}: true</code>, <code>/user-followers/{'{uid}'}/{'{followerUid}'}: true</code> 구조로 친구 관계 저장</li>
-							<li>친구(팔로잉) 관계를 표시하는 UI (프로필 및 친구 목록)</li>
-							<li>팔로잉하는 사용자의 포스트/메시지를 홈 피드에서 우선 노출</li>
-							<li>팔로우/언팔로우 기능과 알림 처리</li>
-						</ul>
-					</div>
 				</div>
 			</Card.Content>
 		</Card.Root>
@@ -370,7 +361,7 @@
 					<span class="todo-number">14</span>
 					<div class="flex flex-col gap-1">
 						<Card.Title class="text-xl">게시판 글이 채팅방 메시지 목록에 표시</Card.Title>
-						<span class="todo-badge todo-badge--pending">📋 예정</span>
+						<span class="todo-badge todo-badge--done">✅ 완료</span>
 					</div>
 				</div>
 			</Card.Header>
@@ -564,9 +555,9 @@
 							<li>부모 채팅방 UI에서 서브 채팅방 목록 및 빠른 전환 기능 제공</li>
 						</ul>
 					</div>
-					<div>
-						<h4 class="todo-subtitle">18-2. 관리자 페이지 (Dashboard) 및 관리자 기능</h4>
-						<ul class="todo-list">
+				<div>
+					<h4 class="todo-subtitle">18-2. 관리자 페이지 (Dashboard) 및 관리자 기능</h4>
+					<ul class="todo-list">
 							<li>관리자 권한 시스템 구현 (<code>/users/{'{uid}'}/isAdmin: boolean</code>)</li>
 							<li>
 								<strong>대시보드 기능:</strong>
@@ -611,6 +602,15 @@
 									<li>에러 로그 및 모니터링</li>
 								</ul>
 							</li>
+						</ul>
+					</div>
+					<div>
+						<h4 class="todo-subtitle">18-3. 팔로잉/팔로워 기반 피드</h4>
+						<ul class="todo-list">
+							<li><code>/user-following/{'{uid}'}/{'{targetUid}'}: true</code>, <code>/user-followers/{'{uid}'}/{'{followerUid}'}: true</code> 구조로 친구 관계 저장</li>
+							<li>친구(팔로잉) 관계를 표시하는 UI (프로필 및 친구 목록)</li>
+							<li>팔로잉하는 사용자의 포스트/메시지를 홈 피드에서 우선 노출</li>
+							<li>팔로우/언팔로우 기능과 알림 처리</li>
 						</ul>
 					</div>
 				</div>

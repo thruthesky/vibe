@@ -14,6 +14,7 @@ import {setGlobalOptions} from "firebase-functions/v2";
 import {
   onValueCreated,
   onValueDeleted,
+  onValueUpdated,
   onValueWritten,
   DatabaseEvent,
 } from "firebase-functions/v2/database";
@@ -673,32 +674,35 @@ export const onNewMessageCountWrite = onValueWritten(
 );
 
 /**
- * 채팅 메시지 카테고리 필드 생성/수정/삭제 시 트리거
+ * 채팅 메시지 카테고리 필드 생성 시 트리거
  *
  * 트리거 경로: /chat-messages/{messageId}/category
- * 트리거 이벤트: onValueWritten (생성, 수정, 삭제 모두 감지)
+ * 트리거 이벤트: onValueCreated (카테고리가 처음 생성될 때만 트리거)
  *
  * 수행 작업:
  * 1. 카테고리 유효성 검사
  * 2. categoryOrder 필드 자동 생성: "{category}-{timestamp}"
- * 3. 카테고리 삭제 시 categoryOrder도 함께 삭제
+ * 3. allCategoryOrder 필드 자동 생성: timestamp (모든 카테고리 글 목록용)
+ * 4. type 필드 자동 생성: "post" (게시글 타입 표시)
+ * 5. 메시지 노드에 categoryOrder, allCategoryOrder, type 필드 업데이트
+ * 6. stats/counters/post 증가 (+1) - 새 게시글 생성
  *
  * 참고:
  * - 클라이언트는 category 필드만 저장
- * - Cloud Functions가 categoryOrder를 자동 생성
+ * - Cloud Functions가 categoryOrder, allCategoryOrder, type을 자동 생성
  * - categoryOrder 형식: "qna-1234567890"
  * - 이를 통해 카테고리별 메시지 목록을 효율적으로 쿼리 가능
  *
  * 비즈니스 로직은 handlers/chat.message-category.handler.ts의 handleChatMessageCategoryWrite() 참조
  */
-export const onChatMessageCategoryWrite = onValueWritten(
+export const onChatMessageCategoryCreate = onValueCreated(
   {
     ref: "/chat-messages/{messageId}/category",
     region: FIREBASE_REGION,
   },
   async (event) => {
     const messageId = event.params.messageId as string;
-    const category = event.data.after.val() as string | null;
+    const category = event.data.val() as string;
 
     // 메시지의 createdAt 필드를 읽어오기
     const messageRef = admin.database().ref(`chat-messages/${messageId}`);
@@ -706,14 +710,105 @@ export const onChatMessageCategoryWrite = onValueWritten(
     const messageData = messageSnapshot.val() as ChatMessage | null;
     const createdAt = messageData?.createdAt;
 
-    logger.info("채팅 메시지 카테고리 필드 변경 감지", {
+    logger.info("채팅 메시지 카테고리 필드 생성 감지", {
       messageId,
       category,
       createdAt,
     });
 
     // 비즈니스 로직 핸들러 호출
-    return await handleChatMessageCategoryWrite(messageId, category, createdAt);
+    // - categoryOrder, allCategoryOrder, type 필드 자동 생성
+    // - stats/counters/post 자동 증가 (새 게시글 생성)
+    await handleChatMessageCategoryWrite(messageId, category, createdAt, null);
+
+    return;
+  }
+);
+
+/**
+ * 채팅 메시지 카테고리 필드 수정 시 트리거
+ *
+ * 트리거 경로: /chat-messages/{messageId}/category
+ * 트리거 이벤트: onValueUpdated (카테고리가 다른 값으로 변경될 때만 트리거)
+ *
+ * 수행 작업:
+ * 1. 카테고리 유효성 검사
+ * 2. categoryOrder 필드 업데이트: "{새_category}-{timestamp}"
+ * 3. allCategoryOrder 필드 유지: timestamp (기존 값 유지)
+ * 4. type 필드 유지: "post" (기존 값 유지)
+ * 5. 메시지 노드에 categoryOrder 필드만 업데이트
+ *
+ * 참고:
+ * - 카테고리 변경 시에는 categoryOrder만 업데이트하고 allCategoryOrder는 유지
+ * - stats/counters/post 증가 없음 (기존 게시글 수정)
+ *
+ * 비즈니스 로직은 handlers/chat.message-category.handler.ts의 handleChatMessageCategoryWrite() 참조
+ */
+export const onChatMessageCategoryUpdate = onValueUpdated(
+  {
+    ref: "/chat-messages/{messageId}/category",
+    region: FIREBASE_REGION,
+  },
+  async (event) => {
+    const messageId = event.params.messageId as string;
+    const category = event.data.after.val() as string;
+    const previousCategory = event.data.before.val() as string;
+
+    // 메시지의 createdAt 필드를 읽어오기
+    const messageRef = admin.database().ref(`chat-messages/${messageId}`);
+    const messageSnapshot = await messageRef.once("value");
+    const messageData = messageSnapshot.val() as ChatMessage | null;
+    const createdAt = messageData?.createdAt;
+
+    logger.info("채팅 메시지 카테고리 필드 수정 감지", {
+      messageId,
+      category,
+      previousCategory,
+      createdAt,
+    });
+
+    // 비즈니스 로직 핸들러 호출
+    // - categoryOrder 필드만 업데이트 (allCategoryOrder, type 유지)
+    // - stats/counters/post 증가 없음 (기존 게시글 수정)
+    await handleChatMessageCategoryWrite(messageId, category, createdAt, previousCategory);
+
+    return;
+  }
+);
+
+/**
+ * 채팅 메시지 카테고리 필드 삭제 시 트리거
+ *
+ * 트리거 경로: /chat-messages/{messageId}/category
+ * 트리거 이벤트: onValueDeleted (카테고리가 삭제될 때만 트리거)
+ *
+ * 수행 작업:
+ * 1. categoryOrder, allCategoryOrder, type 필드 모두 삭제
+ * 2. 게시글에서 일반 채팅 메시지로 변환
+ *
+ * 참고:
+ * - 카테고리 삭제 시 게시글 관련 모든 필드 삭제
+ * - 일반 채팅 메시지로 전환됨
+ *
+ * 비즈니스 로직은 handlers/chat.message-category.handler.ts의 handleChatMessageCategoryWrite() 참조
+ */
+export const onChatMessageCategoryDelete = onValueDeleted(
+  {
+    ref: "/chat-messages/{messageId}/category",
+    region: FIREBASE_REGION,
+  },
+  async (event) => {
+    const messageId = event.params.messageId as string;
+
+    logger.info("채팅 메시지 카테고리 필드 삭제 감지", {
+      messageId,
+    });
+
+    // 비즈니스 로직 핸들러 호출
+    // - categoryOrder, allCategoryOrder, type 필드 모두 삭제
+    await handleChatMessageCategoryWrite(messageId, null, undefined, null);
+
+    return;
   }
 );
 
@@ -738,18 +833,18 @@ export { onPasswordTry } from "./handlers/chat.password-verification.handler";
  * 트리거 이벤트: onValueCreated (댓글 생성 시)
  *
  * 수행 작업:
- * 1. 댓글의 parentId 필드 확인
- * 2. parentId가 존재하면 (대댓글인 경우):
- *    - 부모 댓글의 childCount를 transaction으로 +1 증가
- *    - transaction 사용으로 동시성 문제 해결 (여러 사용자가 동시에 댓글 작성 가능)
- * 3. parentId가 null이면 (최상위 댓글):
- *    - 아무 작업도 하지 않음
+ * 1. 게시글의 totalChildCount를 ServerValue.increment(1)로 +1 증가 (모든 댓글)
+ * 2. parentId가 null이면 (최상위 댓글):
+ *    - 게시글의 childCount도 ServerValue.increment(1)로 +1 증가
+ * 3. parentId가 존재하면 (대댓글):
+ *    - 부모 댓글의 childCount를 ServerValue.increment(1)로 +1 증가
+ * 4. stats/counters/comment를 ServerValue.increment(1)로 +1 증가 (전체 댓글 통계)
  *
  * 참고:
- * - childCount는 부모 댓글 아래의 자식 댓글 개수를 나타냄
- * - 클라이언트에서 댓글 작성 시 부모의 childCount를 읽어 listOrder 생성에 사용
- * - listOrder 예시: "001-02" (부모의 childCount가 1이면 자식은 "002")
- * - transaction 사용으로 동시 댓글 작성 시 childCount 중복 방지
+ * - totalChildCount: 게시글의 총 댓글 수 (모든 레벨 포함)
+ * - childCount: 첫번째 레벨 댓글 수 또는 특정 댓글의 직접 자식 댓글 수
+ * - ServerValue.increment 사용으로 동시성 문제 해결 (여러 사용자가 동시에 댓글 작성 가능)
+ * - stats/counters/comment는 오른쪽 사이드바의 "실시간 통계 - 댓글 수"에 실시간으로 표시됨
  *
  * 비즈니스 로직은 handlers/comment.create.handler.ts의 handleCommentCreate() 참조
  */
@@ -763,7 +858,19 @@ export const onCommentCreate = onValueCreated(
     const commentId = event.params.commentId as string;
     const commentData = (event.data.val() || {}) as Record<string, unknown>;
 
+    logger.info("댓글 생성 감지", {
+      messageId,
+      commentId,
+      parentId: commentData.parentId ?? null,
+    });
+
     // 비즈니스 로직 핸들러 호출
-    return await handleCommentCreate(messageId, commentId, commentData);
+    // - 게시글의 totalChildCount 증가 (모든 댓글)
+    // - 최상위 댓글이면 게시글의 childCount도 증가
+    // - 대댓글이면 부모 댓글의 childCount 증가
+    // - stats/counters/comment 증가 (전체 댓글 통계)
+    await handleCommentCreate(messageId, commentId, commentData);
+
+    return;
   }
 );

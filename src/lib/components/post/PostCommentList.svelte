@@ -17,6 +17,8 @@
 	import { formatDistanceToNow } from 'date-fns';
 	import { ko, enUS, ja, zhCN } from 'date-fns/locale';
 	import { getLocale } from '$lib/paraglide/runtime.js';
+	import UserProfile from '$lib/components/UserProfile.svelte';
+	import FileAttachments from '$lib/components/FileAttachments.svelte';
 
 	/**
 	 * Props
@@ -148,7 +150,7 @@
 					<!-- 댓글 내용 -->
 					<div class="comment-content">
 						<div class="comment-header">
-							<span class="comment-author">{comment.authorUid}</span>
+							<UserProfile uid={comment.authorUid} photoSize="h-6 w-6" textSize="text-xs" />
 							<span class="comment-time">
 								{formatDistanceToNow(new Date(comment.createdAt), {
 									addSuffix: true,
@@ -158,13 +160,9 @@
 						</div>
 						<p class="comment-text">{comment.text}</p>
 
-						<!-- 첨부 파일 미리보기 -->
-						{#if comment.urls && Object.keys(comment.urls).length > 0}
-							<div class="comment-images">
-								{#each Object.values(comment.urls).slice(0, 2) as url}
-									<img src={String(url)} alt="첨부 파일" class="comment-image-thumbnail" />
-								{/each}
-							</div>
+						<!-- 첨부 파일 미리보기 (FileAttachments 컴포넌트 사용) -->
+						{#if comment.urls}
+							<FileAttachments urls={comment.urls} maxDisplay={2} thumbnailSize="h-16 w-16" />
 						{/if}
 
 						<!-- 답글 버튼 -->

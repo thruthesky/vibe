@@ -19,8 +19,8 @@
 	import PostCreateDialog from '$lib/components/post/PostCreateDialog.svelte';
 	import CommentCreateDialog from '$lib/components/comment/CommentCreateDialog.svelte';
 	import PostCommentList from '$lib/components/post/PostCommentList.svelte';
-	import { isImageUrl, isVideoUrl } from '$lib/functions/storage.functions';
-	import { getUserBasicInfo } from '$lib/functions/user.functions';
+	import UserProfile from '$lib/components/UserProfile.svelte';
+	import FileAttachments from '$lib/components/FileAttachments.svelte';
 
 	// 카테고리 선택 상태 (null = 전체)
 	let selectedCategory = $state<ForumCategory | null>(null);
@@ -169,83 +169,16 @@
 								{message.text || '(내용 없음)'}
 							</p>
 
-							<!-- 첨부파일 미리보기 (이미지/비디오) -->
-							{#if message.urls && Object.keys(message.urls).length > 0}
-								<div class="post-images">
-									{#each Object.values(message.urls).slice(0, 3) as url}
-										{@const urlString = String(url)}
-										{#if isImageUrl(urlString)}
-											<img src={urlString} alt="첨부 이미지" class="post-image-thumbnail" />
-										{:else if isVideoUrl(urlString)}
-											<video src={urlString} class="post-video-thumbnail" muted preload="metadata">
-												<track kind="captions" />
-											</video>
-										{:else}
-											<!-- 기타 파일: 파일 아이콘 -->
-											<div class="post-file-thumbnail">
-												<svg
-													class="h-8 w-8 text-gray-400"
-													fill="none"
-													stroke="currentColor"
-													viewBox="0 0 24 24"
-													stroke-width="2"
-												>
-													<path
-														stroke-linecap="round"
-														stroke-linejoin="round"
-														d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
-													/>
-												</svg>
-											</div>
-										{/if}
-									{/each}
-									{#if Object.keys(message.urls).length > 3}
-										<div class="post-image-more">
-											+{Object.keys(message.urls).length - 3}
-										</div>
-									{/if}
-								</div>
-							{/if}
+						<!-- 첨부파일 미리보기 (FileAttachments 컴포넌트 사용) -->
+						{#if message.urls}
+							<FileAttachments urls={message.urls} />
+						{/if}
 						</div>
 
 						<!-- 메타 정보 -->
 						<div class="post-meta">
-							<!-- 작성자 정보 (RTDB에서 최소한의 필드만 읽기) -->
-							{#await getUserBasicInfo(message.senderUid)}
-								<!-- 로딩 중: UID만 표시 -->
-								<div class="post-author">
-									<div class="author-photo-placeholder">
-										<span>{message.senderUid.charAt(0).toUpperCase()}</span>
-									</div>
-									<span class="author-name">{message.senderUid}</span>
-								</div>
-							{:then userInfo}
-								<!-- 작성자 정보 표시 -->
-								<div class="post-author">
-									{#if userInfo.photoUrl}
-										<img
-											src={userInfo.photoUrl}
-											alt={userInfo.displayName || '사용자'}
-											class="author-photo"
-										/>
-									{:else}
-										<div class="author-photo-placeholder">
-											<span
-												>{(userInfo.displayName || message.senderUid).charAt(0).toUpperCase()}</span
-											>
-										</div>
-									{/if}
-									<span class="author-name">{userInfo.displayName || message.senderUid}</span>
-								</div>
-							{:catch error}
-								<!-- 에러 발생 시: UID만 표시 -->
-								<div class="post-author">
-									<div class="author-photo-placeholder">
-										<span>{message.senderUid.charAt(0).toUpperCase()}</span>
-									</div>
-									<span class="author-name">{message.senderUid}</span>
-								</div>
-							{/await}
+						<!-- 작성자 정보 (UserProfile 컴포넌트 사용) -->
+						<UserProfile uid={message.senderUid} />
 
 							<span class="post-time">
 								{formatDistanceToNow(new Date(message.createdAt), {

@@ -149,12 +149,127 @@ src/lib/components/ui/
 - [Tailwind CSS](https://tailwindcss.com/docs)
 - [WCAG 2.1 Quick Reference](https://www.w3.org/WAI/WCAG21/quickref/)
 
-## 9. 향후 계획
+## 9. 재사용 가능한 비즈니스 컴포넌트
+
+### 9.1 UserProfile
+
+#### 목적
+- 사용자 UID를 받아서 프로필 사진(photoUrl)과 이름(displayName)을 표시하는 재사용 가능한 컴포넌트
+- **RTDB 비용 최적화**: 전체 사용자 노드가 아닌 필요한 필드(`displayName`, `photoUrl`)만 읽어서 Firebase RTDB 비용 절감
+- 글 목록, 댓글 목록 등 여러 곳에서 재사용 가능
+
+#### Props 요약
+| Prop | 타입 | 기본값 | 설명 |
+|------|------|--------|------|
+| `uid` | `string` | 필수 | 표시할 사용자 UID |
+| `photoSize` | `string` | `'h-8 w-8'` | 프로필 사진 크기 (Tailwind 클래스) |
+| `textSize` | `string` | `'text-sm'` | 이름 텍스트 크기 (Tailwind 클래스) |
+
+#### 구현 핵심
+```svelte
+{#await getUserBasicInfo(uid)}
+  <!-- 로딩 중: UID만 표시 -->
+  <div class="user-profile">
+    <div class="user-photo-placeholder {photoSize}">
+      <span>{uid.charAt(0).toUpperCase()}</span>
+    </div>
+    <span class="user-name {textSize}">{uid}</span>
+  </div>
+{:then userInfo}
+  <!-- 사용자 정보 표시 -->
+  <div class="user-profile">
+    {#if userInfo.photoUrl}
+      <img src={userInfo.photoUrl} alt={userInfo.displayName || '사용자'} class="user-photo {photoSize}" />
+    {:else}
+      <div class="user-photo-placeholder {photoSize}">
+        <span>{(userInfo.displayName || uid).charAt(0).toUpperCase()}</span>
+      </div>
+    {/if}
+    <span class="user-name {textSize}">{userInfo.displayName || uid}</span>
+  </div>
+{:catch error}
+  <!-- 에러 발생 시: UID만 표시 -->
+{/await}
+```
+
+#### 사용 예시
+```svelte
+<!-- 글 목록에서 -->
+<UserProfile uid={message.senderUid} />
+
+<!-- 댓글 목록에서 (작은 크기) -->
+<UserProfile uid={comment.authorUid} photoSize="h-6 w-6" textSize="text-xs" />
+```
+
+#### RTDB 비용 최적화
+- ⚠️ **중요**: `/users/{uid}` 전체 노드를 읽지 않고, `/users/{uid}/displayName`과 `/users/{uid}/photoUrl` 필드만 읽습니다
+- `getUserBasicInfo()` 함수는 `Promise.all`을 사용하여 두 필드를 병렬로 읽어 성능을 최적화합니다
+- 전체 사용자 노드(11개 필드)를 읽는 대신 2개 필드만 읽어서 **약 82% 비용 절감** 효과
+
+### 9.2 FileAttachments
+
+#### 목적
+- 첨부 파일 목록을 받아서 이미지/비디오/파일 미리보기를 표시하는 재사용 가능한 컴포넌트
+- 이미지, 비디오, 기타 파일을 자동으로 구분하여 적절한 UI로 표시
+- 글 목록, 댓글 목록 등 여러 곳에서 재사용 가능
+
+#### Props 요약
+| Prop | 타입 | 기본값 | 설명 |
+|------|------|--------|------|
+| `urls` | `Record<number, string>` | 필수 | 첨부 파일 URL 목록 |
+| `maxDisplay` | `number` | `3` | 최대 표시 개수 |
+| `thumbnailSize` | `string` | `'h-20 w-20'` | 썸네일 크기 (Tailwind 클래스) |
+
+#### 구현 핵심
+```svelte
+{#if urlArray.length > 0}
+  <div class="file-attachments">
+    {#each displayUrls as url}
+      {@const urlString = String(url)}
+      {#if isImageUrl(urlString)}
+        <img src={urlString} alt="첨부 이미지" class="file-thumbnail {thumbnailSize}" />
+      {:else if isVideoUrl(urlString)}
+        <video src={urlString} class="file-thumbnail {thumbnailSize}" muted preload="metadata">
+          <track kind="captions" />
+        </video>
+      {:else}
+        <!-- 기타 파일: 파일 아이콘 -->
+        <div class="file-thumbnail-placeholder {thumbnailSize}">
+          <svg>...</svg>
+        </div>
+      {/if}
+    {/each}
+    {#if remainingCount > 0}
+      <div class="file-more {thumbnailSize}">+{remainingCount}</div>
+    {/if}
+  </div>
+{/if}
+```
+
+#### 사용 예시
+```svelte
+<!-- 글 목록에서 -->
+{#if message.urls}
+  <FileAttachments urls={message.urls} />
+{/if}
+
+<!-- 댓글 목록에서 (작은 크기, 최대 2개) -->
+{#if comment.urls}
+  <FileAttachments urls={comment.urls} maxDisplay={2} thumbnailSize="h-16 w-16" />
+{/if}
+```
+
+#### 파일 타입 감지
+- `isImageUrl()`: URL 확장자로 이미지 여부 확인 (.jpg, .png, .gif, .webp 등)
+- `isVideoUrl()`: URL 확장자로 비디오 여부 확인 (.mp4, .webm, .mov 등)
+- 기타 파일은 파일 아이콘으로 표시
+
+## 10. 향후 계획
 - Input, Select, Checkbox 등 폼 컴포넌트 추가
 - Tabs/Badge/Dialog 등 인터랙티브 컴포넌트 확장
 - Storybook 시나리오 및 자동 테스트 도입
 
-## 10. 결론
+## 11. 결론
 shadcn-svelte를 기반으로 하지만 Light Mode 규칙, 접근성, 커서 정책을 명확히 반영한 자체 UI 레이어를 유지함으로써:
 - 디자인 변화 시 한 곳에서 제어 가능
 - Dark Mode 미지원 정책을 코드 레벨로 enforcing

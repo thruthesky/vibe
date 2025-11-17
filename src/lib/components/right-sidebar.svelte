@@ -13,8 +13,11 @@ import { m } from '$lib/paraglide/messages';
 import { User, Bell, TrendingUp, Sparkles, Mail, BarChart3 } from 'lucide-svelte';
 import { goto } from '$app/navigation';
 import { rtdbStore } from '$lib/stores/database.svelte';
+import { formatNumberWithComma } from '$lib/functions/number.functions';
 
 const userCountStore = rtdbStore<number>('stats/counters/user', 0);
+const postCountStore = rtdbStore<number>('stats/counters/post', 0);
+const commentCountStore = rtdbStore<number>('stats/counters/comment', 0);
 
 function goToStats() {
 	void goto('/stats');
@@ -77,18 +80,40 @@ function goToStats() {
 					<Card.Title class="text-base font-semibold">실시간 통계</Card.Title>
 				</div>
 			</Card.Header>
-			<Card.Content class="space-y-3 pt-2">
-					<div>
+			<Card.Content class="space-y-4 pt-2">
+				<div class="space-y-2">
+					<div class="stats-row">
 						<p class="stats-label">총 사용자 수</p>
 						<p class="stats-value">
 							{#if $userCountStore.loading}
 								로딩 중...
 							{:else}
-								{$userCountStore.data ?? 0}명
+								{formatNumberWithComma($userCountStore.data)}명
 							{/if}
 						</p>
 					</div>
-				<p class="stats-helper">가입 시 Cloud Functions가 자동으로 갱신합니다.</p>
+					<div class="stats-row">
+						<p class="stats-label">게시글 수</p>
+						<p class="stats-value">
+							{#if $postCountStore.loading}
+								로딩 중...
+							{:else}
+								{formatNumberWithComma($postCountStore.data)}건
+							{/if}
+						</p>
+					</div>
+					<div class="stats-row">
+						<p class="stats-label">댓글 수</p>
+						<p class="stats-value">
+							{#if $commentCountStore.loading}
+								로딩 중...
+							{:else}
+								{formatNumberWithComma($commentCountStore.data)}건
+							{/if}
+						</p>
+					</div>
+				</div>
+				<p class="stats-helper">Cloud Functions가 자동으로 갱신합니다.</p>
 				<button type="button" class="stats-button" onclick={goToStats}>
 					자세히 보기
 				</button>
@@ -197,6 +222,10 @@ function goToStats() {
 
 	.stats-label {
 		@apply text-xs uppercase tracking-wide text-gray-500;
+	}
+
+	.stats-row {
+		@apply flex items-center justify-between;
 	}
 
 	.stats-value {

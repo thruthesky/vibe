@@ -12,6 +12,38 @@ import * as logger from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 
 /**
+ * 전체 댓글 통계 카운터 증가
+ *
+ * @param messageId - 게시글(채팅 메시지) ID
+ * @param commentId - 댓글 ID
+ *
+ * 수행 작업:
+ * - /stats/counters/comment 경로에 ServerValue.increment(1)로 +1 증가
+ * - 이 값은 오른쪽 사이드바의 "실시간 통계 - 댓글 수"에 실시간으로 표시됨
+ */
+async function incrementCommentCounter(
+  messageId: string,
+  commentId: string
+): Promise<void> {
+  try {
+    const commentCounterRef = admin.database().ref("stats/counters/comment");
+    await commentCounterRef.set(admin.database.ServerValue.increment(1));
+
+    logger.info("stats/counters/comment 증가 완료 (전체 댓글 통계)", {
+      messageId,
+      commentId,
+    });
+  } catch (error) {
+    logger.error("stats/counters/comment 증가 실패", {
+      messageId,
+      commentId,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    // 통계 증가 실패는 치명적이지 않으므로 에러를 throw하지 않고 로그만 남김
+  }
+}
+
+/**
  * 댓글 생성 시 메시지와 부모 댓글의 childCount/totalChildCount를 증가시킵니다.
  *
  * @param messageId - 게시글(채팅 메시지) ID
@@ -95,6 +127,9 @@ export async function handleCommentCreate(
         parentId,
       });
     }
+
+    // 3. 전체 댓글 통계 증가 (최상위 댓글, 대댓글 모두 포함)
+    await incrementCommentCounter(messageId, commentId);
   } catch (error) {
     logger.error("childCount/totalChildCount 증가 실패", {
       messageId,

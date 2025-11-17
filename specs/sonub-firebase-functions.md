@@ -137,6 +137,83 @@ dependencies:
    - TypeScript 타입을 명확히 지정
    - `any` 타입 사용 지양
 
+7. **🔥 Database 트리거 분리 규칙 (강력 권장)**:
+   - ⚠️ **onValueWritten() 사용 금지**: 생성/수정/삭제를 한 함수에서 처리하지 말 것
+   - ✅ **각 이벤트 타입별로 별도 함수 작성**:
+     - `onValueCreated()`: 데이터 생성 시에만 트리거
+     - `onValueUpdated()`: 데이터 수정 시에만 트리거
+     - `onValueDeleted()`: 데이터 삭제 시에만 트리거
+
+   **이유**:
+   - 코드 복잡도 감소 (각 함수가 단일 책임만 가짐)
+   - 가독성 향상 (함수 이름만으로 어떤 이벤트를 처리하는지 명확함)
+   - 디버깅 용이 (로그에서 어느 트리거가 실행되었는지 명확히 구분)
+   - 조건문 감소 (before/after 값 비교 불필요)
+
+   **잘못된 예시 (❌ 사용 금지)**:
+   ```typescript
+   // ❌ 나쁜 예: 생성/수정/삭제를 한 함수에서 처리
+   export const onCategoryWrite = onValueWritten(
+     { ref: "/chat-messages/{messageId}/category" },
+     async (event) => {
+       const before = event.data.before.val();
+       const after = event.data.after.val();
+
+       if (!before && after) {
+         // 생성 로직
+       } else if (before && after) {
+         // 수정 로직
+       } else if (before && !after) {
+         // 삭제 로직
+       }
+     }
+   );
+   ```
+
+   **올바른 예시 (✅ 권장)**:
+   ```typescript
+   // ✅ 좋은 예: 각 이벤트 타입별로 별도 함수 작성
+
+   // 생성 전용 트리거
+   export const onCategoryCreate = onValueCreated(
+     { ref: "/chat-messages/{messageId}/category" },
+     async (event) => {
+       const category = event.data.val();
+       // 생성 로직만 처리
+       await handleCategoryCreate(messageId, category);
+     }
+   );
+
+   // 수정 전용 트리거
+   export const onCategoryUpdate = onValueUpdated(
+     { ref: "/chat-messages/{messageId}/category" },
+     async (event) => {
+       const newCategory = event.data.after.val();
+       const oldCategory = event.data.before.val();
+       // 수정 로직만 처리
+       await handleCategoryUpdate(messageId, newCategory, oldCategory);
+     }
+   );
+
+   // 삭제 전용 트리거
+   export const onCategoryDelete = onValueDeleted(
+     { ref: "/chat-messages/{messageId}/category" },
+     async (event) => {
+       // 삭제 로직만 처리
+       await handleCategoryDelete(messageId);
+     }
+   );
+   ```
+
+   **적용 사례**:
+   - ✅ `onChatMessageCategoryCreate` / `onChatMessageCategoryUpdate` / `onChatMessageCategoryDelete`
+   - ✅ `onCommentCreate` (생성만 처리)
+   - ✅ `onUserCreate` / `onUserDisplayNameUpdate` / `onUserPhotoUrlUpdate` 등
+
+   **예외 상황**:
+   - 극히 단순한 로직(1-2줄)이면서 생성/수정을 동일하게 처리하는 경우에만 `onValueWritten()` 허용
+   - 하지만 가능한 한 분리하는 것을 권장
+
 ---
 
 ## 4. 프로젝트 구조
