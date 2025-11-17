@@ -17,16 +17,27 @@
 	import { goto } from '$app/navigation';
 	import { Button } from '$lib/components/ui/button';
 	import PostCreateDialog from '$lib/components/post/PostCreateDialog.svelte';
+	import PostEditDialog from '$lib/components/post/PostEditDialog.svelte';
 	import CommentCreateDialog from '$lib/components/comment/CommentCreateDialog.svelte';
 	import PostCommentList from '$lib/components/post/PostCommentList.svelte';
 	import UserProfile from '$lib/components/UserProfile.svelte';
 	import FileAttachments from '$lib/components/FileAttachments.svelte';
+	import { authStore } from '$lib/stores/auth.svelte';
+	import { rtdb } from '$lib/firebase';
+	import { ref, update } from 'firebase/database';
 
 	// 카테고리 선택 상태 (null = 전체)
 	let selectedCategory = $state<ForumCategory | null>(null);
 
 	// 글쓰기 모달 상태
 	let isCreateDialogOpen = $state(false);
+
+	// 글 수정 모달 상태
+	let isEditDialogOpen = $state(false);
+	let editingMessageId = $state<string>('');
+	let editingMessageText = $state<string>('');
+	let editingMessageUrls = $state<Record<number, string>>({});
+	let editingMessageRoomId = $state<string>('');
 
 	// 댓글 모달 상태
 	let isCommentDialogOpen = $state(false);
@@ -36,6 +47,9 @@
 
 	// 각 게시글의 댓글 컴포넌트 참조 저장 (messageId -> PostCommentList)
 	let commentListRefs = $state<Record<string, PostCommentList>>({});
+
+	// DatabaseListView 참조 (새로고침용)
+	let listViewRef = $state<DatabaseListView>();
 
 	/**
 	 * 게시글 작성 후 콜백
@@ -66,6 +80,60 @@
 	async function handleCommentCreated() {
 		if (selectedMessageId && commentListRefs[selectedMessageId]) {
 			await commentListRefs[selectedMessageId].refresh();
+		}
+	}
+
+	/**
+	 * 게시글 수정 모달 열기
+	 */
+	function handleOpenEditDialog(
+		messageId: string,
+		text: string,
+		urls: Record<number, string> | undefined,
+		roomId: string
+	) {
+		editingMessageId = messageId;
+		editingMessageText = text || '';
+		editingMessageUrls = urls || {};
+		editingMessageRoomId = roomId;
+		isEditDialogOpen = true;
+	}
+
+	/**
+	 * 게시글 수정 완료 후 콜백
+	 */
+	function handlePostEdited() {
+		// DatabaseListView 새로고침
+		listViewRef?.refresh();
+	}
+
+	/**
+	 * 게시글 삭제 함수
+	 */
+	async function handleDeletePost(messageId: string) {
+		if (!confirm('게시글을 삭제하시겠습니까?')) {
+			return;
+		}
+
+		if (!rtdb) {
+			alert('Firebase 연결이 없습니다.');
+			return;
+		}
+
+		try {
+			const messageRef = ref(rtdb, `chat-messages/${messageId}`);
+			await update(messageRef, {
+				text: null,
+				urls: null,
+				deleted: true,
+				deletedAt: Date.now()
+			});
+
+			// DatabaseListView 새로고침
+			listViewRef?.refresh();
+		} catch (error) {
+			console.error('게시글 삭제 실패:', error);
+			alert('게시글 삭제에 실패했습니다.');
 		}
 	}
 
@@ -144,6 +212,7 @@
 	<!-- 게시글 목록 -->
 	<div class="post-list-content">
 		<DatabaseListView
+			bind:this={listViewRef}
 			path="chat-messages"
 			pageSize={20}
 			orderBy={orderByField}
@@ -154,40 +223,74 @@
 			{#snippet item(itemData, index)}
 				{@const message = itemData.data}
 				{@const messageId = itemData.key}
+				{@const isMyPost = $authStore.user?.uid === message.senderUid}
 				<div class="post-card-wrapper">
-					<div class="post-card" onclick={() => handleMessageClick(message.roomId)}>
-						<!-- 카테고리 뱃지 -->
-						{#if message.category}
-							<div class="post-category-badge">
-								{getCategoryMessage(message.category)}
+					<!-- 삭제된 게시글 표시 -->
+					{#if message.deleted}
+						<div class="post-card post-deleted">
+							<p class="post-deleted-text">삭제된 글입니다.</p>
+						</div>
+					{:else}
+						<div class="post-card" onclick={() => handleMessageClick(message.roomId)}>
+							<!-- 카테고리 뱃지 -->
+							{#if message.category}
+								<div class="post-category-badge">
+									{getCategoryMessage(message.category)}
+								</div>
+							{/if}
+
+							<!-- 메시지 내용 -->
+							<div class="post-content">
+								<p class="post-text">
+									{message.text || '(내용 없음)'}
+								</p>
+
+								<!-- 첨부파일 미리보기 (FileAttachments 컴포넌트 사용) -->
+								{#if message.urls}
+									<FileAttachments urls={message.urls} />
+								{/if}
 							</div>
-						{/if}
 
-						<!-- 메시지 내용 -->
-						<div class="post-content">
-							<p class="post-text">
-								{message.text || '(내용 없음)'}
-							</p>
+							<!-- 메타 정보 -->
+							<div class="post-meta">
+								<!-- 작성자 정보 (UserProfile 컴포넌트 사용) -->
+								<UserProfile uid={message.senderUid} />
 
-						<!-- 첨부파일 미리보기 (FileAttachments 컴포넌트 사용) -->
-						{#if message.urls}
-							<FileAttachments urls={message.urls} />
-						{/if}
+								<span class="post-time">
+									{formatDistanceToNow(new Date(message.createdAt), {
+										addSuffix: true,
+										locale: getDateLocale()
+									})}
+								</span>
+							</div>
+
+							<!-- 수정/삭제 버튼 (작성자만 표시) -->
+							{#if isMyPost}
+								<div class="post-actions-buttons">
+									<Button
+										variant="ghost"
+										size="sm"
+										onclick={(e: MouseEvent) => {
+											e.stopPropagation();
+											handleOpenEditDialog(messageId, message.text, message.urls, message.roomId);
+										}}
+									>
+										수정
+									</Button>
+									<Button
+										variant="ghost"
+										size="sm"
+										onclick={(e: MouseEvent) => {
+											e.stopPropagation();
+											handleDeletePost(messageId);
+										}}
+									>
+										삭제
+									</Button>
+								</div>
+							{/if}
 						</div>
-
-						<!-- 메타 정보 -->
-						<div class="post-meta">
-						<!-- 작성자 정보 (UserProfile 컴포넌트 사용) -->
-						<UserProfile uid={message.senderUid} />
-
-							<span class="post-time">
-								{formatDistanceToNow(new Date(message.createdAt), {
-									addSuffix: true,
-									locale: getDateLocale()
-								})}
-							</span>
-						</div>
-					</div>
+					{/if}
 
 					<!-- 댓글 목록 컴포넌트 -->
 					<PostCommentList
@@ -230,6 +333,17 @@
 <PostCreateDialog
 	bind:open={isCreateDialogOpen}
 	onPostCreated={handlePostCreated}
+/>
+
+<!-- 글 수정 모달 -->
+<PostEditDialog
+	bind:open={isEditDialogOpen}
+	messageId={editingMessageId}
+	initialText={editingMessageText}
+	initialUrls={editingMessageUrls}
+	roomId={editingMessageRoomId}
+	onClose={() => (isEditDialogOpen = false)}
+	onSaved={handlePostEdited}
 />
 
 <!-- 댓글 작성 모달 -->
@@ -277,6 +391,18 @@
 	.post-card {
 		@apply cursor-pointer rounded-lg border border-gray-200 bg-white p-4 shadow-sm;
 		@apply transition-all hover:shadow-md;
+	}
+
+	.post-deleted {
+		@apply cursor-default bg-gray-50;
+	}
+
+	.post-deleted-text {
+		@apply py-2 text-center italic text-gray-400;
+	}
+
+	.post-actions-buttons {
+		@apply mt-2 flex gap-2 border-t border-gray-100 pt-2;
 	}
 
 	.post-category-badge {

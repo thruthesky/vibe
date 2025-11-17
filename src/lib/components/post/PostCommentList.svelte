@@ -19,6 +19,10 @@
 	import { getLocale } from '$lib/paraglide/runtime.js';
 	import UserProfile from '$lib/components/UserProfile.svelte';
 	import FileAttachments from '$lib/components/FileAttachments.svelte';
+	import CommentEditDialog from '$lib/components/comment/CommentEditDialog.svelte';
+	import { authStore } from '$lib/stores/auth.svelte';
+	import { rtdb } from '$lib/firebase';
+	import { ref, update } from 'firebase/database';
 
 	/**
 	 * Props
@@ -40,6 +44,12 @@
 	 */
 	let comments = $state<CommentWithMetadata[]>([]); // 댓글 목록
 	let allCommentsLoaded = $state(false); // 전체 댓글 로드 여부
+
+	// 댓글 수정 모달 상태
+	let isEditDialogOpen = $state(false);
+	let editingCommentId = $state<string>('');
+	let editingCommentText = $state<string>('');
+	let editingCommentUrls = $state<Record<number, string>>({});
 
 	/**
 	 * 특정 게시글의 마지막 3개 댓글만 로드 (미리보기용)
@@ -71,6 +81,54 @@
 			await loadAllCommentsForMessage();
 		} else {
 			await loadLastCommentsForMessage();
+		}
+	}
+
+	/**
+	 * 댓글 수정 모달 열기
+	 */
+	function handleOpenEditDialog(commentId: string, text: string, urls: Record<number, string> | undefined) {
+		editingCommentId = commentId;
+		editingCommentText = text || '';
+		editingCommentUrls = urls || {};
+		isEditDialogOpen = true;
+	}
+
+	/**
+	 * 댓글 수정 완료 후 콜백
+	 */
+	async function handleCommentEdited() {
+		// 댓글 목록 새로고침
+		await refresh();
+	}
+
+	/**
+	 * 댓글 삭제 함수
+	 */
+	async function handleDeleteComment(commentId: string) {
+		if (!confirm('댓글을 삭제하시겠습니까?')) {
+			return;
+		}
+
+		if (!rtdb) {
+			alert('Firebase 연결이 없습니다.');
+			return;
+		}
+
+		try {
+			const commentRef = ref(rtdb, `chat-message-comments/${messageId}/${commentId}`);
+			await update(commentRef, {
+				text: null,
+				urls: null,
+				deleted: true,
+				deletedAt: Date.now()
+			});
+
+			// 댓글 목록 새로고침
+			await refresh();
+		} catch (error) {
+			console.error('댓글 삭제 실패:', error);
+			alert('댓글 삭제에 실패했습니다.');
 		}
 	}
 
@@ -140,6 +198,7 @@
 {#if comments.length > 0}
 	<div class="comments-list">
 		{#each comments as comment}
+			{@const isMyComment = $authStore.user?.uid === comment.authorUid}
 			<div class="comment-item" style="margin-left: {comment.depth * 24}px;">
 				<!-- 삭제된 댓글 표시 -->
 				{#if comment.deleted}
@@ -165,23 +224,61 @@
 							<FileAttachments urls={comment.urls} maxDisplay={2} thumbnailSize="h-16 w-16" />
 						{/if}
 
-						<!-- 답글 버튼 -->
-						<Button
-							variant="ghost"
-							size="sm"
-							onclick={(e: MouseEvent) => {
-								e.stopPropagation();
-								onOpenCommentDialog(messageId, comment.commentId, comment.text);
-							}}
-						>
-							답글
-						</Button>
+						<!-- 버튼 그룹 -->
+						<div class="comment-actions">
+							<!-- 답글 버튼 -->
+							<Button
+								variant="ghost"
+								size="sm"
+								onclick={(e: MouseEvent) => {
+									e.stopPropagation();
+									onOpenCommentDialog(messageId, comment.commentId, comment.text);
+								}}
+							>
+								답글
+							</Button>
+
+							<!-- 수정/삭제 버튼 (작성자만 표시) -->
+							{#if isMyComment}
+								<Button
+									variant="ghost"
+									size="sm"
+									onclick={(e: MouseEvent) => {
+										e.stopPropagation();
+										handleOpenEditDialog(comment.commentId, comment.text, comment.urls);
+									}}
+								>
+									수정
+								</Button>
+								<Button
+									variant="ghost"
+									size="sm"
+									onclick={(e: MouseEvent) => {
+										e.stopPropagation();
+										handleDeleteComment(comment.commentId);
+									}}
+								>
+									삭제
+								</Button>
+							{/if}
+						</div>
 					</div>
 				{/if}
 			</div>
 		{/each}
 	</div>
 {/if}
+
+<!-- 댓글 수정 모달 -->
+<CommentEditDialog
+	bind:open={isEditDialogOpen}
+	{messageId}
+	commentId={editingCommentId}
+	initialText={editingCommentText}
+	initialUrls={editingCommentUrls}
+	onClose={() => (isEditDialogOpen = false)}
+	onSaved={handleCommentEdited}
+/>
 
 <style>
 	@import 'tailwindcss' reference;
@@ -237,6 +334,10 @@
 
 	.comment-text {
 		@apply text-sm text-gray-800;
+	}
+
+	.comment-actions {
+		@apply mt-2 flex gap-1;
 	}
 
 	.comment-images {

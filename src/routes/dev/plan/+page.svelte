@@ -511,6 +511,9 @@
 					<li>상대방 읽음 여부(1:1 및 그룹) 표시: 마지막 읽음 타임스탬프 기반 배지</li>
 					<li>채팅 알림음 설정 페이지에서 사용자별 기본 알림음 on/off 제어</li>
 					<li>채팅방별 알림음 토글 및 중요 채팅방 강조음 선택 기능 제공</li>
+					<li>로그인을 하지 않으면 홈 화면 실시간 통계 외의 정보가 보이지 않도록 보호</li>
+					<li>sonub.com을 Cloudflare Pages + Functions 환경으로 이전하여 SvelteKit 배포</li>
+					<li>게시판 SEO 강화를 위해 게시글을 Cloudflare D1에 미러링하고 목록/상세를 D1 기반으로 노출</li>
 				</ul>
 			</Card.Content>
 		</Card.Root>
