@@ -223,7 +223,7 @@
 			{#snippet item(itemData, index)}
 				{@const message = itemData.data}
 				{@const messageId = itemData.key}
-				{@const isMyPost = $authStore.user?.uid === message.senderUid}
+				{@const isMyPost = authStore.user?.uid === message.senderUid}
 				<div class="post-card-wrapper">
 					<!-- 삭제된 게시글 표시 -->
 					{#if message.deleted}

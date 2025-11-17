@@ -149,10 +149,12 @@
 	};
 
 	/**
-	 * 자동 로딩: totalChildCount > 0이고 댓글이 로드되지 않았으면 자동으로 마지막 3개 로드
+	 * 자동 로딩: messageId가 변경되거나 초기 로드 시 자동으로 마지막 3개 댓글 로드
+	 * totalChildCount가 0이어도 시도해봄 (기존 게시글의 경우 totalChildCount가 없을 수 있음)
 	 */
 	$effect(() => {
-		if (totalChildCount > 0 && comments.length === 0 && !allCommentsLoaded) {
+		// messageId가 변경되면 댓글 목록 초기화 및 재로드
+		if (messageId && comments.length === 0 && !allCommentsLoaded) {
 			loadLastCommentsForMessage();
 		}
 	});
@@ -198,7 +200,7 @@
 {#if comments.length > 0}
 	<div class="comments-list">
 		{#each comments as comment}
-			{@const isMyComment = $authStore.user?.uid === comment.authorUid}
+			{@const isMyComment = authStore.user?.uid === comment.authorUid}
 			<div class="comment-item" style="margin-left: {comment.depth * 24}px;">
 				<!-- 삭제된 댓글 표시 -->
 				{#if comment.deleted}
