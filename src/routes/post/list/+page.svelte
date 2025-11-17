@@ -17,6 +17,10 @@
 	import { goto } from '$app/navigation';
 	import { Button } from '$lib/components/ui/button';
 	import PostCreateDialog from '$lib/components/post/PostCreateDialog.svelte';
+	import CommentCreateDialog from '$lib/components/comment/CommentCreateDialog.svelte';
+	import PostCommentList from '$lib/components/post/PostCommentList.svelte';
+	import { isImageUrl, isVideoUrl } from '$lib/functions/storage.functions';
+	import { getUserBasicInfo } from '$lib/functions/user.functions';
 
 	// 카테고리 선택 상태 (null = 전체)
 	let selectedCategory = $state<ForumCategory | null>(null);
@@ -24,12 +28,45 @@
 	// 글쓰기 모달 상태
 	let isCreateDialogOpen = $state(false);
 
+	// 댓글 모달 상태
+	let isCommentDialogOpen = $state(false);
+	let selectedMessageId = $state<string>('');
+	let selectedParentId = $state<string | null>(null);
+	let selectedParentText = $state<string | null>(null);
+
+	// 각 게시글의 댓글 컴포넌트 참조 저장 (messageId -> PostCommentList)
+	let commentListRefs = $state<Record<string, PostCommentList>>({});
+
 	/**
 	 * 게시글 작성 후 콜백
 	 * 작성된 게시글의 카테고리를 자동으로 선택
 	 */
 	function handlePostCreated(category: ForumCategory) {
 		selectedCategory = category;
+	}
+
+	/**
+	 * 댓글 작성 모달 열기
+	 */
+	function handleOpenCommentDialog(
+		messageId: string,
+		parentId: string | null = null,
+		parentText: string | null = null
+	) {
+		selectedMessageId = messageId;
+		selectedParentId = parentId;
+		selectedParentText = parentText;
+		isCommentDialogOpen = true;
+	}
+
+	/**
+	 * 댓글 작성 완료 후 콜백
+	 * 댓글 목록을 다시 로드하여 화면에 반영
+	 */
+	async function handleCommentCreated() {
+		if (selectedMessageId && commentListRefs[selectedMessageId]) {
+			await commentListRefs[selectedMessageId].refresh();
+		}
 	}
 
 	// date-fns 로케일 매핑
@@ -117,45 +154,115 @@
 			{#snippet item(itemData, index)}
 				{@const message = itemData.data}
 				{@const messageId = itemData.key}
-				<div class="post-card" onclick={() => handleMessageClick(message.roomId)}>
-					<!-- 카테고리 뱃지 -->
-					{#if message.category}
-						<div class="post-category-badge">
-							{getCategoryMessage(message.category)}
-						</div>
-					{/if}
-
-					<!-- 메시지 내용 -->
-					<div class="post-content">
-						<p class="post-text">
-							{message.text || '(내용 없음)'}
-						</p>
-
-						<!-- 이미지 미리보기 -->
-						{#if message.urls && Object.keys(message.urls).length > 0}
-							<div class="post-images">
-								{#each Object.values(message.urls).slice(0, 3) as url}
-									<img src={String(url)} alt="첨부 이미지" class="post-image-thumbnail" />
-								{/each}
-								{#if Object.keys(message.urls).length > 3}
-									<div class="post-image-more">
-										+{Object.keys(message.urls).length - 3}
-									</div>
-								{/if}
+				<div class="post-card-wrapper">
+					<div class="post-card" onclick={() => handleMessageClick(message.roomId)}>
+						<!-- 카테고리 뱃지 -->
+						{#if message.category}
+							<div class="post-category-badge">
+								{getCategoryMessage(message.category)}
 							</div>
 						{/if}
+
+						<!-- 메시지 내용 -->
+						<div class="post-content">
+							<p class="post-text">
+								{message.text || '(내용 없음)'}
+							</p>
+
+							<!-- 첨부파일 미리보기 (이미지/비디오) -->
+							{#if message.urls && Object.keys(message.urls).length > 0}
+								<div class="post-images">
+									{#each Object.values(message.urls).slice(0, 3) as url}
+										{@const urlString = String(url)}
+										{#if isImageUrl(urlString)}
+											<img src={urlString} alt="첨부 이미지" class="post-image-thumbnail" />
+										{:else if isVideoUrl(urlString)}
+											<video src={urlString} class="post-video-thumbnail" muted preload="metadata">
+												<track kind="captions" />
+											</video>
+										{:else}
+											<!-- 기타 파일: 파일 아이콘 -->
+											<div class="post-file-thumbnail">
+												<svg
+													class="h-8 w-8 text-gray-400"
+													fill="none"
+													stroke="currentColor"
+													viewBox="0 0 24 24"
+													stroke-width="2"
+												>
+													<path
+														stroke-linecap="round"
+														stroke-linejoin="round"
+														d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+													/>
+												</svg>
+											</div>
+										{/if}
+									{/each}
+									{#if Object.keys(message.urls).length > 3}
+										<div class="post-image-more">
+											+{Object.keys(message.urls).length - 3}
+										</div>
+									{/if}
+								</div>
+							{/if}
+						</div>
+
+						<!-- 메타 정보 -->
+						<div class="post-meta">
+							<!-- 작성자 정보 (RTDB에서 최소한의 필드만 읽기) -->
+							{#await getUserBasicInfo(message.senderUid)}
+								<!-- 로딩 중: UID만 표시 -->
+								<div class="post-author">
+									<div class="author-photo-placeholder">
+										<span>{message.senderUid.charAt(0).toUpperCase()}</span>
+									</div>
+									<span class="author-name">{message.senderUid}</span>
+								</div>
+							{:then userInfo}
+								<!-- 작성자 정보 표시 -->
+								<div class="post-author">
+									{#if userInfo.photoUrl}
+										<img
+											src={userInfo.photoUrl}
+											alt={userInfo.displayName || '사용자'}
+											class="author-photo"
+										/>
+									{:else}
+										<div class="author-photo-placeholder">
+											<span
+												>{(userInfo.displayName || message.senderUid).charAt(0).toUpperCase()}</span
+											>
+										</div>
+									{/if}
+									<span class="author-name">{userInfo.displayName || message.senderUid}</span>
+								</div>
+							{:catch error}
+								<!-- 에러 발생 시: UID만 표시 -->
+								<div class="post-author">
+									<div class="author-photo-placeholder">
+										<span>{message.senderUid.charAt(0).toUpperCase()}</span>
+									</div>
+									<span class="author-name">{message.senderUid}</span>
+								</div>
+							{/await}
+
+							<span class="post-time">
+								{formatDistanceToNow(new Date(message.createdAt), {
+									addSuffix: true,
+									locale: getDateLocale()
+								})}
+							</span>
+						</div>
 					</div>
 
-					<!-- 메타 정보 -->
-					<div class="post-meta">
-						<span class="post-author">작성자: {message.senderUid}</span>
-						<span class="post-time">
-							{formatDistanceToNow(new Date(message.createdAt), {
-								addSuffix: true,
-								locale: getDateLocale()
-							})}
-						</span>
-					</div>
+					<!-- 댓글 목록 컴포넌트 -->
+					<PostCommentList
+						bind:this={commentListRefs[messageId]}
+						messageId={messageId}
+						totalChildCount={message.totalChildCount || 0}
+						onOpenCommentDialog={handleOpenCommentDialog}
+					/>
 				</div>
 			{/snippet}
 
@@ -190,6 +297,15 @@
 <PostCreateDialog
 	bind:open={isCreateDialogOpen}
 	onPostCreated={handlePostCreated}
+/>
+
+<!-- 댓글 작성 모달 -->
+<CommentCreateDialog
+	bind:open={isCommentDialogOpen}
+	messageId={selectedMessageId}
+	parentId={selectedParentId}
+	parentText={selectedParentText}
+	onCreated={handleCommentCreated}
 />
 
 <style>
@@ -255,6 +371,14 @@
 		@apply h-20 w-20 rounded object-cover;
 	}
 
+	.post-video-thumbnail {
+		@apply h-20 w-20 rounded object-cover;
+	}
+
+	.post-file-thumbnail {
+		@apply flex h-20 w-20 items-center justify-center rounded bg-gray-100;
+	}
+
 	.post-image-more {
 		@apply flex h-20 w-20 items-center justify-center rounded bg-gray-100 text-sm font-medium text-gray-600;
 	}
@@ -264,7 +388,19 @@
 	}
 
 	.post-author {
-		@apply font-medium;
+		@apply flex items-center gap-2;
+	}
+
+	.author-photo {
+		@apply h-8 w-8 rounded-full object-cover;
+	}
+
+	.author-photo-placeholder {
+		@apply flex h-8 w-8 items-center justify-center rounded-full bg-gray-300 text-xs font-semibold text-white;
+	}
+
+	.author-name {
+		@apply font-medium text-gray-700;
 	}
 
 	.post-time {
@@ -273,5 +409,70 @@
 
 	.list-status {
 		@apply py-8 text-center text-gray-500;
+	}
+
+	/* 댓글 관련 스타일 */
+	.post-card-wrapper {
+		@apply mb-4;
+	}
+
+	.post-actions {
+		@apply mt-2 flex items-center justify-between border-t border-gray-100 pt-2;
+	}
+
+	.comment-info {
+		@apply flex items-center gap-2;
+	}
+
+	.comment-count {
+		@apply text-sm text-gray-700;
+	}
+
+	.comment-count-empty {
+		@apply text-sm text-gray-400;
+	}
+
+	.comments-list {
+		@apply mt-3 space-y-2 border-t border-gray-100 pt-3;
+	}
+
+	.comment-item {
+		@apply rounded-lg bg-gray-50 p-3;
+	}
+
+	.comment-deleted {
+		@apply py-2;
+	}
+
+	.comment-deleted-text {
+		@apply italic text-gray-400;
+	}
+
+	.comment-content {
+		@apply space-y-2;
+	}
+
+	.comment-header {
+		@apply flex items-center justify-between;
+	}
+
+	.comment-author {
+		@apply text-sm font-medium text-gray-900;
+	}
+
+	.comment-time {
+		@apply text-xs text-gray-400;
+	}
+
+	.comment-text {
+		@apply text-sm text-gray-800;
+	}
+
+	.comment-images {
+		@apply mt-2 flex gap-2;
+	}
+
+	.comment-image-thumbnail {
+		@apply h-16 w-16 rounded object-cover;
 	}
 </style>

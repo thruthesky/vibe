@@ -156,9 +156,11 @@
         ".write": "auth != null &&
           (
             // 조건 1: 채팅방 접근 권한 확인
+        // - roomId가 post 이거나 (게시글 작성)
         // - roomId에 본인 UID가 포함되거나 (1:1 채팅)
         // - 채팅방 멤버인 경우
             (
+              newData.child('roomId').val() == 'post' ||
               newData.child('roomId').val().contains(auth.uid) ||
               root.child('chat-rooms').child(newData.child('roomId').val()).child('members').child(auth.uid).exists()
             )
@@ -195,6 +197,29 @@
         "allCategoryOrder",
         "categoryOrder"
       ]
+    },
+    "chat-message-comments": {
+      // 댓글 읽기: 누구나 가능
+      ".read": true,
+      "$messageId": {
+        "$commentId": {
+          // 쓰기 권한: 로그인한 사용자이며, 본인이 작성한 댓글만 생성/수정/삭제 가능
+          ".write": "auth != null &&
+            (
+              (
+                !data.exists() &&
+                newData.child('authorUid').val() == auth.uid
+              ) ||
+              (
+                data.exists() &&
+                data.child('authorUid').val() == auth.uid
+              )
+            )"
+        },
+        ".indexOn": [
+          "listOrder"
+        ]
+      }
     },
     "chat-invitations": {
       // 채팅 초대 관리

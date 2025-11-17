@@ -132,6 +132,85 @@ changelog:
 **구현 예제와 상세 설명**은 다음 개별 가이드 문서를 참고하세요:
 - [Firebase Cloud Functions 개발 가이드](./sns-firebase-cloud-functions.md) - Cloud Functions 구현 예제
 
+---
+
+### 🔥 **RTDB 비용 최적화: 최소 데이터 읽기 원칙 (매우 중요)**
+
+**⚠️ Firebase Realtime Database는 읽기/쓰기 비용이 발생합니다. 따라서 클라이언트에서 RTDB 데이터를 읽을 때 반드시 최소한의 데이터만 읽어야 합니다.**
+
+#### **절대 원칙**
+
+1. **❌ 전체 노드 읽기 금지**
+   ```typescript
+   // ❌ 잘못된 예: 전체 사용자 노드 읽기 (비용 낭비)
+   const userRef = ref(rtdb, `users/${uid}`);
+   const snapshot = await get(userRef);
+   const user = snapshot.val();
+   const displayName = user.displayName; // 다른 모든 필드도 함께 읽음
+   ```
+
+2. **✅ 특정 필드만 선택적으로 읽기**
+   ```typescript
+   // ✅ 올바른 예: 필요한 필드만 읽기 (비용 절감)
+   const displayNameRef = ref(rtdb, `users/${uid}/displayName`);
+   const snapshot = await get(displayNameRef);
+   const displayName = snapshot.val(); // displayName 필드만 읽음
+   ```
+
+3. **✅ 여러 필드가 필요한 경우 병렬로 읽기**
+   ```typescript
+   // ✅ 올바른 예: 필요한 필드만 병렬로 읽기
+   const [displayName, photoUrl] = await Promise.all([
+     get(ref(rtdb, `users/${uid}/displayName`)).then(s => s.val()),
+     get(ref(rtdb, `users/${uid}/photoUrl`)).then(s => s.val())
+   ]);
+   ```
+
+#### **실제 적용 예시**
+
+**사용자 정보 읽기:**
+- ❌ 잘못된 방법: `/users/{uid}` 전체 노드 읽기
+- ✅ 올바른 방법: `/users/{uid}/displayName`, `/users/{uid}/photoUrl` 필드만 읽기
+
+**게시글 목록에서 작성자 정보 표시:**
+- ❌ 잘못된 방법: 각 게시글마다 `/users/{senderUid}` 전체 읽기
+- ✅ 올바른 방법: 각 게시글마다 `/users/{senderUid}/displayName`, `/users/{senderUid}/photoUrl`만 읽기
+
+#### **비용 절감 효과**
+
+전체 사용자 노드가 다음과 같다고 가정:
+```json
+{
+  "displayName": "홍길동",
+  "photoUrl": "https://...",
+  "gender": "M",
+  "birthYear": 1990,
+  "birthMonth": 1,
+  "birthDay": 15,
+  "birthYearMonthDay": "1990-01-15",
+  "birthMonthDay": "01-15",
+  "bio": "자기소개...",
+  "createdAt": 1698473000000,
+  "updatedAt": 1698474000000
+}
+```
+
+- **전체 노드 읽기**: 11개 필드 모두 읽음 (100% 비용)
+- **필요한 필드만 읽기**: `displayName`, `photoUrl` 2개만 읽음 (약 18% 비용)
+- **비용 절감**: 약 **82% 절감**
+
+#### **개발 시 필수 준수 사항**
+
+- 🚫 **절대로** 전체 사용자 노드 `/users/{uid}`를 읽지 않습니다
+- ✅ **반드시** 필요한 필드만 `/users/{uid}/{field}` 경로로 읽습니다
+- ✅ 여러 필드가 필요하면 각 필드를 병렬로 읽습니다 (`Promise.all` 사용)
+- ✅ 모든 RTDB 읽기 작업에서 이 원칙을 적용합니다
+- 📝 코드 리뷰 시 RTDB 읽기 작업을 특히 주의 깊게 확인합니다
+
+**이 원칙을 위반하는 코드는 즉시 수정해야 합니다.**
+
+---
+
 ### 🔀 클라이언트와 백엔드의 데이터 책임 구분
 
 **매우 중요**: DB 구조의 각 필드는 **클라이언트가 저장**하거나 **백엔드가 업데이트**하도록 명확히 구분되어 있습니다.

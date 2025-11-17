@@ -9,7 +9,7 @@ dependencies:
   - sonub-setup-firebase.md
   - sonub-firebase-database-structure.md
   - sonub-design-workflow.md
-tags: chat, file-upload, firebase-storage, attachment, svelte5, realtime, instant-upload, video-controls, file-size-limit, file-extension-display, filename-extension-extraction, circular-progress, drag-drop, animation
+tags: chat, file-upload, firebase-storage, attachment, svelte5, realtime, instant-upload, video-controls, file-size-limit, file-extension-display, filename-extension-extraction, circular-progress, drag-drop, animation, drag-drop-reorder
 ---
 
 # 채팅 파일 첨부 기능 (Chat File Attachment)
@@ -1012,10 +1012,32 @@ svelte-check found 0 errors and 1170 warnings in 19 files
 - [x] `npm run check` 실행 및 통과 (0 errors)
 - [x] SED 스펙 문서 업데이트 (v1.2.0)
 
+### v1.3.0 (2025-11-17)
+- [x] **MessageEditModal 드래그 앤 드롭 파일 재정렬 기능**: 업로드된 파일들의 표시 순서를 드래그 앤 드롭으로 변경 가능
+- [x] 상태 변수 추가: `draggedIndex`, `dragOverIndex` (93-95번 라인)
+- [x] 드래그 앤 드롭 로직 구현 (332-400번 라인):
+  - `reorderUrls(fromIndex, toIndex)`: urls Record를 배열로 변환 후 재정렬, 0부터 시작하는 새 인덱스로 Record 재구성
+  - `handleDragStart(index)`: 드래그 시작 시 draggedIndex 설정
+  - `handleDragOver(event, index)`: 드래그 오버 시 `event.preventDefault()` 호출 및 dragOverIndex 설정
+  - `handleDrop(event, toIndex)`: 드롭 시 reorderUrls() 실행 및 상태 초기화
+  - `handleDragEnd()`: 드래그 종료 시 상태 초기화
+- [x] UI 개선 (370-426번 라인):
+  - 각 파일 아이템에 `draggable="true"` 속성 추가
+  - 드래그 이벤트 핸들러 연결 (ondragstart, ondragover, ondrop, ondragend)
+  - 왼쪽 하단에 드래그 핸들 버튼 추가 (≡ 아이콘)
+  - CSS 클래스 동적 적용 (`file-item-dragging`, `file-item-drag-over`)
+- [x] CSS 스타일 추가 (554-649번 라인):
+  - `.file-item`: `cursor: grab/grabbing` 추가
+  - `.file-drag-handle`: 왼쪽 하단 고정 위치, 회색 반투명 배경, 호버 시 확대
+  - `.file-item-dragging`: 드래그 중인 아이템 스타일 (반투명, 축소, 회전, 파란색 테두리)
+  - `.file-item-drag-over`: 드롭 영역 하이라이트 (파란색 점선 테두리, 파란색 배경, 확대)
+- [x] `npm run check` 실행 및 통과 (0 TypeScript errors)
+- [x] **결과**: 파일 업로드 후 왼쪽 하단의 드래그 핸들을 드래그하여 파일 순서 변경 가능, 드래그 중 시각적 피드백 제공, 드롭 시 urls 필드 순서가 자동으로 업데이트됨
+
 ---
 
 **최초 작성일:** 2025-11-14
-**최종 수정일:** 2025-11-14
+**최종 수정일:** 2025-11-17
 **작성자:** Claude (AI Assistant)
-**버전:** 1.2.0
+**버전:** 1.3.0
 **상태:** ✅ 구현 완료

@@ -50,6 +50,7 @@ import {handleChatRoomPinCreate} from "./handlers/chat.room-pin-create.handler";
 import {handleChatRoomPinDelete} from "./handlers/chat.room-pin-delete.handler";
 import {handleChatInvitationCreate} from "./handlers/chat.invitation-create.handler";
 import {handleNewMessageCountWritten} from "./handlers/chat.new-message-count.handler";
+import {handleCommentCreate} from "./handlers/comment.create.handler";
 
 // 상수 정의
 const FIREBASE_REGION = "asia-southeast1";
@@ -729,3 +730,40 @@ export const onChatMessageCategoryWrite = onValueWritten(
  * 4. try 경로 즉시 삭제 (보안)
  */
 export { onPasswordTry } from "./handlers/chat.password-verification.handler";
+
+/**
+ * 댓글 생성 시 트리거되는 Cloud Function
+ *
+ * 트리거 경로: /chat-message-comments/{messageId}/{commentId}
+ * 트리거 이벤트: onValueCreated (댓글 생성 시)
+ *
+ * 수행 작업:
+ * 1. 댓글의 parentId 필드 확인
+ * 2. parentId가 존재하면 (대댓글인 경우):
+ *    - 부모 댓글의 childCount를 transaction으로 +1 증가
+ *    - transaction 사용으로 동시성 문제 해결 (여러 사용자가 동시에 댓글 작성 가능)
+ * 3. parentId가 null이면 (최상위 댓글):
+ *    - 아무 작업도 하지 않음
+ *
+ * 참고:
+ * - childCount는 부모 댓글 아래의 자식 댓글 개수를 나타냄
+ * - 클라이언트에서 댓글 작성 시 부모의 childCount를 읽어 listOrder 생성에 사용
+ * - listOrder 예시: "001-02" (부모의 childCount가 1이면 자식은 "002")
+ * - transaction 사용으로 동시 댓글 작성 시 childCount 중복 방지
+ *
+ * 비즈니스 로직은 handlers/comment.create.handler.ts의 handleCommentCreate() 참조
+ */
+export const onCommentCreate = onValueCreated(
+  {
+    ref: "/chat-message-comments/{messageId}/{commentId}",
+    region: FIREBASE_REGION,
+  },
+  async (event) => {
+    const messageId = event.params.messageId as string;
+    const commentId = event.params.commentId as string;
+    const commentData = (event.data.val() || {}) as Record<string, unknown>;
+
+    // 비즈니스 로직 핸들러 호출
+    return await handleCommentCreate(messageId, commentId, commentData);
+  }
+);

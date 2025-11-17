@@ -43,7 +43,7 @@
 	import UserSearchDialog from '$lib/components/user/UserSearchDialog.svelte';
 	import RoomPasswordSetting from '$lib/components/chat/room-password-setting.svelte';
 	import RoomPasswordPrompt from '$lib/components/chat/room-password-prompt.svelte';
-	import MessageEditModal from '$lib/components/chat/MessageEditModal.svelte';
+	import ChatMessageEditModal from '$lib/components/chat/ChatMessageEditModal.svelte';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import { FORUM_CATEGORIES, type ForumCategory } from '$shared/categories';
 
@@ -1749,7 +1749,7 @@
 {/if}
 
 <!-- 메시지 수정 모달 -->
-<MessageEditModal
+<ChatMessageEditModal
 	bind:open={editModalOpen}
 	messageId={selectedMessageId}
 	initialText={selectedMessageText}

@@ -21,6 +21,7 @@
 
 	// 로그아웃 처리 중 상태
 	let isSigningOut = $state(false);
+	let searchKeyword = $state('');
 
 	// v1.0.0: 새 메시지 카운트 실시간 구독
 	let newMessageCountStore = $state<ReturnType<typeof rtdbStore<number>> | null>(null);
@@ -83,13 +84,37 @@
 	<div class="container mx-auto px-4">
 		<div class="flex h-16 items-center justify-between">
 			<!-- 좌측: 로고 및 네비게이션 링크 -->
-			<div class="flex items-center gap-8">
-				<a
-					href="/"
-					class="text-xl font-bold text-gray-900 hover:text-gray-700"
-				>
-					Sonub
+			<div class="flex items-center gap-4">
+				<a href="/" class="flex items-center gap-3 text-gray-900 hover:text-gray-700">
+					<img src="/static/favicon-128.png" alt="Sonub Logo" class="h-10 w-10" />
 				</a>
+				<form
+					class="hidden items-center gap-2 rounded-full bg-gray-100 pl-4 pr-1 shadow-inner sm:flex"
+					on:submit|preventDefault={() => {
+						const keyword = searchKeyword.trim();
+						if (!keyword) {
+							void goto('/user/list');
+							return;
+						}
+						void goto(`/user/list?keyword=${encodeURIComponent(keyword)}`);
+					}}
+				>
+					<input
+						type="text"
+						placeholder="친구를 검색하세요"
+						class="h-10 w-40 bg-transparent text-sm text-gray-700 border-none outline-none focus:outline-none focus:ring-0 appearance-none"
+						style="box-shadow: none;"
+						bind:value={searchKeyword}
+					/>
+					<button
+						type="submit"
+						class="flex h-8 w-8 items-center justify-center rounded-full bg-white text-gray-700 shadow-sm disabled:opacity-40"
+						disabled={!searchKeyword.trim()}
+						aria-label="친구 검색"
+					>
+						<span class="text-lg">➜</span>
+					</button>
+				</form>
 			</div>
 
 			<!-- 우측: 사용자 메뉴 -->

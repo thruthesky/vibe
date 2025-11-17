@@ -1,0 +1,251 @@
+<!--
+  게시글 댓글 목록 컴포넌트
+
+  기능:
+  - 마지막 3개 댓글 자동 미리보기 로딩
+  - 총 댓글 개수 표시
+  - 더보기 버튼 (3개 초과 시)
+  - 댓글 쓰기 버튼
+  - 댓글 계층 구조 표시
+  - 답글 버튼
+-->
+
+<script lang="ts">
+	import { Button } from '$lib/components/ui/button';
+	import { loadComments, loadLastComments } from '$lib/functions/comment.functions';
+	import type { CommentWithMetadata } from '$lib/types/comment.types';
+	import { formatDistanceToNow } from 'date-fns';
+	import { ko, enUS, ja, zhCN } from 'date-fns/locale';
+	import { getLocale } from '$lib/paraglide/runtime.js';
+
+	/**
+	 * Props
+	 */
+	interface Props {
+		messageId: string; // 게시글(채팅 메시지) ID
+		totalChildCount?: number; // 총 댓글 개수
+		onOpenCommentDialog: (
+			messageId: string,
+			parentId?: string | null,
+			parentText?: string | null
+		) => void; // 댓글 작성 모달 열기 콜백
+	}
+
+	let { messageId, totalChildCount = 0, onOpenCommentDialog }: Props = $props();
+
+	/**
+	 * 상태
+	 */
+	let comments = $state<CommentWithMetadata[]>([]); // 댓글 목록
+	let allCommentsLoaded = $state(false); // 전체 댓글 로드 여부
+
+	/**
+	 * 특정 게시글의 마지막 3개 댓글만 로드 (미리보기용)
+	 */
+	async function loadLastCommentsForMessage() {
+		const result = await loadLastComments(messageId, 3);
+		if (result.success && result.comments) {
+			comments = result.comments;
+			allCommentsLoaded = false;
+		}
+	}
+
+	/**
+	 * 특정 게시글의 전체 댓글 로드 (더보기 클릭 시)
+	 */
+	async function loadAllCommentsForMessage() {
+		const result = await loadComments(messageId);
+		if (result.success && result.comments) {
+			comments = result.comments;
+			allCommentsLoaded = true;
+		}
+	}
+
+	/**
+	 * 댓글 목록 새로고침 (외부에서 호출 가능)
+	 */
+	export async function refresh() {
+		if (allCommentsLoaded) {
+			await loadAllCommentsForMessage();
+		} else {
+			await loadLastCommentsForMessage();
+		}
+	}
+
+	/**
+	 * date-fns 로케일 매핑
+	 */
+	const getDateLocale = () => {
+		switch (getLocale()) {
+			case 'ko':
+				return ko;
+			case 'ja':
+				return ja;
+			case 'zh':
+				return zhCN;
+			default:
+				return enUS;
+		}
+	};
+
+	/**
+	 * 자동 로딩: totalChildCount > 0이고 댓글이 로드되지 않았으면 자동으로 마지막 3개 로드
+	 */
+	$effect(() => {
+		if (totalChildCount > 0 && comments.length === 0 && !allCommentsLoaded) {
+			loadLastCommentsForMessage();
+		}
+	});
+</script>
+
+<!-- 댓글 정보 및 버튼 -->
+<div class="post-actions">
+	<div class="comment-info">
+		{#if totalChildCount > 0}
+			<span class="comment-count"> 💬 {totalChildCount}개의 댓글이 있습니다. </span>
+			{#if !allCommentsLoaded && totalChildCount > 3}
+				<Button
+					variant="link"
+					size="sm"
+					onclick={(e: MouseEvent) => {
+						e.stopPropagation();
+						loadAllCommentsForMessage();
+					}}
+				>
+					더보기...
+				</Button>
+			{/if}
+		{:else}
+			<span class="comment-count-empty">댓글이 없습니다.</span>
+		{/if}
+	</div>
+	<Button
+		variant="ghost"
+		size="sm"
+		onclick={(e: MouseEvent) => {
+			e.stopPropagation();
+			onOpenCommentDialog(messageId);
+			if (comments.length === 0) {
+				loadLastCommentsForMessage();
+			}
+		}}
+	>
+		💬 댓글 쓰기
+	</Button>
+</div>
+
+<!-- 댓글 목록 -->
+{#if comments.length > 0}
+	<div class="comments-list">
+		{#each comments as comment}
+			<div class="comment-item" style="margin-left: {comment.depth * 24}px;">
+				<!-- 삭제된 댓글 표시 -->
+				{#if comment.deleted}
+					<div class="comment-deleted">
+						<p class="comment-deleted-text">삭제된 댓글입니다</p>
+					</div>
+				{:else}
+					<!-- 댓글 내용 -->
+					<div class="comment-content">
+						<div class="comment-header">
+							<span class="comment-author">{comment.authorUid}</span>
+							<span class="comment-time">
+								{formatDistanceToNow(new Date(comment.createdAt), {
+									addSuffix: true,
+									locale: getDateLocale()
+								})}
+							</span>
+						</div>
+						<p class="comment-text">{comment.text}</p>
+
+						<!-- 첨부 파일 미리보기 -->
+						{#if comment.urls && Object.keys(comment.urls).length > 0}
+							<div class="comment-images">
+								{#each Object.values(comment.urls).slice(0, 2) as url}
+									<img src={String(url)} alt="첨부 파일" class="comment-image-thumbnail" />
+								{/each}
+							</div>
+						{/if}
+
+						<!-- 답글 버튼 -->
+						<Button
+							variant="ghost"
+							size="sm"
+							onclick={(e: MouseEvent) => {
+								e.stopPropagation();
+								onOpenCommentDialog(messageId, comment.commentId, comment.text);
+							}}
+						>
+							답글
+						</Button>
+					</div>
+				{/if}
+			</div>
+		{/each}
+	</div>
+{/if}
+
+<style>
+	@import 'tailwindcss' reference;
+
+	/* 댓글 관련 스타일 */
+	.post-actions {
+		@apply mt-2 flex items-center justify-between border-t border-gray-100 pt-2;
+	}
+
+	.comment-info {
+		@apply flex items-center gap-2;
+	}
+
+	.comment-count {
+		@apply text-sm text-gray-700;
+	}
+
+	.comment-count-empty {
+		@apply text-sm text-gray-400;
+	}
+
+	.comments-list {
+		@apply mt-3 space-y-2 border-t border-gray-100 pt-3;
+	}
+
+	.comment-item {
+		@apply rounded-lg bg-gray-50 p-3;
+	}
+
+	.comment-deleted {
+		@apply py-2;
+	}
+
+	.comment-deleted-text {
+		@apply italic text-gray-400;
+	}
+
+	.comment-content {
+		@apply space-y-2;
+	}
+
+	.comment-header {
+		@apply flex items-center justify-between;
+	}
+
+	.comment-author {
+		@apply text-sm font-medium text-gray-900;
+	}
+
+	.comment-time {
+		@apply text-xs text-gray-400;
+	}
+
+	.comment-text {
+		@apply text-sm text-gray-800;
+	}
+
+	.comment-images {
+		@apply mt-2 flex gap-2;
+	}
+
+	.comment-image-thumbnail {
+		@apply h-16 w-16 rounded object-cover;
+	}
+</style>

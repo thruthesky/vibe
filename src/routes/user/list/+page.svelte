@@ -12,6 +12,8 @@
   import { Button } from '$lib/components/ui/button/index.js';
   import { formatLongDate } from '$lib/functions/date.functions';
   import { m } from '$lib/paraglide/messages.js';
+  import { goto } from '$app/navigation';
+  import { page } from '$app/stores';
 
   const DEFAULT_PAGE_SIZE = 15;
 
@@ -30,13 +32,21 @@
   let activeSearch = $state('');
   let selectedSortField = $state<SortField>('createdAt');
 
-  const normalizedSearch = $derived.by(() => activeSearch.trim());
-  const isSearching = $derived.by(() => normalizedSearch.length > 0);
+  const normalizedSearchValue = $derived.by(() => activeSearch.trim());
+  const normalizedLowerSearch = $derived.by(() => normalizedSearchValue.toLowerCase());
+  const isSearching = $derived.by(() => normalizedSearchValue.length > 0);
   const listKey = $derived.by(() =>
-    isSearching ? `users-search-${normalizedSearch}` : `users-${selectedSortField}`
+    isSearching ? `users-search-${normalizedLowerSearch}` : `users-${selectedSortField}`
   );
   const listOrderBy = $derived.by(() => (isSearching ? 'displayNameLowerCase' : selectedSortField));
   const listPageSize = $derived.by(() => (isSearching ? 50 : DEFAULT_PAGE_SIZE));
+  const keywordFromQuery = $derived.by(() => $page.url.searchParams.get('keyword') ?? '');
+
+  $effect(() => {
+    if (keywordFromQuery === activeSearch) return;
+    activeSearch = keywordFromQuery;
+    dialogKeyword = keywordFromQuery;
+  });
 
   function openSearchDialog() {
     dialogKeyword = activeSearch;
@@ -44,9 +54,11 @@
   }
 
   function handleDialogSearch(event: CustomEvent<{ keyword: string }>) {
-    const { keyword } = event.detail;
+    const keyword = event.detail.keyword.trim();
     activeSearch = keyword;
     dialogKeyword = keyword;
+    const targetUrl = keyword ? `/user/list?keyword=${encodeURIComponent(keyword)}` : '/user/list';
+    void goto(targetUrl, { replaceState: true, noScroll: true });
   }
 
   function handleDialogClear() {
@@ -56,6 +68,7 @@
   function clearSearch() {
     dialogKeyword = '';
     activeSearch = '';
+    void goto('/user/list', { replaceState: true, noScroll: true });
     searchDialogOpen = false;
   }
 </script>
@@ -83,7 +96,7 @@
 
       {#if isSearching}
         <div class="search-chip">
-          <span>"{normalizedSearch}" 검색 결과</span>
+          <span>"{normalizedSearchValue}" 검색 결과</span>
           <button type="button" onclick={clearSearch}>초기화</button>
         </div>
       {/if}
@@ -113,7 +126,7 @@
       orderBy={listOrderBy}
       threshold={300}
       reverse={false}
-      equalToValue={isSearching ? normalizedSearch : undefined}
+      equalToValue={isSearching ? normalizedLowerSearch : undefined}
     >
     {#snippet item(itemData: { key: string; data: any })}
       <article class="user-card">
