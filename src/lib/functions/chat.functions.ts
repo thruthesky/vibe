@@ -323,3 +323,52 @@ export async function rejectInvitation(
 	const invitationRef = ref(db, `chat-invitations/${uid}/${roomId}`);
 	await remove(invitationRef);
 }
+
+/**
+ * 채팅방 이름을 가져옵니다 (단일 필드만 읽음)
+ *
+ * 중요: 비용 최적화를 위해 전체 채팅방 객체를 읽지 않고
+ * /chat-rooms/{roomId}/name 필드만 읽습니다.
+ *
+ * @param db - Firebase Realtime Database 인스턴스
+ * @param roomId - 채팅방 ID
+ * @param maxLength - 최대 문자 수 (기본값: 8)
+ * @returns Promise<string> - 채팅방 이름 (최대 maxLength 글자, 초과 시 ellipsis)
+ *
+ * @example
+ * ```typescript
+ * import { rtdb } from '$lib/firebase';
+ * import { getChatRoomName } from '$lib/functions/chat.functions';
+ *
+ * // 채팅방 이름 가져오기 (최대 8글자)
+ * const roomName = await getChatRoomName(rtdb, roomId);
+ * console.log(roomName); // 예: "일반 대화방" 또는 "아주 긴 채팅..."
+ * ```
+ */
+export async function getChatRoomName(
+	db: Database,
+	roomId: string,
+	maxLength: number = 8
+): Promise<string> {
+	try {
+		// /chat-rooms/{roomId}/name 필드만 읽기
+		const nameRef = ref(db, `chat-rooms/${roomId}/name`);
+		const snapshot = await get(nameRef);
+
+		if (!snapshot.exists()) {
+			return '(채팅방)'; // 기본값
+		}
+
+		const name = snapshot.val() as string;
+
+		// 최대 길이 초과 시 ellipsis 처리
+		if (name.length > maxLength) {
+			return name.substring(0, maxLength) + '...';
+		}
+
+		return name;
+	} catch (error) {
+		console.error('채팅방 이름 가져오기 실패:', error);
+		return '(채팅방)'; // 에러 시 기본값
+	}
+}

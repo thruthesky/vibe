@@ -69,7 +69,7 @@
 <MessageEditModal
 	bind:open
 	title="댓글 수정"
-	textLabel="내용"
+	textLabel=""
 	{initialText}
 	{initialUrls}
 	roomId={messageId}

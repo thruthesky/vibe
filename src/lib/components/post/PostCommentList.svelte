@@ -87,7 +87,11 @@
 	/**
 	 * 댓글 수정 모달 열기
 	 */
-	function handleOpenEditDialog(commentId: string, text: string, urls: Record<number, string> | undefined) {
+	function handleOpenEditDialog(
+		commentId: string,
+		text: string,
+		urls: Record<number, string> | undefined
+	) {
 		editingCommentId = commentId;
 		editingCommentText = text || '';
 		editingCommentUrls = urls || {};
@@ -223,7 +227,7 @@
 
 						<!-- 첨부 파일 미리보기 (FileAttachments 컴포넌트 사용) -->
 						{#if comment.urls}
-							<FileAttachments urls={comment.urls} maxDisplay={2} thumbnailSize="h-16 w-16" />
+							<FileAttachments urls={comment.urls} maxDisplay={20} thumbnailSize="h-32 w-32" />
 						{/if}
 
 						<!-- 버튼 그룹 -->
@@ -315,7 +319,7 @@
 	}
 
 	.comment-deleted-text {
-		@apply italic text-gray-400;
+		@apply text-gray-400 italic;
 	}
 
 	.comment-content {
@@ -335,7 +339,7 @@
 	}
 
 	.comment-text {
-		@apply text-sm text-gray-800;
+		@apply whitespace-pre-line text-sm text-gray-800;
 	}
 
 	.comment-actions {

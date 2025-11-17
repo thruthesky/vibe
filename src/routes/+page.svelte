@@ -21,9 +21,20 @@
 	import PostCreateDialog from '$lib/components/post/PostCreateDialog.svelte';
 	import CommentCreateDialog from '$lib/components/comment/CommentCreateDialog.svelte';
 	import PostCommentList from '$lib/components/post/PostCommentList.svelte';
+	import FileAttachments from '$lib/components/FileAttachments.svelte';
+	import UserProfile from '$lib/components/UserProfile.svelte';
+	import Avatar from '$lib/components/user/avatar.svelte';
+	import { Camera, Image as ImageIcon, Video, Smile } from 'lucide-svelte';
+	import { authStore } from '$lib/stores/auth.svelte';
+	import { rtdb } from '$lib/firebase';
+	import { ref, update } from 'firebase/database';
+	import { getChatRoomName } from '$lib/functions/chat.functions';
 
 	// 카테고리 선택 상태 (null = 전체)
 	let selectedCategory = $state<ForumCategory | null>(null);
+
+	// DatabaseListView 참조 (새로고침용)
+	let listViewRef = $state<DatabaseListView>();
 
 	// 글쓰기 모달 상태
 	let isCreateDialogOpen = $state(false);
@@ -66,6 +77,36 @@
 	async function handleCommentCreated() {
 		if (selectedMessageId && commentListRefs[selectedMessageId]) {
 			await commentListRefs[selectedMessageId].refresh();
+		}
+	}
+
+	/**
+	 * 게시글 삭제 함수
+	 */
+	async function handleDeletePost(messageId: string) {
+		if (!confirm('게시글을 삭제하시겠습니까?')) {
+			return;
+		}
+
+		if (!rtdb) {
+			alert('Firebase 연결이 없습니다.');
+			return;
+		}
+
+		try {
+			const messageRef = ref(rtdb, `chat-messages/${messageId}`);
+			await update(messageRef, {
+				text: null,
+				urls: null,
+				deleted: true,
+				deletedAt: Date.now()
+			});
+
+			// DatabaseListView 새로고침
+			listViewRef?.refresh();
+		} catch (error) {
+			console.error('게시글 삭제 실패:', error);
+			alert('게시글 삭제에 실패했습니다.');
 		}
 	}
 
@@ -141,9 +182,53 @@
 		{/each}
 	</div>
 
+	<!-- 글쓰기 유도 폼 (가짜 입력 폼) -->
+	{#if authStore.user}
+		<div
+			class="compose-prompt"
+			onclick={() => (isCreateDialogOpen = true)}
+			role="button"
+			tabindex="0"
+			onkeydown={(e) => {
+				if (e.key === 'Enter' || e.key === ' ') {
+					isCreateDialogOpen = true;
+				}
+			}}
+		>
+			<!-- 왼쪽: 사용자 프로필 사진 -->
+			<Avatar uid={authStore.user.uid} size={48} />
+
+			<!-- 중간: 가짜 입력창 -->
+			<div class="compose-input-fake">
+				{authStore.user.displayName || '사용자'}님, 무슨 생각을 하고 계신가요?
+			</div>
+
+			<!-- 오른쪽: 아이콘 버튼들 -->
+			<div class="compose-actions">
+				<div class="hidden items-center gap-2 sm:flex">
+					<span class="compose-icon-button" aria-hidden="true">
+						<Video class="compose-icon" />
+					</span>
+					<span class="compose-icon-button" aria-hidden="true">
+						<ImageIcon class="compose-icon" />
+					</span>
+					<span class="compose-icon-button" aria-hidden="true">
+						<Smile class="compose-icon" />
+					</span>
+				</div>
+				<div class="flex items-center sm:hidden">
+					<span class="compose-icon-button" aria-hidden="true">
+						<Camera class="compose-icon" />
+					</span>
+				</div>
+			</div>
+		</div>
+	{/if}
+
 	<!-- 게시글 목록 -->
 	<div class="post-list-content">
 		<DatabaseListView
+			bind:this={listViewRef}
 			path="chat-messages"
 			pageSize={20}
 			orderBy={orderByField}
@@ -154,14 +239,38 @@
 			{#snippet item(itemData, index)}
 				{@const message = itemData.data}
 				{@const messageId = itemData.key}
+				{@const isMyPost = authStore.user?.uid === message.senderUid}
 				<div class="post-card-wrapper">
-					<div class="post-card" onclick={() => handleMessageClick(message.roomId)}>
-						<!-- 카테고리 뱃지 -->
-						{#if message.category}
-							<div class="post-category-badge">
-								{getCategoryMessage(message.category)}
+					<div class="post-card">
+						<!-- 상단 메타 영역 -->
+						<div class="post-header">
+							<!-- 왼쪽: 작성자 프로필 -->
+							<UserProfile uid={message.senderUid} photoSize="h-8 w-8" textSize="text-sm" />
+
+							<!-- 오른쪽: 카테고리 + 채팅방 이름 + 시간 -->
+							<div class="post-header-right">
+								{#if message.category}
+									<span class="post-category-badge">
+										{getCategoryMessage(message.category)}
+									</span>
+								{/if}
+								{#if rtdb}
+									{#await getChatRoomName(rtdb, message.roomId)}
+										<span class="post-room-name">...</span>
+									{:then roomName}
+										<span class="post-room-name">{roomName}</span>
+									{:catch}
+										<span class="post-room-name">(채팅방)</span>
+									{/await}
+								{/if}
+								<span class="post-time">
+									{formatDistanceToNow(new Date(message.createdAt), {
+										addSuffix: true,
+										locale: getDateLocale()
+									})}
+								</span>
 							</div>
-						{/if}
+						</div>
 
 						<!-- 메시지 내용 -->
 						<div class="post-content">
@@ -169,30 +278,117 @@
 								{message.text || '(내용 없음)'}
 							</p>
 
-							<!-- 이미지 미리보기 -->
-							{#if message.urls && Object.keys(message.urls).length > 0}
-								<div class="post-images">
-									{#each Object.values(message.urls).slice(0, 3) as url}
-										<img src={String(url)} alt="첨부 이미지" class="post-image-thumbnail" />
-									{/each}
-									{#if Object.keys(message.urls).length > 3}
-										<div class="post-image-more">
-											+{Object.keys(message.urls).length - 3}
-										</div>
-									{/if}
-								</div>
+							<!-- 첨부파일 미리보기 (FileAttachments 컴포넌트 사용) -->
+							{#if message.urls}
+								<FileAttachments urls={message.urls} />
 							{/if}
 						</div>
 
-						<!-- 메타 정보 -->
-						<div class="post-meta">
-							<span class="post-author">작성자: {message.senderUid}</span>
-							<span class="post-time">
-								{formatDistanceToNow(new Date(message.createdAt), {
-									addSuffix: true,
-									locale: getDateLocale()
-								})}
-							</span>
+						<!-- 하단 액션 바 -->
+						<div class="post-actions">
+							<!-- 왼쪽: 좋아요, 댓글 -->
+							<div class="post-actions-left">
+								<!-- 좋아요 버튼 -->
+								<button
+									class="action-button"
+									onclick={(e) => {
+										e.stopPropagation();
+										// TODO: 좋아요 기능 구현
+									}}
+								>
+									<svg
+										class="h-5 w-5"
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+										stroke-width="2"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+										/>
+									</svg>
+									<span>좋아요</span>
+								</button>
+
+								<!-- 댓글 버튼 -->
+								<button
+									class="action-button"
+									onclick={(e) => {
+										e.stopPropagation();
+										handleOpenCommentDialog(messageId);
+									}}
+								>
+									<svg
+										class="h-5 w-5"
+										fill="none"
+										stroke="currentColor"
+										viewBox="0 0 24 24"
+										stroke-width="2"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+										/>
+									</svg>
+									<span>댓글 {message.totalChildCount || 0}</span>
+								</button>
+							</div>
+
+							<!-- 오른쪽: 수정, 삭제 (작성자만 표시) -->
+							{#if isMyPost}
+								<div class="post-actions-right">
+									<!-- 수정 아이콘 버튼 -->
+									<button
+										class="action-icon-button"
+										onclick={(e) => {
+											e.stopPropagation();
+											goto(`/chat/room?roomId=${message.roomId}`);
+										}}
+										aria-label="수정"
+									>
+										<svg
+											class="h-5 w-5"
+											fill="none"
+											stroke="currentColor"
+											viewBox="0 0 24 24"
+											stroke-width="2"
+										>
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+											/>
+										</svg>
+									</button>
+
+									<!-- 삭제 아이콘 버튼 -->
+									<button
+										class="action-icon-button action-icon-button-danger"
+										onclick={(e) => {
+											e.stopPropagation();
+											handleDeletePost(messageId);
+										}}
+										aria-label="삭제"
+									>
+										<svg
+											class="h-5 w-5"
+											fill="none"
+											stroke="currentColor"
+											viewBox="0 0 24 24"
+											stroke-width="2"
+										>
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+											/>
+										</svg>
+									</button>
+								</div>
+							{/if}
 						</div>
 					</div>
 
@@ -264,7 +460,7 @@
 	}
 
 	.category-tabs {
-		@apply mb-6 flex flex-wrap gap-2;
+		@apply mb-4 flex flex-wrap gap-2;
 	}
 
 	.category-chip {
@@ -277,19 +473,58 @@
 		@apply hover:bg-blue-600/90;
 	}
 
+	/* 글쓰기 유도 폼 (가짜 입력 폼) */
+	.compose-prompt {
+		@apply mb-6 -mx-4 flex w-full items-center gap-3 rounded-none border-0 bg-transparent p-4 shadow-none;
+		@apply cursor-pointer transition-all;
+		@apply sm:mx-0 sm:rounded-lg sm:border sm:border-gray-200 sm:bg-white sm:p-4 sm:shadow-sm sm:hover:border-blue-300 sm:hover:shadow-md;
+	}
+
+	.compose-input-fake {
+		@apply flex-1 rounded-full bg-gray-100 px-4 py-3 text-gray-500;
+		@apply transition-colors hover:bg-gray-200;
+	}
+
+	.compose-actions {
+		@apply flex items-center gap-2;
+	}
+
+	.compose-icon-button {
+		@apply flex h-10 w-10 cursor-pointer items-center justify-center rounded-full text-2xl;
+		@apply transition-all hover:bg-gray-100;
+	}
+
+	.compose-icon {
+		@apply h-5 w-5 text-gray-600;
+	}
+
 	.post-list-content {
 		@apply space-y-4;
 	}
 
 	.post-card {
-		@apply cursor-pointer rounded-lg border border-gray-200 bg-white p-4 shadow-sm;
+		@apply rounded-lg border border-gray-200 bg-white p-4 shadow-sm;
 		@apply transition-all hover:shadow-md;
 	}
 
-	.post-category-badge {
-		@apply mb-2 inline-block rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-800;
+	/* 상단 메타 영역 */
+	.post-header {
+		@apply mb-3 flex items-center justify-between;
 	}
 
+	.post-header-right {
+		@apply flex items-center gap-2;
+	}
+
+	.post-category-badge {
+		@apply inline-block rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-800;
+	}
+
+	.post-room-name {
+		@apply text-xs text-gray-500;
+	}
+
+	/* 메시지 내용 영역 */
 	.post-content {
 		@apply mb-3;
 	}
@@ -315,16 +550,37 @@
 		@apply flex h-20 w-20 items-center justify-center rounded bg-gray-100 text-sm font-medium text-gray-600;
 	}
 
-	.post-meta {
-		@apply flex items-center justify-between text-sm text-gray-500;
-	}
-
-	.post-author {
-		@apply font-medium;
-	}
-
 	.post-time {
-		@apply text-gray-400;
+		@apply text-xs text-gray-400;
+	}
+
+	/* 하단 액션 바 */
+	.post-actions {
+		@apply mt-3 flex items-center justify-between border-t border-gray-100 pt-3;
+	}
+
+	.post-actions-left {
+		@apply flex items-center gap-2;
+	}
+
+	.post-actions-right {
+		@apply flex items-center gap-2;
+	}
+
+	/* 좋아요/댓글 버튼 */
+	.action-button {
+		@apply flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm text-gray-600;
+		@apply transition-colors hover:bg-gray-100;
+	}
+
+	/* 수정/삭제 아이콘 버튼 */
+	.action-icon-button {
+		@apply flex items-center justify-center rounded-lg p-2 text-gray-600;
+		@apply transition-colors hover:bg-gray-100;
+	}
+
+	.action-icon-button-danger {
+		@apply text-red-600 hover:bg-red-50;
 	}
 
 	.list-status {

@@ -25,6 +25,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { rtdb } from '$lib/firebase';
 	import { ref, update } from 'firebase/database';
+	import { getChatRoomName } from '$lib/functions/chat.functions';
 
 	// 카테고리 선택 상태 (null = 전체)
 	let selectedCategory = $state<ForumCategory | null>(null);
@@ -231,13 +232,36 @@
 							<p class="post-deleted-text">삭제된 글입니다.</p>
 						</div>
 					{:else}
-						<div class="post-card" onclick={() => handleMessageClick(message.roomId)}>
-							<!-- 카테고리 뱃지 -->
-							{#if message.category}
-								<div class="post-category-badge">
-									{getCategoryMessage(message.category)}
+						<div class="post-card">
+							<!-- 상단 메타 영역 -->
+							<div class="post-header">
+								<!-- 왼쪽: 작성자 프로필 -->
+								<UserProfile uid={message.senderUid} photoSize="h-8 w-8" textSize="text-sm" />
+
+								<!-- 오른쪽: 카테고리 + 채팅방 이름 + 시간 -->
+								<div class="post-header-right">
+									{#if message.category}
+										<span class="post-category-badge">
+											{getCategoryMessage(message.category)}
+										</span>
+									{/if}
+									{#if rtdb}
+										{#await getChatRoomName(rtdb, message.roomId)}
+											<span class="post-room-name">...</span>
+										{:then roomName}
+											<span class="post-room-name">{roomName}</span>
+										{:catch}
+											<span class="post-room-name">(채팅방)</span>
+										{/await}
+									{/if}
+									<span class="post-time">
+										{formatDistanceToNow(new Date(message.createdAt), {
+											addSuffix: true,
+											locale: getDateLocale()
+										})}
+									</span>
 								</div>
-							{/if}
+							</div>
 
 							<!-- 메시지 내용 -->
 							<div class="post-content">
@@ -251,44 +275,112 @@
 								{/if}
 							</div>
 
-							<!-- 메타 정보 -->
-							<div class="post-meta">
-								<!-- 작성자 정보 (UserProfile 컴포넌트 사용) -->
-								<UserProfile uid={message.senderUid} />
-
-								<span class="post-time">
-									{formatDistanceToNow(new Date(message.createdAt), {
-										addSuffix: true,
-										locale: getDateLocale()
-									})}
-								</span>
-							</div>
-
-							<!-- 수정/삭제 버튼 (작성자만 표시) -->
-							{#if isMyPost}
-								<div class="post-actions-buttons">
-									<Button
-										variant="ghost"
-										size="sm"
-										onclick={(e: MouseEvent) => {
+							<!-- 하단 액션 바 -->
+							<div class="post-actions">
+								<!-- 왼쪽: 좋아요, 댓글 -->
+								<div class="post-actions-left">
+									<!-- 좋아요 버튼 -->
+									<button
+										class="action-button"
+										onclick={(e) => {
 											e.stopPropagation();
-											handleOpenEditDialog(messageId, message.text, message.urls, message.roomId);
+											// TODO: 좋아요 기능 구현
 										}}
 									>
-										수정
-									</Button>
-									<Button
-										variant="ghost"
-										size="sm"
-										onclick={(e: MouseEvent) => {
+										<svg
+											class="h-5 w-5"
+											fill="none"
+											stroke="currentColor"
+											viewBox="0 0 24 24"
+											stroke-width="2"
+										>
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+											/>
+										</svg>
+										<span>좋아요</span>
+									</button>
+
+									<!-- 댓글 버튼 -->
+									<button
+										class="action-button"
+										onclick={(e) => {
 											e.stopPropagation();
-											handleDeletePost(messageId);
+											handleOpenCommentDialog(messageId);
 										}}
 									>
-										삭제
-									</Button>
+										<svg
+											class="h-5 w-5"
+											fill="none"
+											stroke="currentColor"
+											viewBox="0 0 24 24"
+											stroke-width="2"
+										>
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+											/>
+										</svg>
+										<span>댓글 {message.totalChildCount || 0}</span>
+									</button>
 								</div>
-							{/if}
+
+								<!-- 오른쪽: 수정, 삭제 (작성자만 표시) -->
+								{#if isMyPost}
+									<div class="post-actions-right">
+										<!-- 수정 아이콘 버튼 -->
+										<button
+											class="action-icon-button"
+											onclick={(e: MouseEvent) => {
+												e.stopPropagation();
+												handleOpenEditDialog(messageId, message.text, message.urls, message.roomId);
+											}}
+											aria-label="수정"
+										>
+											<svg
+												class="h-5 w-5"
+												fill="none"
+												stroke="currentColor"
+												viewBox="0 0 24 24"
+												stroke-width="2"
+											>
+												<path
+													stroke-linecap="round"
+													stroke-linejoin="round"
+													d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+												/>
+											</svg>
+										</button>
+
+										<!-- 삭제 아이콘 버튼 -->
+										<button
+											class="action-icon-button action-icon-button-danger"
+											onclick={(e: MouseEvent) => {
+												e.stopPropagation();
+												handleDeletePost(messageId);
+											}}
+											aria-label="삭제"
+										>
+											<svg
+												class="h-5 w-5"
+												fill="none"
+												stroke="currentColor"
+												viewBox="0 0 24 24"
+												stroke-width="2"
+											>
+												<path
+													stroke-linecap="round"
+													stroke-linejoin="round"
+													d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+												/>
+											</svg>
+										</button>
+									</div>
+								{/if}
+							</div>
 						</div>
 					{/if}
 
@@ -389,7 +481,7 @@
 	}
 
 	.post-card {
-		@apply cursor-pointer rounded-lg border border-gray-200 bg-white p-4 shadow-sm;
+		@apply rounded-lg border border-gray-200 bg-white p-4 shadow-sm;
 		@apply transition-all hover:shadow-md;
 	}
 
@@ -401,20 +493,30 @@
 		@apply py-2 text-center italic text-gray-400;
 	}
 
-	.post-actions-buttons {
-		@apply mt-2 flex gap-2 border-t border-gray-100 pt-2;
+	/* 상단 메타 영역 */
+	.post-header {
+		@apply mb-3 flex items-center justify-between;
+	}
+
+	.post-header-right {
+		@apply flex items-center gap-2;
 	}
 
 	.post-category-badge {
-		@apply mb-2 inline-block rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-800;
+		@apply inline-block rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-800;
 	}
 
+	.post-room-name {
+		@apply text-xs text-gray-500;
+	}
+
+	/* 메시지 내용 영역 */
 	.post-content {
 		@apply mb-3;
 	}
 
 	.post-text {
-		@apply mb-2 text-gray-800;
+		@apply mb-2 whitespace-pre-line text-gray-800;
 		display: -webkit-box;
 		-webkit-line-clamp: 3;
 		-webkit-box-orient: vertical;
@@ -442,28 +544,37 @@
 		@apply flex h-20 w-20 items-center justify-center rounded bg-gray-100 text-sm font-medium text-gray-600;
 	}
 
-	.post-meta {
-		@apply flex items-center justify-between text-sm text-gray-500;
+	.post-time {
+		@apply text-xs text-gray-400;
 	}
 
-	.post-author {
+	/* 하단 액션 바 */
+	.post-actions {
+		@apply mt-3 flex items-center justify-between border-t border-gray-100 pt-3;
+	}
+
+	.post-actions-left {
 		@apply flex items-center gap-2;
 	}
 
-	.author-photo {
-		@apply h-8 w-8 rounded-full object-cover;
+	.post-actions-right {
+		@apply flex items-center gap-2;
 	}
 
-	.author-photo-placeholder {
-		@apply flex h-8 w-8 items-center justify-center rounded-full bg-gray-300 text-xs font-semibold text-white;
+	/* 좋아요/댓글 버튼 */
+	.action-button {
+		@apply flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm text-gray-600;
+		@apply transition-colors hover:bg-gray-100;
 	}
 
-	.author-name {
-		@apply font-medium text-gray-700;
+	/* 수정/삭제 아이콘 버튼 */
+	.action-icon-button {
+		@apply flex items-center justify-center rounded-lg p-2 text-gray-600;
+		@apply transition-colors hover:bg-gray-100;
 	}
 
-	.post-time {
-		@apply text-gray-400;
+	.action-icon-button-danger {
+		@apply text-red-600 hover:bg-red-50;
 	}
 
 	.list-status {
@@ -473,10 +584,6 @@
 	/* 댓글 관련 스타일 */
 	.post-card-wrapper {
 		@apply mb-4;
-	}
-
-	.post-actions {
-		@apply mt-2 flex items-center justify-between border-t border-gray-100 pt-2;
 	}
 
 	.comment-info {

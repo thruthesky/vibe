@@ -401,7 +401,7 @@
 </script>
 
 <Dialog bind:open>
-	<DialogContent class="sm:max-w-2xl">
+	<DialogContent class="sm:max-w-3xl">
 		<DialogHeader>
 			<DialogTitle>{title}</DialogTitle>
 		</DialogHeader>
@@ -414,11 +414,13 @@
 
 			<!-- 텍스트 편집 -->
 			<div class="form-group">
-				<label for="message-text" class="form-label">{textLabel}</label>
+				{#if textLabel}
+					<label for="message-text" class="form-label">{textLabel}</label>
+				{/if}
 				<textarea
 					id="message-text"
 					class="form-textarea"
-					rows="4"
+					rows="8"
 					bind:value={text}
 					placeholder={textPlaceholder}
 					onkeydown={(e) => {
@@ -591,9 +593,9 @@
 
 			<!-- 파일 업로드 버튼 + 취소/저장 버튼 (한 줄에 배치) -->
 			<div class="action-buttons-row">
-				<!-- 파일 업로드 버튼 -->
-				<button type="button" class="upload-button" onclick={handleFileButtonClick}>
-					<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+				<!-- 파일 업로드 버튼 (카메라 아이콘만) -->
+				<button type="button" class="upload-button-icon" onclick={handleFileButtonClick} title="파일 추가">
+					<svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 						<path
 							stroke-linecap="round"
 							stroke-linejoin="round"
@@ -601,7 +603,6 @@
 						/>
 						<path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
 					</svg>
-					파일 추가
 				</button>
 
 				<input
@@ -754,6 +755,12 @@
 	.upload-button {
 		@apply flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm;
 		@apply transition-colors hover:bg-gray-50 active:bg-gray-100;
+	}
+
+	/* 파일 업로드 버튼 (아이콘만) */
+	.upload-button-icon {
+		@apply flex h-10 w-10 items-center justify-center rounded-full text-gray-600;
+		@apply transition-all hover:bg-gray-100 active:bg-gray-200;
 	}
 
 	.error-message {

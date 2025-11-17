@@ -43,7 +43,17 @@ tags: ["layout", "topbar", "sidebar", "navigation", "ui", "authentication", "sve
 - ✅ 인증 스토어 구현 완료 (sonub-user-login.md 참조)
 - ✅ SvelteKit 5 프로젝트 환경
 
-### 1.4 구현 파일
+### 1.4 모바일 홈 글쓰기 유도 폼 규칙
+
+> **⚠️ 반드시 지킬 것:** 홈 상단의 글쓰기 가짜 폼은 **모바일에서 카드/보더/그림자 없이 화면 양 끝까지 꽉 차게** 표시해야 한다.
+>
+> - sm 미만 해상도에서는 `border`, `shadow`, `rounded` 클래스를 모두 제거하고, 컨테이너 패딩을 상쇄하기 위해 `-mx-4` 등으로 **가장 넓은 가로 공간**을 사용한다.
+> - 버튼/아이콘은 **Camera 아이콘 하나만** 노출하여 공간을 절약한다.
+> - sm 이상 해상도에서는 기존과 같이 흰색 카드, border, shadow, 3개의 아이콘(Video/Image/Smile)을 사용한다.
+>
+> 이 규칙은 `src/routes/+page.svelte`의 `.compose-prompt` 스타일과 아이콘 그룹 구현으로 강제된다. 어떠한 경우에도 모바일 카드 형태로 회귀하지 않도록 코드 리뷰 시 확인한다.
+
+### 1.5 구현 파일
 
 ```
 src/

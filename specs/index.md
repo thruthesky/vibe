@@ -1462,6 +1462,50 @@ Switch 컴포넌트 (2개):
   - 다국어 지원 (chatPasswordSettings, chatPasswordVerifying 등)
 - **구현 완료**: ✅ 2025-11-14
 
+## Forum System
+
+### Sonub Forum Overview
+- **File**: [sonub-forum-overview.md](./sonub-forum-overview.md)
+- **Title**: 게시판 기능 개요
+- **Description**: 채팅 시스템과 통합된 게시판 기능의 아키텍처 및 구현 사양
+- **Version**: 1.0.0
+- **Dependencies**:
+  - sonub-chat-overview.md
+  - sonub-firebase-database-structure.md
+  - sonub-firebase-database-list-view.md
+- **Tags**: forum, board, post, category, chat-integration, firebase-rtdb
+- **주요 내용**:
+  - 채팅 메시지를 게시판 글로 활용하는 통합 구조
+  - 카테고리별 게시글 정렬 (allCategoryOrder, categoryOrder)
+  - DatabaseListView 기반 무한 스크롤 게시판
+  - 게시글 작성/수정/삭제 및 댓글 시스템
+
+### Sonub Forum Post
+- **File**: [sonub-forum-post.md](./sonub-forum-post.md)
+- **Title**: 게시판 글 목록 UI 구조
+- **Description**: 게시판 글 목록 페이지의 HTML layout 구조 및 스타일링 사양
+- **Version**: 1.0.0
+- **Dependencies**:
+  - sonub-forum-overview.md
+  - sonub-firebase-database-list-view.md
+  - sonub-firebase-storage.md
+  - sonub-user-avatar.md
+- **Tags**: forum, post, layout, ui, html-structure
+- **Files**:
+  - `src/routes/+page.svelte` - 홈페이지 (최근 게시글 목록)
+  - `src/routes/post/list/+page.svelte` - 게시판 목록 (카테고리별)
+  - `src/lib/components/UserProfile.svelte` - 작성자 프로필 컴포넌트
+  - `src/lib/components/FileAttachments.svelte` - 첨부 파일 미리보기
+  - `src/lib/components/post/PostCommentList.svelte` - 댓글 목록
+- **주요 내용**:
+  - 게시글 카드 HTML 구조 (카테고리 뱃지, 내용, 메타 정보)
+  - UserProfile 컴포넌트 (프로필 사진 + 이름)
+  - FileAttachments 컴포넌트 (이미지/비디오/기타 파일)
+  - PostCommentList 컴포넌트 (댓글 목록 + 답글)
+  - Tailwind CSS 스타일링 규칙
+  - 반응형 디자인 및 접근성 가이드라인
+- **구현 완료**: ✅ 2025-01-17
+
 ## Deployment
 
 ### Sonub Deploy Workflow

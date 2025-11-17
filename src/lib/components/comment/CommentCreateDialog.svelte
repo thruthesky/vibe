@@ -82,7 +82,7 @@
 <MessageEditModal
 	bind:open
 	title={parentId ? '대댓글 작성' : '댓글 작성'}
-	textLabel="내용"
+	textLabel=""
 	roomId={messageId}
 	saveButtonText="저장"
 	cancelButtonText="취소"

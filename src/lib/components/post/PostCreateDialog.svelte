@@ -205,7 +205,7 @@
 <MessageEditModal
 	bind:open
 	title="게시글 작성"
-	textLabel="내용"
+	textLabel=""
 	roomId={selectedRoomId}
 	saveButtonText="저장"
 	cancelButtonText="취소"
@@ -217,50 +217,40 @@
 	<!-- 추가 필드: 카테고리 및 채팅방 선택 -->
 	<div class="additional-fields">
 		<!-- 카테고리 선택 -->
-		<div class="form-group">
-			<label for="category" class="form-label">카테고리 *</label>
-			<select id="category" bind:value={selectedCategory} class="form-select">
-				<option value="">{m.chatCategorySelect()}</option>
-				{#each FORUM_CATEGORIES as category}
-					<option value={category}>{getCategoryMessage(category)}</option>
-				{/each}
-			</select>
-		</div>
+		<select id="category" bind:value={selectedCategory} class="form-select">
+			<option value="">카테고리 선택</option>
+			{#each FORUM_CATEGORIES as category}
+				<option value={category}>{getCategoryMessage(category)}</option>
+			{/each}
+		</select>
 
 		<!-- 채팅방 선택 -->
-		<div class="form-group">
-			<label for="roomId" class="form-label">채팅방</label>
-			<select id="roomId" bind:value={selectedRoomId} class="form-select">
-				<option value="post">기본</option>
-				{#if loadingRooms}
-					<option value="" disabled>로딩 중...</option>
-				{:else}
-					{#each chatRooms as room}
-						<option value={room.roomId}>{room.roomName}</option>
-					{/each}
-				{/if}
-			</select>
-		</div>
+		<select id="roomId" bind:value={selectedRoomId} class="form-select">
+			<option value="post">채팅방 선택</option>
+			{#if loadingRooms}
+				<option value="" disabled>로딩 중...</option>
+			{:else}
+				{#each chatRooms as room}
+					<option value={room.roomId}>{room.roomName}</option>
+				{/each}
+			{/if}
+		</select>
 	</div>
 </MessageEditModal>
 
 <style>
 	@import 'tailwindcss' reference;
 
+	/* 카테고리 + 채팅방 선택을 가로로 나란히 배치 */
 	.additional-fields {
-		@apply space-y-4;
+		@apply flex gap-3;
 	}
 
-	.form-group {
-		@apply space-y-2;
-	}
-
-	.form-label {
-		@apply text-sm font-semibold text-gray-700;
-	}
-
+	/* select 박스 스타일 (border 제거, background 연하게) */
 	.form-select {
-		@apply w-full rounded-lg border border-gray-300 px-3 py-2 text-sm;
-		@apply focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20;
+		@apply flex-1 rounded-lg bg-gray-50 px-3 py-2 text-sm text-gray-700;
+		@apply transition-colors hover:bg-gray-100;
+		@apply focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20;
+		border: none;
 	}
 </style>
