@@ -1,0 +1,15 @@
+name = "sonub"
+main = ".svelte-kit/cloudflare/_worker.js"
+compatibility_date = "2025-02-01"
+
+# Node.js 호환성 플래그 활성화
+# async_hooks 등 Node.js 내장 모듈을 사용하기 위해 필요
+compatibility_flags = ["nodejs_compat"]
+
+# 정적 자산 디렉토리 설정 (SvelteKit 빌드 시 생성됨)
+# Cloudflare Workers Static Assets 사용
+[assets]
+binding = "ASSETS"
+directory = ".svelte-kit/cloudflare"
+
+

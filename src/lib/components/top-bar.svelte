@@ -86,7 +86,7 @@
 			<!-- 좌측: 로고 및 네비게이션 링크 -->
 			<div class="flex items-center gap-4">
 				<a href="/" class="flex items-center gap-3 text-gray-900 hover:text-gray-700">
-					<img src="/static/favicon-128.png" alt="Sonub Logo" class="h-10 w-10" />
+					<img src="/favicon-128.png" alt="Sonub Logo" class="h-10 w-10" />
 				</a>
 				<form
 					class="hidden items-center gap-2 rounded-full bg-gray-100 pl-4 pr-1 shadow-inner sm:flex"
