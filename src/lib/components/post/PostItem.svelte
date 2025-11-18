@@ -24,6 +24,9 @@
 	import { rtdb } from '$lib/firebase';
 	import { getChatRoomName } from '$lib/functions/chat.functions';
 	import type { LikeTargetType } from '$lib/functions/like.functions';
+	import { fetchLikedByUsers } from '$lib/functions/like.functions';
+	import LikedUsersAvatarStack from '$lib/components/LikedUsersAvatarStack.svelte';
+	import LikedUsersModal from '$lib/components/LikedUsersModal.svelte';
 
 	/**
 	 * Props
@@ -72,6 +75,38 @@
 
 	// 댓글 컴포넌트 참조
 	let commentListRef = $state<PostCommentList>();
+
+	// 좋아요 사용자 목록 상태
+	let likedByUids = $state<string[]>([]);
+	let likesModalOpen = $state(false);
+
+	/**
+	 * 좋아요 사용자 목록 로드
+	 */
+	$effect(() => {
+		if (message.likeCount && message.likeCount > 0) {
+			loadLikedUsers();
+		} else {
+			likedByUids = [];
+		}
+	});
+
+	async function loadLikedUsers() {
+		try {
+			const uids = await fetchLikedByUsers(messageId, 'message');
+			likedByUids = uids;
+		} catch (error) {
+			console.error('좋아요 사용자 로드 실패:', error);
+			likedByUids = [];
+		}
+	}
+
+	/**
+	 * 좋아요 사용자 목록 모달 열기
+	 */
+	function handleOpenLikesModal() {
+		likesModalOpen = true;
+	}
 
 	/**
 	 * 수정 버튼 클릭 핸들러
@@ -240,6 +275,11 @@
 						<span>좋아요 {message.likeCount ?? 0}</span>
 					</button>
 
+					<!-- 좋아요 사용자 아바타 스택 (3명까지 표시) -->
+					{#if likedByUids.length > 0}
+						<LikedUsersAvatarStack likedByUids={likedByUids} onClick={handleOpenLikesModal} />
+					{/if}
+
 					<!-- 댓글 버튼 -->
 					<button
 						class="action-button"
@@ -319,6 +359,9 @@
 		{onOpenCommentDialog}
 		{userLikes}
 	/>
+
+	<!-- 좋아요 사용자 목록 모달 -->
+	<LikedUsersModal bind:open={likesModalOpen} targetId={messageId} targetType="message" />
 </div>
 
 <style>

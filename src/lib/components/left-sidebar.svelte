@@ -118,7 +118,7 @@
 					uid: child.key ?? '',
 					displayName: value?.displayName ?? '',
 					photoUrl: value?.photoUrl ?? null,
-					sortRecentWithPhoto: value?.sort_recentWithPhoto ?? 0
+					sortRecentWithPhoto: Number(value?.sort_recentWithPhoto) || 0
 				});
 			});
 
@@ -176,12 +176,14 @@
 						return;
 					}
 
+					const createdAtValue =
+						Number(value?.createdAt) || resolveOrderValue(value?.openListOrder);
 					items.push({
 						roomId: child.key ?? '',
 						roomName: (value?.name as string) || 'Open Chat',
 						description: (value?.description as string) || '',
 						memberCount: Number(value?.memberCount) || 0,
-						createdAt: Number(value?.createdAt) || resolveOrderValue(value?.openListOrder)
+						createdAt: Math.abs(createdAtValue)
 					});
 				});
 
@@ -228,11 +230,13 @@
 						return;
 					}
 
+					const createdAtValue =
+						Number(value?.createdAt) || resolveOrderValue(value?.categoryOrder);
 					items.push({
 						messageId: child.key ?? '',
 						text: (value?.text as string) || '',
 						category: (value?.category as string) || '',
-						createdAt: Number(value?.createdAt) || resolveOrderValue(value?.categoryOrder)
+						createdAt: Math.abs(createdAtValue)
 					});
 				});
 
@@ -408,11 +412,14 @@
 				{:else}
 					<ul class="space-y-2">
 						{#each recentUsers as user (user.uid)}
+							{@const joinedAt = Math.abs(user.sortRecentWithPhoto || 0)}
 							<li class="recent-user-item flex items-center gap-3">
 								<img src={user.photoUrl ?? ''} alt={user.displayName || 'recent user'} class="recent-user-avatar" loading="lazy" />
 								<div class="recent-user-info flex flex-col">
 									<span class="recent-user-name">{user.displayName || m.commonUser()}</span>
-									<span class="recent-user-joined">{formatShortDate(user.sortRecentWithPhoto)}</span>
+									{#if joinedAt}
+										<span class="recent-user-joined">{formatShortDate(joinedAt)}</span>
+									{/if}
 								</div>
 							</li>
 						{/each}
@@ -451,7 +458,9 @@
 									<p class="open-chat-body">
 										{chat.description || m.homeSectionRecentOpenChatDesc()}
 									</p>
-									<p class="open-chat-meta">{m.homeSidebarSeeMore()} • {formatCount(chat.memberCount)}</p>
+									<p class="open-chat-meta">
+										{m.homeSidebarMembersCount({ count: formatCount(chat.memberCount) })}
+									</p>
 								</a>
 							</li>
 						{/each}

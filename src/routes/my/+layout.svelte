@@ -19,20 +19,17 @@
 
 <div class="user-layout">
 	<div class="user-container">
-		<!-- 사용자 사이드바 -->
-		<aside class="user-sidebar">
-			<nav class="user-nav">
-				<h2 class="user-title">내 메뉴</h2>
-				<ul class="nav-list">
-					<li>
-						<a href="/my/reports" class="nav-link" class:active={$page.url.pathname === '/my/reports'}>
-							내 신고 목록
-						</a>
-					</li>
-					<!-- 향후 추가 사용자 메뉴 -->
-				</ul>
-			</nav>
-		</aside>
+		<!-- 상단 탭바 네비게이션 -->
+		<nav class="tab-nav">
+			<ul class="tab-list">
+				<li>
+					<a href="/my/reports" class="tab-link" class:active={$page.url.pathname === '/my/reports'}>
+						내 신고 목록
+					</a>
+				</li>
+				<!-- 향후 추가 사용자 메뉴 -->
+			</ul>
+		</nav>
 
 		<!-- 사용자 메인 컨텐츠 -->
 		<main class="user-main">
@@ -49,117 +46,66 @@
 	}
 
 	.user-container {
-		display: flex;
-		gap: 2rem;
 		max-width: 1400px;
 		margin: 0 auto;
 		padding: 2rem 1rem;
 	}
 
-	/* 사용자 사이드바 */
-	.user-sidebar {
-		width: 250px;
-		flex-shrink: 0;
-	}
-
-	.user-nav {
+	/* 상단 탭바 네비게이션 */
+	.tab-nav {
 		background-color: #ffffff; /* Light white background */
-		border: 1px solid #e5e7eb; /* Light gray border */
-		border-radius: 0.5rem;
-		padding: 1.5rem;
-		position: sticky;
-		top: 100px;
+		border-bottom: 2px solid #e5e7eb; /* Light gray border */
+		margin-bottom: 2rem;
 	}
 
-	.user-title {
-		margin: 0 0 1rem 0;
-		font-size: 1.1rem;
-		font-weight: 700;
-		color: #111827; /* Light dark gray text */
-	}
-
-	.nav-list {
+	.tab-list {
 		list-style: none;
 		padding: 0;
 		margin: 0;
+		display: flex;
+		gap: 0;
 	}
 
-	.nav-list li {
-		margin-bottom: 0.5rem;
-	}
-
-	.nav-link {
+	.tab-link {
 		display: block;
-		padding: 0.75rem 1rem;
-		color: #4b5563; /* Light gray text */
+		padding: 1rem 1.5rem;
+		color: #6b7280; /* Light gray text */
 		text-decoration: none;
-		border-radius: 0.375rem;
+		border-bottom: 3px solid transparent;
 		transition: all 0.2s ease;
 		font-weight: 500;
+		position: relative;
 	}
 
-	.nav-link:hover {
-		background-color: #f3f4f6; /* Light hover background */
-		color: #111827; /* Light dark text */
+	.tab-link:hover {
+		color: #3b82f6; /* Blue accent on hover */
+		background-color: #f9fafb; /* Subtle hover background */
 	}
 
-	.nav-link.active {
-		background-color: #3b82f6; /* Blue accent (light friendly) */
-		color: #ffffff; /* White text on blue */
+	.tab-link.active {
+		color: #3b82f6; /* Blue accent (light friendly) */
+		border-bottom-color: #3b82f6; /* Blue bottom border for active tab */
+		font-weight: 600;
 	}
 
 	/* 사용자 메인 컨텐츠 */
 	.user-main {
-		flex: 1;
-		min-width: 0;
+		width: 100%;
 	}
 
 	/* 반응형 */
-	@media (max-width: 1024px) {
-		.user-container {
-			flex-direction: column;
-			gap: 1rem;
-		}
-
-		.user-sidebar {
-			width: 100%;
-		}
-
-		.user-nav {
-			position: static;
-			display: grid;
-			grid-template-columns: auto 1fr;
-			align-items: center;
-			gap: 1rem;
-		}
-
-		.user-title {
-			margin: 0;
-		}
-
-		.nav-list {
-			display: flex;
-			gap: 0.5rem;
-		}
-
-		.nav-list li {
-			margin-bottom: 0;
-		}
-	}
-
-	/* 모바일 */
 	@media (max-width: 640px) {
 		.user-container {
 			padding: 1rem 0.5rem;
 		}
 
-		.user-nav {
-			flex-direction: column;
-			gap: 0.5rem;
+		.tab-list {
+			flex-wrap: wrap;
 		}
 
-		.nav-list {
-			flex-direction: column;
+		.tab-link {
+			padding: 0.75rem 1rem;
+			font-size: 0.9rem;
 		}
 	}
 </style>

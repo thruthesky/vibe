@@ -4,7 +4,7 @@ type: component
 path: src/lib/components/left-sidebar.svelte
 status: active
 version: 1.0.0
-last_updated: 2025-11-15
+last_updated: 2025-11-18
 ---
 
 ## 개요
@@ -16,20 +16,42 @@ last_updated: 2025-11-15
 ```svelte
 <script lang="ts">
 	/**
-	 * 좌측 사이드바 컴포넌트
+	 * 홈 화면 좌측 사이드바
 	 *
-	 * 데스크톱에서만 표시되는 좌측 네비게이션/메뉴 영역입니다.
-	 * TailwindCSS를 사용하여 스타일링합니다.
-	 * Paraglide-JS를 사용하여 다국어 메시지를 자동으로 처리합니다.
+	 * 로그인 사용자의 상태, 팔로우 정보, 최근 사용자/오픈챗/활동, 언어 설정을 보여줍니다.
+	 * 데이터는 Firebase Realtime Database 에서 읽어옵니다.
 	 */
 
 	import * as Card from '$lib/components/ui/card/index.js';
-	import { BUILD_VERSION } from '$lib/version';
+	import Avatar from '$lib/components/user/avatar.svelte';
+	import { authStore } from '$lib/stores/auth.svelte';
 	import { getLocale, setLocale, locales } from '$lib/paraglide/runtime';
 	import { m } from '$lib/paraglide/messages';
-	import { page } from '$app/stores';
+	import { onMount, onDestroy } from 'svelte';
+	import { rtdb } from '$lib/firebase';
+	import { formatShortDate } from '$lib/functions/date.functions';
+	import { createRealtimeStore } from '$lib/stores/database.svelte';
+	import {
+		get,
+		limitToLast,
+		onValue,
+		orderByChild,
+		query,
+		ref,
+		type DatabaseReference
+	} from 'firebase/database';
+	import {
+		ArrowRight,
+		UsersRound,
+		UserRound,
+		UserCheck,
+		Heart,
+		BarChart3,
+		MessageSquare,
+		Activity as ActivityIcon,
+		Globe
+	} from 'lucide-svelte';
 
-	// 언어 이름 매핑
 	const localeNames: Record<string, string> = {
 		en: 'English',
 		ko: '한국어',
@@ -37,272 +59,653 @@ last_updated: 2025-11-15
 		zh: '中文'
 	};
 
-const devHighlights = [
-	{ order: '8', label: () => m.sidebarDevHighlightWrapUp() },
-	{ order: '9', label: () => m.sidebarDevHighlightAttachment() },
-	{ order: '10', label: () => m.sidebarDevHighlightPassword() }
-];
+	const localeFlags: Record<string, string> = {
+		en: '🇺🇸',
+		ko: '🇰🇷',
+		ja: '🇯🇵',
+		zh: '🇨🇳'
+	};
 
-	/**
-	 * 현재 경로가 주어진 경로와 일치하는지 확인
-	 */
-	function isActivePath(href: string): boolean {
-		return $page.url.pathname === href;
-	}
+	type UserPreview = {
+		uid: string;
+		displayName: string;
+		photoUrl: string | null;
+		sortRecentWithPhoto: number;
+	};
 
-	/**
-	 * 언어 변경 핸들러
-	 *
-	 * setLocale()이 자동으로 쿠키 저장 및 페이지 새로고침을 처리합니다.
-	 */
+	type OpenChatPreview = {
+		roomId: string;
+		roomName: string;
+		description: string;
+		memberCount: number;
+		createdAt: number;
+	};
+
+	type RecentActivity = {
+		messageId: string;
+		text: string;
+		category: string;
+		createdAt: number;
+	};
+
+	let recentUsers: UserPreview[] = [];
+	let isLoadingRecentUsers = true;
+	let recentOpenChats: OpenChatPreview[] = [];
+	let isLoadingRecentOpenChats = true;
+	let recentActivities: RecentActivity[] = [];
+	let isLoadingRecentActivity = true;
+
+	let followerCount = 0;
+	let followingCount = 0;
+	let followersLoading = false;
+	let followingLoading = false;
+
+	let openChatsUnsubscribe: (() => void) | null = null;
+	let activityUnsubscribe: (() => void) | null = null;
+	let followerStoreCleanup: (() => void) | null = null;
+	let followingStoreCleanup: (() => void) | null = null;
+
 	function handleLocaleChange(event: Event) {
 		const target = event.target as HTMLSelectElement;
 		const newLocale = target.value as (typeof locales)[number];
-
-		// Paraglide 런타임 로케일 업데이트
-		// - 자동으로 쿠키에 저장
-		// - 기본값으로 페이지 새로고침하여 모든 메시지 업데이트
 		setLocale(newLocale);
 	}
+
+	function formatCount(value: number): string {
+		return new Intl.NumberFormat().format(value);
+	}
+
+	async function fetchRecentUsers() {
+		if (!rtdb) {
+			isLoadingRecentUsers = false;
+			recentUsers = [];
+			return;
+		}
+
+		try {
+			const usersRef: DatabaseReference = ref(rtdb, 'users');
+			const recentQuery = query(usersRef, orderByChild('sort_recentWithPhoto'), limitToLast(5));
+			const snapshot = await get(recentQuery);
+			const users: UserPreview[] = [];
+
+			snapshot.forEach((child) => {
+				const value = child.val();
+				users.push({
+					uid: child.key ?? '',
+					displayName: value?.displayName ?? '',
+					photoUrl: value?.photoUrl ?? null,
+					sortRecentWithPhoto: Number(value?.sort_recentWithPhoto) || 0
+				});
+			});
+
+			users.sort((a, b) => (b.sortRecentWithPhoto ?? 0) - (a.sortRecentWithPhoto ?? 0));
+			recentUsers = users.filter((user) => Boolean(user.photoUrl));
+		} catch (error) {
+			console.error('[Sidebar] 최근 사용자 로드 실패:', error);
+			recentUsers = [];
+		} finally {
+			isLoadingRecentUsers = false;
+		}
+	}
+
+	function resolveOrderValue(order: unknown): number {
+		if (typeof order === 'number') {
+			return order;
+		}
+
+		if (typeof order === 'string') {
+			const parsed = Number(order.replace(/[^0-9-]/g, ''));
+			return Number.isFinite(parsed) ? parsed : 0;
+		}
+
+		return 0;
+	}
+
+	function teardownOpenChatListener() {
+		if (openChatsUnsubscribe) {
+			openChatsUnsubscribe();
+			openChatsUnsubscribe = null;
+		}
+	}
+
+	function setupOpenChatListener() {
+		teardownOpenChatListener();
+
+		if (!rtdb) {
+			recentOpenChats = [];
+			isLoadingRecentOpenChats = false;
+			return;
+		}
+
+		isLoadingRecentOpenChats = true;
+		const roomsRef = ref(rtdb, 'chat-rooms');
+		const roomsQuery = query(roomsRef, orderByChild('createdAt'), limitToLast(20));
+
+		openChatsUnsubscribe = onValue(
+			roomsQuery,
+			(snapshot) => {
+				const items: OpenChatPreview[] = [];
+
+				snapshot.forEach((child) => {
+					const value = child.val() ?? {};
+					if (value?.type !== 'open') {
+						return;
+					}
+
+					const createdAtValue =
+						Number(value?.createdAt) || resolveOrderValue(value?.openListOrder);
+					items.push({
+						roomId: child.key ?? '',
+						roomName: (value?.name as string) || 'Open Chat',
+						description: (value?.description as string) || '',
+						memberCount: Number(value?.memberCount) || 0,
+						createdAt: Math.abs(createdAtValue)
+					});
+				});
+
+				items.sort((a, b) => b.createdAt - a.createdAt);
+				recentOpenChats = items.slice(0, 3);
+				isLoadingRecentOpenChats = false;
+			},
+			(error) => {
+				console.error('[Sidebar] 최근 오픈채팅 로드 실패:', error);
+				recentOpenChats = [];
+				isLoadingRecentOpenChats = false;
+			}
+		);
+	}
+
+	function teardownRecentActivityListener() {
+		if (activityUnsubscribe) {
+			activityUnsubscribe();
+			activityUnsubscribe = null;
+		}
+	}
+
+	function setupRecentActivityListener() {
+		teardownRecentActivityListener();
+
+		if (!rtdb) {
+			recentActivities = [];
+			isLoadingRecentActivity = false;
+			return;
+		}
+
+		isLoadingRecentActivity = true;
+		const messagesRef = ref(rtdb, 'chat-messages');
+		const activityQuery = query(messagesRef, orderByChild('categoryOrder'), limitToLast(40));
+
+		activityUnsubscribe = onValue(
+			activityQuery,
+			(snapshot) => {
+				const items: RecentActivity[] = [];
+
+				snapshot.forEach((child) => {
+					const value = child.val() ?? {};
+					if (value?.type !== 'post' || value?.deleted) {
+						return;
+					}
+
+					const createdAtValue =
+						Number(value?.createdAt) || resolveOrderValue(value?.categoryOrder);
+					items.push({
+						messageId: child.key ?? '',
+						text: (value?.text as string) || '',
+						category: (value?.category as string) || '',
+						createdAt: Math.abs(createdAtValue)
+					});
+				});
+
+				items.sort((a, b) => b.createdAt - a.createdAt);
+				recentActivities = items.slice(0, 5);
+				isLoadingRecentActivity = false;
+			},
+			(error) => {
+				console.error('[Sidebar] 최근 활동 로드 실패:', error);
+				recentActivities = [];
+				isLoadingRecentActivity = false;
+			}
+		);
+	}
+
+	$effect(() => {
+		const uid = authStore.user?.uid;
+
+		if (!uid) {
+			followerStoreCleanup?.();
+			followingStoreCleanup?.();
+			followerStoreCleanup = null;
+			followingStoreCleanup = null;
+			followerCount = 0;
+			followingCount = 0;
+			followersLoading = false;
+			followingLoading = false;
+			return;
+		}
+
+		followerStoreCleanup?.();
+		const followerStore = createRealtimeStore<Record<string, unknown>>(`user-followers/${uid}`, {});
+		followersLoading = true;
+		const followerUnsubscribe = followerStore.subscribe((state) => {
+			followersLoading = state.loading;
+			followerCount = state.data ? Object.keys(state.data).length : 0;
+		});
+		followerStoreCleanup = () => {
+			followerUnsubscribe();
+			followerStore.unsubscribe();
+		};
+
+		followingStoreCleanup?.();
+		const followingStore = createRealtimeStore<Record<string, unknown>>(`user-following/${uid}`, {});
+		followingLoading = true;
+		const followingUnsubscribe = followingStore.subscribe((state) => {
+			followingLoading = state.loading;
+			followingCount = state.data ? Object.keys(state.data).length : 0;
+		});
+		followingStoreCleanup = () => {
+			followingUnsubscribe();
+			followingStore.unsubscribe();
+		};
+	});
+
+	onMount(() => {
+		fetchRecentUsers();
+		setupOpenChatListener();
+		setupRecentActivityListener();
+
+		return () => {
+			teardownOpenChatListener();
+			teardownRecentActivityListener();
+		};
+	});
+
+	onDestroy(() => {
+		followerStoreCleanup?.();
+		followingStoreCleanup?.();
+	});
 </script>
 
-<aside class="hidden lg:block lg:w-64 xl:w-72">
-	<div class="sticky top-20 space-y-4">
-		<!-- 네비게이션 메뉴 -->
-		<Card.Root class="sidebar-card">
-			<Card.Header>
-				<Card.Title class="flex items-center gap-2 text-base">
-					<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M4 6h16M4 12h16M4 18h16"
-						/>
-					</svg>
-					{m.sidebarMenu()}
-				</Card.Title>
-			</Card.Header>
-			<Card.Content class="space-y-1">
-				<a href="/" class="nav-link" class:active={isActivePath('/')}>
-					<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-						/>
-					</svg>
-					{m.navHome()}
-				</a>
-			</Card.Content>
-		</Card.Root>
+<aside class="left-sidebar hidden lg:block">
+	<div class="sidebar-inner flex flex-col gap-4">
+		{#if authStore.user}
+			<a href="/my/profile" class="profile-card flex items-center gap-3" aria-label={m.navMyProfile()}>
+				<Avatar uid={authStore.user.uid} size={48} />
+				<div class="profile-copy flex flex-col">
+					<span class="profile-label">{m.homeSidebarProfileLabel()}</span>
+					<span class="profile-name">{authStore.user.displayName || m.commonUser()}</span>
+				</div>
+				<ArrowRight class="profile-arrow" aria-hidden="true" />
+			</a>
+		{:else}
+			<a href="/auth/sign-in" class="profile-card flex items-center gap-3" aria-label={m.navLogin()}>
+				<div class="guest-avatar flex items-center justify-center">
+					<UserRound class="guest-icon" aria-hidden="true" />
+				</div>
+				<div class="profile-copy flex flex-col">
+					<span class="profile-label">{m.homeSidebarProfileLabel()}</span>
+					<span class="profile-name">{m.navLogin()}</span>
+				</div>
+				<ArrowRight class="profile-arrow" aria-hidden="true" />
+			</a>
+		{/if}
 
-		<!-- 정보 카드 -->
-		<Card.Root class="sidebar-card">
-			<Card.Header>
-				<Card.Title class="flex items-center gap-2 text-base">
-					<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-						/>
-					</svg>
-					{m.sidebarRecentActivity()}
-				</Card.Title>
-			</Card.Header>
-			<Card.Content>
-				<p class="activity-text">{m.sidebarNoRecentActivity()}</p>
-			</Card.Content>
-		</Card.Root>
+		<div class="quick-link-stack divide-y divide-gray-100 rounded-2xl border border-gray-100 bg-white shadow-sm">
+			<a href={authStore.user ? '/friend/followers' : '/auth/sign-in'} class="quick-link flex items-center gap-3" aria-label={m.homeSidebarFollowers()}>
+				<span class="quick-link-icon flex items-center justify-center">
+					<UserRound class="quick-link-icon-inner" aria-hidden="true" />
+				</span>
+				<div class="quick-link-main flex flex-col">
+					<span class="quick-link-title">{m.homeSidebarFollowers()}</span>
+					<span class="quick-link-desc">{m.homeSidebarFollowersDesc()}</span>
+				</div>
+				<span class="quick-link-count">
+					{#if !authStore.user}
+						-
+					{:else if followersLoading}
+						...
+					{:else}
+						{formatCount(followerCount)}
+					{/if}
+				</span>
+				<ArrowRight class="quick-link-arrow" aria-hidden="true" />
+			</a>
 
-		<!-- 개발일지 & TODO 카드 -->
+			<a href={authStore.user ? '/friend/following' : '/auth/sign-in'} class="quick-link flex items-center gap-3" aria-label={m.homeSidebarFollowing()}>
+				<span class="quick-link-icon flex items-center justify-center">
+					<UserCheck class="quick-link-icon-inner" aria-hidden="true" />
+				</span>
+				<div class="quick-link-main flex flex-col">
+					<span class="quick-link-title">{m.homeSidebarFollowing()}</span>
+					<span class="quick-link-desc">{m.homeSidebarFollowingDesc()}</span>
+				</div>
+				<span class="quick-link-count">
+					{#if !authStore.user}
+						-
+					{:else if followingLoading}
+						...
+					{:else}
+						{formatCount(followingCount)}
+					{/if}
+				</span>
+				<ArrowRight class="quick-link-arrow" aria-hidden="true" />
+			</a>
+
+			<a href="/my/reactions" class="quick-link flex items-center gap-3" aria-label={m.homeSidebarReactions()}>
+				<span class="quick-link-icon flex items-center justify-center">
+					<Heart class="quick-link-icon-inner" aria-hidden="true" />
+				</span>
+				<div class="quick-link-main flex flex-col">
+					<span class="quick-link-title">{m.homeSidebarReactions()}</span>
+					<span class="quick-link-desc">{m.homeSidebarReactionsDesc()}</span>
+				</div>
+				<ArrowRight class="quick-link-arrow" aria-hidden="true" />
+			</a>
+
+			<a href="/my/stats" class="quick-link flex items-center gap-3" aria-label={m.homeSidebarStats()}>
+				<span class="quick-link-icon flex items-center justify-center">
+					<BarChart3 class="quick-link-icon-inner" aria-hidden="true" />
+				</span>
+				<div class="quick-link-main flex flex-col">
+					<span class="quick-link-title">{m.homeSidebarStats()}</span>
+					<span class="quick-link-desc">{m.homeSidebarStatsDesc()}</span>
+				</div>
+				<ArrowRight class="quick-link-arrow" aria-hidden="true" />
+			</a>
+		</div>
+
 		<Card.Root class="sidebar-card">
-			<Card.Header>
-				<Card.Title class="flex items-center gap-2 text-base">
-					<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-						/>
-					</svg>
-					개발일지
-				</Card.Title>
+			<Card.Header class="card-header flex items-center gap-2">
+				<UsersRound class="section-icon" aria-hidden="true" />
+				<Card.Title>{m.homeSectionRecentUsers()}</Card.Title>
 			</Card.Header>
 			<Card.Content class="space-y-3">
-				<a href="/dev/plan" class="dev-link" class:active={isActivePath('/dev/plan')}>
-					<svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
-						/>
-					</svg>
-					개발 계획
-				</a>
+				<p class="card-subtitle">{m.homeSidebarRecentUsersSubtitle()}</p>
 
-				<!-- 최근 추가된 기능 요약 -->
-				<div class="dev-summary">
-					<div class="dev-summary-header">
-						<svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M12 4v16m8-8H4"
-							/>
-						</svg>
-						<span>{m.sidebarUpcomingTodos()}</span>
-					</div>
-					<ul class="dev-feature-list">
-						{#each devHighlights as highlight}
-							<li>
-								<span class="feature-number">{highlight.order}</span>
-								<span class="feature-name">{highlight.label()}</span>
+				{#if isLoadingRecentUsers}
+					<p class="sidebar-placeholder-text">{m.homeSidebarRecentUsersLoading()}</p>
+				{:else if recentUsers.length === 0}
+					<p class="sidebar-placeholder-text">{m.homeSidebarRecentUsersEmpty()}</p>
+				{:else}
+					<ul class="space-y-2">
+						{#each recentUsers as user (user.uid)}
+							{@const joinedAt = Math.abs(user.sortRecentWithPhoto || 0)}
+							<li class="recent-user-item flex items-center gap-3">
+								<img src={user.photoUrl ?? ''} alt={user.displayName || 'recent user'} class="recent-user-avatar" loading="lazy" />
+								<div class="recent-user-info flex flex-col">
+									<span class="recent-user-name">{user.displayName || m.commonUser()}</span>
+									{#if joinedAt}
+										<span class="recent-user-joined">{formatShortDate(joinedAt)}</span>
+									{/if}
+								</div>
 							</li>
 						{/each}
 					</ul>
-				</div>
+				{/if}
+
+				<a href="/user/list" class="see-more-button flex items-center justify-center gap-2">
+					<span>{m.homeSidebarSeeMore()}</span>
+					<ArrowRight class="see-more-arrow" aria-hidden="true" />
+				</a>
 			</Card.Content>
 		</Card.Root>
 
-		<!-- 언어 선택 드롭다운 -->
 		<Card.Root class="sidebar-card">
-			<Card.Header>
-				<Card.Title class="flex items-center gap-2 text-base">
-					<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"
-						/>
-					</svg>
-					{m.sidebarSelectLanguage()}
-				</Card.Title>
+			<Card.Header class="card-header flex items-center gap-2">
+				<MessageSquare class="section-icon" aria-hidden="true" />
+				<Card.Title>{m.homeSectionRecentOpenChat()}</Card.Title>
 			</Card.Header>
-			<Card.Content>
-				<select
-					value={getLocale()}
-					onchange={handleLocaleChange}
-					class="language-select"
-					aria-label={m.sidebarSelectLanguage()}
-				>
-					{#each locales as locale}
-						<option value={locale}>
-							{localeNames[locale] || locale}
-						</option>
-					{/each}
-				</select>
+			<Card.Content class="space-y-3">
+				<p class="card-subtitle">{m.homeSidebarOpenChatSubtitle()}</p>
+				{#if isLoadingRecentOpenChats}
+					<p class="sidebar-placeholder-text">{m.homeSidebarOpenChatLoading()}</p>
+				{:else if recentOpenChats.length === 0}
+					<p class="sidebar-placeholder-text">{m.homeSidebarOpenChatEmpty()}</p>
+				{:else}
+					<ul class="space-y-2">
+						{#each recentOpenChats as chat}
+							<li>
+								<a href={`/chat/room?roomId=${chat.roomId}`} class="open-chat-item flex flex-col gap-1" aria-label={chat.roomName}>
+									<div class="open-chat-head flex items-center justify-between gap-2">
+										<span class="open-chat-room">{chat.roomName}</span>
+										{#if chat.createdAt}
+											<span class="open-chat-time">{formatShortDate(chat.createdAt)}</span>
+										{/if}
+									</div>
+									<p class="open-chat-body">
+										{chat.description || m.homeSectionRecentOpenChatDesc()}
+									</p>
+									<p class="open-chat-meta">{formatCount(chat.memberCount)} members</p>
+								</a>
+							</li>
+						{/each}
+					</ul>
+				{/if}
 			</Card.Content>
 		</Card.Root>
 
-		<!-- 빌드 버전 정보 -->
-		<Card.Root class="sidebar-card version-card">
-			<Card.Header>
-				<Card.Title class="flex items-center gap-2 text-base">
-					<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							stroke-width="2"
-							d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
-						/>
-					</svg>
-					{m.sidebarBuildVersion()}
-				</Card.Title>
+		<Card.Root class="sidebar-card">
+			<Card.Header class="card-header flex items-center gap-2">
+				<ActivityIcon class="section-icon" aria-hidden="true" />
+				<Card.Title>{m.homeSidebarActivityTitle()}</Card.Title>
 			</Card.Header>
-			<Card.Content>
-				<p class="version-text">{BUILD_VERSION}</p>
+			<Card.Content class="space-y-3">
+				{#if isLoadingRecentActivity}
+					<p class="sidebar-placeholder-text">{m.commonLoading()}</p>
+				{:else if recentActivities.length === 0}
+					<p class="sidebar-placeholder-text">{m.homeSidebarActivityEmpty()}</p>
+				{:else}
+					<ul class="space-y-2">
+						{#each recentActivities as activity}
+							<li class="activity-item flex flex-col gap-1">
+								<div class="activity-meta flex items-center justify-between gap-2">
+									<span class="activity-category">{activity.category || 'post'}</span>
+									{#if activity.createdAt}
+										<span class="activity-time">{formatShortDate(activity.createdAt)}</span>
+									{/if}
+								</div>
+								<p class="activity-text">
+									{activity.text || m.homeSidebarActivityNoText()}
+								</p>
+							</li>
+						{/each}
+					</ul>
+				{/if}
 			</Card.Content>
 		</Card.Root>
+
+		<div class="language-row flex items-center gap-3">
+			<div class="language-label flex items-center gap-2">
+				<Globe class="language-icon" aria-hidden="true" />
+				<span>{m.homeSidebarLanguageLabel()}</span>
+			</div>
+			<select
+				value={getLocale()}
+				onchange={handleLocaleChange}
+				class="language-select flex-1"
+				aria-label={m.homeSidebarLanguageLabel()}
+			>
+				{#each locales as locale}
+					<option value={locale}>
+						{localeFlags[locale] || ''} {localeNames[locale] || locale}
+					</option>
+				{/each}
+			</select>
+		</div>
 	</div>
 </aside>
 
 <style>
 	@import 'tailwindcss' reference;
 
-	/* 사이드바 카드 스타일 */
+	.left-sidebar {
+		@apply lg:w-64 xl:w-72;
+	}
+
+	.sidebar-inner {
+		@apply sticky top-20;
+	}
+
+	.profile-card {
+		@apply rounded-2xl border border-gray-100 bg-white px-4 py-3 shadow-sm transition-shadow duration-200;
+		@apply hover:shadow-lg cursor-pointer;
+	}
+
+	.profile-label {
+		@apply text-xs font-medium text-gray-500;
+	}
+
+	.profile-name {
+		@apply text-base font-semibold text-gray-900;
+	}
+
+	.profile-arrow {
+		@apply h-4 w-4 text-gray-400;
+	}
+
+	.guest-avatar {
+		@apply h-12 w-12 rounded-full bg-gray-100;
+	}
+
+	.guest-icon {
+		@apply h-5 w-5 text-gray-500;
+	}
+
+	.quick-link-stack {
+		@apply overflow-hidden;
+	}
+
+	.quick-link {
+		@apply px-4 py-3 transition-colors duration-200;
+		@apply hover:bg-gray-50 cursor-pointer;
+	}
+
+	.quick-link-icon {
+		@apply h-10 w-10 rounded-full bg-gray-100;
+	}
+
+	.quick-link-icon-inner {
+		@apply h-5 w-5 text-gray-600;
+	}
+
+	.quick-link-title {
+		@apply text-sm font-semibold text-gray-900;
+	}
+
+	.quick-link-desc {
+		@apply text-xs text-gray-500;
+	}
+
+	.quick-link-count {
+		@apply text-sm font-semibold text-gray-600;
+	}
+
+	.quick-link-arrow {
+		@apply h-4 w-4 text-gray-400;
+	}
+
 	.sidebar-card {
-		@apply shadow-md transition-shadow duration-300 hover:shadow-lg;
+		@apply shadow-sm transition-shadow duration-200 hover:shadow-md;
 	}
 
-	/* 네비게이션 링크 스타일 */
-	.nav-link {
-		@apply flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-700 transition-all duration-200 hover:bg-blue-50 hover:text-blue-600;
+	.card-header {
+		@apply items-center;
 	}
 
-	.nav-link.active {
-		@apply bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 shadow-sm;
-		border-left: 3px solid theme('colors.blue.600');
-		padding-left: calc(0.75rem - 3px);
+	.section-icon {
+		@apply h-4 w-4 text-gray-500;
 	}
 
-	/* 개발 링크 스타일 */
-	.dev-link {
-		@apply flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-700 transition-all duration-200 hover:bg-indigo-50 hover:text-indigo-600;
+	.card-subtitle {
+		@apply text-xs font-medium text-gray-500;
 	}
 
-	.dev-link.active {
-		@apply bg-gradient-to-r from-indigo-50 to-indigo-100 text-indigo-700 shadow-sm;
-		border-left: 3px solid theme('colors.indigo.600');
-		padding-left: calc(0.75rem - 3px);
+	.sidebar-placeholder-text {
+		@apply text-sm text-gray-500;
 	}
 
-	/* 개발 기능 요약 스타일 */
-	.dev-summary {
-		@apply rounded-lg bg-gradient-to-br from-indigo-50 to-purple-50 p-3 space-y-2;
+	.recent-user-item {
+		@apply rounded-xl border border-transparent px-2 py-1.5 transition-colors duration-200;
+		@apply hover:border-gray-200;
 	}
 
-	.dev-summary-header {
-		@apply flex items-center gap-2 text-xs font-semibold text-indigo-700 uppercase tracking-wide;
+	.recent-user-avatar {
+		@apply h-9 w-9 rounded-full object-cover;
 	}
 
-	.dev-feature-list {
-		@apply space-y-1.5;
+	.recent-user-name {
+		@apply text-sm font-semibold text-gray-800;
 	}
 
-	.dev-feature-list li {
-		@apply flex items-center gap-2 text-sm text-gray-700;
+	.recent-user-joined {
+		@apply text-xs text-gray-500;
 	}
 
-	.feature-number {
-		@apply flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-xs font-bold text-white;
+	.see-more-button {
+		@apply rounded-xl border border-gray-200 px-3 py-2 text-sm font-semibold text-gray-700 transition-colors duration-200;
+		@apply hover:border-gray-300 hover:bg-gray-50 cursor-pointer;
 	}
 
-	.feature-name {
-		@apply text-xs font-medium text-gray-800;
+	.see-more-arrow {
+		@apply h-4 w-4 text-gray-400;
 	}
 
-	/* TODO 요약 카드 */
-	/* 활동 텍스트 스타일 */
+	.open-chat-item {
+		@apply rounded-xl border border-gray-100 px-3 py-2 transition-colors duration-200;
+		@apply hover:border-blue-200 hover:bg-blue-50;
+	}
+
+	.open-chat-room {
+		@apply text-sm font-semibold text-gray-900;
+	}
+
+	.open-chat-time {
+		@apply text-xs text-gray-500;
+	}
+
+	.open-chat-body {
+		@apply text-xs text-gray-600;
+	}
+
+	.open-chat-meta {
+		@apply text-xs font-medium text-blue-600;
+	}
+
+	.activity-item {
+		@apply rounded-xl border border-gray-100 px-3 py-2;
+	}
+
+	.activity-category {
+		@apply text-xs font-semibold uppercase tracking-wide text-gray-500;
+	}
+
+	.activity-time {
+		@apply text-xs text-gray-500;
+	}
+
 	.activity-text {
-		@apply text-sm text-gray-500 italic;
+		@apply text-sm text-gray-800;
 	}
 
-	/* 언어 선택 드롭다운 스타일 */
+	.language-row {
+		@apply rounded-2xl border border-gray-100 bg-white px-4 py-3 shadow-sm;
+	}
+
+	.language-label {
+		@apply text-sm font-semibold text-gray-900;
+	}
+
+	.language-icon {
+		@apply h-4 w-4 text-gray-500;
+	}
+
 	.language-select {
-		@apply w-full cursor-pointer rounded-lg border-2 border-gray-300 bg-white px-3 py-2.5 text-sm font-medium text-gray-900 shadow-sm transition-all duration-200 hover:border-blue-400 hover:shadow focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50;
-	}
-
-	/* 버전 카드 스타일 */
-	.version-card {
-		@apply bg-gradient-to-br from-gray-50 to-blue-50;
-	}
-
-	/* 버전 텍스트 스타일 */
-	.version-text {
-		@apply rounded-md bg-white px-3 py-2 text-center text-sm font-mono font-semibold text-blue-600 shadow-sm;
+		@apply rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-900 shadow-sm transition duration-200;
+		@apply hover:border-blue-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 cursor-pointer;
 	}
 </style>
-
 ```
 
 ## 변경 이력
 
+- 2025-11-18: 홈 좌측 사이드바 리디자인 (프로필/팔로우/반응/통계 메뉴 및 최근 데이터 카드 정리)
 - 2025-11-15: 스펙 문서 생성

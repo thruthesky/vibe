@@ -50,6 +50,7 @@
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import { FORUM_CATEGORIES, type ForumCategory } from '$shared/categories';
 	import UserProfile from '$lib/components/UserProfile.svelte';
+	import LikedUsersModal from '$lib/components/LikedUsersModal.svelte';
 
 	// GET 파라미터 추출
 	const uidParam = $derived.by(() => $page.url.searchParams.get('uid') ?? '');
@@ -241,9 +242,10 @@
 
 	// 롱프레스 상태
 	let longPressTimer: NodeJS.Timeout | null = null;
-	let selectedMessageForLikes = $state<string | null>(null);
-	let showLikesModal = $state(false);
-	let allLikedByUsers = $state<string[]>([]);
+
+	// 좋아요 사용자 모달 상태
+	let likesModalOpen = $state(false);
+	let likesModalTargetId = $state<string>('');
 
 	/**
 	 * 채팅방 정보 구독 (그룹/오픈 채팅방만)
@@ -1059,10 +1061,8 @@
 	function handleLongPressStart(messageId: string) {
 		// 800ms 후 모달 열기
 		longPressTimer = setTimeout(() => {
-			selectedMessageForLikes = messageId;
-			showLikesModal = true;
-			// 모든 좋아요 사용자 로드
-			loadAllLikedUsers(messageId);
+			likesModalTargetId = messageId;
+			likesModalOpen = true;
 		}, 800);
 	}
 
@@ -1073,44 +1073,6 @@
 		if (longPressTimer) {
 			clearTimeout(longPressTimer);
 			longPressTimer = null;
-		}
-	}
-
-	/**
-	 * 모든 좋아요 사용자 로드 (모달용)
-	 *
-	 * @param messageId - 메시지 ID
-	 */
-	async function loadAllLikedUsers(messageId: string) {
-		if (!rtdb) {
-			allLikedByUsers = [];
-			return;
-		}
-
-		try {
-			const likesRef = ref(rtdb, `chat-message-likes/${messageId}`);
-			const snapshot = await get(likesRef);
-			const data = snapshot.val() || {};
-			let uids = Object.keys(data);
-
-			// Fallback: chat-message-likes에 데이터가 없으면 /likes 경로를 역으로 조회
-			if (uids.length === 0) {
-				const allLikesRef = ref(rtdb, 'likes');
-				const allLikesSnapshot = await get(allLikesRef);
-				const allLikesData = allLikesSnapshot.val() || {};
-
-				// 각 사용자의 좋아요 목록에서 현재 메시지를 좋아요한 사용자 찾기
-				uids = Object.keys(allLikesData).filter((uid) => {
-					const userLikes = allLikesData[uid] || {};
-					return userLikes[messageId] === 'message';
-				});
-			}
-
-			// UID 배열을 직접 저장 (UserProfile 컴포넌트가 프로필 정보를 로드함)
-			allLikedByUsers = uids;
-		} catch (error) {
-			console.error('모든 좋아요 사용자 로드 실패:', error);
-			allLikedByUsers = [];
 		}
 	}
 
@@ -2006,26 +1968,7 @@
 />
 
 <!-- 좋아요 사용자 목록 모달 -->
-<Dialog bind:open={showLikesModal}>
-	<DialogContent class="max-w-md">
-		<DialogHeader>
-			<DialogTitle>좋아요한 사용자 목록</DialogTitle>
-		</DialogHeader>
-		<div class="max-h-96 overflow-y-auto">
-			{#if allLikedByUsers.length > 0}
-				<ul class="space-y-2">
-					{#each allLikedByUsers as uid}
-						<li class="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 hover:bg-gray-100 transition-colors">
-							<UserProfile {uid} photoSize="h-10 w-10" textSize="text-base" />
-						</li>
-					{/each}
-				</ul>
-			{:else}
-				<p class="text-center text-gray-500 py-8">좋아요한 사용자가 없습니다.</p>
-			{/if}
-		</div>
-	</DialogContent>
-</Dialog>
+<LikedUsersModal bind:open={likesModalOpen} targetId={likesModalTargetId} targetType="message" />
 </Tooltip.Provider>
 
 <style>
