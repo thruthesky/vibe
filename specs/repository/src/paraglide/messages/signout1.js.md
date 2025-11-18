@@ -57,6 +57,3 @@ const signout1 = (inputs = {}, options = {}) => {
 export { signout1 as "signOut" }
 ```
 
-## 변경 이력
-
-- 2025-11-15: 스펙 문서 생성

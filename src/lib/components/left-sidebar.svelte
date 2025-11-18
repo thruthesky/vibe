@@ -232,8 +232,10 @@ import {
 		}
 
 		isLoadingRecentActivity = true;
-		const messagesRef = ref(rtdb, 'chat-messages');
-		const activityQuery = query(messagesRef, orderByChild('categoryOrder'), limitToLast(40));
+		// 게시글은 /posts/{postId}에 저장됨
+		// createdAt 기준으로 시간 역순 정렬하여 최근 5개 가져오기
+		const postsRef = ref(rtdb, 'posts');
+		const activityQuery = query(postsRef, orderByChild('createdAt'), limitToLast(5));
 
 		activityUnsubscribe = onValue(
 			activityQuery,
@@ -242,20 +244,20 @@ import {
 
 				snapshot.forEach((child) => {
 					const value = child.val() ?? {};
-					if (value?.type !== 'post' || value?.deleted) {
+					// 삭제된 게시글은 제외
+					if (value?.deleted) {
 						return;
 					}
 
-					const createdAtValue =
-						Number(value?.createdAt) || resolveOrderValue(value?.categoryOrder);
 					items.push({
-						messageId: child.key ?? '',
+						messageId: child.key ?? '', // postId
 						text: (value?.text as string) || '',
 						category: (value?.category as string) || '',
-						createdAt: Math.abs(createdAtValue)
+						createdAt: Number(value?.createdAt) || 0
 					});
 				});
 
+				// 시간 역순 정렬 (최근순)
 				items.sort((a, b) => b.createdAt - a.createdAt);
 				recentActivities = items.slice(0, 5);
 				isLoadingRecentActivity = false;
@@ -423,14 +425,20 @@ import {
 					<ul class="space-y-2">
 						{#each recentUsers as user (user.uid)}
 							{@const joinedAt = Math.abs(user.sortRecentWithPhotos || 0)}
-							<li class="recent-user-item flex items-center gap-3">
-								<img src={user.photoUrl ?? ''} alt={user.displayName || 'recent user'} class="recent-user-avatar" loading="lazy" />
-								<div class="recent-user-info flex flex-col">
-									<span class="recent-user-name">{user.displayName || m.commonUser()}</span>
-									{#if joinedAt}
-										<span class="recent-user-joined">{formatShortDate(joinedAt)}</span>
-									{/if}
-								</div>
+							<li>
+								<a
+									href={`/user/profile?uid=${encodeURIComponent(user.uid)}`}
+									class="recent-user-item flex items-center gap-3"
+									aria-label={user.displayName || m.commonUser()}
+								>
+									<img src={user.photoUrl ?? ''} alt={user.displayName || 'recent user'} class="recent-user-avatar" loading="lazy" />
+									<div class="recent-user-info flex flex-col">
+										<span class="recent-user-name">{user.displayName || m.commonUser()}</span>
+										{#if joinedAt}
+											<span class="recent-user-joined">{formatShortDate(joinedAt)}</span>
+										{/if}
+									</div>
+								</a>
 							</li>
 						{/each}
 					</ul>

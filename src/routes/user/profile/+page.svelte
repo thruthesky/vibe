@@ -3,6 +3,7 @@
 	import Avatar from '$lib/components/user/avatar.svelte';
 	import * as Card from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
+	import FollowButton from '$lib/components/friend/follow-button.svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { userProfileStore } from '$lib/stores/user-profile.svelte';
 	import { m } from '$lib/paraglide/messages';
@@ -54,17 +55,21 @@
 					</div>
 				</div>
 
-				<div class="profile-actions">
-					{#if authStore.isAuthenticated}
-						<Button href={chatUrl} class="profile-chat-button">
-							{m.chatSingleChat()}
-						</Button>
-					{:else}
-						<Button href="/user/login" variant="secondary" class="profile-login-button">
-							{m.chatSignInRequired()}
-						</Button>
-					{/if}
-				</div>
+				{#if uidParam}
+					<div class="profile-actions">
+						<FollowButton targetUid={uidParam} />
+
+						{#if authStore.isAuthenticated}
+							<Button href={chatUrl} class="profile-chat-button">
+								{m.chatSingleChat()}
+							</Button>
+						{:else}
+							<Button href="/auth/sign-in" variant="secondary" class="profile-login-button">
+								{m.chatSignInRequired()}
+							</Button>
+						{/if}
+					</div>
+				{/if}
 			{/if}
 		</Card.Content>
 	</Card.Root>

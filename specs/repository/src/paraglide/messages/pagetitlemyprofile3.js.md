@@ -60,6 +60,3 @@ const pagetitlemyprofile3 = (inputs = {}, options = {}) => {
 export { pagetitlemyprofile3 as "pageTitleMyProfile" }
 ```
 
-## 변경 이력
-
-- 2025-11-15: 스펙 문서 생성

@@ -59,6 +59,3 @@ const adminreportlistguide3 = (inputs = {}, options = {}) => {
 export { adminreportlistguide3 as "adminReportListGuide" }
 ```
 
-## 변경 이력
-
-- 2025-11-15: 스펙 문서 생성

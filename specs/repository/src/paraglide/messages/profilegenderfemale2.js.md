@@ -60,6 +60,3 @@ const profilegenderfemale2 = (inputs = {}, options = {}) => {
 export { profilegenderfemale2 as "profileGenderFemale" }
 ```
 
-## 변경 이력
-
-- 2025-11-15: 스펙 문서 생성

@@ -59,6 +59,3 @@ const profileinfo1 = (inputs = {}, options = {}) => {
 export { profileinfo1 as "profileInfo" }
 ```
 
-## 변경 이력
-
-- 2025-11-15: 스펙 문서 생성

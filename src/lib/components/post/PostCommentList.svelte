@@ -36,17 +36,17 @@
 	 * Props
 	 */
 	interface Props {
-		messageId: string; // 게시글(채팅 메시지) ID
+		messageId: string; // 게시글 ID (postId)
 		totalChildCount?: number; // 총 댓글 개수
 		onOpenCommentDialog: (
-			messageId: string,
+			postId: string,
 			parentId?: string | null,
 			parentText?: string | null
 		) => void; // 댓글 작성 모달 열기 콜백
 		userLikes?: Record<string, LikeTargetType>; // 사용자 좋아요 정보
 	}
 
-	let { messageId, totalChildCount = 0, onOpenCommentDialog, userLikes = {} }: Props = $props();
+	let { messageId: postId, totalChildCount = 0, onOpenCommentDialog, userLikes = {} }: Props = $props();
 
 	/**
 	 * 상태
@@ -72,7 +72,7 @@
 	 * 특정 게시글의 마지막 3개 댓글만 로드 (미리보기용)
 	 */
 	async function loadLastCommentsForMessage() {
-		const result = await loadLastComments(messageId, 3);
+		const result = await loadLastComments(postId, 3);
 		if (result.success && result.comments) {
 			comments = result.comments;
 			allCommentsLoaded = false;
@@ -83,7 +83,7 @@
 	 * 특정 게시글의 전체 댓글 로드 (더보기 클릭 시)
 	 */
 	async function loadAllCommentsForMessage() {
-		const result = await loadComments(messageId);
+		const result = await loadComments(postId);
 		if (result.success && result.comments) {
 			comments = result.comments;
 			allCommentsLoaded = true;
@@ -137,7 +137,7 @@
 		}
 
 		try {
-			const commentRef = ref(rtdb, `chat-message-comments/${messageId}/${commentId}`);
+			const commentRef = ref(rtdb, `comments/${postId}/${commentId}`);
 			await update(commentRef, {
 				text: null,
 				urls: null,
@@ -230,12 +230,12 @@
 	};
 
 	/**
-	 * 자동 로딩: messageId가 변경되거나 초기 로드 시 자동으로 마지막 3개 댓글 로드
+	 * 자동 로딩: postId가 변경되거나 초기 로드 시 자동으로 마지막 3개 댓글 로드
 	 * totalChildCount가 0이어도 시도해봄 (기존 게시글의 경우 totalChildCount가 없을 수 있음)
 	 */
 	$effect(() => {
-		// messageId가 변경되면 댓글 목록 초기화 및 재로드
-		if (messageId && comments.length === 0 && !allCommentsLoaded) {
+		// postId가 변경되면 댓글 목록 초기화 및 재로드
+		if (postId && comments.length === 0 && !allCommentsLoaded) {
 			loadLastCommentsForMessage();
 		}
 	});
@@ -267,7 +267,7 @@
 		size="sm"
 		onclick={(e: MouseEvent) => {
 			e.stopPropagation();
-			onOpenCommentDialog(messageId);
+			onOpenCommentDialog(postId);
 			if (comments.length === 0) {
 				loadLastCommentsForMessage();
 			}
@@ -358,7 +358,7 @@
 								size="sm"
 								onclick={(e: MouseEvent) => {
 									e.stopPropagation();
-									onOpenCommentDialog(messageId, comment.commentId, comment.text);
+									onOpenCommentDialog(postId, comment.commentId, comment.text);
 								}}
 							>
 								답글
@@ -398,7 +398,7 @@
 <!-- 댓글 수정 모달 -->
 <CommentEditDialog
 	bind:open={isEditDialogOpen}
-	{messageId}
+	messageId={postId}
 	commentId={editingCommentId}
 	initialText={editingCommentText}
 	initialUrls={editingCommentUrls}

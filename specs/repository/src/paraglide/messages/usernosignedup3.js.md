@@ -57,6 +57,3 @@ const usernosignedup3 = (inputs = {}, options = {}) => {
 export { usernosignedup3 as "userNoSignedUp" }
 ```
 
-## 변경 이력
-
-- 2025-11-15: 스펙 문서 생성

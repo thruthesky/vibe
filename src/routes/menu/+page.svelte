@@ -215,6 +215,32 @@
 							</div>
 							<span class="font-medium">{m.menuDevTest()}</span>
 						</Button>
+
+						<!-- 테스트 게시글 생성 (관리자만) -->
+						<Button
+							variant="ghost"
+							class="w-full justify-start text-left text-gray-700 hover:bg-orange-50 hover:text-orange-700 border border-transparent hover:border-orange-200 rounded-lg py-3 transition-all duration-200"
+							href="/dev/create-posts"
+						>
+							<div
+								class="mr-3 p-2 bg-orange-100 rounded-lg group-hover:bg-orange-200 transition-colors"
+							>
+								<svg
+									class="h-5 w-5 text-orange-600"
+									fill="none"
+									stroke="currentColor"
+									viewBox="0 0 24 24"
+								>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M12 4v16m8-8H4"
+									/>
+								</svg>
+							</div>
+							<span class="font-medium">테스트 게시글 생성</span>
+						</Button>
 					{/if}
 
 					<!-- 구분선 -->

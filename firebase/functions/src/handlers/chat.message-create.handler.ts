@@ -19,6 +19,38 @@ import {
 } from "../utils/fcm.utils";
 
 /**
+ * 전체 채팅 메시지 통계 카운터 증가
+ *
+ * @param messageId - 메시지 ID
+ * @param roomId - 채팅방 ID
+ *
+ * 수행 작업:
+ * - /stats/counters/message 경로에 ServerValue.increment(1)로 +1 증가
+ * - 이 값은 전체 채팅 메시지 수를 나타냄
+ */
+async function incrementMessageCounter(
+  messageId: string,
+  roomId: string
+): Promise<void> {
+  try {
+    const messageCounterRef = admin.database().ref("stats/counters/message");
+    await messageCounterRef.set(admin.database.ServerValue.increment(1));
+
+    logger.info("stats/counters/message 증가 완료 (전체 채팅 메시지 통계)", {
+      messageId,
+      roomId,
+    });
+  } catch (error) {
+    logger.error("stats/counters/message 증가 실패", {
+      messageId,
+      roomId,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    // 통계 증가 실패는 치명적이지 않으므로 에러를 throw하지 않고 로그만 남김
+  }
+}
+
+/**
  * 채팅 메시지 생성 시 비즈니스 로직 처리
  *
  * @param messageId - 생성된 메시지 ID
@@ -427,4 +459,9 @@ export async function handleChatMessageCreate(
       error,
     });
   }
+
+  // ========================================
+  // 전체 채팅 메시지 통계 증가
+  // ========================================
+  await incrementMessageCounter(messageId, roomId);
 }

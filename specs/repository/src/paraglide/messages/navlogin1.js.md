@@ -60,6 +60,3 @@ const navlogin1 = (inputs = {}, options = {}) => {
 export { navlogin1 as "navLogin" }
 ```
 
-## 변경 이력
-
-- 2025-11-15: 스펙 문서 생성

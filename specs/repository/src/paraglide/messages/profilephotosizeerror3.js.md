@@ -57,6 +57,3 @@ const profilephotosizeerror3 = (inputs = {}, options = {}) => {
 export { profilephotosizeerror3 as "profilePhotoSizeError" }
 ```
 
-## 변경 이력
-
-- 2025-11-15: 스펙 문서 생성

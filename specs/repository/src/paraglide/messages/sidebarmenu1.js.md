@@ -60,6 +60,3 @@ const sidebarmenu1 = (inputs = {}, options = {}) => {
 export { sidebarmenu1 as "sidebarMenu" }
 ```
 
-## 변경 이력
-
-- 2025-11-15: 스펙 문서 생성

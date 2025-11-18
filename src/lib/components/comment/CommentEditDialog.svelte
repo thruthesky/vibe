@@ -14,7 +14,7 @@
 	interface Props {
 		/** 모달 열림 상태 */
 		open: boolean;
-		/** 게시글(채팅 메시지) ID */
+		/** 게시글 ID (postId) */
 		messageId: string;
 		/** 댓글 ID */
 		commentId: string;
@@ -30,7 +30,7 @@
 
 	let {
 		open = $bindable(),
-		messageId,
+		messageId: postId,
 		commentId,
 		initialText,
 		initialUrls,
@@ -46,7 +46,7 @@
 		urls: Record<number, string>
 	): Promise<{ success: boolean; error?: string }> {
 		try {
-			const result = await updateComment(messageId, commentId, text, urls);
+			const result = await updateComment(postId, commentId, text, urls);
 
 			if (!result.success) {
 				return { success: false, error: result.error ?? '댓글 수정에 실패했습니다.' };
@@ -72,7 +72,7 @@
 	textLabel=""
 	{initialText}
 	{initialUrls}
-	roomId={messageId}
+	roomId={postId}
 	saveButtonText="저장"
 	cancelButtonText="취소"
 	textPlaceholder="댓글을 입력하세요..."

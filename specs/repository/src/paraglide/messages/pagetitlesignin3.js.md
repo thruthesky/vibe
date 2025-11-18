@@ -57,6 +57,3 @@ const pagetitlesignin3 = (inputs = {}, options = {}) => {
 export { pagetitlesignin3 as "pageTitleSignIn" }
 ```
 
-## 변경 이력
-
-- 2025-11-15: 스펙 문서 생성

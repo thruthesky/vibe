@@ -1,12 +1,11 @@
 <!--
   게시글 작성 다이얼로그 컴포넌트
 
-  MessageEditModal.svelte를 사용하여 채팅 메시지와 통합된 게시글 작성 기능을 제공합니다.
+  MessageEditModal.svelte를 사용하여 게시글 작성 기능을 제공합니다.
   - 글 내용 입력
   - 사진 업로드
   - 카테고리 선택
-  - 그룹/오픈 채팅방 선택
-  - /chat-messages에 메시지로 저장
+  - /posts/{postId}에 게시글로 저장 (category는 필드로 저장)
 -->
 
 <script lang="ts">
@@ -15,8 +14,6 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { pushData } from '$lib/stores/database.svelte';
-	import { rtdb } from '$lib/firebase';
-	import { ref, get } from 'firebase/database';
 
 	// Props
 	interface Props {
@@ -56,70 +53,10 @@
 
 	// 상태
 	let selectedCategory = $state<string>('');
-	let selectedRoomId = $state<string>('post'); // 기본값: "post"
 
-	// 그룹/오픈 채팅방 목록
-	let chatRooms: Array<{ roomId: string; roomName: string }> = $state([]);
-	let loadingRooms = $state(false);
-
-	/**
-	 * 그룹/오픈 채팅방 목록 로드
-	 * /chat-joins/{uid}에서 참여한 모든 채팅방을 가져와
-	 * /chat-rooms/{roomId}의 타입이 "group" 또는 "open"인 채팅방만 필터링
-	 */
-	async function loadChatRooms() {
-		if (!authStore.user?.uid || !rtdb) {
-			chatRooms = [];
-			return;
-		}
-
-		loadingRooms = true;
-
-		try {
-			const joinsRef = ref(rtdb, `chat-joins/${authStore.user.uid}`);
-			const snapshot = await get(joinsRef);
-
-			const rooms: Array<{ roomId: string; roomName: string }> = [];
-
-			// 각 참여 채팅방에 대해 처리
-			const promises: Promise<void>[] = [];
-			snapshot.forEach((child) => {
-				const roomId = child.key;
-				if (!roomId) return;
-
-				// /chat-rooms/{roomId} 정보 조회
-				// rtdb는 이미 64번 라인에서 null 체크 완료
-				const roomRef = ref(rtdb!, `chat-rooms/${roomId}`);
-				promises.push(
-					get(roomRef).then((roomSnapshot) => {
-						const roomData = roomSnapshot.val();
-						// 타입이 "group" 또는 "open"인 채팅방만 추가
-						if (roomData && (roomData.type === 'group' || roomData.type === 'open')) {
-							rooms.push({
-								roomId: roomId,
-								roomName: roomData.name || '이름 없는 채팅방'
-							});
-						}
-					})
-				);
-			});
-
-			await Promise.all(promises);
-
-			chatRooms = rooms;
-		} catch (error) {
-			console.error('채팅방 목록 로드 실패:', error);
-			chatRooms = [];
-		} finally {
-			loadingRooms = false;
-		}
-	}
-
-	// 다이얼로그가 열릴 때 채팅방 목록 로드 및 기본 카테고리 설정
+	// 다이얼로그가 열릴 때 기본 카테고리 설정
 	$effect(() => {
 		if (open) {
-			loadChatRooms();
-
 			// 기본 카테고리 설정
 			// defaultCategory가 지정되어 있으면 해당 카테고리 사용, 없으면 'story' 사용
 			selectedCategory = defaultCategory ?? 'story';
@@ -146,35 +83,29 @@
 
 		try {
 			/**
-			 * 게시글 저장 payload (최소 필드만 포함)
+			 * 게시글 저장 payload
 			 *
+			 * ⚠️ 중요: 게시글은 /posts/{postId}에 직접 저장됩니다.
+			 * 저장 후:
+			 * 1. Cloud Functions의 onCreate 트리거가 /posts/{postId} 생성을 감지
+			 * 2. handlePostCreateFanout() 호출하여 팔로워 피드에 fan-out
+			 * 3. 팔로워들의 /user-feed/{followerUid}/{postId} 업데이트
+				 *
 			 * 클라이언트에서 제공하는 필드:
-			 * - roomId, text, urls, senderUid, createdAt, category
-			 * - roomOrder, rootOrder (클라이언트에서 생성)
-			 *
-			 * Cloud Functions에서 자동 생성되는 필드 (category가 있을 때):
-			 * - categoryOrder: "{category}-{timestamp}"
-			 * - allCategoryOrder: timestamp
-			 * - type: "post"
-			 *
-			 * 생략된 선택적 필드:
-			 * - type: Cloud Functions가 자동으로 "post"로 설정
-			 * - editedAt, deletedAt: 선택적 필드로 생략 가능
+			 * - text, urls, authorUid, createdAt, category
 			 */
 			const timestamp = Date.now();
 			const payload: Record<string, any> = {
-				roomId: selectedRoomId,
 				text: text.trim(),
 				urls,
-				senderUid: authStore.user.uid,
+				authorUid: authStore.user.uid,
 				createdAt: timestamp,
-				category: selectedCategory,
-				roomOrder: `-${selectedRoomId}-${timestamp}`,
-				rootOrder: `-${selectedRoomId}-${timestamp}`
+				category: selectedCategory
 			};
 
-			// /chat-messages에 메시지 저장
-			const result = await pushData('chat-messages', payload);
+			// /posts/{postId}에 게시글 직접 저장
+			// Cloud Functions가 자동으로 피드 fan-out 처리
+			const result = await pushData('posts', payload);
 
 			if (!result.success) {
 				return { success: false, error: result.error ?? '저장에 실패했습니다.' };
@@ -183,15 +114,10 @@
 			// 성공 시 상태 초기화
 			const createdCategory = selectedCategory as ForumCategory;
 			selectedCategory = '';
-			selectedRoomId = 'post';
 
 			// 게시판 페이지에서 카테고리 자동 선택을 위한 콜백 호출
-			// Cloud Functions가 categoryOrder, allCategoryOrder, type 필드를 생성할 시간을 주기 위해
-			// 약간의 지연 후 카테고리 변경
 			if (onPostCreated) {
-				setTimeout(() => {
-					onPostCreated(createdCategory);
-				}, 500);
+				onPostCreated(createdCategory);
 			}
 
 			return { success: true };
@@ -207,7 +133,6 @@
 	function handleCancel() {
 		// 상태 초기화
 		selectedCategory = '';
-		selectedRoomId = 'post';
 		// 모달 닫기
 		open = false;
 	}
@@ -217,7 +142,7 @@
 	bind:open
 	title="게시글 작성"
 	textLabel=""
-	roomId={selectedRoomId}
+	roomId="post"
 	saveButtonText="저장"
 	cancelButtonText="취소"
 	textPlaceholder="내용을 입력하세요"
@@ -225,7 +150,7 @@
 	onCancel={handleCancel}
 	hasAdditionalFields={true}
 >
-	<!-- 추가 필드: 카테고리 및 채팅방 선택 -->
+	<!-- 추가 필드: 카테고리 선택 -->
 	<div class="additional-fields">
 		<!-- 카테고리 선택 -->
 		<select id="category" bind:value={selectedCategory} class="form-select">
@@ -234,25 +159,13 @@
 				<option value={category}>{getCategoryMessage(category)}</option>
 			{/each}
 		</select>
-
-		<!-- 채팅방 선택 -->
-		<select id="roomId" bind:value={selectedRoomId} class="form-select">
-			<option value="post">채팅방 선택</option>
-			{#if loadingRooms}
-				<option value="" disabled>로딩 중...</option>
-			{:else}
-				{#each chatRooms as room}
-					<option value={room.roomId}>{room.roomName}</option>
-				{/each}
-			{/if}
-		</select>
 	</div>
 </MessageEditModal>
 
 <style>
 	@import 'tailwindcss' reference;
 
-	/* 카테고리 + 채팅방 선택을 가로로 나란히 배치 */
+	/* 카테고리 선택 필드 */
 	.additional-fields {
 		@apply flex gap-3;
 	}

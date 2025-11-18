@@ -15,7 +15,7 @@
 	 */
 	interface Props {
 		open: boolean; // 모달 열림 상태 (bindable)
-		messageId: string; // 게시글(채팅 메시지) ID
+		messageId: string; // 게시글 ID (postId)
 		parentId?: string | null; // 부모 댓글 ID (최상위 댓글인 경우 null)
 		parentText?: string | null; // 부모 댓글 내용 (대댓글인 경우 표시)
 		onClose?: () => void; // 모달 닫기 콜백
@@ -24,7 +24,7 @@
 
 	let {
 		open = $bindable(),
-		messageId,
+		messageId: postId,
 		parentId = null,
 		parentText = null,
 		onClose,
@@ -51,7 +51,7 @@
 			const urlsToSave = Object.keys(urls).length > 0 ? urls : undefined;
 
 			// 댓글 생성
-			const result = await createComment(messageId, text, authStore.user.uid, urlsToSave, parentId);
+			const result = await createComment(postId, text, authStore.user.uid, urlsToSave, parentId);
 
 			if (!result.success) {
 				return { success: false, error: result.error ?? '댓글 작성에 실패했습니다.' };
@@ -83,7 +83,7 @@
 	bind:open
 	title={parentId ? '대댓글 작성' : '댓글 작성'}
 	textLabel=""
-	roomId={messageId}
+	roomId={postId}
 	saveButtonText="저장"
 	cancelButtonText="취소"
 	textPlaceholder="댓글을 입력하세요"

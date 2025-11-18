@@ -16,28 +16,34 @@ export async function handleLikeCreate(
 ): Promise<void> {
   logger.info("👍 좋아요 추가 감지", {uid, targetId, targetType});
 
+  logger.info("📤 applyLikeDelta 호출", {targetId, targetType, delta: 1});
   const success = await applyLikeDelta(targetId, targetType, 1);
+  logger.info("📥 applyLikeDelta 결과", {success, targetId, targetType});
+
   await updateGlobalLikeStats(success ? 1 : 0);
 
-  // 메시지별 좋아요한 사용자 목록에 추가 (프로필 사진 표시용)
-  if (targetType === "message") {
-    await admin
-      .database()
-      .ref(`chat-message-likes/${targetId}/${uid}`)
-      .set(true);
+  // 좋아요한 사용자 목록에 추가 (프로필 사진 표시용)
+  // 메시지, 게시글, 댓글 모두 통합된 /likes-by 경로 사용
+  const likesByPath = `likes-by/${targetId}/${uid}`;
+  logger.info("💾 likes-by 경로에 사용자 추가 시도", {
+    path: likesByPath,
+    targetId,
+    uid,
+    targetType,
+    value: true,
+  });
 
-    logger.info("chat-message-likes 경로에 사용자 추가 완료", {targetId, uid});
-  }
+  await admin
+    .database()
+    .ref(likesByPath)
+    .set(true);
 
-  // 댓글별 좋아요한 사용자 목록에 추가 (프로필 사진 표시용)
-  if (targetType === "comment") {
-    await admin
-      .database()
-      .ref(`chat-comment-likes/${targetId}/${uid}`)
-      .set(true);
-
-    logger.info("chat-comment-likes 경로에 사용자 추가 완료", {targetId, uid});
-  }
+  logger.info("✅ likes-by 경로에 사용자 추가 완료", {
+    path: likesByPath,
+    targetId,
+    uid,
+    targetType,
+  });
 }
 
 /**
@@ -53,25 +59,14 @@ export async function handleLikeDelete(
   const success = await applyLikeDelta(targetId, targetType, -1);
   await updateGlobalLikeStats(success ? -1 : 0);
 
-  // 메시지별 좋아요한 사용자 목록에서 제거
-  if (targetType === "message") {
-    await admin
-      .database()
-      .ref(`chat-message-likes/${targetId}/${uid}`)
-      .remove();
+  // 좋아요한 사용자 목록에서 제거
+  // 메시지, 게시글, 댓글 모두 통합된 /likes-by 경로 사용
+  await admin
+    .database()
+    .ref(`likes-by/${targetId}/${uid}`)
+    .remove();
 
-    logger.info("chat-message-likes 경로에서 사용자 제거 완료", {targetId, uid});
-  }
-
-  // 댓글별 좋아요한 사용자 목록에서 제거
-  if (targetType === "comment") {
-    await admin
-      .database()
-      .ref(`chat-comment-likes/${targetId}/${uid}`)
-      .remove();
-
-    logger.info("chat-comment-likes 경로에서 사용자 제거 완료", {targetId, uid});
-  }
+  logger.info("likes-by 경로에서 사용자 제거 완료", {targetId, uid, targetType});
 }
 
 /**
@@ -89,7 +84,7 @@ async function updateGlobalLikeStats(delta: number): Promise<void> {
 }
 
 /**
- * 게시글 또는 댓글의 likeCount 증감 처리
+ * 게시글, 댓글, 또는 메시지의 likeCount 증감 처리
  */
 async function applyLikeDelta(
   targetId: string,
@@ -97,39 +92,93 @@ async function applyLikeDelta(
   delta: 1 | -1
 ): Promise<boolean> {
   try {
+    logger.info("🔄 applyLikeDelta 시작", {targetId, targetType, delta});
+
+    // 1. 채팅 메시지 좋아요 처리 (2단계 구조: /chat-messages/{roomId}/{messageId})
     if (targetType === "message") {
-      await admin
-        .database()
-        .ref(`chat-messages/${targetId}/likeCount`)
-        .set(admin.database.ServerValue.increment(delta));
-
-      logger.info("게시글 likeCount 업데이트 완료", {targetId, delta});
-      return true;
-    }
-
-    const locationSnapshot = await admin
-      .database()
-      .ref(`comment-locations/${targetId}`)
-      .once("value");
-
-    if (!locationSnapshot.exists()) {
-      logger.error("댓글 위치 정보를 찾을 수 없습니다.", {targetId});
+      logger.error("❌ 잘못된 targetType입니다. 채팅 메시지는 'chat-message-{roomId}' 형식을 사용해야 합니다.", {targetId, targetType});
       return false;
     }
 
-    const messageId = locationSnapshot.val() as string;
+    // 1-1. 채팅 메시지 좋아요 처리 (값 형식: "chat-message-{roomId}")
+    if (targetType.startsWith("chat-message-")) {
+      logger.info("💬 채팅 메시지 좋아요 처리 시작", {targetId, targetType});
 
-    await admin
-      .database()
-      .ref(`chat-message-comments/${messageId}/${targetId}/likeCount`)
-      .set(admin.database.ServerValue.increment(delta));
+      // roomId 파싱: "chat-message-{roomId}" -> {roomId}
+      const roomId = targetType.substring("chat-message-".length);
 
-    logger.info("댓글 likeCount 업데이트 완료", {
-      targetId,
-      messageId,
-      delta,
-    });
-    return true;
+      if (!roomId) {
+        logger.error("❌ roomId를 파싱할 수 없습니다", {targetId, targetType});
+        return false;
+      }
+
+      const likeCountPath = `chat-messages/${roomId}/${targetId}/likeCount`;
+      logger.info("💾 채팅 메시지 likeCount 업데이트 시도", {
+        path: likeCountPath,
+        roomId,
+        targetId,
+        delta,
+      });
+
+      await admin
+        .database()
+        .ref(likeCountPath)
+        .set(admin.database.ServerValue.increment(delta));
+
+      logger.info("✅ 채팅 메시지 likeCount 업데이트 완료", {
+        path: likeCountPath,
+        roomId,
+        targetId,
+        delta,
+      });
+      return true;
+    }
+
+    // 2. 게시글 좋아요 처리 (경로: /posts/{postId})
+    if (targetType === "post") {
+      await admin
+        .database()
+        .ref(`posts/${targetId}/likeCount`)
+        .set(admin.database.ServerValue.increment(delta));
+
+      logger.info("게시글 likeCount 업데이트 완료", {
+        targetId,
+        delta,
+      });
+      return true;
+    }
+
+    // 3. 댓글 좋아요 처리 (새 경로: /comments/{postId}/{commentId})
+    if (targetType === "comment") {
+      // comment-locations에서 postId 정보 조회
+      const locationSnapshot = await admin
+        .database()
+        .ref(`comment-locations/${targetId}`)
+        .once("value");
+
+      if (!locationSnapshot.exists()) {
+        logger.error("댓글 위치 정보를 찾을 수 없습니다.", {targetId});
+        return false;
+      }
+
+      const postId = locationSnapshot.val() as string;
+
+      await admin
+        .database()
+        .ref(`comments/${postId}/${targetId}/likeCount`)
+        .set(admin.database.ServerValue.increment(delta));
+
+      logger.info("댓글 likeCount 업데이트 완료", {
+        targetId,
+        postId,
+        delta,
+      });
+      return true;
+    }
+
+    // 알 수 없는 타입
+    logger.error("알 수 없는 좋아요 타입입니다.", {targetId, targetType});
+    return false;
   } catch (error) {
     logger.error("likeCount 업데이트 실패", {
       targetId,

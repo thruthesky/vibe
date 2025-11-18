@@ -51,7 +51,8 @@
 		}
 
 		try {
-			const messageRef = ref(rtdb, `chat-messages/${messageId}`);
+			// 2단계 구조: chat-messages/{roomId}/{messageId}
+			const messageRef = ref(rtdb, `chat-messages/${roomId}/${messageId}`);
 			const updates = {
 				text: text.trim(),
 				urls,

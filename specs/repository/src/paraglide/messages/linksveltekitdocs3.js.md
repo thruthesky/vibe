@@ -60,6 +60,3 @@ const linksveltekitdocs3 = (inputs = {}, options = {}) => {
 export { linksveltekitdocs3 as "linkSvelteKitDocs" }
 ```
 
-## 변경 이력
-
-- 2025-11-15: 스펙 문서 생성

@@ -57,6 +57,3 @@ const findusers1 = (inputs = {}, options = {}) => {
 export { findusers1 as "findUsers" }
 ```
 
-## 변경 이력
-
-- 2025-11-15: 스펙 문서 생성

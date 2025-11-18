@@ -6,9 +6,10 @@
 	 * Fan-out 패턴으로 구현된 피드 시스템을 사용합니다.
 	 *
 	 * 핵심 원칙:
-	 * - 단일 진실 공급원(SSOT): 실제 데이터는 `/chat-messages/{messageId}`에만 존재
+	 * - 단일 진실 공급원(SSOT): 실제 데이터는 `/chat-messages/post/{messageId}`에만 존재
 	 * - 최소 정보 원칙: 피드는 타임스탬프만 저장, 실제 내용은 필요시 fetch
 	 * - 실시간 구독: `/user-feed/{myUid}` 경로를 실시간으로 구독
+	 * - PostItem 컴포넌트 재사용: 게시글 UI 일관성 유지
 	 */
 
 	import { onMount, onDestroy } from 'svelte';
@@ -26,42 +27,36 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import * as m from '$lib/paraglide/messages.js';
 
-	// 다른 컴포넌트 import (재사용)
-	import UserProfile from '$lib/components/UserProfile.svelte';
-	import FileAttachments from '$lib/components/FileAttachments.svelte';
-	import FollowButton from '$lib/components/friend/follow-button.svelte';
-
-	// 사용자 정보 함수 import (재사용)
-	import { getUserFields } from '$lib/functions/user.functions';
-
-	// 메시지 타입 정의 (최소 정보만)
-	interface MinimalMessage {
-		id: string;
-		senderId: string;
-		text?: string;
-		urls?: string[];
-		createdAt: number;
-	}
-
-	// 사용자 정보 타입 (최소 정보만)
-	interface MinimalUser {
-		displayName: string;
-		photoUrl?: string;
-	}
+	// PostItem 컴포넌트 재사용
+	import PostItem from '$lib/components/post/PostItem.svelte';
+	import type { LikeTargetType } from '$lib/functions/like.functions';
 
 	// Props
 	/** 한 페이지당 로드할 피드 수 */
-	let { pageSize = 20 }: { pageSize?: number } = $props();
+	let {
+		pageSize = 20,
+		/** 좋아요 상태 맵 */
+		userLikes = {},
+		/** 좋아요 토글 핸들러 */
+		onToggleLike,
+		/** 댓글 작성 모달 열기 핸들러 */
+		onOpenCommentDialog,
+		/** 삭제 핸들러 */
+		onDelete
+	}: {
+		pageSize?: number;
+		userLikes?: Record<string, LikeTargetType>;
+		onToggleLike: (event: MouseEvent, targetId: string, targetType: LikeTargetType) => void;
+		onOpenCommentDialog: (postId: string, parentId?: string | null, parentText?: string | null) => void;
+		onDelete: (postId: string) => void;
+	} = $props();
 
 	// 상태 관리
 	/** 피드 메시지 목록 (ID -> timestamp 맵) */
 	let feedMap = $state<Record<string, number>>({});
 
-	/** 메시지 데이터 캐시 (ID -> MinimalMessage) */
-	let messagesCache = $state<Record<string, MinimalMessage>>({});
-
-	/** 사용자 데이터 캐시 (uid -> MinimalUser) */
-	let usersCache = $state<Record<string, MinimalUser>>({});
+	/** 메시지 데이터 캐시 (ID -> 게시글 전체 데이터) */
+	let messagesCache = $state<Record<string, any>>({});
 
 	/** 초기 로딩 상태 */
 	let initialLoading = $state(true);
@@ -77,6 +72,9 @@
 
 	// Firebase 구독 해제 함수
 	let unsubscribe: Unsubscribe | null = null;
+
+	/** 각 메시지의 구독 해제 함수를 관리하는 맵 */
+	let messageUnsubscribers = new Map<string, Unsubscribe>();
 
 	/**
 	 * 피드 정렬된 목록
@@ -110,15 +108,15 @@
 
 		unsubscribe = onValue(
 			feedQuery,
-			async (snapshot) => {
+			(snapshot) => {
 				const data = snapshot.val() || {};
 				feedMap = data;
 
 				// 메시지 ID 목록 추출
 				const messageIds = Object.keys(data);
 
-				// 각 메시지의 실제 데이터를 가져옴
-				await fetchMessagesData(messageIds);
+				// 각 메시지를 실시간으로 구독
+				subscribeMessagesData(messageIds);
 
 				initialLoading = false;
 
@@ -139,76 +137,65 @@
 	}
 
 	/**
-	 * 메시지 실제 데이터 가져오기
+	 * 게시글 실시간 구독
 	 *
-	 * `/chat-messages/{messageId}`에서 최소 정보만 가져옵니다.
-	 * - senderId, text, urls, createdAt만 fetch
+	 * `/posts/{postId}`에서 전체 게시글 데이터를 실시간으로 구독합니다.
+	 * - feed에 포함되는 항목은 모두 게시글입니다
+	 * - PostItem에 필요한 모든 필드를 실시간으로 업데이트
+	 * - likeCount가 변경되면 자동으로 UI에 반영됨
 	 *
-	 * @param messageIds - 가져올 메시지 ID 목록
+	 * @param messageIds - 구독할 게시글 ID 목록
 	 */
-	async function fetchMessagesData(messageIds: string[]) {
+	function subscribeMessagesData(messageIds: string[]) {
 		if (!database) return;
 
-		const fetchPromises = messageIds.map(async (messageId) => {
-			// 이미 캐시에 있으면 스킵
-			if (messagesCache[messageId]) {
+		messageIds.forEach((messageId) => {
+			// 이미 구독 중이면 스킵
+			if (messageUnsubscribers.has(messageId)) {
 				return;
 			}
 
 			try {
 				if (!database) return;
-				const messageRef = ref(database, `chat-messages/${messageId}`);
-				const snapshot = await get(messageRef);
-				const data = snapshot.val();
 
-				if (data && !data.deleted) {
-					// 최소 정보만 저장
-					messagesCache[messageId] = {
-						id: messageId,
-						senderId: data.senderId || data.senderUid,
-						text: data.text,
-						urls: data.urls,
-						createdAt: data.createdAt
-					};
+				// 게시글은 /posts/{postId}에 저장됨
+				const messageRef = ref(database, `posts/${messageId}`);
 
-					// 사용자 정보도 가져오기
-					await fetchUserData(data.senderId || data.senderUid);
-				}
+				// 실시간 구독 설정
+				const unsubscribeMessage = onValue(
+					messageRef,
+					(snapshot) => {
+						const data = snapshot.val();
+
+						if (data && !data.deleted) {
+							// PostItem에 필요한 모든 데이터 저장
+							messagesCache[messageId] = data;
+						} else {
+							// 삭제된 게시글은 캐시에서 제거
+							delete messagesCache[messageId];
+						}
+					},
+					(error) => {
+						console.error(`게시글 데이터 구독 오류 (${messageId}):`, error);
+					}
+				);
+
+				// 구독 해제 함수 저장
+				messageUnsubscribers.set(messageId, unsubscribeMessage);
 			} catch (error) {
-				console.error(`메시지 데이터 가져오기 오류 (${messageId}):`, error);
+				console.error(`게시글 데이터 구독 설정 오류 (${messageId}):`, error);
 			}
 		});
-
-		await Promise.all(fetchPromises);
 	}
 
 	/**
-	 * 사용자 정보 가져오기
-	 *
-	 * ⚠️ RTDB 비용 최적화: getUserFields() 함수를 사용하여 필요한 필드만 가져옵니다.
-	 * - `/users/{uid}` 전체가 아닌 `/users/{uid}/displayName`, `/users/{uid}/photoUrl`만 읽기
-	 * - Promise.all()을 통해 병렬로 읽어서 성능 최적화
-	 *
-	 * @param uid - 사용자 UID
+	 * 모든 메시지 구독 해제
 	 */
-	async function fetchUserData(uid: string) {
-		// 이미 캐시에 있으면 스킵
-		if (!uid || !database || usersCache[uid]) {
-			return;
-		}
-
-		try {
-			// ⚠️ 기존 getUserFields() 함수 재활용하여 필요한 필드만 가져오기
-			const userData = await getUserFields(uid, ['displayName', 'photoUrl']);
-
-			// 최소 정보만 저장
-			usersCache[uid] = {
-				displayName: userData.displayName || 'Unknown',
-				photoUrl: userData.photoUrl || undefined
-			};
-		} catch (error) {
-			console.error(`사용자 데이터 가져오기 오류 (${uid}):`, error);
-		}
+	function unsubscribeAllMessages() {
+		messageUnsubscribers.forEach((unsubscribe) => {
+			unsubscribe();
+		});
+		messageUnsubscribers.clear();
 	}
 
 	/**
@@ -244,8 +231,8 @@
 			// 메시지 ID 목록 추출
 			const messageIds = Object.keys(data);
 
-			// 각 메시지의 실제 데이터를 가져옴
-			await fetchMessagesData(messageIds);
+			// 각 메시지를 실시간으로 구독
+			subscribeMessagesData(messageIds);
 
 			// 페이지네이션용 마지막 타임스탬프 업데이트
 			if (messageIds.length > 0) {
@@ -272,6 +259,7 @@
 		if (unsubscribe) {
 			unsubscribe();
 		}
+		unsubscribeAllMessages();
 	});
 
 	// 로그인 상태 변경 시 재구독
@@ -283,9 +271,9 @@
 				unsubscribe();
 				unsubscribe = null;
 			}
+			unsubscribeAllMessages();
 			feedMap = {};
 			messagesCache = {};
-			usersCache = {};
 			initialLoading = false;
 		}
 	});
@@ -306,40 +294,22 @@
 	<div class="feed-empty">
 		<p>{m.feedEmpty()}</p>
 	</div>
-	<!-- 피드 목록 표시 -->
+	<!-- 피드 목록 표시 - PostItem 컴포넌트 재사용 -->
 {:else}
 	<div class="feed-list">
 		{#each sortedFeedIds as messageId (messageId)}
 			{@const message = messagesCache[messageId]}
-			{@const user = message ? usersCache[message.senderId] : null}
 
-			{#if message && user}
-				<div class="feed-item">
-					<!-- 사용자 프로필 영역 -->
-					<div class="feed-item-header">
-						<UserProfile uid={message.senderId} />
-
-						<!-- 팔로우 버튼 -->
-						<FollowButton targetUid={message.senderId} />
-					</div>
-
-					<!-- 메시지 내용 -->
-					{#if message.text}
-						<div class="feed-item-content">
-							<p>{message.text}</p>
-						</div>
-					{/if}
-
-					<!-- 첨부 파일 -->
-					{#if message.urls && message.urls.length > 0}
-						<FileAttachments urls={message.urls} />
-					{/if}
-
-					<!-- 댓글 수 표시 (PostCommentList는 onOpenCommentDialog가 필수이므로 제거) -->
-					<div class="feed-item-comments">
-						<span class="text-sm text-gray-500">댓글 보기</span>
-					</div>
-				</div>
+			{#if message}
+				<PostItem
+					{message}
+					messageId={messageId}
+					{userLikes}
+					{onToggleLike}
+					{onOpenCommentDialog}
+					onDelete={onDelete}
+					editMode="navigate"
+				/>
 			{/if}
 		{/each}
 
@@ -363,29 +333,7 @@
 
 	/* 피드 컨테이너 */
 	.feed-list {
-		@apply flex flex-col gap-4;
-	}
-
-	/* 피드 아이템 */
-	.feed-item {
-		@apply bg-white rounded-lg shadow-sm border p-4;
-		@apply transition-shadow duration-200;
-		@apply hover:shadow-md;
-	}
-
-	/* 피드 아이템 헤더 (프로필 + 팔로우 버튼) */
-	.feed-item-header {
-		@apply flex items-center justify-between mb-3;
-	}
-
-	/* 피드 아이템 내용 */
-	.feed-item-content {
-		@apply mb-3;
-	}
-
-	.feed-item-content p {
-		@apply text-gray-800 text-base leading-relaxed;
-		@apply whitespace-pre-wrap break-words;
+		@apply flex flex-col;
 	}
 
 	/* 로딩/비어있음 상태 */

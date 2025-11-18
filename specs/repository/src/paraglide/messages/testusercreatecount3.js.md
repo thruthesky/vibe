@@ -59,6 +59,3 @@ const testusercreatecount3 = (inputs = {}, options = {}) => {
 export { testusercreatecount3 as "testUserCreateCount" }
 ```
 
-## 변경 이력
-
-- 2025-11-15: 스펙 문서 생성

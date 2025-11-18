@@ -57,6 +57,3 @@ const testusercreateunit3 = (inputs = {}, options = {}) => {
 export { testusercreateunit3 as "testUserCreateUnit" }
 ```
 
-## 변경 이력
-
-- 2025-11-15: 스펙 문서 생성

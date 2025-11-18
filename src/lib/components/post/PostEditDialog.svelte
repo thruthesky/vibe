@@ -15,8 +15,8 @@
 	interface Props {
 		/** 모달 열림 상태 */
 		open: boolean;
-		/** 게시글(메시지) ID */
-		messageId: string;
+		/** 게시글 ID */
+		postId: string;
 		/** 초기 텍스트 */
 		initialText: string;
 		/** 초기 첨부파일 URL 목록 */
@@ -31,7 +31,7 @@
 
 	let {
 		open = $bindable(),
-		messageId,
+		postId,
 		initialText,
 		initialUrls,
 		roomId,
@@ -51,14 +51,14 @@
 		}
 
 		try {
-			const messageRef = ref(rtdb, `chat-messages/${messageId}`);
+			const postRef = ref(rtdb, `posts/${postId}`);
 			const updates = {
 				text: text.trim(),
 				urls,
 				editedAt: Date.now()
 			};
 
-			await update(messageRef, updates);
+			await update(postRef, updates);
 
 			// 저장 완료 콜백 호출
 			onSaved?.();

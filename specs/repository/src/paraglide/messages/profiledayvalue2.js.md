@@ -59,6 +59,3 @@ const profiledayvalue2 = (inputs, options = {}) => {
 export { profiledayvalue2 as "profileDayValue" }
 ```
 
-## 변경 이력
-
-- 2025-11-15: 스펙 문서 생성

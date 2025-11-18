@@ -18,6 +18,8 @@ import { formatNumberWithComma } from '$lib/functions/number.functions';
 const userCountStore = rtdbStore<number>('stats/counters/user', 0);
 const postCountStore = rtdbStore<number>('stats/counters/post', 0);
 const commentCountStore = rtdbStore<number>('stats/counters/comment', 0);
+const messageCountStore = rtdbStore<number>('stats/counters/message', 0);
+const followCountStore = rtdbStore<number>('stats/counters/follow', 0);
 
 function goToStats() {
 	void goto('/stats');
@@ -109,6 +111,26 @@ function goToStats() {
 								로딩 중...
 							{:else}
 								{formatNumberWithComma($commentCountStore.data)}건
+							{/if}
+						</p>
+					</div>
+					<div class="stats-row">
+						<p class="stats-label">총 채팅 메시지 수</p>
+						<p class="stats-value">
+							{#if $messageCountStore.loading}
+								로딩 중...
+							{:else}
+								{formatNumberWithComma($messageCountStore.data)}건
+							{/if}
+						</p>
+					</div>
+					<div class="stats-row">
+						<p class="stats-label">팔로우 수</p>
+						<p class="stats-value">
+							{#if $followCountStore.loading}
+								로딩 중...
+							{:else}
+								{formatNumberWithComma($followCountStore.data)}건
 							{/if}
 						</p>
 					</div>

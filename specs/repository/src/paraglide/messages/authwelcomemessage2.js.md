@@ -60,6 +60,3 @@ const authwelcomemessage2 = (inputs = {}, options = {}) => {
 export { authwelcomemessage2 as "authWelcomeMessage" }
 ```
 
-## 변경 이력
-
-- 2025-11-15: 스펙 문서 생성

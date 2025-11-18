@@ -57,6 +57,3 @@ const sidebarlanguage1 = (inputs = {}, options = {}) => {
 export { sidebarlanguage1 as "sidebarLanguage" }
 ```
 
-## 변경 이력
-
-- 2025-11-15: 스펙 문서 생성

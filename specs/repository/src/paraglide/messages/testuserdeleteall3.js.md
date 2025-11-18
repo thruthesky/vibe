@@ -60,6 +60,3 @@ const testuserdeleteall3 = (inputs = {}, options = {}) => {
 export { testuserdeleteall3 as "testUserDeleteAll" }
 ```
 
-## 변경 이력
-
-- 2025-11-15: 스펙 문서 생성

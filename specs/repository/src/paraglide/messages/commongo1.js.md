@@ -60,6 +60,3 @@ const commongo1 = (inputs = {}, options = {}) => {
 export { commongo1 as "commonGo" }
 ```
 
-## 변경 이력
-
-- 2025-11-15: 스펙 문서 생성

@@ -59,6 +59,3 @@ const profilepictureremovefailed3 = (inputs = {}, options = {}) => {
 export { profilepictureremovefailed3 as "profilePictureRemoveFailed" }
 ```
 
-## 변경 이력
-
-- 2025-11-15: 스펙 문서 생성

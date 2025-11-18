@@ -59,6 +59,3 @@ const profilepictureuploadfailed3 = (inputs = {}, options = {}) => {
 export { profilepictureuploadfailed3 as "profilePictureUploadFailed" }
 ```
 
-## 변경 이력
-
-- 2025-11-15: 스펙 문서 생성

@@ -60,6 +60,3 @@ const navfindusers2 = (inputs = {}, options = {}) => {
 export { navfindusers2 as "navFindUsers" }
 ```
 
-## 변경 이력
-
-- 2025-11-15: 스펙 문서 생성

@@ -1,22 +1,21 @@
 <!--
   홈 페이지
 
-  최근 등록된 게시글(채팅 메시지)을 표시합니다.
-  - 게시글 = 채팅 메시지 (/chat-messages/{messageId})
-  - 최근 글 = allCategoryOrder를 역순으로 정렬한 것
-  - 상단에 카테고리 탭 (전체 + 10개 카테고리)
-  - DatabaseListView를 사용한 무한 스크롤
-  - 상단에 글쓰기 버튼 표시
+  최근 등록된 게시글을 표시합니다.
+  - 게시글 경로: /posts/{postId}
+  - 최근 글 = createdAt을 역순으로 정렬한 것
+  - 상단에 카테고리 탭 (전체 + 11개 카테고리)
+  - PostListView를 사용한 무한 스크롤
+  - 상단에 글쓰기 유도 폼 표시
 -->
 
 <script lang="ts">
 	import type { ForumCategory } from '../../shared/categories';
-	import DatabaseListView from '$lib/components/DatabaseListView.svelte';
+	import PostListView from '$lib/components/post/PostListView.svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import PostCreateDialog from '$lib/components/post/PostCreateDialog.svelte';
 	import CategoryNavigation from '$lib/components/post/CategoryNavigation.svelte';
 	import CommentCreateDialog from '$lib/components/comment/CommentCreateDialog.svelte';
-	import PostItem from '$lib/components/post/PostItem.svelte';
 	import Avatar from '$lib/components/user/avatar.svelte';
 	import { Camera, Image as ImageIcon, Video, Smile } from 'lucide-svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
@@ -33,20 +32,17 @@
 	// 카테고리 선택 상태 (null = 전체)
 	let selectedCategory = $state<ForumCategory | null>(null);
 
-	// DatabaseListView 참조 (새로고침용)
-	let listViewRef = $state<DatabaseListView>();
+	// PostListView 참조 (새로고침용)
+	let postListViewRef = $state<PostListView>();
 
 	// 글쓰기 모달 상태
 	let isCreateDialogOpen = $state(false);
 
 	// 댓글 모달 상태
 	let isCommentDialogOpen = $state(false);
-	let selectedMessageId = $state<string>('');
+	let selectedPostId = $state<string>('');
 	let selectedParentId = $state<string | null>(null);
 	let selectedParentText = $state<string | null>(null);
-
-// 각 게시글의 PostItem 컴포넌트 참조 저장 (messageId -> PostItem)
-let postItemRefs = $state<Record<string, PostItem>>({});
 
 // 좋아요 상태
 type UserLikesMap = Record<string, LikeTargetType>;
@@ -115,11 +111,11 @@ async function handleToggleLike(event: MouseEvent, targetId: string, targetType:
 	 * 댓글 작성 모달 열기
 	 */
 	function handleOpenCommentDialog(
-		messageId: string,
+		postId: string,
 		parentId: string | null = null,
 		parentText: string | null = null
 	) {
-		selectedMessageId = messageId;
+		selectedPostId = postId;
 		selectedParentId = parentId;
 		selectedParentText = parentText;
 		isCommentDialogOpen = true;
@@ -130,15 +126,15 @@ async function handleToggleLike(event: MouseEvent, targetId: string, targetType:
 	 * 댓글 목록을 다시 로드하여 화면에 반영
 	 */
 	async function handleCommentCreated() {
-		if (selectedMessageId && postItemRefs[selectedMessageId]) {
-			await postItemRefs[selectedMessageId].refreshComments();
+		if (selectedPostId && postListViewRef) {
+			await postListViewRef.refreshPostComments(selectedPostId);
 		}
 	}
 
 	/**
 	 * 게시글 삭제 함수
 	 */
-	async function handleDeletePost(messageId: string) {
+	async function handleDeletePost(postId: string) {
 		if (!confirm('게시글을 삭제하시겠습니까?')) {
 			return;
 		}
@@ -149,26 +145,21 @@ async function handleToggleLike(event: MouseEvent, targetId: string, targetType:
 		}
 
 		try {
-			const messageRef = ref(rtdb, `chat-messages/${messageId}`);
-			await update(messageRef, {
+			const postRef = ref(rtdb, `posts/${postId}`);
+			await update(postRef, {
 				text: null,
 				urls: null,
 				deleted: true,
 				deletedAt: Date.now()
 			});
 
-			// DatabaseListView 새로고침
-			listViewRef?.refresh();
+			// PostListView 새로고침
+			postListViewRef?.refresh();
 		} catch (error) {
 			console.error('게시글 삭제 실패:', error);
 			alert('게시글 삭제에 실패했습니다.');
 		}
 	}
-
-
-	// DatabaseListView props 계산
-	const orderByField = $derived(selectedCategory ? 'categoryOrder' : 'allCategoryOrder');
-	const orderPrefixValue = $derived(selectedCategory ? `${selectedCategory}-` : '');
 </script>
 
 <svelte:head>
@@ -291,7 +282,13 @@ async function handleToggleLike(event: MouseEvent, targetId: string, targetType:
 	<!-- 피드 탭 선택 시 FeedList 표시 -->
 	{#if selectedTab === 'feed'}
 		<div class="post-list-content">
-			<FeedList pageSize={20} />
+			<FeedList
+				pageSize={20}
+				{userLikes}
+				onToggleLike={handleToggleLike}
+				onOpenCommentDialog={handleOpenCommentDialog}
+				onDelete={handleDeletePost}
+			/>
 		</div>
 	{:else}
 		<!-- 전체 탭 선택 시 카테고리 네비게이션 + DatabaseListView 표시 -->
@@ -310,54 +307,20 @@ async function handleToggleLike(event: MouseEvent, targetId: string, targetType:
 
 		<!-- 게시글 목록 -->
 		<div class="post-list-content">
-		<DatabaseListView
-			bind:this={listViewRef}
-			path="chat-messages"
-			pageSize={20}
-			orderBy={orderByField}
-			orderPrefix={orderPrefixValue}
-			reverse={true}
-			threshold={300}
-		>
-			{#snippet item(itemData, index)}
-				{@const message = itemData.data}
-				{@const messageId = itemData.key}
-				<PostItem
-					bind:this={postItemRefs[messageId]}
-					{message}
-					{messageId}
-					{userLikes}
-					onToggleLike={handleToggleLike}
-					onOpenCommentDialog={handleOpenCommentDialog}
-					onDelete={handleDeletePost}
-					editMode="navigate"
-				/>
-			{/snippet}
-
-			{#snippet loading()}
-				<div class="list-status">
-					<p>로딩 중...</p>
-				</div>
-			{/snippet}
-
-			{#snippet empty()}
-				<div class="list-status">
-					<p>게시글이 없습니다.</p>
-				</div>
-			{/snippet}
-
-			{#snippet loadingMore()}
-				<div class="list-status">
-					<p>더 불러오는 중...</p>
-				</div>
-			{/snippet}
-
-			{#snippet noMore()}
-				<div class="list-status">
-					<p>모든 게시글을 불러왔습니다.</p>
-				</div>
-			{/snippet}
-		</DatabaseListView>
+			<PostListView
+				bind:this={postListViewRef}
+				path="posts"
+				pageSize={20}
+				orderBy="createdAt"
+				reverse={true}
+				threshold={300}
+				category={selectedCategory}
+				{userLikes}
+				onToggleLike={handleToggleLike}
+				onOpenCommentDialog={handleOpenCommentDialog}
+				onDelete={handleDeletePost}
+				editMode="navigate"
+			/>
 		</div>
 	{/if}
 </div>
@@ -372,7 +335,7 @@ async function handleToggleLike(event: MouseEvent, targetId: string, targetType:
 <!-- 댓글 작성 모달 -->
 <CommentCreateDialog
 	bind:open={isCommentDialogOpen}
-	messageId={selectedMessageId}
+	messageId={selectedPostId}
 	parentId={selectedParentId}
 	parentText={selectedParentText}
 	onCreated={handleCommentCreated}
@@ -432,9 +395,5 @@ async function handleToggleLike(event: MouseEvent, targetId: string, targetType:
 
 	.post-list-content {
 		@apply space-y-4;
-	}
-
-	.list-status {
-		@apply py-8 text-center text-gray-500;
 	}
 </style>

@@ -9575,6 +9575,3 @@ const testuserprogressindicator3 = (inputs, options = {}) => {
 export { testuserprogressindicator3 as "testUserProgressIndicator" }
 ```
 
-## 변경 이력
-
-- 2025-11-15: 스펙 문서 생성

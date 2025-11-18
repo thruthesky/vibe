@@ -60,6 +60,3 @@ const sidebarnotifications1 = (inputs = {}, options = {}) => {
 export { sidebarnotifications1 as "sidebarNotifications" }
 ```
 
-## 변경 이력
-
-- 2025-11-15: 스펙 문서 생성

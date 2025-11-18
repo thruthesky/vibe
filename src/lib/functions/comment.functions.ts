@@ -17,7 +17,7 @@ import type {
 /**
  * 새로운 댓글을 생성합니다.
  *
- * @param messageId - 게시글(채팅 메시지) ID
+ * @param postId - 게시글 ID
  * @param text - 댓글 내용
  * @param authorUid - 댓글 작성자 UID
  * @param urls - 첨부 파일 URL 목록 (선택적)
@@ -25,7 +25,7 @@ import type {
  * @returns 생성 결과 (성공 여부, 댓글 ID, 에러 메시지)
  */
 export async function createComment(
-  messageId: string,
+  postId: string,
   text: string,
   authorUid: string,
   urls?: Record<number, string>,
@@ -35,7 +35,7 @@ export async function createComment(
     return { success: false, error: 'Firebase RTDB가 초기화되지 않았습니다.' };
   }
 
-  if (!messageId || !text.trim() || !authorUid) {
+  if (!postId || !text.trim() || !authorUid) {
     return { success: false, error: '필수 입력값이 누락되었습니다.' };
   }
 
@@ -46,7 +46,7 @@ export async function createComment(
 
     if (parentId) {
       // 대댓글인 경우: 부모 댓글의 정보 읽기
-      const parentRef = ref(rtdb, `chat-message-comments/${messageId}/${parentId}`);
+      const parentRef = ref(rtdb, `comments/${postId}/${parentId}`);
       const parentSnapshot = await get(parentRef);
 
       if (!parentSnapshot.exists()) {
@@ -57,12 +57,12 @@ export async function createComment(
       parentListOrder = parentData.listOrder;
       parentChildCount = parentData.childCount || 0;
     } else {
-      // 최상위 댓글인 경우: 메시지의 childCount 읽기
-      const messageRef = ref(rtdb, `chat-messages/${messageId}/childCount`);
-      const messageSnapshot = await get(messageRef);
+      // 최상위 댓글인 경우: 게시글의 childCount 읽기
+      const postRef = ref(rtdb, `posts/${postId}/childCount`);
+      const postSnapshot = await get(postRef);
 
-      if (messageSnapshot.exists()) {
-        parentChildCount = messageSnapshot.val() as number;
+      if (postSnapshot.exists()) {
+        parentChildCount = postSnapshot.val() as number;
       }
     }
 
@@ -84,7 +84,7 @@ export async function createComment(
     }
 
     // 4. Firebase RTDB에 댓글 저장
-    const newCommentRef = push(ref(rtdb, `chat-message-comments/${messageId}`));
+    const newCommentRef = push(ref(rtdb, `comments/${postId}`));
     await update(newCommentRef, payload);
 
     return {
@@ -103,23 +103,23 @@ export async function createComment(
 /**
  * 특정 게시글의 모든 댓글을 listOrder 순서로 로드합니다.
  *
- * @param messageId - 게시글(채팅 메시지) ID
+ * @param postId - 게시글 ID
  * @returns 댓글 목록 (메타데이터 포함)
  */
 export async function loadComments(
-  messageId: string
+  postId: string
 ): Promise<{ success: boolean; comments?: CommentWithMetadata[]; error?: string }> {
   if (!rtdb) {
     return { success: false, error: 'Firebase RTDB가 초기화되지 않았습니다.' };
   }
 
-  if (!messageId) {
+  if (!postId) {
     return { success: false, error: '게시글 ID가 필요합니다.' };
   }
 
   try {
     // listOrder 순서로 댓글 가져오기
-    const commentsRef = ref(rtdb, `chat-message-comments/${messageId}`);
+    const commentsRef = ref(rtdb, `comments/${postId}`);
     const commentsQuery = query(commentsRef, orderByChild('listOrder'));
     const snapshot = await get(commentsQuery);
 
@@ -156,25 +156,25 @@ export async function loadComments(
  * 특정 게시글의 마지막 N개 댓글을 listOrder 순서로 로드합니다.
  * 글 목록 페이지에서 댓글 미리보기용으로 사용합니다.
  *
- * @param messageId - 게시글(채팅 메시지) ID
+ * @param postId - 게시글 ID
  * @param limit - 가져올 댓글 개수 (기본값: 3)
  * @returns 댓글 목록 (메타데이터 포함)
  */
 export async function loadLastComments(
-  messageId: string,
+  postId: string,
   limit: number = 3
 ): Promise<{ success: boolean; comments?: CommentWithMetadata[]; error?: string }> {
   if (!rtdb) {
     return { success: false, error: 'Firebase RTDB가 초기화되지 않았습니다.' };
   }
 
-  if (!messageId) {
+  if (!postId) {
     return { success: false, error: '게시글 ID가 필요합니다.' };
   }
 
   try {
     // listOrder 순서로 마지막 N개 댓글 가져오기
-    const commentsRef = ref(rtdb, `chat-message-comments/${messageId}`);
+    const commentsRef = ref(rtdb, `comments/${postId}`);
     const commentsQuery = query(commentsRef, orderByChild('listOrder'), limitToLast(limit));
     const snapshot = await get(commentsQuery);
 
@@ -210,14 +210,14 @@ export async function loadLastComments(
 /**
  * 댓글을 수정합니다.
  *
- * @param messageId - 게시글(채팅 메시지) ID
+ * @param postId - 게시글 ID
  * @param commentId - 댓글 ID
  * @param text - 수정할 댓글 내용
  * @param urls - 수정할 첨부 파일 URL 목록 (선택적)
  * @returns 수정 결과
  */
 export async function updateComment(
-  messageId: string,
+  postId: string,
   commentId: string,
   text: string,
   urls?: Record<number, string>
@@ -226,12 +226,12 @@ export async function updateComment(
     return { success: false, error: 'Firebase RTDB가 초기화되지 않았습니다.' };
   }
 
-  if (!messageId || !commentId || !text.trim()) {
+  if (!postId || !commentId || !text.trim()) {
     return { success: false, error: '필수 입력값이 누락되었습니다.' };
   }
 
   try {
-    const commentRef = ref(rtdb, `chat-message-comments/${messageId}/${commentId}`);
+    const commentRef = ref(rtdb, `comments/${postId}/${commentId}`);
     const updates: Partial<ChatMessageComment> = {
       text: text.trim(),
       editedAt: Date.now()
@@ -256,24 +256,24 @@ export async function updateComment(
 /**
  * 댓글을 삭제합니다 (Soft Delete).
  *
- * @param messageId - 게시글(채팅 메시지) ID
+ * @param postId - 게시글 ID
  * @param commentId - 댓글 ID
  * @returns 삭제 결과
  */
 export async function deleteComment(
-  messageId: string,
+  postId: string,
   commentId: string
 ): Promise<{ success: boolean; error?: string }> {
   if (!rtdb) {
     return { success: false, error: 'Firebase RTDB가 초기화되지 않았습니다.' };
   }
 
-  if (!messageId || !commentId) {
+  if (!postId || !commentId) {
     return { success: false, error: '필수 입력값이 누락되었습니다.' };
   }
 
   try {
-    const commentRef = ref(rtdb, `chat-message-comments/${messageId}/${commentId}`);
+    const commentRef = ref(rtdb, `comments/${postId}/${commentId}`);
 
     // Soft Delete: deleted 필드를 true로 설정, 내용은 초기화
     const updates: Partial<ChatMessageComment> = {

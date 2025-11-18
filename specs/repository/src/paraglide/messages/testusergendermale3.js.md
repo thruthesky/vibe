@@ -60,6 +60,3 @@ const testusergendermale3 = (inputs = {}, options = {}) => {
 export { testusergendermale3 as "testUserGenderMale" }
 ```
 
-## 변경 이력
-
-- 2025-11-15: 스펙 문서 생성

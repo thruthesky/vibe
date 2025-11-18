@@ -60,6 +60,3 @@ const profilesaving1 = (inputs = {}, options = {}) => {
 export { profilesaving1 as "profileSaving" }
 ```
 
-## 변경 이력
-
-- 2025-11-15: 스펙 문서 생성

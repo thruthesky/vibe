@@ -60,6 +60,3 @@ const profilenicknamerequired2 = (inputs = {}, options = {}) => {
 export { profilenicknamerequired2 as "profileNicknameRequired" }
 ```
 
-## 변경 이력
-
-- 2025-11-15: 스펙 문서 생성

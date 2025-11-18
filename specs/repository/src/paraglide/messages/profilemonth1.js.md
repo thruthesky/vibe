@@ -59,6 +59,3 @@ const profilemonth1 = (inputs = {}, options = {}) => {
 export { profilemonth1 as "profileMonth" }
 ```
 
-## 변경 이력
-
-- 2025-11-15: 스펙 문서 생성

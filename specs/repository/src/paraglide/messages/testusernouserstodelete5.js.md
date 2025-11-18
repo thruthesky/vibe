@@ -57,6 +57,3 @@ const testusernouserstodelete5 = (inputs = {}, options = {}) => {
 export { testusernouserstodelete5 as "testUserNoUsersToDelete" }
 ```
 
-## 변경 이력
-
-- 2025-11-15: 스펙 문서 생성

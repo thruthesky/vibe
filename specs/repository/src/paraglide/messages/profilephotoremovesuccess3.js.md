@@ -57,6 +57,3 @@ const profilephotoremovesuccess3 = (inputs = {}, options = {}) => {
 export { profilephotoremovesuccess3 as "profilePhotoRemoveSuccess" }
 ```
 
-## 변경 이력
-
-- 2025-11-15: 스펙 문서 생성

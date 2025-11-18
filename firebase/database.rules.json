@@ -42,11 +42,60 @@
       }
     },
     "likes": {
+      // ❤️ 사용자별 좋아요 목록
+      // 구조: /likes/{uid}/{targetId}: 'post' | 'comment' | 'message'
+      // targetId: postId, commentId, messageId
       "$uid": {
-        ".read": "auth != null && auth.uid == $uid",
+        // 읽기 권한: 본인만 자신의 좋아요 목록 읽기 가능
+        ".read": "
+          (
+            auth != null
+          )
+          &&
+          (
+            auth.uid == $uid
+          )
+        ",
         "$targetId": {
-          ".write": "auth != null && auth.uid == $uid",
-          ".validate": "newData.val() === null || (newData.isString() && (newData.val() === 'message' || newData.val() === 'comment'))"
+          // 쓰기 권한: 본인만 자신의 좋아요 추가/삭제 가능
+          ".write": "
+            (
+              auth != null
+            )
+            &&
+            (
+              auth.uid == $uid
+            )
+          ",
+          // 값 검증: 'post', 'comment', 'message', 'chat-message-{roomId}' 또는 null (삭제)만 허용
+          // 채팅 메시지의 경우 'chat-message-{roomId}' 형식으로 저장됨 (예: 'chat-message-post')
+          ".validate": "
+            (
+              newData.val() === null
+            )
+            ||
+            (
+              newData.isString()
+              &&
+              (
+                (
+                  newData.val() === 'post'
+                )
+                ||
+                (
+                  newData.val() === 'comment'
+                )
+                ||
+                (
+                  newData.val() === 'message'
+                )
+                ||
+                (
+                  newData.val().matches(/^chat-message-.+$/)
+                )
+              )
+            )
+          "
         }
       }
     },
@@ -81,6 +130,170 @@
 
           // 값 검증: true 또는 null (삭제)만 허용
           ".validate": "newData.isBoolean() && newData.val() === true || newData.val() === null"
+        }
+      }
+    },
+    "posts": {
+      // 🏷️ 게시글 데이터
+      // 구조: /posts/{postId}
+      // 게시글 노드에 category 필드 저장 (클라이언트가 설정)
+      // category: discussion, qna, news, info, selling, hiring, travel, mukbang, realestate, hobby, story
+
+      // 인덱스 설정: 정렬 필드
+      ".indexOn": [
+        "createdAt",
+        "likeCount",
+        "commentCount",
+        "category"
+      ],
+
+      // 읽기 권한: 모든 사용자 (로그인 불필요, 게시글 목록 조회용)
+      ".read": "true",
+
+      "$postId": {
+        // ✍️ 게시글 쓰기 권한
+        // 조건:
+        //   1. 로그인한 사용자
+        //   2. 새 게시글 생성: 본인이 작성자 (authorUid == auth.uid)
+        //   3. 기존 게시글 수정/삭제: 본인이 작성자이며, 삭제되지 않았고, 90분 이내
+        ".write": "
+          (
+            auth != null
+          )
+          &&
+          (
+            (
+              // 새 게시글 생성
+              !data.exists()
+              &&
+              newData.child('authorUid').val() === auth.uid
+            )
+            ||
+            (
+              // 기존 게시글 수정/삭제
+              data.exists()
+              &&
+              (
+                // a) 본인이 작성한 게시글
+                data.child('authorUid').val() === auth.uid
+              )
+              &&
+              (
+                // b) 삭제되지 않은 게시글
+                data.child('deleted').val() != true
+              )
+              &&
+              (
+                // c) 90분(5,400,000ms) 이내 게시글
+                (now - data.child('createdAt').val()) < 5400000
+              )
+            )
+          )
+        ",
+
+        // 필수 필드 검증
+        ".validate": "
+          (
+            // 새 게시글 생성 시 필수 필드
+            !data.exists()
+            &&
+            newData.hasChild('authorUid')
+            &&
+            newData.hasChild('text')
+            &&
+            newData.hasChild('createdAt')
+            &&
+            newData.hasChild('category')
+          )
+          ||
+          (
+            // 기존 게시글 수정 시 (필수 필드 유지 또는 삭제)
+            data.exists()
+          )
+        "
+      }
+    },
+    "comments": {
+      // 💬 댓글 데이터 (게시글별 분류)
+      // 구조: /comments/{postId}/{commentId}
+      "$postId": {
+        // 인덱스 설정: 댓글 정렬 필드
+        ".indexOn": [
+          "listOrder",
+          "createdAt"
+        ],
+
+        // 읽기 권한: 모든 로그인한 사용자 (댓글 목록 조회용)
+        ".read": "auth != null",
+
+        "$commentId": {
+          // ✍️ 댓글 쓰기 권한
+          // 조건:
+          //   1. 로그인한 사용자
+          //   2. 새 댓글 생성: 본인이 작성자 (authorUid == auth.uid)
+          //   3. 기존 댓글 수정/삭제: 본인이 작성자이며, 삭제되지 않았고, 90분 이내
+          ".write": "
+            (
+              auth != null
+            )
+            &&
+            (
+              (
+                // 새 댓글 생성
+                !data.exists()
+                &&
+                newData.child('authorUid').val() === auth.uid
+              )
+              ||
+              (
+                // 기존 댓글 수정/삭제
+                data.exists()
+                &&
+                (
+                  // a) 본인이 작성한 댓글
+                  data.child('authorUid').val() === auth.uid
+                )
+                &&
+                (
+                  // b) 삭제되지 않은 댓글
+                  data.child('deleted').val() != true
+                )
+                &&
+                (
+                  // c) 90분(5,400,000ms) 이내 댓글
+                  (now - data.child('createdAt').val()) < 5400000
+                )
+              )
+            )
+          "
+        }
+      }
+    },
+    "likes-by": {
+      // ❤️ 좋아요한 사용자 목록 (통합)
+      // 구조: /likes-by/{targetId}/{uid}: true
+      // targetId: postId, commentId, messageId
+      // Cloud Functions가 자동으로 관리 (클라이언트는 /likes 경로 사용)
+      "$targetId": {
+        // 읽기 권한: 모든 로그인한 사용자 (좋아요한 사용자 목록 조회용)
+        ".read": "auth != null",
+
+        "$uid": {
+          // 쓰기 권한: Cloud Functions만 가능 (클라이언트는 직접 쓰기 불가)
+          ".write": false,
+
+          // 값 검증: true 또는 null (삭제)만 허용
+          ".validate": "
+            (
+              newData.isBoolean()
+              &&
+              newData.val() === true
+            )
+            ||
+            (
+              newData.val() === null
+            )
+          "
         }
       }
     },
@@ -188,96 +401,99 @@
       }
     },
     "chat-messages": {
-      // 🔍 쿼리 허용 규칙 (부모 레벨)
-      // Firebase RTDB는 쿼리 실행 시 부모 경로에서 먼저 read 권한을 체크합니다.
-      // 이 규칙은 쿼리 실행 자체를 허용하며, 개별 메시지 읽기는 $messageId 레벨에서 다시 체크합니다.
-      //
-      // 🔒 보안 참고:
-      //   - 쿼리 실행만 허용 (메시지 목록 가져오기)
-      //   - 각 메시지 내용을 실제로 읽으려면 $messageId 레벨의 .read 규칙도 통과해야 함
-      //   - 권한 없는 메시지는 쿼리 결과에서 null로 반환되어 클라이언트가 필터링
-      ".read": "
-        (
-          auth != null
-        )
-        &&
-        (
+      // 🔒 2단계 구조: /chat-messages/{roomId}/{messageId}
+      // 보안 강화: 룸 레벨에서 먼저 접근 권한을 체크하여 다른 채팅방의 메시지를 볼 수 없도록 함
+      "$roomId": {
+        // 🔍 룸 레벨 읽기 권한 (보안 강화)
+        // 이 레벨에서 먼저 채팅방 접근 권한을 체크합니다
+        // 권한이 없는 사용자는 쿼리 자체를 실행할 수 없습니다
+        ".read": "
           (
-            query.orderByChild == 'roomOrder'
+            auth != null
           )
-          ||
+          &&
           (
-            query.orderByChild == 'categoryOrder'
-          )
-          ||
-          (
-            query.orderByChild == 'allCategoryOrder'
-          )
-        )
-      ",
-      "$messageId": {
-        // 📖 개별 메시지 읽기 권한 (자식 레벨)
-        // 쿼리로 가져온 메시지 목록에서 각 메시지의 실제 내용을 읽을 때 체크합니다.
-        //
-        // 조건 1: 로그인한 사용자
-        // 조건 2: 메시지 접근 권한 (다음 중 하나에 해당)
-        //   - 1:1 채팅: roomId에 본인 UID가 포함됨 (예: 'uid1-uid2')
-        //   - 오픈 채팅방: type이 'open'인 채팅방
-        //   - 그룹 채팅방: members 목록에 본인 UID 존재
-        ".read": "auth != null &&
-          (
-            // 1:1 채팅: roomId에 본인 UID 포함
-            data.child('roomId').val().contains(auth.uid) ||
-            // 오픈 채팅방
-            root.child('chat-rooms').child(data.child('roomId').val()).child('type').val() == 'open' ||
-            // 그룹 채팅방 멤버
-            root.child('chat-rooms').child(data.child('roomId').val()).child('members').child(auth.uid).exists()
-          )",
-        // ✍️ 메시지 쓰기 권한 (생성, 수정, 삭제)
-        ".write": "auth != null &&
-          (
-            // 조건 1: 채팅방 접근 권한 확인
-            // - roomId가 post 이거나 (게시글 작성)
-            // - roomId에 본인 UID가 포함되거나 (1:1 채팅)
-            // - 채팅방 멤버인 경우
             (
-              newData.child('roomId').val() == 'post' ||
-              newData.child('roomId').val().contains(auth.uid) ||
-              root.child('chat-rooms').child(newData.child('roomId').val()).child('members').child(auth.uid).exists()
+              // 1:1 채팅: roomId에 본인 UID 포함
+              // 예: 'single-uid1-uid2' 형식
+              $roomId.contains(auth.uid)
             )
-          ) &&
-          (
-            // 조건 2: 새 메시지 생성 또는 기존 메시지 수정/삭제 검증
+            ||
             (
-              // 2-1. 새 메시지 생성: 기존 데이터가 없는 경우
-              !data.exists()
-            ) ||
+              // 오픈 채팅방: type이 'open'
+              root.child('chat-rooms').child($roomId).child('type').val() == 'open'
+            )
+            ||
             (
-              // 2-2. 기존 메시지 수정/삭제: 다음 조건을 모두 만족해야 함
-              data.exists() &&
+              // 그룹 채팅방: members 목록에 본인 UID 존재
+              root.child('chat-rooms').child($roomId).child('members').child(auth.uid).exists()
+            )
+          )
+        ",
+
+        "$messageId": {
+          // 📖 개별 메시지 읽기 권한
+          // 상위 룸 레벨에서 이미 권한을 체크했으므로 로그인 여부만 확인
+          ".read": "
+            (
+              auth != null
+            )
+          ",
+
+          // ✍️ 메시지 쓰기 권한 (생성, 수정, 삭제)
+          ".write": "
+            (
+              auth != null
+            )
+            &&
+            (
               (
-                // a) 본인이 작성한 메시지여야 함
-                data.child('senderUid').val() === auth.uid
-              ) &&
+                // 새 메시지 생성
+                !data.exists()
+                &&
+                (
+                  (
+                    // 1:1 채팅 (roomId에 본인 UID 포함)
+                    $roomId.contains(auth.uid)
+                  )
+                  ||
+                  (
+                    // 그룹 채팅방: members 목록에 본인 UID 존재
+                    root.child('chat-rooms').child($roomId).child('members').child(auth.uid).exists()
+                  )
+                )
+              )
+              ||
               (
-                // b) 삭제되지 않은 메시지여야 함
-                data.child('deleted').val() != true
-              ) &&
-              (
-                // c) 90분(5,400,000ms) 이내 메시지여야 함
-                // now: 현재 시각(밀리초)
-                // data.child('createdAt').val(): 메시지 생성 시각(밀리초)
-                // 90분 = 90 * 60 * 1000 = 5,400,000ms
-                (now - data.child('createdAt').val()) < 5400000
+                // 기존 메시지 수정/삭제
+                data.exists()
+                &&
+                (
+                  // a) 본인이 작성한 메시지
+                  data.child('senderUid').val() === auth.uid
+                )
+                &&
+                (
+                  // b) 삭제되지 않은 메시지
+                  data.child('deleted').val() != true
+                )
+                &&
+                (
+                  // c) 90분(5,400,000ms) 이내 메시지
+                  (now - data.child('createdAt').val()) < 5400000
+                )
               )
             )
-          )"
-      },
-      ".indexOn": [
-        "roomOrder",
-        "allCategoryOrder",
-        "categoryOrder"
-      ]
+          "
+        },
+
+        // 인덱스 설정: 룸 레벨에서 정렬 필드 인덱싱
+        ".indexOn": [
+          "roomOrder",
+          "allCategoryOrder",
+          "categoryOrder"
+        ]
+      }
     },
     "chat-message-comments": {
       // 댓글 읽기: 누구나 가능
@@ -285,17 +501,25 @@
       "$messageId": {
         "$commentId": {
           // 쓰기 권한: 로그인한 사용자이며, 본인이 작성한 댓글만 생성/수정/삭제 가능
-          ".write": "auth != null &&
+          ".write": "
+            (
+              auth != null
+            )
+            &&
             (
               (
-                !data.exists() &&
+                !data.exists()
+                &&
                 newData.child('authorUid').val() == auth.uid
-              ) ||
+              )
+              ||
               (
-                data.exists() &&
+                data.exists()
+                &&
                 data.child('authorUid').val() == auth.uid
               )
-            )"
+            )
+          "
         },
         ".indexOn": [
           "listOrder"
@@ -310,11 +534,25 @@
         ".read": "$uid === auth.uid",
         "$roomId": {
           // 쓰기 규칙: 본인이 삭제하거나, 채팅방 멤버가 초대 생성 가능
-          ".write": "auth != null &&
+          ".write": "
             (
-              ($uid === auth.uid && newData.val() === null) ||
-              (newData.val() !== null && root.child('chat-rooms').child($roomId).child('members').child(auth.uid).exists())
-            )"
+              auth != null
+            )
+            &&
+            (
+              (
+                $uid === auth.uid
+                &&
+                newData.val() === null
+              )
+              ||
+              (
+                newData.val() !== null
+                &&
+                root.child('chat-rooms').child($roomId).child('members').child(auth.uid).exists()
+              )
+            )
+          "
         },
         ".indexOn": [
           "invitationOrder"
@@ -330,14 +568,21 @@
         "$favoriteId": {
           "name": {
             // 폴더 이름: 필수, 1-30자
-            ".validate": "newData.isString() &&
-              newData.val().length > 0 &&
-              newData.val().length <= 30"
+            ".validate": "
+              newData.isString()
+              &&
+              newData.val().length > 0
+              &&
+              newData.val().length <= 30
+            "
           },
           "description": {
             // 폴더 설명: 선택, 최대 100자
-            ".validate": "newData.isString() &&
-              newData.val().length <= 100"
+            ".validate": "
+              newData.isString()
+              &&
+              newData.val().length <= 100
+            "
           },
           "createdAt": {
             // 생성 시간: 필수, 숫자 (timestamp)
@@ -374,8 +619,11 @@
         },
         "try": {
           "$uid": {
-            ".write": "auth != null &&
-              $uid === auth.uid"
+            ".write": "
+              auth != null
+              &&
+              $uid === auth.uid
+            "
           }
         }
       }
@@ -389,12 +637,21 @@
         "$targetUid": {
           // 쓰기 권한: 본인만 자신의 팔로잉 목록 관리 가능
           // 자기 자신을 팔로우하는 것은 불가능
-          ".write": "auth != null &&
-            $uid === auth.uid &&
-            $uid !== $targetUid",
+          ".write": "
+            auth != null
+            &&
+            $uid === auth.uid
+            &&
+            $uid !== $targetUid
+          ",
           // 값 검증: true 또는 null (삭제)만 가능
-          ".validate": "newData.isBoolean() && newData.val() === true ||
-            newData.val() === null"
+          ".validate": "
+            newData.isBoolean()
+            &&
+            newData.val() === true
+            ||
+            newData.val() === null
+          "
         }
       }
     },
@@ -407,12 +664,21 @@
         "$followerUid": {
           // 쓰기 권한: 팔로워 본인만 쓰기 가능
           // 자기 자신을 팔로워로 추가하는 것은 불가능
-          ".write": "auth != null &&
-            $followerUid === auth.uid &&
-            $uid !== $followerUid",
+          ".write": "
+            auth != null
+            &&
+            $followerUid === auth.uid
+            &&
+            $uid !== $followerUid
+          ",
           // 값 검증: true 또는 null (삭제)만 가능
-          ".validate": "newData.isBoolean() && newData.val() === true ||
-            newData.val() === null"
+          ".validate": "
+            newData.isBoolean()
+            &&
+            newData.val() === true
+            ||
+            newData.val() === null
+          "
         }
       }
     },
@@ -424,7 +690,9 @@
         // 읽기 권한: 본인만 자신의 피드 읽기 가능
         ".read": "$uid === auth.uid",
         // 쓰기 권한: 없음 (Cloud Functions만 쓰기 가능)
-        ".write": false
+        ".write": false,
+        // 인덱스: orderByValue() 쿼리를 위한 .value 인덱스
+        ".indexOn": ".value"
       }
     },
     "test": {

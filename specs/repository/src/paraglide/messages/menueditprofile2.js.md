@@ -60,6 +60,3 @@ const menueditprofile2 = (inputs = {}, options = {}) => {
 export { menueditprofile2 as "menuEditProfile" }
 ```
 
-## 변경 이력
-
-- 2025-11-15: 스펙 문서 생성

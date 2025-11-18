@@ -60,6 +60,3 @@ const pagetitlechat2 = (inputs = {}, options = {}) => {
 export { pagetitlechat2 as "pageTitleChat" }
 ```
 
-## 변경 이력
-
-- 2025-11-15: 스펙 문서 생성

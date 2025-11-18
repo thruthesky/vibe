@@ -60,6 +60,3 @@ const testusercreated2 = (inputs, options = {}) => {
 export { testusercreated2 as "testUserCreated" }
 ```
 
-## 변경 이력
-
-- 2025-11-15: 스펙 문서 생성

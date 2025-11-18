@@ -57,6 +57,3 @@ const featuresveltekit52 = (inputs = {}, options = {}) => {
 export { featuresveltekit52 as "featureSvelteKit5" }
 ```
 
-## 변경 이력
-
-- 2025-11-15: 스펙 문서 생성

@@ -57,6 +57,3 @@ const testuserdeleteallconfirmation4 = (inputs, options = {}) => {
 export { testuserdeleteallconfirmation4 as "testUserDeleteAllConfirmation" }
 ```
 
-## 변경 이력
-
-- 2025-11-15: 스펙 문서 생성

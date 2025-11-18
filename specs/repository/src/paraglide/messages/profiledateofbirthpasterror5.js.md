@@ -59,6 +59,3 @@ const profiledateofbirthpasterror5 = (inputs = {}, options = {}) => {
 export { profiledateofbirthpasterror5 as "profileDateOfBirthPastError" }
 ```
 
-## 변경 이력
-
-- 2025-11-15: 스펙 문서 생성

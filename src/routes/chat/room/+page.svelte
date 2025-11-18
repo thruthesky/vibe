@@ -72,8 +72,10 @@
 		return '';
 	});
 
-	// DatabaseListView 설정 (Flat 구조 기준)
-	const messagePath = 'chat-messages';
+	// DatabaseListView 설정 (2단계 구조: chat-messages/{roomId}/{messageId})
+	const messagePath = $derived.by(() =>
+		activeRoomId ? `chat-messages/${activeRoomId}` : 'chat-messages'
+	);
 	const roomOrderField = 'roomOrder';
 	const roomOrderPrefix = $derived.by(() => (activeRoomId ? `-${activeRoomId}-` : ''));
 	const canRenderMessages = $derived.by(() => Boolean(activeRoomId && roomOrderPrefix));
@@ -979,6 +981,12 @@
 	async function handleToggleLike(event: MouseEvent, messageId: string) {
 		event.stopPropagation();
 
+		console.log('💖 [handleToggleLike] 시작', {
+			messageId,
+			activeRoomId,
+			userUid: authStore.user?.uid
+		});
+
 		if (!authStore.user) {
 			alert('로그인이 필요합니다.');
 			return;
@@ -986,23 +994,35 @@
 
 		// 이미 처리 중인 요청인지 확인 (중복 방지)
 		if (pendingLikeTargets.has(messageId)) {
+			console.log('⏭️ [handleToggleLike] 이미 처리 중인 요청, 건너뜀', { messageId });
 			return;
 		}
 
 		pendingLikeTargets.add(messageId);
 
 		try {
+			console.log('📤 [handleToggleLike] toggleLikeTarget 호출', {
+				uid: authStore.user.uid,
+				targetId: messageId,
+				targetType: 'message',
+				roomId: activeRoomId
+			});
+
 			const result = await toggleLikeTarget({
 				uid: authStore.user.uid,
 				targetId: messageId,
-				targetType: 'message'
+				targetType: 'message',
+				roomId: activeRoomId
 			});
+
+			console.log('📥 [handleToggleLike] toggleLikeTarget 결과:', result);
 
 			if (!result.success && result.error) {
 				alert(result.error);
 			}
 		} finally {
 			pendingLikeTargets.delete(messageId);
+			console.log('✅ [handleToggleLike] 완료', { messageId });
 		}
 	}
 
@@ -1013,38 +1033,39 @@
 	 * @returns 좋아요한 사용자의 displayName 배열
 	 */
 	async function fetchLikedByUsersNames(messageId: string): Promise<string[]> {
+		console.log('👥 [fetchLikedByUsersNames] 시작', { messageId });
+
 		// 캐시된 데이터가 있으면 반환
 		if (likedByUsers[messageId]) {
+			console.log('💾 [fetchLikedByUsersNames] 캐시 반환', {
+				messageId,
+				cachedNames: likedByUsers[messageId]
+			});
 			return likedByUsers[messageId];
 		}
 
 		if (!rtdb) {
+			console.error('❌ [fetchLikedByUsersNames] RTDB 초기화 안됨');
 			return [];
 		}
 
 		try {
-			const likesRef = ref(rtdb, `chat-message-likes/${messageId}`);
-			const snapshot = await get(likesRef);
-			const data = snapshot.val() || {};
-			let uids = Object.keys(data);
-
-			// Fallback: chat-message-likes에 데이터가 없으면 /likes 경로를 역으로 조회
-			if (uids.length === 0) {
-				const allLikesRef = ref(rtdb, 'likes');
-				const allLikesSnapshot = await get(allLikesRef);
-				const allLikesData = allLikesSnapshot.val() || {};
-
-				// 각 사용자의 좋아요 목록에서 현재 메시지를 좋아요한 사용자 찾기
-				uids = Object.keys(allLikesData).filter((uid) => {
-					const userLikes = allLikesData[uid] || {};
-					return userLikes[messageId] === 'message';
-				});
-			}
+			// fetchLikedByUsers 함수 사용 (통합 경로: /likes-by/{messageId})
+			console.log('📤 [fetchLikedByUsersNames] fetchLikedByUsers 호출', { messageId });
+			const uids = await fetchLikedByUsers(messageId, 'message');
+			console.log('📥 [fetchLikedByUsersNames] fetchLikedByUsers 결과:', {
+				messageId,
+				uidsCount: uids.length,
+				uids
+			});
 
 			// 최대 3명만
 			const limitedUids = uids.slice(0, 3);
 
 			// 병렬로 사용자 이름 가져오기
+			console.log('🔍 [fetchLikedByUsersNames] 사용자 이름 가져오기 시작', {
+				limitedUids
+			});
 			const names = await Promise.all(
 				limitedUids.map(async (uid) => {
 					const displayName = await getUserField(uid, 'displayName');
@@ -1052,11 +1073,17 @@
 				})
 			);
 
+			console.log('✅ [fetchLikedByUsersNames] 완료', { messageId, names });
+
 			// 캐시에 저장
 			likedByUsers[messageId] = names;
 			return names;
 		} catch (error) {
-			console.error('좋아요 사용자 목록 가져오기 실패:', error);
+			console.error('❌ [fetchLikedByUsersNames] 좋아요 사용자 목록 가져오기 실패:', {
+				messageId,
+				error: error instanceof Error ? error.message : error,
+				errorStack: error instanceof Error ? error.stack : undefined
+			});
 			return [];
 		}
 	}
@@ -1567,21 +1594,13 @@
 										<span class="message-timestamp">{formatChatMessageDate(message.createdAt)}</span
 										>
 
-										<!-- 좋아요 버튼 (툴팁 + 롱프레스 지원) -->
-										<Tooltip.Root>
-											<Tooltip.Trigger
+										<!-- 좋아요 버튼 (롱프레스 지원) -->
+										<button
 												class="inline-flex {userLikes[messageId] === 'message'
 													? 'like-button liked'
 													: 'like-button'}"
 												disabled={!authStore.user}
 												onclick={(e) => handleToggleLike(e, messageId)}
-												onmouseenter={async () => {
-													if (message.likeCount && message.likeCount > 0) {
-														const names = await fetchLikedByUsersNames(messageId);
-														tooltipContent[messageId] =
-															names.length > 0 ? `좋아요한 사용자: ${names.join(', ')}` : '';
-													}
-												}}
 												onmousedown={() => handleLongPressStart(messageId)}
 												onmouseup={handleLongPressEnd}
 												onmouseleave={handleLongPressEnd}
@@ -1605,13 +1624,7 @@
 												{#if message.likeCount && message.likeCount > 0}
 													<span class="like-count">{message.likeCount}</span>
 												{/if}
-											</Tooltip.Trigger>
-											{#if tooltipContent[messageId]}
-												<Tooltip.Content>
-													<p>{tooltipContent[messageId]}</p>
-												</Tooltip.Content>
-											{/if}
-										</Tooltip.Root>
+											</button>
 
 										<!-- 좋아요 사용자 아바타 스택 -->
 										{#if message.likeCount && message.likeCount > 0}

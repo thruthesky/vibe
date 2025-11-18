@@ -5,12 +5,31 @@
 
 /**
  * 게시판 카테고리 상수
- * - community: 커뮤니티
+ * - discussion: 자유 토론
  * - qna: 질문과 답변
  * - news: 뉴스
- * - market: 회원장터
+ * - info: 정보 공유
+ * - selling: 판매
+ * - hiring: 구인구직
+ * - travel: 여행
+ * - mukbang: 먹방
+ * - realestate: 부동산
+ * - hobby: 취미
+ * - story: 사연
  */
-export const FORUM_CATEGORIES = ["community", "qna", "news", "market"] as const;
+export const FORUM_CATEGORIES = [
+  "discussion",
+  "qna",
+  "news",
+  "info",
+  "selling",
+  "hiring",
+  "travel",
+  "mukbang",
+  "realestate",
+  "hobby",
+  "story",
+] as const;
 
 /**
  * 게시판 카테고리 타입
@@ -101,8 +120,13 @@ export interface UserData {
 
 /**
  * 좋아요 대상 타입
+ * - chat-message-{roomId}: 채팅 메시지 (roomId 정보 포함)
+ * - comment: 댓글
+ * - post: 게시글
+ *
+ * ⚠️ 레거시: "message"는 더 이상 사용하지 않습니다. "chat-message-{roomId}" 형식을 사용하세요.
  */
-export type LikeTargetType = "message" | "comment";
+export type LikeTargetType = string;
 
 /**
  * 신고 사유 타입

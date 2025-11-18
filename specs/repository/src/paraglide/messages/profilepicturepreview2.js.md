@@ -59,6 +59,3 @@ const profilepicturepreview2 = (inputs = {}, options = {}) => {
 export { profilepicturepreview2 as "profilePicturePreview" }
 ```
 
-## 변경 이력
-
-- 2025-11-15: 스펙 문서 생성

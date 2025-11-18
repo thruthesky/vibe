@@ -60,6 +60,3 @@ const pagetitlemenu2 = (inputs = {}, options = {}) => {
 export { pagetitlemenu2 as "pageTitleMenu" }
 ```
 
-## 변경 이력
-
-- 2025-11-15: 스펙 문서 생성

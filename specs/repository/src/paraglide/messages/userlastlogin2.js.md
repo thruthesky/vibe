@@ -60,6 +60,3 @@ const userlastlogin2 = (inputs = {}, options = {}) => {
 export { userlastlogin2 as "userLastLogin" }
 ```
 
-## 변경 이력
-
-- 2025-11-15: 스펙 문서 생성

@@ -9,6 +9,70 @@ import * as logger from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 
 /**
+ * 전체 팔로우 통계 카운터 증가
+ *
+ * @param followerUid - 팔로우하는 사용자 UID
+ * @param followingUid - 팔로우 대상 사용자 UID
+ *
+ * 수행 작업:
+ * - /stats/counters/follow 경로에 ServerValue.increment(1)로 +1 증가
+ * - 이 값은 전체 팔로우 관계 수를 나타냄
+ */
+async function incrementFollowCounter(
+  followerUid: string,
+  followingUid: string
+): Promise<void> {
+  try {
+    const followCounterRef = admin.database().ref("stats/counters/follow");
+    await followCounterRef.set(admin.database.ServerValue.increment(1));
+
+    logger.info("stats/counters/follow 증가 완료 (전체 팔로우 통계)", {
+      followerUid,
+      followingUid,
+    });
+  } catch (error) {
+    logger.error("stats/counters/follow 증가 실패", {
+      followerUid,
+      followingUid,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    // 통계 증가 실패는 치명적이지 않으므로 에러를 throw하지 않고 로그만 남김
+  }
+}
+
+/**
+ * 전체 팔로우 통계 카운터 감소
+ *
+ * @param followerUid - 언팔로우하는 사용자 UID
+ * @param followingUid - 언팔로우 대상 사용자 UID
+ *
+ * 수행 작업:
+ * - /stats/counters/follow 경로에 ServerValue.increment(-1)로 -1 감소
+ * - 이 값은 전체 팔로우 관계 수를 나타냄
+ */
+async function decrementFollowCounter(
+  followerUid: string,
+  followingUid: string
+): Promise<void> {
+  try {
+    const followCounterRef = admin.database().ref("stats/counters/follow");
+    await followCounterRef.set(admin.database.ServerValue.increment(-1));
+
+    logger.info("stats/counters/follow 감소 완료 (전체 팔로우 통계)", {
+      followerUid,
+      followingUid,
+    });
+  } catch (error) {
+    logger.error("stats/counters/follow 감소 실패", {
+      followerUid,
+      followingUid,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    // 통계 감소 실패는 치명적이지 않으므로 에러를 throw하지 않고 로그만 남김
+  }
+}
+
+/**
  * 팔로잉 관계 생성 시 비즈니스 로직 처리
  *
  * @param followerUid - 팔로우하는 사용자 UID (팔로워)
@@ -55,6 +119,9 @@ export async function handleFollowingCreate(
     path: `user-followers/${followingUid}/${followerUid}`,
   });
 
+  // 전체 팔로우 통계 증가
+  await incrementFollowCounter(followerUid, followingUid);
+
   // TODO: 향후 알림 전송 기능 추가
   // - followingUid에게 "followerUid가 당신을 팔로우했습니다" 알림
   // - /notifications/{followingUid}/{notificationId} 생성
@@ -96,4 +163,7 @@ export async function handleFollowingDelete(
     followingUid,
     path: `user-followers/${followingUid}/${followerUid}`,
   });
+
+  // 전체 팔로우 통계 감소
+  await decrementFollowCounter(followerUid, followingUid);
 }

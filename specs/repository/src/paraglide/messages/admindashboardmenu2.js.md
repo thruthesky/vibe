@@ -60,6 +60,3 @@ const admindashboardmenu2 = (inputs = {}, options = {}) => {
 export { admindashboardmenu2 as "adminDashboardMenu" }
 ```
 
-## 변경 이력
-
-- 2025-11-15: 스펙 문서 생성

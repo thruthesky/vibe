@@ -60,6 +60,3 @@ const authsigninrequireddesc4 = (inputs = {}, options = {}) => {
 export { authsigninrequireddesc4 as "authSignInRequiredDesc" }
 ```
 
-## 변경 이력
-
-- 2025-11-15: 스펙 문서 생성

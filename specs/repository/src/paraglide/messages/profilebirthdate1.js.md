@@ -57,6 +57,3 @@ const profilebirthdate1 = (inputs = {}, options = {}) => {
 export { profilebirthdate1 as "profileBirthdate" }
 ```
 
-## 변경 이력
-
-- 2025-11-15: 스펙 문서 생성

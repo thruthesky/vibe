@@ -3,13 +3,62 @@ title: database.rules.json
 type: config
 path: firebase/database.rules.json
 status: active
-version: 1.0.0
-last_updated: 2025-11-15
+version: 2.0.0
+last_updated: 2025-11-18
 ---
 
 ## 개요
 
-이 파일은 `firebase/database.rules.json`의 소스 코드를 포함하는 SED 스펙 문서입니다.
+이 파일은 Firebase Realtime Database Security Rules를 정의하는 설정 파일입니다.
+
+## 🔥🔥🔥 중요 규칙 🔥🔥🔥
+
+Firebase Database Rules는 **JSONC (JSON with Comments)** 형식을 사용하며, **여러 줄 문자열을 완전히 지원**합니다.
+
+### 필수 작성 규칙
+
+1. **여러 줄 문자열 사용 (필수)**
+   - 모든 `.read`, `.write`, `.validate` 조건식은 반드시 여러 줄로 작성합니다
+   - IDE의 JSON 린터가 에러를 표시해도 무시하세요 (Firebase는 정상 작동)
+   - 단일 줄 논리식은 절대 허용되지 않습니다
+
+2. **조건 분리 (필수)**
+   - `&&` 또는 `||` 연산자가 등장하면 각 조건을 새 줄에 작성
+   - 각 조건은 괄호 `()`로 묶어서 우선순위를 명확히 표현
+
+3. **주석 작성 (필수)**
+   - 각 조건 블록 앞에 세부 의도를 설명하는 주석 작성
+   - 주석 없는 규칙은 허용되지 않습니다
+
+### 올바른 예시
+
+```json
+".write": "
+  (
+    // 조건 1: 로그인한 사용자
+    auth != null
+  )
+  &&
+  (
+    // 조건 2: 본인만 수정 가능
+    auth.uid == $uid
+  )
+"
+```
+
+### 잘못된 예시 (절대 금지)
+
+```json
+// ❌ 단일 줄 (금지)
+".write": "auth != null && auth.uid == $uid"
+
+// ❌ 주석 없음 (금지)
+".write": "
+  auth != null
+  &&
+  auth.uid == $uid
+"
+```
 
 ## 소스 코드
 
@@ -262,6 +311,3 @@ last_updated: 2025-11-15
 }
 ```
 
-## 변경 이력
-
-- 2025-11-15: 스펙 문서 생성

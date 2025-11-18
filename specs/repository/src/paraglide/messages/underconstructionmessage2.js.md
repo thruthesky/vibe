@@ -57,6 +57,3 @@ const underconstructionmessage2 = (inputs = {}, options = {}) => {
 export { underconstructionmessage2 as "underConstructionMessage" }
 ```
 
-## 변경 이력
-
-- 2025-11-15: 스펙 문서 생성

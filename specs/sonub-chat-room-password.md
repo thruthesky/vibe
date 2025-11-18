@@ -1089,12 +1089,3 @@ roomDataLoaded = false; // 데이터 로딩 상태 초기화
 
 ---
 
-## 변경 이력
-
-| 버전 | 날짜 | 변경 내용 | 작성자 |
-|------|------|----------|--------|
-| 1.4.0 | 2025-11-16 | 🐛 버그 수정: 화면 깜빡임 현상 제거 - `roomDataLoaded` 플래그 도입하여 Firebase 데이터 로딩 완료 전 비밀번호 체크 방지 ([+page.svelte:106-107, 202, 220, 251](../src/routes/chat/room/+page.svelte)) | Claude Code |
-| 1.3.0 | 2025-11-16 | 🐛 버그 수정: 상태 업데이트 타이밍 문제 해결 - 레이스 컨디션으로 인한 불필요한 비밀번호 프롬프트 표시 방지 ([+page.svelte](../src/routes/chat/room/+page.svelte) 라인 109-121) | Claude Code |
-| 1.2.0 | 2025-11-16 | 🐛 버그 수정: 멤버 확인 로직 개선 - `snapshot.val() === true` → `snapshot.exists()` 변경하여 `members/{uid}: false`인 사용자도 멤버로 인식하도록 수정 ([room-password-prompt.svelte](../src/lib/components/chat/room-password-prompt.svelte) 라인 154-162) | Claude Code |
-| 1.1.0 | 2025-11-15 | 비밀번호 설정 UI 개선: 토글 제거, type="text" 사용, 버튼 3개 (취소/저장/삭제) | Claude Code |
-| 1.0.0 | 2025-11-14 | 초기 버전 작성 | Claude Code |

@@ -1286,6 +1286,3 @@ export { testuserdeleteallconfirmation4 } from "./en.js"
 export { testuserprogressindicator3 } from "./en.js"
 ```
 
-## 변경 이력
-
-- 2025-11-15: 스펙 문서 생성

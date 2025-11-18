@@ -39,29 +39,29 @@
 		/** 좋아요 상태 맵 */
 		userLikes?: Record<string, LikeTargetType>;
 		/** 좋아요 토글 핸들러 */
-		onToggleLike: (event: MouseEvent, messageId: string, type: LikeTargetType) => void;
+		onToggleLike: (event: MouseEvent, postId: string, type: LikeTargetType) => void;
 		/** 댓글 작성 모달 열기 핸들러 */
 		onOpenCommentDialog: (
-			messageId: string,
+			postId: string,
 			parentId?: string | null,
 			parentText?: string | null
 		) => void;
 		/** 수정 핸들러 (게시판 페이지에서 사용) */
 		onEdit?: (
-			messageId: string,
+			postId: string,
 			text: string,
 			urls: Record<number, string>,
 			roomId: string
 		) => void;
 		/** 삭제 핸들러 */
-		onDelete: (messageId: string) => void;
+		onDelete: (postId: string) => void;
 		/** 수정 버튼 동작 모드: 'dialog' = 수정 모달 열기, 'navigate' = 채팅방으로 이동 */
 		editMode?: 'dialog' | 'navigate';
 	}
 
 	let {
 		message,
-		messageId,
+		messageId: postId,
 		userLikes = {},
 		onToggleLike,
 		onOpenCommentDialog,
@@ -71,7 +71,7 @@
 	}: Props = $props();
 
 	// 본인 게시글 여부
-	const isMyPost = $derived(authStore.user?.uid === message.senderUid);
+	const isMyPost = $derived(authStore.user?.uid === message.authorUid);
 
 	// 댓글 컴포넌트 참조
 	let commentListRef = $state<PostCommentList>();
@@ -93,7 +93,7 @@
 
 	async function loadLikedUsers() {
 		try {
-			const uids = await fetchLikedByUsers(messageId, 'message');
+			const uids = await fetchLikedByUsers(postId, 'post');
 			likedByUids = uids;
 		} catch (error) {
 			console.error('좋아요 사용자 로드 실패:', error);
@@ -120,7 +120,7 @@
 		} else {
 			// 수정 모달 열기 (게시판에서 사용)
 			if (onEdit) {
-				onEdit(messageId, message.text, message.urls, message.roomId);
+				onEdit(postId, message.text, message.urls, message.roomId);
 			}
 		}
 	}
@@ -130,7 +130,7 @@
 	 */
 	function handleDeleteClick(e: MouseEvent) {
 		e.stopPropagation();
-		onDelete(messageId);
+		onDelete(postId);
 	}
 
 	/**
@@ -189,11 +189,11 @@
 			<div class="post-header">
 				<!-- 왼쪽: 작성자 프로필 + 팔로우 버튼 -->
 				<div class="post-header-left">
-					<UserProfile uid={message.senderUid} photoSize="h-8 w-8" textSize="text-sm" />
+					<UserProfile uid={message.authorUid} photoSize="h-8 w-8" textSize="text-sm" />
 					<!-- 팔로우 버튼 (작성자가 본인이 아닐 때만 표시) -->
 					{#if !isMyPost}
 						<div class="ml-2">
-							<FollowButton targetUid={message.senderUid} />
+							<FollowButton targetUid={message.authorUid} />
 						</div>
 					{/if}
 				</div>
@@ -228,10 +228,12 @@
 						{/if}
 					{/if}
 					<span class="post-time">
-						{formatDistanceToNow(new Date(message.createdAt), {
-							addSuffix: true,
-							locale: getDateLocale()
-						})}
+						{message.createdAt
+							? formatDistanceToNow(new Date(message.createdAt), {
+									addSuffix: true,
+									locale: getDateLocale()
+								})
+							: '시간 정보 없음'}
 					</span>
 				</div>
 			</div>
@@ -255,13 +257,13 @@
 					<!-- 좋아요 버튼 -->
 					<button
 						class="action-button"
-						class:liked={userLikes[messageId] === 'message'}
+						class:liked={userLikes[postId] === 'post'}
 						disabled={!authStore.user}
-						onclick={(e) => onToggleLike(e, messageId, 'message')}
+						onclick={(e) => onToggleLike(e, postId, 'post')}
 					>
 						<svg
 							class="h-5 w-5"
-							fill={userLikes[messageId] === 'message' ? 'currentColor' : 'none'}
+							fill={userLikes[postId] === 'post' ? 'currentColor' : 'none'}
 							stroke="currentColor"
 							viewBox="0 0 24 24"
 							stroke-width="2"
@@ -290,7 +292,7 @@
 						class="action-button"
 						onclick={(e) => {
 							e.stopPropagation();
-							onOpenCommentDialog(messageId);
+							onOpenCommentDialog(postId);
 						}}
 					>
 						<svg
@@ -359,14 +361,14 @@
 	<!-- 댓글 목록 컴포넌트 -->
 	<PostCommentList
 		bind:this={commentListRef}
-		{messageId}
+		messageId={postId}
 		totalChildCount={message.totalChildCount || 0}
 		{onOpenCommentDialog}
 		{userLikes}
 	/>
 
 	<!-- 좋아요 사용자 목록 모달 -->
-	<LikedUsersModal bind:open={likesModalOpen} targetId={messageId} targetType="message" />
+	<LikedUsersModal bind:open={likesModalOpen} targetId={postId} targetType="post" />
 </div>
 
 <style>

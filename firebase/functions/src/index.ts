@@ -47,6 +47,12 @@ import {
   handleChatMessageCategoryUpdate,
   handleChatMessageCategoryDelete,
 } from "./handlers/chat.message-category.handler";
+import {
+  handleChatMessageTextUpdate,
+  handleChatMessageUrlsUpdate,
+  handlePostTextUpdate,
+  handlePostUrlsUpdate,
+} from "./handlers/chat.message-sync.handler";
 import {handleChatRoomCreate} from "./handlers/chat.room-create.handler";
 import {handleChatJoinCreate} from "./handlers/chat.join-create.handler";
 import {handleChatRoomMemberJoin} from "./handlers/chat.room-member-join.handler";
@@ -60,7 +66,10 @@ import {
   handleFollowingCreate,
   handleFollowingDelete,
 } from "./handlers/friend.follow.handler";
-import {handleMessageDeletedFanout} from "./handlers/feed.fanout.handler";
+import {
+  handleMessageCategoryCreateFanout,
+  handleMessageDeletedFanout,
+} from "./handlers/feed.fanout.handler";
 import {
   handleLikeCreate,
   handleLikeDelete,
@@ -319,10 +328,12 @@ export const onUserGenderWrite = onValueWritten(
  */
 export const onChatMessageCreate = onValueCreated(
   {
-    ref: "/chat-messages/{messageId}",
+    ref: "/chat-messages/{roomId}/{messageId}",
     region: FIREBASE_REGION,
   },
   async (event) => {
+    // roomId는 2단계 구조를 위한 경로 파라미터
+    // handleChatMessageCreate에서는 messageData 내부의 정보로 처리하므로 직접 사용하지 않음
     const messageId = event.params.messageId as string;
     const messageData = (event.data.val() || {}) as ChatMessage;
 
@@ -710,20 +721,22 @@ export const onNewMessageCountWrite = onValueWritten(
  */
 export const onChatMessageCategoryCreate = onValueCreated(
   {
-    ref: "/chat-messages/{messageId}/category",
+    ref: "/chat-messages/{roomId}/{messageId}/category",
     region: FIREBASE_REGION,
   },
   async (event) => {
+    const roomId = event.params.roomId as string;
     const messageId = event.params.messageId as string;
     const category = event.data.val() as string;
 
     // 메시지의 createdAt 필드를 읽어오기
-    const messageRef = admin.database().ref(`chat-messages/${messageId}`);
+    const messageRef = admin.database().ref(`chat-messages/${roomId}/${messageId}`);
     const messageSnapshot = await messageRef.once("value");
     const messageData = messageSnapshot.val() as ChatMessage | null;
     const createdAt = messageData?.createdAt;
 
     logger.info("채팅 메시지 카테고리 필드 생성 감지", {
+      roomId,
       messageId,
       category,
       createdAt,
@@ -732,7 +745,7 @@ export const onChatMessageCategoryCreate = onValueCreated(
     // 비즈니스 로직 핸들러 호출
     // - categoryOrder, allCategoryOrder, type 필드 자동 생성
     // - stats/counters/post 자동 증가 (새 게시글 생성)
-    await handleChatMessageCategoryCreate(messageId, category, createdAt);
+    await handleChatMessageCategoryCreate(roomId, messageId, category, createdAt);
 
     return;
   }
@@ -758,15 +771,17 @@ export const onChatMessageCategoryCreate = onValueCreated(
  */
 export const onChatMessageCategoryUpdate = onValueUpdated(
   {
-    ref: "/chat-messages/{messageId}/category",
+    ref: "/chat-messages/{roomId}/{messageId}/category",
     region: FIREBASE_REGION,
   },
   async (event) => {
+    const roomId = event.params.roomId as string;
     const messageId = event.params.messageId as string;
     const category = event.data.after.val() as string;
     const previousCategory = event.data.before.val() as string;
 
     logger.info("채팅 메시지 카테고리 필드 수정 감지", {
+      roomId,
       messageId,
       category,
       previousCategory,
@@ -776,7 +791,7 @@ export const onChatMessageCategoryUpdate = onValueUpdated(
     // - categoryOrder는 업데이트하지 않음 (기존 작성 시간 유지)
     // - 클라이언트가 Firebase Security Rules를 통해 category 필드만 직접 수정
     // - 핸들러는 로그만 남김 (업데이트 작업 없음)
-    await handleChatMessageCategoryUpdate(messageId, category);
+    await handleChatMessageCategoryUpdate(roomId, messageId, category);
 
     return;
   }
@@ -800,19 +815,181 @@ export const onChatMessageCategoryUpdate = onValueUpdated(
  */
 export const onChatMessageCategoryDelete = onValueDeleted(
   {
-    ref: "/chat-messages/{messageId}/category",
+    ref: "/chat-messages/{roomId}/{messageId}/category",
     region: FIREBASE_REGION,
   },
   async (event) => {
+    const roomId = event.params.roomId as string;
     const messageId = event.params.messageId as string;
 
     logger.info("채팅 메시지 카테고리 필드 삭제 감지", {
+      roomId,
       messageId,
     });
 
     // 비즈니스 로직 핸들러 호출
     // - categoryOrder, allCategoryOrder, type 필드 모두 삭제
-    await handleChatMessageCategoryDelete(messageId);
+    await handleChatMessageCategoryDelete(roomId, messageId);
+
+    return;
+  }
+);
+
+/**
+ * 채팅 메시지 text 필드 수정 시 게시글로 동기화하는 트리거
+ *
+ * 트리거 경로: /chat-messages/{roomId}/{messageId}/text
+ * 트리거 이벤트: onValueUpdated (text가 다른 값으로 변경될 때만 트리거)
+ *
+ * 수행 작업:
+ * 1. 채팅 메시지에서 postId 조회
+ * 2. postId가 있으면 (게시글로 저장된 메시지인 경우)
+ * 3. /posts/{postId}/text를 동일한 값으로 업데이트
+ *
+ * 참고:
+ * - postId가 없으면 일반 채팅 메시지이므로 동기화하지 않음
+ * - 게시글 → 채팅 메시지 방향 동기화는 onPostTextUpdate 트리거 참조
+ *
+ * 비즈니스 로직은 handlers/chat.message-sync.handler.ts의 handleChatMessageTextUpdate() 참조
+ */
+export const onChatMessageTextUpdate = onValueUpdated(
+  {
+    ref: "/chat-messages/{roomId}/{messageId}/text",
+    region: FIREBASE_REGION,
+  },
+  async (event) => {
+    const roomId = event.params.roomId as string;
+    const messageId = event.params.messageId as string;
+    const newText = event.data.after.val() as string | null;
+
+    logger.info("채팅 메시지 text 필드 수정 감지", {
+      roomId,
+      messageId,
+      newText,
+    });
+
+    // 비즈니스 로직 핸들러 호출
+    // - postId가 있으면 게시글로 동기화
+    await handleChatMessageTextUpdate(roomId, messageId, newText);
+
+    return;
+  }
+);
+
+/**
+ * 채팅 메시지 urls 필드 수정 시 게시글로 동기화하는 트리거
+ *
+ * 트리거 경로: /chat-messages/{roomId}/{messageId}/urls
+ * 트리거 이벤트: onValueUpdated (urls가 다른 값으로 변경될 때만 트리거)
+ *
+ * 수행 작업:
+ * 1. 채팅 메시지에서 postId 조회
+ * 2. postId가 있으면 (게시글로 저장된 메시지인 경우)
+ * 3. /posts/{postId}/urls를 동일한 값으로 업데이트
+ *
+ * 참고:
+ * - postId가 없으면 일반 채팅 메시지이므로 동기화하지 않음
+ * - 게시글 → 채팅 메시지 방향 동기화는 onPostUrlsUpdate 트리거 참조
+ *
+ * 비즈니스 로직은 handlers/chat.message-sync.handler.ts의 handleChatMessageUrlsUpdate() 참조
+ */
+export const onChatMessageUrlsUpdate = onValueUpdated(
+  {
+    ref: "/chat-messages/{roomId}/{messageId}/urls",
+    region: FIREBASE_REGION,
+  },
+  async (event) => {
+    const roomId = event.params.roomId as string;
+    const messageId = event.params.messageId as string;
+    const newUrls = event.data.after.val() as Record<number, string> | null;
+
+    logger.info("채팅 메시지 urls 필드 수정 감지", {
+      roomId,
+      messageId,
+      newUrls,
+    });
+
+    // 비즈니스 로직 핸들러 호출
+    // - postId가 있으면 게시글로 동기화
+    await handleChatMessageUrlsUpdate(roomId, messageId, newUrls);
+
+    return;
+  }
+);
+
+/**
+ * 게시글 text 필드 수정 시 채팅 메시지로 동기화하는 트리거
+ *
+ * 트리거 경로: /posts/{postId}/text
+ * 트리거 이벤트: onValueUpdated (text가 다른 값으로 변경될 때만 트리거)
+ *
+ * 수행 작업:
+ * 1. 게시글에서 roomId, messageId 조회
+ * 2. roomId, messageId가 있으면
+ * 3. /chat-messages/{roomId}/{messageId}/text를 동일한 값으로 업데이트
+ *
+ * 참고:
+ * - roomId, messageId가 없으면 채팅 메시지와 연결되지 않은 독립 게시글
+ * - 채팅 메시지 → 게시글 방향 동기화는 onChatMessageTextUpdate 트리거 참조
+ *
+ * 비즈니스 로직은 handlers/chat.message-sync.handler.ts의 handlePostTextUpdate() 참조
+ */
+export const onPostTextUpdate = onValueUpdated(
+  {
+    ref: "/posts/{postId}/text",
+    region: FIREBASE_REGION,
+  },
+  async (event) => {
+    const postId = event.params.postId as string;
+    const newText = event.data.after.val() as string | null;
+
+    logger.info("게시글 text 필드 수정 감지", {
+      postId,
+      newText,
+    });
+
+    // 비즈니스 로직 핸들러 호출
+    // - roomId, messageId가 있으면 채팅 메시지로 동기화
+    await handlePostTextUpdate(postId, newText);
+
+    return;
+  }
+);
+
+/**
+ * 게시글 urls 필드 수정 시 채팅 메시지로 동기화하는 트리거
+ *
+ * 트리거 경로: /posts/{postId}/urls
+ * 트리거 이벤트: onValueUpdated (urls가 다른 값으로 변경될 때만 트리거)
+ *
+ * 수행 작업:
+ * 1. 게시글에서 roomId, messageId 조회
+ * 2. roomId, messageId가 있으면
+ * 3. /chat-messages/{roomId}/{messageId}/urls를 동일한 값으로 업데이트
+ *
+ * 참고:
+ * - roomId, messageId가 없으면 채팅 메시지와 연결되지 않은 독립 게시글
+ * - 채팅 메시지 → 게시글 방향 동기화는 onChatMessageUrlsUpdate 트리거 참조
+ *
+ * 비즈니스 로직은 handlers/chat.message-sync.handler.ts의 handlePostUrlsUpdate() 참조
+ */
+export const onPostUrlsUpdate = onValueUpdated(
+  {
+    ref: "/posts/{postId}/urls",
+    region: FIREBASE_REGION,
+  },
+  async (event) => {
+    const postId = event.params.postId as string;
+    const newUrls = event.data.after.val() as Record<number, string> | null;
+
+    logger.info("게시글 urls 필드 수정 감지", {
+      postId,
+      newUrls,
+    });
+
+    // 비즈니스 로직 핸들러 호출
+    // - roomId, messageId가 있으면 채팅 메시지로 동기화
+    await handlePostUrlsUpdate(postId, newUrls);
 
     return;
   }
@@ -835,7 +1012,7 @@ export { onPasswordTry } from "./handlers/chat.password-verification.handler";
 /**
  * 댓글 생성 시 트리거되는 Cloud Function
  *
- * 트리거 경로: /chat-message-comments/{messageId}/{commentId}
+ * 트리거 경로: /comments/{postId}/{commentId}
  * 트리거 이벤트: onValueCreated (댓글 생성 시)
  *
  * 수행 작업:
@@ -856,16 +1033,16 @@ export { onPasswordTry } from "./handlers/chat.password-verification.handler";
  */
 export const onCommentCreate = onValueCreated(
   {
-    ref: "/chat-message-comments/{messageId}/{commentId}",
+    ref: "/comments/{postId}/{commentId}",
     region: FIREBASE_REGION,
   },
   async (event) => {
-    const messageId = event.params.messageId as string;
+    const postId = event.params.postId as string;
     const commentId = event.params.commentId as string;
     const commentData = (event.data.val() || {}) as Record<string, unknown>;
 
     logger.info("댓글 생성 감지", {
-      messageId,
+      postId,
       commentId,
       parentId: commentData.parentId ?? null,
     });
@@ -875,7 +1052,7 @@ export const onCommentCreate = onValueCreated(
     // - 최상위 댓글이면 게시글의 childCount도 증가
     // - 대댓글이면 부모 댓글의 childCount 증가
     // - stats/counters/comment 증가 (전체 댓글 통계)
-    await handleCommentCreate(messageId, commentId, commentData);
+    await handleCommentCreate(postId, commentId, commentData);
 
     return;
   }
@@ -896,7 +1073,15 @@ export const onLikeCreated = onValueCreated(
     const targetId = event.params.targetId as string;
     const targetType = event.data.val() as LikeTargetType | null;
 
-    if (targetType !== "message" && targetType !== "comment") {
+    // targetType 검증:
+    // - 'message', 'comment', 'post' 허용
+    // - 'chat-message-{roomId}' 형식 허용 (예: 'chat-message-post')
+    if (
+      targetType !== "message" &&
+      targetType !== "comment" &&
+      targetType !== "post" &&
+      !(typeof targetType === "string" && targetType.startsWith("chat-message-"))
+    ) {
       logger.error("잘못된 좋아요 타입입니다.", {
         uid,
         targetId,
@@ -924,7 +1109,15 @@ export const onLikeDeleted = onValueDeleted(
     const targetId = event.params.targetId as string;
     const targetType = event.data.val() as LikeTargetType | null;
 
-    if (targetType !== "message" && targetType !== "comment") {
+    // targetType 검증:
+    // - 'message', 'comment', 'post' 허용
+    // - 'chat-message-{roomId}' 형식 허용 (예: 'chat-message-post')
+    if (
+      targetType !== "message" &&
+      targetType !== "comment" &&
+      targetType !== "post" &&
+      !(typeof targetType === "string" && targetType.startsWith("chat-message-"))
+    ) {
       logger.error("잘못된 좋아요 타입입니다.", {
         uid,
         targetId,
@@ -1035,15 +1228,17 @@ export const onUserFollowingDelete = onValueDeleted(
  */
 export const onChatMessageDeleted = onValueWritten(
   {
-    ref: "/chat-messages/{messageId}/deleted",
+    ref: "/chat-messages/{roomId}/{messageId}/deleted",
     region: FIREBASE_REGION,
   },
   async (event) => {
+    const roomId = event.params.roomId as string;
     const messageId = event.params.messageId as string;
     const beforeValue = event.data.before.val() as boolean | null;
     const afterValue = event.data.after.val() as boolean | null;
 
     logger.info("채팅 메시지 deleted 필드 변경 감지", {
+      roomId,
       messageId,
       beforeValue,
       afterValue,
@@ -1059,7 +1254,7 @@ export const onChatMessageDeleted = onValueWritten(
     }
 
     // 메시지 데이터에서 senderUid(작성자 UID) 조회
-    const messageRef = admin.database().ref(`chat-messages/${messageId}`);
+    const messageRef = admin.database().ref(`chat-messages/${roomId}/${messageId}`);
     const messageSnapshot = await messageRef.once("value");
     const messageData = messageSnapshot.val();
 
@@ -1084,6 +1279,81 @@ export const onChatMessageDeleted = onValueWritten(
         messageId,
         messageData,
       });
+    }
+
+    return;
+  }
+);
+
+/**
+ * /posts/{postId} onCreate 트리거
+ *
+ * 게시글이 /posts/에 직접 생성될 때 실행됩니다.
+ *
+ * 처리 내용:
+ * 1. stats/counters/post 증가 (전체 게시글 통계)
+ * 2. 팔로워 피드에 fan-out (/user-feed/{followerUid}/{postId})
+ *
+ * 참고:
+ * - PostCreateDialog.svelte에서 /posts/에 직접 저장
+ * - fan-out은 기존 handleMessageCategoryCreateFanout 재사용
+ * - postId를 messageId 파라미터로 전달하여 fan-out 수행
+ */
+export const onPostCreate = onValueCreated(
+  {
+    ref: "/posts/{postId}",
+    region: FIREBASE_REGION,
+  },
+  async (event) => {
+    const postId = event.params.postId as string;
+    const postData = event.data.val();
+
+    logger.info("게시글 생성 감지", {
+      postId,
+      postData,
+    });
+
+    if (!postData) {
+      logger.warn("게시글 데이터가 없습니다", {postId});
+      return;
+    }
+
+    const {authorUid, createdAt, category} = postData;
+
+    if (!authorUid) {
+      logger.error("게시글에 authorUid가 없습니다", {postId, postData});
+      return;
+    }
+
+    try {
+      // 1. stats/counters/post 증가
+      const postCounterRef = admin.database().ref("stats/counters/post");
+      await postCounterRef.set(admin.database.ServerValue.increment(1));
+
+      logger.info("stats/counters/post 증가 완료", {
+        postId,
+        category,
+      });
+
+      // 2. 피드 fan-out: 팔로워들에게 피드 전파
+      logger.info("피드 fan-out 시작", {
+        postId,
+        authorUid,
+        createdAt,
+      });
+
+      await handleMessageCategoryCreateFanout(postId, authorUid, createdAt);
+
+      logger.info("피드 fan-out 완료", {
+        postId,
+        authorUid,
+      });
+    } catch (error) {
+      logger.error("게시글 onCreate 처리 실패", {
+        postId,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
     }
 
     return;

@@ -60,6 +60,3 @@ const adminuserlist2 = (inputs = {}, options = {}) => {
 export { adminuserlist2 as "adminUserList" }
 ```
 
-## 변경 이력
-
-- 2025-11-15: 스펙 문서 생성

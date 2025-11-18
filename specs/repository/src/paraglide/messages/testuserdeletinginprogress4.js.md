@@ -60,6 +60,3 @@ const testuserdeletinginprogress4 = (inputs = {}, options = {}) => {
 export { testuserdeletinginprogress4 as "testUserDeletingInProgress" }
 ```
 
-## 변경 이력
-
-- 2025-11-15: 스펙 문서 생성

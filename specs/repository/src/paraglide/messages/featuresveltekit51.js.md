@@ -60,6 +60,3 @@ const featuresveltekit51 = (inputs = {}, options = {}) => {
 export { featuresveltekit51 as "featureSveltekit5" }
 ```
 
-## 변경 이력
-
-- 2025-11-15: 스펙 문서 생성
