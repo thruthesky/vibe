@@ -14,6 +14,7 @@
  * - mukbang: 먹방
  * - realestate: 부동산
  * - hobby: 취미
+ * - story: 나의 이야기
  */
 
 /**
@@ -30,6 +31,7 @@ export const FORUM_CATEGORIES = [
   "mukbang",
   "realestate",
   "hobby",
+  "story",
 ] as const;
 
 /**

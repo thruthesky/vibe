@@ -26,9 +26,15 @@
 		 * 게시판 페이지에서 사용하여 저장 후 해당 카테고리로 자동 이동
 		 */
 		onPostCreated?: (category: ForumCategory) => void;
+		/**
+		 * 기본 선택될 카테고리
+		 * - null 또는 undefined인 경우: 'story' 카테고리를 기본 선택
+		 * - 특정 카테고리 지정 시: 해당 카테고리를 기본 선택
+		 */
+		defaultCategory?: ForumCategory | null;
 	}
 
-	let { open = $bindable(), onPostCreated }: Props = $props();
+	let { open = $bindable(), onPostCreated, defaultCategory = null }: Props = $props();
 
 	// 카테고리 이름을 i18n 메시지 함수로 변환
 	const getCategoryMessage = (category: ForumCategory) => {
@@ -42,7 +48,8 @@
 			travel: m.chatCategoryTravel,
 			mukbang: m.chatCategoryFood,
 			realestate: m.chatCategoryRealEstate,
-			hobby: m.chatCategoryHobby
+			hobby: m.chatCategoryHobby,
+			story: m.chatCategoryStory
 		};
 		return categoryMap[category]();
 	};
@@ -108,10 +115,14 @@
 		}
 	}
 
-	// 다이얼로그가 열릴 때 채팅방 목록 로드
+	// 다이얼로그가 열릴 때 채팅방 목록 로드 및 기본 카테고리 설정
 	$effect(() => {
 		if (open) {
 			loadChatRooms();
+
+			// 기본 카테고리 설정
+			// defaultCategory가 지정되어 있으면 해당 카테고리 사용, 없으면 'story' 사용
+			selectedCategory = defaultCategory ?? 'story';
 		}
 	});
 

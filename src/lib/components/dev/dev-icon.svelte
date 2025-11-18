@@ -152,8 +152,6 @@
 				}
 			}
 
-			alert(`${account.name} (${account.label}) 계정으로 로그인되었습니다.`);
-
 			// 메뉴 닫기
 			isMenuOpen = false;
 

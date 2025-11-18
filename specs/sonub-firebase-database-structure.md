@@ -8,7 +8,7 @@ homepage: https://github.com/thruthesky/
 funding: ""
 license: GPL-3.0
 dependencies: []
-updated: 2025-01-16
+updated: 2025-11-17
 changelog:
   - date: 2025-01-16
     version: 1.0.1
@@ -276,6 +276,8 @@ Firebase Realtime Database (루트)
 ├── following/                # 팔로잉 (내가 팔로우하는 사용자)
 ├── chat-messages/            # 채팅 메시지 (게시글 + 댓글 역할 통합)
 ├── chat-joins/               # 채팅방 참여 정보 (채팅방 목록용)
+├── likes/                    # 사용자별 좋아요 상태 (uid -> targetId)
+├── comment-locations/        # 댓글 ID와 부모 메시지 매핑
 ├── fcm-tokens/               # FCM 권한 획득 후 장치 토큰 저장
 └── stats/                    # 전역 통계
     └── counters/
@@ -630,7 +632,7 @@ Firebase Authentication의 다음 필드들은 `/users/<uid>` 노드에 **저장
 | `protocol` | string | ❌ | 프로토콜 메시지 유형 (join, leave 등 시스템 메시지) |
 | `imageUrl` | string | ❌ | 이미지 메시지의 경우 이미지 URL |
 | `fileUrl` | string | ❌ | 파일 메시지의 경우 파일 다운로드 URL |
-| `category` | string | ❌ | 게시판 카테고리 (discussion, qna, news, info, selling, hiring, travel, mukbang, realestate, hobby) |
+| `category` | string | ❌ | 게시판 카테고리 (discussion, qna, news, info, selling, hiring, travel, mukbang, realestate, hobby, story) |
 | `categoryOrder` | string | ❌ | 카테고리별 정렬 필드 (형식: `{category}-{timestamp}`, Cloud Functions 자동 생성) |
 | `allCategoryOrder` | number | ❌ | 모든 카테고리 글 통합 정렬 필드 (timestamp, Cloud Functions 자동 생성) |
 
@@ -652,7 +654,7 @@ Firebase Authentication의 다음 필드들은 `/users/<uid>` 노드에 **저장
 - **클라이언트는** `roomId`, `type`, `text`, `senderUid`, `createdAt`, `category` 등 메시지 기본 정보를 저장합니다.
   - **메시지 타입**: 일반 채팅 메시지의 경우 `type`을 직접 저장 (예: "text", "image", "file")
   - **게시판 카테고리**: 사용자가 카테고리를 선택하면 `category` 필드에 저장 (예: "qna", "discussion")
-  - 카테고리 목록: discussion(자유토론), qna(질문), news(뉴스), info(정보), selling(판매), hiring(구인구직), travel(여행), mukbang(먹방), realestate(부동산), hobby(취미)
+  - 카테고리 목록: discussion(자유토론), qna(질문), news(뉴스), info(정보), selling(판매), hiring(구인구직), travel(여행), mukbang(먹방), realestate(부동산), hobby(취미), story(나의 이야기)
 - **서버는** 메시지 생성을 감지하여 다음 작업을 자동으로 수행합니다:
   - 1:1 채팅의 경우 양쪽 사용자의 `chat-joins` 자동 생성/업데이트 (Cloud Functions)
   - 그룹/오픈 채팅의 경우 참여자 목록 기반 `chat-joins` 업데이트 (추후 구현)
@@ -670,6 +672,25 @@ Firebase Authentication의 다음 필드들은 `/users/<uid>` 노드에 **저장
 - **📖 구현 가이드**: [채팅 기능 개발 가이드](./sonub-chat-room.md) - 채팅방 생성, 메시지 전송, 실시간 메시지 수신
 - **📖 Cloud Functions**: [Firebase Cloud Functions 개발 가이드](./sonub-firebase-functions.md) - 채팅 메시지 처리 로직
 - **📖 파일 업로드**: [파일 및 사진 업로드 가이드](./sns-web-storage.md) - 이미지/파일 메시지 업로드
+
+---
+
+## 좋아요 (likes)
+
+- **경로**: `/likes/{uid}/{targetId}`
+- **필드**: 값으로 `"message"`(게시글) 또는 `"comment"`(댓글) 문자열만 저장
+- **설명**:
+  - 클라이언트는 해당 경로의 값을 생성하거나 삭제하여 좋아요 상태를 토글합니다.
+  - Cloud Functions는 이벤트를 감지해 `/chat-messages/{messageId}/likeCount` 또는 `/chat-message-comments/{messageId}/{commentId}/likeCount`를 `ServerValue.increment()`로 증감합니다.
+  - `/stats/counters/like` 역시 Cloud Functions가 함께 관리합니다.
+
+## 댓글 위치 맵 (comment-locations)
+
+- **경로**: `/comment-locations/{commentId} = messageId`
+- **생성 시점**: `/chat-message-comments/{messageId}/{commentId}`가 생성될 때 Cloud Functions가 자동으로 기록
+- **용도**:
+  - 댓글 좋아요/신고 처리 시 부모 게시글을 빠르게 조회하기 위한 인덱스
+  - 클라이언트에서는 접근할 필요가 없으며 Cloud Functions 전용 노드입니다.
 
 ---
 

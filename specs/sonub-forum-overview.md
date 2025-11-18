@@ -219,6 +219,7 @@ export const FORUM_CATEGORIES = [
   "mukbang",
   "realestate",
   "hobby",
+  "story",
 ] as const;
 export type ForumCategory = (typeof FORUM_CATEGORIES)[number];
 ```
@@ -237,6 +238,7 @@ export type ForumCategory = (typeof FORUM_CATEGORIES)[number];
 | `mukbang` | 먹방 | Food & Dining | グルメ | 美食 | 음식 및 맛집 정보 |
 | `realestate` | 부동산 | Real Estate | 不動産 | 房地产 | 부동산 정보 |
 | `hobby` | 취미 | Hobbies | 趣味 | 兴趣爱好 | 취미 활동 공유 |
+| `story` | 나의 이야기 | My Story | 私の物語 | 我的故事 | 개인 경험과 에피소드를 공유하는 공간 |
 
 ### 카테고리 확장
 
@@ -1026,16 +1028,14 @@ const query = rtdbQuery(
 
 ### 좋아요 데이터 구조
 
-좋아요는 `/likes/{likeId}` 경로에 저장됩니다:
+좋아요는 `/likes/{uid}/{targetId}` 경로에 저장됩니다:
 
 ```typescript
-{
-  likeId: "post-{messageId}-{uid}",  // 고유 좋아요 ID
-  type: "post",                       // 좋아요 대상 타입
-  nodeId: "messageId",                // 게시글 ID
-  uid: "사용자UID",                   // 좋아요한 사용자
-  createdAt: 1698473000000           // 좋아요 시간
-}
+// 예시: 게시글 좋아요
+likes/user-abc/post-xyz = "message"
+
+// 예시: 댓글 좋아요
+likes/user-abc/-Nv123abc = "comment"
 ```
 
 ### 좋아요 개수 관리
@@ -1044,17 +1044,20 @@ Cloud Functions가 좋아요 개수를 자동으로 관리합니다:
 
 1. **좋아요 추가 시:**
    ```typescript
-   /likes/post-{messageId}-{uid} = { ... }
-   // Cloud Functions 트리거
-   /chat-messages/{messageId}/likeCount++
+   /likes/{uid}/{messageId} = "message"
+   // → Cloud Functions: /chat-messages/{messageId}/likeCount++
    ```
 
 2. **좋아요 취소 시:**
    ```typescript
-   /likes/post-{messageId}-{uid} 삭제
-   // Cloud Functions 트리거
-   /chat-messages/{messageId}/likeCount--
+   /likes/{uid}/{messageId} 삭제
+   // → Cloud Functions: /chat-messages/{messageId}/likeCount--
    ```
+
+3. **댓글 좋아요 처리**
+   - `/likes/{uid}/{commentId} = "comment"`
+   - `/comment-locations/{commentId} = messageId` 맵을 통해 부모 게시글을 조회
+   - `/chat-message-comments/{messageId}/{commentId}/likeCount` 증감
 
 ---
 
@@ -1264,7 +1267,8 @@ Cloud Functions가 신고 개수를 자동으로 업데이트:
       travel: m.chatCategoryTravel,
       mukbang: m.chatCategoryFood,
       realestate: m.chatCategoryRealEstate,
-      hobby: m.chatCategoryHobby
+      hobby: m.chatCategoryHobby,
+      story: m.chatCategoryStory
     };
     return categoryMap[category]();
   };
@@ -2213,6 +2217,9 @@ interface Props {
 
 | 날짜 | 작업자 | 내용 |
 | ---- | ------ | ---- |
+| 2025-11-17 | Codex GPT-5 | **좋아요 시스템 전면 개편**: 게시글/댓글 좋아요 데이터를 `/likes/{uid}/{targetId}` (값: `"message"`/`"comment"`) 구조로 통합하고, Cloud Functions는 `/comment-locations/{commentId}` 맵을 통해 댓글의 부모 메시지를 찾아 `likeCount`를 증감하도록 스펙을 갱신했다. UI 측면에서는 홈/게시판/댓글 컴포넌트에 실시간 하이라이트와 카운트 표기를 정의하여 로그인 사용자의 상태를 즉시 반영하도록 규칙을 명시했다. |
+| 2025-11-17 | Codex GPT-5 | **story 카테고리 추가**: `shared/categories.ts`의 `FORUM_CATEGORIES`에 `story`를 추가하고, 홈/게시판/채팅/작성 UI의 카테고리 매핑과 `messages/*.json` 번역(ko: 나의 이야기, en: My Story, ja: 私の物語, zh: 我的故事)을 확장했다. 스펙 문서의 카테고리 표와 데이터베이스 필드 설명도 최신 상태로 맞췄다. |
+| 2025-11-17 | Codex GPT-5 | **카테고리 텍스트 네비게이션 재사용화**: 홈(`src/routes/+page.svelte`)과 게시판 목록(`src/routes/post/list/+page.svelte`)에서 기존 칩 버튼 UI를 제거하고, 텍스트 형태의 공용 컴포넌트(`src/lib/components/post/CategoryNavigation.svelte`)로 교체하여 스펙의 디자인 요구(텍스트 기반 카테고리 표시)를 충족시켰다. change 이벤트를 통해 상위에서 상태를 제어하도록 설계해 게시판 전반에서 재사용 가능하며, 불필요한 스타일 정의를 정리해 유지보수를 단순화했다. |
 | 2025-11-17 | Claude Sonnet 4.5 | **홈 글쓰기 폼 아이콘/반응형 업데이트**: 홈 상단 글쓰기 유도 폼의 이모지를 lucide-svelte 아이콘(Video, Image, Smile)으로 교체하고, 모바일에서는 Camera 아이콘 하나만 보이도록 `hidden sm:flex`/`sm:hidden` 레이아웃을 적용했다. 또한 작은 화면에서 공간 확보를 위해 기본 보더를 제거하고, 데스크톱에서만 테두리/호버 스타일이 적용되도록 `.compose-prompt`의 Tailwind 유틸리티를 `border-0 sm:border sm:border-gray-200` 형태로 조정했다. |
 | 2025-11-17 | Claude Sonnet 4.5 | **홈 글쓰기 유도 폼 UX 개선**: 홈 페이지(`src/routes/+page.svelte`)의 글쓰기 유도 폼 오른쪽 아이콘을 `<span>` 요소로 단순화하고 클릭 시 부모 컨테이너 이벤트가 막히지 않도록 수정했다. 이제 동영상/사진/이모지 아이콘을 클릭해도 전체 폼이 반응하여 즉시 게시글 작성 모달이 열린다. 또한 `.compose-icon-button` 스타일에 `cursor-pointer`를 추가해 아이콘이 상호작용 가능한 요소임을 명확히 했다. |
 | 2025-11-17 | Claude Sonnet 4.5 | **게시글/댓글 줄바꿈 표시 개선**: `/post/list`에서 실제 입력된 줄바꿈이 그대로 보이도록 UI를 개선했다. (1) `src/routes/post/list/+page.svelte`의 `.post-text` 스타일에 `whitespace-pre-line`을 적용하여 게시글 본문이 저장된 줄바꿈을 유지하면서도 기존 3줄 클램프 동작을 그대로 유지하도록 함. (2) `src/lib/components/post/PostCommentList.svelte`의 `.comment-text`에도 동일한 Tailwind 유틸리티를 적용해 댓글/답글 본문이 여러 줄로 표시되도록 수정. **결과**: 사용자들이 게시글과 댓글에 입력한 개행이 목록 화면에서도 자연스럽게 렌더링되어 가독성이 향상됨. |

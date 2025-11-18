@@ -45,6 +45,62 @@ export async function getUserField(
 }
 
 /**
+ * 사용자의 여러 필드를 한 번에 가져옵니다. (범용 함수)
+ *
+ * ⚠️ 중요: RTDB 비용 최적화를 위해 지정된 필드만 개별적으로 읽습니다.
+ * - /users/{uid} 전체를 읽지 않고 요청된 필드들만 읽습니다.
+ * - Promise.all()을 사용하여 모든 필드를 병렬로 읽어서 성능 최적화
+ * - 기존 getUserField() 함수를 재활용
+ *
+ * @param uid - 사용자 UID
+ * @param fields - 읽어올 필드명 배열 (예: ['displayName', 'photoUrl'])
+ * @returns 필드명을 키로 하고 필드 값을 값으로 하는 객체
+ *
+ * @example
+ * ```typescript
+ * // displayName과 photoUrl만 가져오기
+ * const data = await getUserFields('uid123', ['displayName', 'photoUrl']);
+ * console.log(data.displayName); // "홍길동"
+ * console.log(data.photoUrl);    // "https://..."
+ *
+ * // displayName만 가져오기
+ * const data2 = await getUserFields('uid456', ['displayName']);
+ * console.log(data2.displayName); // "김철수"
+ * ```
+ */
+export async function getUserFields(
+	uid: string,
+	fields: Array<'displayName' | 'photoUrl'>
+): Promise<Record<string, string | null>> {
+	if (!rtdb) {
+		console.error('Firebase Realtime Database가 초기화되지 않았습니다.');
+		return {};
+	}
+
+	if (!fields || fields.length === 0) {
+		console.warn('읽어올 필드가 지정되지 않았습니다.');
+		return {};
+	}
+
+	try {
+		// ⚠️ Promise.all을 사용하여 기존 getUserField() 함수로 모든 필드를 병렬로 가져오기
+		// 예: Promise.all([getUserField(uid, 'displayName'), getUserField(uid, 'photoUrl')])
+		const values = await Promise.all(fields.map((field) => getUserField(uid, field)));
+
+		// 필드명과 값을 매핑한 객체 생성
+		const result: Record<string, string | null> = {};
+		fields.forEach((field, index) => {
+			result[field] = values[index];
+		});
+
+		return result;
+	} catch (error) {
+		console.error(`사용자 필드들 읽기 실패 (uid: ${uid}, fields: ${fields.join(', ')}):`, error);
+		return {};
+	}
+}
+
+/**
  * 사용자의 기본 정보 (이름, 사진)만 가져옵니다.
  *
  * ⚠️ 중요: 각 필드를 개별적으로 읽어서 RTDB 비용 최소화

@@ -23,7 +23,7 @@ import * as logger from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 
 // 타입 임포트
-import {UserData, ChatMessage} from "./types";
+import {UserData, ChatMessage, LikeTargetType} from "./types";
 
 // Firebase Database Event에 인증 정보를 포함하는 확장 타입
 // Firebase Functions v2에서는 authType과 authId가 있지만 타입 정의에 누락됨
@@ -42,7 +42,11 @@ import {
   handleUserGenderUpdate,
 } from "./handlers/user.handler";
 import {handleChatMessageCreate} from "./handlers/chat.message-create.handler";
-import {handleChatMessageCategoryWrite} from "./handlers/chat.message-category.handler";
+import {
+  handleChatMessageCategoryCreate,
+  handleChatMessageCategoryUpdate,
+  handleChatMessageCategoryDelete,
+} from "./handlers/chat.message-category.handler";
 import {handleChatRoomCreate} from "./handlers/chat.room-create.handler";
 import {handleChatJoinCreate} from "./handlers/chat.join-create.handler";
 import {handleChatRoomMemberJoin} from "./handlers/chat.room-member-join.handler";
@@ -52,6 +56,15 @@ import {handleChatRoomPinDelete} from "./handlers/chat.room-pin-delete.handler";
 import {handleChatInvitationCreate} from "./handlers/chat.invitation-create.handler";
 import {handleNewMessageCountWritten} from "./handlers/chat.new-message-count.handler";
 import {handleCommentCreate} from "./handlers/comment.create.handler";
+import {
+  handleFollowingCreate,
+  handleFollowingDelete,
+} from "./handlers/friend.follow.handler";
+import {handleMessageDeletedFanout} from "./handlers/feed.fanout.handler";
+import {
+  handleLikeCreate,
+  handleLikeDelete,
+} from "./handlers/like.handler";
 
 // 상수 정의
 const FIREBASE_REGION = "asia-southeast1";
@@ -693,7 +706,7 @@ export const onNewMessageCountWrite = onValueWritten(
  * - categoryOrder 형식: "qna-1234567890"
  * - 이를 통해 카테고리별 메시지 목록을 효율적으로 쿼리 가능
  *
- * 비즈니스 로직은 handlers/chat.message-category.handler.ts의 handleChatMessageCategoryWrite() 참조
+ * 비즈니스 로직은 handlers/chat.message-category.handler.ts의 handleChatMessageCategoryCreate() 참조
  */
 export const onChatMessageCategoryCreate = onValueCreated(
   {
@@ -719,7 +732,7 @@ export const onChatMessageCategoryCreate = onValueCreated(
     // 비즈니스 로직 핸들러 호출
     // - categoryOrder, allCategoryOrder, type 필드 자동 생성
     // - stats/counters/post 자동 증가 (새 게시글 생성)
-    await handleChatMessageCategoryWrite(messageId, category, createdAt, null);
+    await handleChatMessageCategoryCreate(messageId, category, createdAt);
 
     return;
   }
@@ -732,17 +745,16 @@ export const onChatMessageCategoryCreate = onValueCreated(
  * 트리거 이벤트: onValueUpdated (카테고리가 다른 값으로 변경될 때만 트리거)
  *
  * 수행 작업:
- * 1. 카테고리 유효성 검사
- * 2. categoryOrder 필드 업데이트: "{새_category}-{timestamp}"
- * 3. allCategoryOrder 필드 유지: timestamp (기존 값 유지)
- * 4. type 필드 유지: "post" (기존 값 유지)
- * 5. 메시지 노드에 categoryOrder 필드만 업데이트
+ * - 카테고리 수정 이벤트 로그만 남김
+ * - categoryOrder, allCategoryOrder, type 필드는 업데이트하지 않음
+ * - 클라이언트가 Firebase Security Rules를 통해 category 필드만 직접 수정
  *
  * 참고:
- * - 카테고리 변경 시에는 categoryOrder만 업데이트하고 allCategoryOrder는 유지
+ * - 카테고리 변경 시 categoryOrder는 업데이트하지 않음 (기존 작성 시간과 정렬 순서 유지)
+ * - Firebase Security Rules에서 category 필드만 업데이트 허용
  * - stats/counters/post 증가 없음 (기존 게시글 수정)
  *
- * 비즈니스 로직은 handlers/chat.message-category.handler.ts의 handleChatMessageCategoryWrite() 참조
+ * 비즈니스 로직은 handlers/chat.message-category.handler.ts의 handleChatMessageCategoryUpdate() 참조
  */
 export const onChatMessageCategoryUpdate = onValueUpdated(
   {
@@ -754,23 +766,17 @@ export const onChatMessageCategoryUpdate = onValueUpdated(
     const category = event.data.after.val() as string;
     const previousCategory = event.data.before.val() as string;
 
-    // 메시지의 createdAt 필드를 읽어오기
-    const messageRef = admin.database().ref(`chat-messages/${messageId}`);
-    const messageSnapshot = await messageRef.once("value");
-    const messageData = messageSnapshot.val() as ChatMessage | null;
-    const createdAt = messageData?.createdAt;
-
     logger.info("채팅 메시지 카테고리 필드 수정 감지", {
       messageId,
       category,
       previousCategory,
-      createdAt,
     });
 
     // 비즈니스 로직 핸들러 호출
-    // - categoryOrder 필드만 업데이트 (allCategoryOrder, type 유지)
-    // - stats/counters/post 증가 없음 (기존 게시글 수정)
-    await handleChatMessageCategoryWrite(messageId, category, createdAt, previousCategory);
+    // - categoryOrder는 업데이트하지 않음 (기존 작성 시간 유지)
+    // - 클라이언트가 Firebase Security Rules를 통해 category 필드만 직접 수정
+    // - 핸들러는 로그만 남김 (업데이트 작업 없음)
+    await handleChatMessageCategoryUpdate(messageId, category);
 
     return;
   }
@@ -790,7 +796,7 @@ export const onChatMessageCategoryUpdate = onValueUpdated(
  * - 카테고리 삭제 시 게시글 관련 모든 필드 삭제
  * - 일반 채팅 메시지로 전환됨
  *
- * 비즈니스 로직은 handlers/chat.message-category.handler.ts의 handleChatMessageCategoryWrite() 참조
+ * 비즈니스 로직은 handlers/chat.message-category.handler.ts의 handleChatMessageCategoryDelete() 참조
  */
 export const onChatMessageCategoryDelete = onValueDeleted(
   {
@@ -806,7 +812,7 @@ export const onChatMessageCategoryDelete = onValueDeleted(
 
     // 비즈니스 로직 핸들러 호출
     // - categoryOrder, allCategoryOrder, type 필드 모두 삭제
-    await handleChatMessageCategoryWrite(messageId, null, undefined, null);
+    await handleChatMessageCategoryDelete(messageId);
 
     return;
   }
@@ -870,6 +876,215 @@ export const onCommentCreate = onValueCreated(
     // - 대댓글이면 부모 댓글의 childCount 증가
     // - stats/counters/comment 증가 (전체 댓글 통계)
     await handleCommentCreate(messageId, commentId, commentData);
+
+    return;
+  }
+);
+
+/**
+ * 좋아요 추가 시 likeCount를 자동 관리합니다.
+ *
+ * 트리거 경로: /likes/{uid}/{targetId}
+ */
+export const onLikeCreated = onValueCreated(
+  {
+    ref: "/likes/{uid}/{targetId}",
+    region: FIREBASE_REGION,
+  },
+  async (event) => {
+    const uid = event.params.uid as string;
+    const targetId = event.params.targetId as string;
+    const targetType = event.data.val() as LikeTargetType | null;
+
+    if (targetType !== "message" && targetType !== "comment") {
+      logger.error("잘못된 좋아요 타입입니다.", {
+        uid,
+        targetId,
+        targetType,
+      });
+      return;
+    }
+
+    await handleLikeCreate(uid, targetId, targetType);
+  }
+);
+
+/**
+ * 좋아요 취소 시 likeCount를 감소시킵니다.
+ *
+ * 트리거 경로: /likes/{uid}/{targetId}
+ */
+export const onLikeDeleted = onValueDeleted(
+  {
+    ref: "/likes/{uid}/{targetId}",
+    region: FIREBASE_REGION,
+  },
+  async (event) => {
+    const uid = event.params.uid as string;
+    const targetId = event.params.targetId as string;
+    const targetType = event.data.val() as LikeTargetType | null;
+
+    if (targetType !== "message" && targetType !== "comment") {
+      logger.error("잘못된 좋아요 타입입니다.", {
+        uid,
+        targetId,
+        targetType,
+      });
+      return;
+    }
+
+    await handleLikeDelete(uid, targetId, targetType);
+  }
+);
+
+/**
+ * 팔로잉 관계 생성 시 트리거되는 Cloud Function
+ *
+ * 트리거 경로: /user-following/{followerUid}/{followingUid}
+ * 트리거 이벤트: onValueCreated (팔로우 시)
+ *
+ * 수행 작업:
+ * 1. 자기 자신을 팔로우하는지 검증 (자기 자신 팔로우 불가)
+ * 2. /user-followers/{followingUid}/{followerUid} = true 설정 (역참조)
+ * 3. 향후: followingUid에게 알림 전송 (현재는 구현하지 않음)
+ *
+ * 참고:
+ * - A가 B를 팔로우 → /user-following/A/B = true
+ * - Cloud Functions 트리거 → /user-followers/B/A = true 자동 생성
+ *
+ * 비즈니스 로직은 handlers/friend.follow.handler.ts의 handleFollowingCreate() 참조
+ */
+export const onUserFollowingCreate = onValueCreated(
+  {
+    ref: "/user-following/{followerUid}/{followingUid}",
+    region: FIREBASE_REGION,
+  },
+  async (event) => {
+    const followerUid = event.params.followerUid as string;
+    const followingUid = event.params.followingUid as string;
+
+    logger.info("팔로잉 관계 생성 감지", {
+      followerUid,
+      followingUid,
+    });
+
+    // 비즈니스 로직 핸들러 호출
+    // - /user-followers/{followingUid}/{followerUid} = true 설정
+    await handleFollowingCreate(followerUid, followingUid);
+
+    return;
+  }
+);
+
+/**
+ * 팔로잉 관계 삭제 시 트리거되는 Cloud Function
+ *
+ * 트리거 경로: /user-following/{followerUid}/{followingUid}
+ * 트리거 이벤트: onValueDeleted (언팔로우 시)
+ *
+ * 수행 작업:
+ * 1. /user-followers/{followingUid}/{followerUid} 삭제 (역참조 제거)
+ *
+ * 참고:
+ * - A가 B를 언팔로우 → /user-following/A/B 삭제
+ * - Cloud Functions 트리거 → /user-followers/B/A 자동 삭제
+ *
+ * 비즈니스 로직은 handlers/friend.follow.handler.ts의 handleFollowingDelete() 참조
+ */
+export const onUserFollowingDelete = onValueDeleted(
+  {
+    ref: "/user-following/{followerUid}/{followingUid}",
+    region: FIREBASE_REGION,
+  },
+  async (event) => {
+    const followerUid = event.params.followerUid as string;
+    const followingUid = event.params.followingUid as string;
+
+    logger.info("팔로잉 관계 삭제 감지", {
+      followerUid,
+      followingUid,
+    });
+
+    // 비즈니스 로직 핸들러 호출
+    // - /user-followers/{followingUid}/{followerUid} 삭제
+    await handleFollowingDelete(followerUid, followingUid);
+
+    return;
+  }
+);
+
+/**
+ * 채팅 메시지 삭제 시 트리거되는 Cloud Function
+ *
+ * 트리거 경로: /chat-messages/{messageId}/deleted
+ * 트리거 이벤트: onValueWritten (deleted 필드 생성 시)
+ *
+ * 수행 작업:
+ * 1. deleted 값이 true인지 확인
+ * 2. 작성자의 /user-followers 목록 조회
+ * 3. 각 팔로워의 /user-feed/{followerUid}/{messageId} 삭제
+ * 4. 작성자 본인의 피드에서도 제거 (/user-feed/{authorUid}/{messageId} 삭제)
+ * 5. Multi-path update로 한 번에 모든 피드 삭제 (null 설정)
+ *
+ * 참고:
+ * - B가 글 삭제 → /chat-messages/{messageId}/deleted = true
+ * - Cloud Functions 트리거 → 모든 팔로워의 피드에서 해당 messageId 제거
+ * - Fan-out된 피드 데이터 일괄 정리
+ *
+ * 비즈니스 로직은 handlers/feed.fanout.handler.ts의 handleMessageDeletedFanout() 참조
+ */
+export const onChatMessageDeleted = onValueWritten(
+  {
+    ref: "/chat-messages/{messageId}/deleted",
+    region: FIREBASE_REGION,
+  },
+  async (event) => {
+    const messageId = event.params.messageId as string;
+    const beforeValue = event.data.before.val() as boolean | null;
+    const afterValue = event.data.after.val() as boolean | null;
+
+    logger.info("채팅 메시지 deleted 필드 변경 감지", {
+      messageId,
+      beforeValue,
+      afterValue,
+    });
+
+    // deleted가 true로 설정된 경우에만 처리
+    if (afterValue !== true) {
+      logger.info("deleted 값이 true가 아님, 처리 건너뜀", {
+        messageId,
+        afterValue,
+      });
+      return;
+    }
+
+    // 메시지 데이터에서 senderUid(작성자 UID) 조회
+    const messageRef = admin.database().ref(`chat-messages/${messageId}`);
+    const messageSnapshot = await messageRef.once("value");
+    const messageData = messageSnapshot.val();
+
+    if (messageData && messageData.senderUid) {
+      const authorUid = messageData.senderUid;
+
+      logger.info("피드 fan-out 제거 시작", {
+        messageId,
+        authorUid,
+      });
+
+      // 비즈니스 로직 핸들러 호출
+      // - 모든 팔로워의 피드에서 해당 messageId 제거
+      await handleMessageDeletedFanout(messageId, authorUid);
+
+      logger.info("피드 fan-out 제거 완료", {
+        messageId,
+        authorUid,
+      });
+    } else {
+      logger.warn("메시지 데이터에 senderUid가 없어 fan-out 제거를 건너뜁니다", {
+        messageId,
+        messageData,
+      });
+    }
 
     return;
   }

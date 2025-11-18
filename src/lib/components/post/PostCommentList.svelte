@@ -20,9 +20,11 @@
 	import UserProfile from '$lib/components/UserProfile.svelte';
 	import FileAttachments from '$lib/components/FileAttachments.svelte';
 	import CommentEditDialog from '$lib/components/comment/CommentEditDialog.svelte';
+	import FollowButton from '$lib/components/friend/follow-button.svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
-	import { rtdb } from '$lib/firebase';
-	import { ref, update } from 'firebase/database';
+import { rtdb } from '$lib/firebase';
+import { ref, update } from 'firebase/database';
+import { toggleLikeTarget, type LikeTargetType } from '$lib/functions/like.functions';
 
 	/**
 	 * Props
@@ -35,9 +37,10 @@
 			parentId?: string | null,
 			parentText?: string | null
 		) => void; // 댓글 작성 모달 열기 콜백
+		userLikes?: Record<string, LikeTargetType>; // 사용자 좋아요 정보
 	}
 
-	let { messageId, totalChildCount = 0, onOpenCommentDialog }: Props = $props();
+	let { messageId, totalChildCount = 0, onOpenCommentDialog, userLikes = {} }: Props = $props();
 
 	/**
 	 * 상태
@@ -50,6 +53,7 @@
 	let editingCommentId = $state<string>('');
 	let editingCommentText = $state<string>('');
 	let editingCommentUrls = $state<Record<number, string>>({});
+	const pendingCommentLikes = new Set<string>();
 
 	/**
 	 * 특정 게시글의 마지막 3개 댓글만 로드 (미리보기용)
@@ -137,6 +141,34 @@
 	}
 
 	/**
+	 * 댓글 좋아요 토글
+	 */
+	async function handleCommentLikeToggle(event: MouseEvent, commentId: string) {
+		event.stopPropagation();
+
+		if (!authStore.user) {
+			alert('로그인이 필요합니다.');
+			return;
+		}
+
+		if (pendingCommentLikes.has(commentId)) {
+			return;
+		}
+
+		pendingCommentLikes.add(commentId);
+		const result = await toggleLikeTarget({
+			uid: authStore.user.uid,
+			targetId: commentId,
+			targetType: 'comment'
+		});
+		pendingCommentLikes.delete(commentId);
+
+		if (!result.success && result.error) {
+			alert(result.error);
+		}
+	}
+
+	/**
 	 * date-fns 로케일 매핑
 	 */
 	const getDateLocale = () => {
@@ -215,7 +247,15 @@
 					<!-- 댓글 내용 -->
 					<div class="comment-content">
 						<div class="comment-header">
-							<UserProfile uid={comment.authorUid} photoSize="h-6 w-6" textSize="text-xs" />
+							<div class="comment-header-left">
+								<UserProfile uid={comment.authorUid} photoSize="h-6 w-6" textSize="text-xs" />
+								<!-- 팔로우 버튼 (작성자가 본인이 아닐 때만 표시) -->
+								{#if !isMyComment}
+									<div class="ml-2">
+										<FollowButton targetUid={comment.authorUid} />
+									</div>
+								{/if}
+							</div>
 							<span class="comment-time">
 								{formatDistanceToNow(new Date(comment.createdAt), {
 									addSuffix: true,
@@ -232,6 +272,28 @@
 
 						<!-- 버튼 그룹 -->
 						<div class="comment-actions">
+							<button
+								class="comment-like-button"
+								class:liked={userLikes[comment.commentId] === 'comment'}
+								disabled={!authStore.user}
+								onclick={(e: MouseEvent) => handleCommentLikeToggle(e, comment.commentId)}
+							>
+								<svg
+									class="h-4 w-4"
+									fill={userLikes[comment.commentId] === 'comment' ? 'currentColor' : 'none'}
+									stroke="currentColor"
+									viewBox="0 0 24 24"
+									stroke-width="2"
+								>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+									/>
+								</svg>
+								<span>좋아요 {comment.likeCount ?? 0}</span>
+							</button>
+
 							<!-- 답글 버튼 -->
 							<Button
 								variant="ghost"
@@ -330,6 +392,10 @@
 		@apply flex items-center justify-between;
 	}
 
+	.comment-header-left {
+		@apply flex items-center;
+	}
+
 	.comment-author {
 		@apply text-sm font-medium text-gray-900;
 	}
@@ -344,6 +410,15 @@
 
 	.comment-actions {
 		@apply mt-2 flex gap-1;
+	}
+
+	.comment-like-button {
+		@apply flex items-center gap-1 rounded-md px-2 py-1 text-xs text-gray-600;
+		@apply transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60;
+	}
+
+	.comment-like-button.liked {
+		@apply bg-rose-50 text-rose-600;
 	}
 
 	.comment-images {

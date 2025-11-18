@@ -128,6 +128,10 @@ export async function handleCommentCreate(
       });
     }
 
+    // 3. 댓글 위치 정보 저장 (commentId -> messageId)
+    await admin.database().ref(`comment-locations/${commentId}`).set(messageId);
+    logger.info("댓글 위치 정보 저장 완료", {messageId, commentId});
+
     // 3. 전체 댓글 통계 증가 (최상위 댓글, 대댓글 모두 포함)
     await incrementCommentCounter(messageId, commentId);
   } catch (error) {

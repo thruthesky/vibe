@@ -100,17 +100,9 @@ export interface UserData {
 }
 
 /**
- * likeId 파싱 결과 인터페이스
- * 형식: "post-<post-id>-<uid>" 또는 "comment-<comment-id>-<uid>"
+ * 좋아요 대상 타입
  */
-export interface ParsedLikeId {
-  /** 좋아요 타입 (post | comment) */
-  type: "post" | "comment";
-  /** 노드 ID (postId 또는 commentId) */
-  nodeId: string;
-  /** 사용자 UID */
-  uid: string;
-}
+export type LikeTargetType = "message" | "comment";
 
 /**
  * 신고 사유 타입

@@ -452,14 +452,354 @@ npx shadcn-svelte@latest add button
 npx shadcn-svelte@latest add dropdown-menu
 ```
 
-## 4. 통합 적용 절차
+## 4. 코드 재사용 정책 (Code Reusability Policy)
+
+### ⚠️ 최고 우선순위 정책 (CRITICAL)
+
+**모든 개발 작업을 시작하기 전에 반드시 `src/lib` 폴더에서 기존 함수, 컴포넌트, 로직이 존재하는지 먼저 검사해야 합니다.** 이는 선택사항이 아니라 **필수 규칙**입니다. 이 규칙을 따르지 않으면 코드 중복, RTDB 비용 증가, 유지보수 어려움 등 심각한 문제가 발생합니다.
+
+### 4.1 기본 원칙 (❌ 예외 없음)
+
+**다음 원칙을 반드시 따라야 합니다:**
+
+1. **항상 검색부터 시작** - 새로운 기능을 구현하기 전에 `src/lib`에서 유사한 코드를 먼저 찾습니다
+2. **중복 금지** - 이미 존재하는 함수/컴포넌트를 다시 만들지 않습니다
+3. **재사용 우선** - 기존 코드가 있으면 반드시 재사용합니다
+4. **공유 우선** - 새로 만드는 코드는 재사용 가능하도록 `src/lib`에 배치합니다
+5. **RTDB 비용 최적화** - 전체 노드가 아닌 필요한 필드만 읽습니다
+
+### 4.2 필수 작업 순서 (모든 개발 작업 시작 전)
+
+**🔥 다음 순서를 반드시 따라야 합니다. 이 순서를 무시하는 코드는 승인되지 않습니다.**
+
+1. **요구사항 분석** - 구현해야 할 기능을 명확히 파악
+2. **기존 코드 검색** - `src/lib` 폴더에서 유사한 기능 탐색
+   - 함수: `src/lib/functions/`
+   - 컴포넌트: `src/lib/components/`
+   - 타입: `src/lib/types/`
+   - 스토어: `src/lib/stores/`
+   - 유틸: `src/lib/utils/`
+
+3. **검색 방법:**
+   ```bash
+   # 함수명/키워드로 검색 (grep 사용)
+   grep -r "getUserField" src/lib/
+
+   # 파일명으로 검색 (find 사용)
+   find src/lib -name "*user*.ts"
+
+   # 컴포넌트 검색
+   find src/lib/components -name "*.svelte"
+
+   # VSCode에서 검색 (Ctrl+Shift+F 또는 Cmd+Shift+F)
+   # 검색 범위를 src/lib로 제한하여 검색
+   ```
+
+4. **기존 코드 발견 시:**
+   - ✅ **재사용** - 기존 함수/컴포넌트를 import하여 사용
+   - ✅ **확장** - 필요시 기존 코드를 확장 (매개변수 추가 등)
+   - ❌ **중복 생성 금지** - 절대 같은 기능을 다시 만들지 않음
+
+5. **기존 코드 없을 시:**
+   - ✅ **공유 코드 생성** - `src/lib`에 재사용 가능한 형태로 구현
+   - ✅ **문서화** - JSDoc 주석으로 사용법 명시
+   - ✅ **타입 정의** - TypeScript 타입 명시
+   - ✅ **예시 코드** - `@example` 태그로 사용 예시 제공
+
+### 4.3 RTDB 비용 최적화 예시
+
+**❌ 나쁜 예: 전체 노드 읽기 (비용 증가)**
+
+```typescript
+// feed-list.svelte 내부에서 직접 구현 (재사용 불가)
+async function fetchUserData(uid: string) {
+  const userRef = ref(database, `users/${uid}`);  // ❌ 전체 노드 읽기
+  const snapshot = await get(userRef);
+  const data = snapshot.val();
+
+  // 모든 필드를 다운로드했지만 displayName, photoUrl만 사용
+  return {
+    displayName: data.displayName,
+    photoUrl: data.photoUrl
+  };
+}
+```
+
+**문제점:**
+- `/users/{uid}` 전체 노드를 읽어서 불필요한 데이터까지 다운로드
+- RTDB 읽기 비용 증가 (전체 노드 크기만큼 청구)
+- 다른 컴포넌트에서 재사용 불가능
+- 네트워크 대역폭 낭비
+
+**✅ 좋은 예: 기존 함수 재사용 (비용 최적화)**
+
+```typescript
+// src/lib/functions/user.functions.ts에서 재사용
+import { getUserFields } from '$lib/functions/user.functions';
+
+async function fetchUserData(uid: string) {
+  // ✅ 기존 getUserFields() 함수 재활용
+  // ✅ 필요한 필드만 읽어서 RTDB 비용 절감
+  // ✅ /users/{uid}/displayName, /users/{uid}/photoUrl만 읽음
+  const userData = await getUserFields(uid, ['displayName', 'photoUrl']);
+
+  return {
+    displayName: userData.displayName || 'Unknown',
+    photoUrl: userData.photoUrl || undefined
+  };
+}
+```
+
+**장점:**
+- 필요한 필드만 개별적으로 읽어서 RTDB 비용 절감
+- 기존 함수 재사용으로 코드 중복 방지
+- 모든 컴포넌트에서 동일한 방식으로 사용 가능
+- 유지보수 편의성 증가
+
+### 4.4 검증 체크리스트 (필수 확인)
+
+**모든 개발 작업 전에 다음을 확인하세요. 모든 항목이 ✅ 체크되어야 PR이 승인됩니다:**
+
+- [ ] `src/lib` 폴더에서 유사한 함수/컴포넌트를 검색했는가?
+- [ ] 기존 코드가 있으면 재사용했는가? (중복 코드 생성하지 않았는가?)
+- [ ] 새로 만드는 코드를 `src/lib`에 공유 가능하게 배치했는가?
+- [ ] JSDoc 주석으로 사용법을 명확히 문서화했는가?
+- [ ] `@example` 태그로 사용 예시를 제공했는가?
+- [ ] TypeScript 타입을 명시했는가?
+- [ ] RTDB 비용 최적화를 고려했는가? (전체 노드가 아닌 필요한 필드만 읽기)
+- [ ] Promise.all()을 사용하여 병렬 처리를 고려했는가?
+
+### 4.5 금지 사항 (❌ Anti-patterns)
+
+**다음의 패턴은 절대 사용하면 안 됩니다. 이 규칙을 무시하는 코드는 승인되지 않습니다:**
+
+#### ❌ 금지 1: 중복 코드 생성
+
+```typescript
+// ❌ 절대 금지: 이미 getUserField()가 존재하는데 새로 만듦
+async function getDisplayName(uid: string) {
+  const snapshot = await get(ref(rtdb, `users/${uid}/displayName`));
+  return snapshot.val();
+}
+
+// ✅ 올바름: 기존 함수 재사용
+import { getUserField } from '$lib/functions/user.functions';
+const displayName = await getUserField(uid, 'displayName');
+```
+
+#### ❌ 금지 2: 컴포넌트 내부에서 재사용 불가능한 함수 구현
+
+```typescript
+// ❌ 절대 금지: feed-list.svelte 내부에서만 사용 가능
+async function fetchUserData(uid: string) {
+  // 다른 컴포넌트에서 재사용 불가능
+  // 코드 중복 발생
+}
+
+// ✅ 올바름: src/lib/functions/user.functions.ts에 공유 함수로 구현
+export async function getUserFields(uid: string, fields: string[]) {
+  // 모든 컴포넌트에서 재사용 가능
+  // 단일 진실 공급원(SSOT) 원칙 준수
+}
+```
+
+#### ❌ 금지 3: RTDB 전체 노드 읽기
+
+```typescript
+// ❌ 절대 금지: /users/{uid} 전체 읽기 (불필요한 데이터 다운로드)
+const userRef = ref(database, `users/${uid}`);
+const snapshot = await get(userRef);
+const displayName = snapshot.val().displayName;  // 많은 필드 중 하나만 사용
+
+// ✅ 올바름: 필요한 필드만 읽기
+const displayName = await getUserField(uid, 'displayName');
+
+// ✅ 더 좋음: 여러 필드를 병렬로 읽기
+const userData = await getUserFields(uid, ['displayName', 'photoUrl']);
+```
+
+#### ❌ 금지 4: 문서화 없이 함수 작성
+
+```typescript
+// ❌ 절대 금지: 주석 없이 함수 작성
+export async function getUserFields(uid, fields) {
+  // ...
+}
+
+// ✅ 올바름: JSDoc 주석으로 명확히 문서화
+/**
+ * 사용자의 여러 필드를 한 번에 가져옵니다.
+ *
+ * ⚠️ 중요: RTDB 비용 최적화를 위해 지정된 필드만 개별적으로 읽습니다.
+ *
+ * @param uid - 사용자 UID
+ * @param fields - 읽어올 필드명 배열
+ * @returns 필드명을 키로 하고 필드 값을 값으로 하는 객체
+ *
+ * @example
+ * ```typescript
+ * const data = await getUserFields('uid123', ['displayName', 'photoUrl']);
+ * console.log(data.displayName); // "홍길동"
+ * ```
+ */
+export async function getUserFields(
+  uid: string,
+  fields: Array<'displayName' | 'photoUrl'>
+): Promise<Record<string, string | null>> {
+  // ...
+}
+```
+
+### 4.6 권장 사항 (✅ Best Practices)
+
+#### ✅ 권장 1: 공유 함수 구조
+
+**`src/lib/functions/` 폴더 구조를 다음과 같이 유지하세요:**
+
+```
+src/lib/functions/
+├── user.functions.ts       # 사용자 관련 함수
+├── chat.functions.ts       # 채팅 관련 함수
+├── post.functions.ts       # 게시글 관련 함수
+├── comment.functions.ts    # 댓글 관련 함수
+├── like.functions.ts       # 좋아요 관련 함수
+└── room.functions.ts       # 채팅방 관련 함수
+```
+
+**각 파일은 관련된 기능만 포함하고, 명확한 책임을 가져야 합니다.**
+
+#### ✅ 권장 2: 범용 함수 작성
+
+**유연하고 재사용 가능한 범용 함수를 작성하세요:**
+
+```typescript
+/**
+ * 사용자의 여러 필드를 한 번에 가져옵니다. (범용 함수)
+ *
+ * ⚠️ 중요: RTDB 비용 최적화를 위해 지정된 필드만 개별적으로 읽습니다.
+ * - Promise.all()을 사용하여 모든 필드를 병렬로 읽어서 성능 최적화
+ * - 기존 getUserField() 함수를 재활용
+ *
+ * @param uid - 사용자 UID
+ * @param fields - 읽어올 필드명 배열 (예: ['displayName', 'photoUrl'])
+ * @returns 필드명을 키로 하고 필드 값을 값으로 하는 객체
+ *
+ * @example
+ * ```typescript
+ * // displayName과 photoUrl만 가져오기
+ * const data = await getUserFields('uid123', ['displayName', 'photoUrl']);
+ * console.log(data.displayName); // "홍길동"
+ * console.log(data.photoUrl);    // "https://..."
+ * ```
+ */
+export async function getUserFields(
+  uid: string,
+  fields: Array<'displayName' | 'photoUrl'>
+): Promise<Record<string, string | null>> {
+  if (!rtdb) {
+    console.error('Firebase Realtime Database가 초기화되지 않았습니다.');
+    return {};
+  }
+
+  if (!fields || fields.length === 0) {
+    console.warn('읽어올 필드가 지정되지 않았습니다.');
+    return {};
+  }
+
+  try {
+    // ⚠️ Promise.all을 사용하여 기존 getUserField() 함수로 모든 필드를 병렬로 가져오기
+    const values = await Promise.all(fields.map((field) => getUserField(uid, field)));
+
+    // 필드명과 값을 매핑한 객체 생성
+    const result: Record<string, string | null> = {};
+    fields.forEach((field, index) => {
+      result[field] = values[index];
+    });
+
+    return result;
+  } catch (error) {
+    console.error(`사용자 필드들 읽기 실패 (uid: ${uid}, fields: ${fields.join(', ')}):`, error);
+    return {};
+  }
+}
+```
+
+#### ✅ 권장 3: 컴포넌트 재사용
+
+**항상 `src/lib/components`에서 기존 컴포넌트를 먼저 찾아서 재사용하세요:**
+
+```svelte
+<!-- ✅ 올바름: 공유 컴포넌트 사용 -->
+<script>
+  import UserProfile from '$lib/components/UserProfile.svelte';
+  import FollowButton from '$lib/components/friend/follow-button.svelte';
+  import FileAttachments from '$lib/components/FileAttachments.svelte';
+  import PostItem from '$lib/components/post/PostItem.svelte';
+</script>
+
+<PostItem {message} {messageId} />
+<UserProfile uid={authorUid} />
+<FollowButton targetUid={authorUid} />
+<FileAttachments urls={attachments} />
+```
+
+**장점:**
+- 일관된 UI/UX 제공
+- 버그 수정 시 한 곳만 수정하면 모든 곳에 반영
+- 코드 중복 방지
+- 유지보수 편의성 증가
+
+#### ✅ 권장 4: 기존 함수 확장 예시
+
+**기존 함수가 거의 맞지만 약간의 수정이 필요한 경우, 기존 함수를 확장하세요:**
+
+```typescript
+// 기존 함수 (src/lib/functions/user.functions.ts)
+export async function getUserField(uid: string, field: 'displayName' | 'photoUrl') {
+  // ...
+}
+
+// ✅ 올바름: 기존 함수를 활용하여 범용 함수 추가
+export async function getUserFields(
+  uid: string,
+  fields: Array<'displayName' | 'photoUrl'>
+) {
+  // 기존 getUserField()를 재활용
+  const values = await Promise.all(fields.map(field => getUserField(uid, field)));
+  // ...
+}
+```
+
+#### ✅ 권장 5: 개발 전 체크리스트
+
+**새로운 기능을 개발하기 전에 다음을 확인하세요:**
+
+1. [ ] `src/lib/functions/` 폴더에서 유사한 함수 검색
+2. [ ] `src/lib/components/` 폴더에서 유사한 컴포넌트 검색
+3. [ ] 기존 코드가 있으면 재사용 가능한지 확인
+4. [ ] 기존 코드를 확장할 수 있는지 확인
+5. [ ] 새로 만들어야 한다면 `src/lib`에 공유 가능하게 배치
+6. [ ] JSDoc 주석과 예시 코드 작성
+7. [ ] RTDB 비용 최적화 고려 (필요한 필드만 읽기)
+
+### 4.7 개발자 필독 사항 (반드시 읽으세요)
+
+**🔥 이 규칙을 무시하는 코드는 승인되지 않습니다.**
+
+- **모든 PR 리뷰에서 코드 재사용 여부를 확인합니다.**
+- **중복 코드가 발견되면 기존 함수/컴포넌트를 재사용하도록 재작업을 요청합니다.**
+- **새로운 함수/컴포넌트 추가 시, `src/lib`에 공유 가능하게 배치하지 않으면 필수 지적 사항입니다.**
+- **RTDB 전체 노드 읽기가 발견되면 필드별 읽기로 수정을 요청합니다.**
+
+## 5. 통합 적용 절차
 
 1. **디자인 반영**: 컴포넌트 생성 전 본 명세서와 `sonub-design-workflow.md`를 함께 참조하여 설계한다.
-2. **구현**: 레이아웃 및 컴포넌트의 스타일 파일에 Light Mode 강제 스타일과 `cursor-pointer` 규칙을 추가한다.
-3. **검증**: 시스템 다크 모드 환경에서 앱을 실행하여 밝은 테마 유지 여부와 커서 변화를 확인한다.
-4. **리뷰 기록**: 변경 사항을 적용한 후 `./specs/*.md` SED 로그에 작업 내역을 남긴다.
+2. **코드 재사용 확인**: `src/lib` 폴더에서 기존 함수/컴포넌트를 먼저 검색하여 재사용 가능한지 확인한다.
+3. **구현**: 레이아웃 및 컴포넌트의 스타일 파일에 Light Mode 강제 스타일과 `cursor-pointer` 규칙을 추가한다.
+4. **검증**: 시스템 다크 모드 환경에서 앱을 실행하여 밝은 테마 유지 여부와 커서 변화를 확인한다.
+5. **리뷰 기록**: 변경 사항을 적용한 후 `./specs/*.md` SED 로그에 작업 내역을 남긴다.
 
-## 5. 참고 자료
+## 6. 참고 자료
 
 - [sonub-design-workflow.md](./sonub-design-workflow.md) - Tailwind/shadcn 활용 워크플로우
 - [sonub-design-layout.md](./sonub-design-layout.md) - 레이아웃 및 네비게이션 구조

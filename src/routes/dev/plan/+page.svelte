@@ -298,7 +298,7 @@
 					<span class="todo-number">13</span>
 					<div class="flex flex-col gap-1">
 						<Card.Title class="text-xl">채팅 메시지 "Post" 타입 선택</Card.Title>
-						<span class="todo-badge todo-badge--pending">📋 예정</span>
+						<span class="todo-badge todo-badge--done">✅ 완료</span>
 					</div>
 				</div>
 			</Card.Header>
@@ -391,7 +391,7 @@
 					<span class="todo-number">15</span>
 					<div class="flex flex-col gap-1">
 						<Card.Title class="text-xl">남/여 회원 찾기 기능</Card.Title>
-						<span class="todo-badge todo-badge--pending">📋 예정</span>
+						<span class="todo-badge todo-badge--done">✅ 완료</span>
 					</div>
 				</div>
 			</Card.Header>
@@ -505,15 +505,10 @@
 			</Card.Header>
 			<Card.Content>
 				<ul class="todo-list">
-					<li>특정 메시지에 답장(quote) 기능 추가하여 원문 일부를 함께 표시</li>
 					<li>메시지에 좋아요(리액션) 기능으로 간단한 피드백 제공</li>
 					<li>@멘션 기능으로 특정 사용자를 호출하고 알림 트리거</li>
-					<li>상대방 읽음 여부(1:1 및 그룹) 표시: 마지막 읽음 타임스탬프 기반 배지</li>
-					<li>채팅 알림음 설정 페이지에서 사용자별 기본 알림음 on/off 제어</li>
 					<li>채팅방별 알림음 토글 및 중요 채팅방 강조음 선택 기능 제공</li>
-					<li>로그인을 하지 않으면 홈 화면 실시간 통계 외의 정보가 보이지 않도록 보호</li>
 					<li>sonub.com을 Cloudflare Pages + Functions 환경으로 이전하여 SvelteKit 배포</li>
-					<li>게시판 SEO 강화를 위해 게시글을 Cloudflare D1에 미러링하고 목록/상세를 D1 기반으로 노출</li>
 				</ul>
 			</Card.Content>
 		</Card.Root>
@@ -532,7 +527,17 @@
 			<Card.Content>
 				<div class="space-y-4">
 					<div>
-						<h4 class="todo-subtitle">18-1. 서브 채팅방 (Sub Chat Room)</h4>
+						<h4 class="todo-subtitle">18-1. 17번에서 이동한 기능</h4>
+						<ul class="todo-list">
+							<li>특정 메시지에 답장(quote) 기능 추가하여 원문 일부를 함께 표시</li>
+							<li>상대방 읽음 여부(1:1 및 그룹) 표시: 마지막 읽음 타임스탬프 기반 배지</li>
+							<li>채팅 알림음 설정 페이지에서 사용자별 기본 알림음 on/off 제어</li>
+							<li>로그인을 하지 않으면 홈 화면 실시간 통계 외의 정보가 보이지 않도록 보호</li>
+							<li>게시판 SEO 강화를 위해 게시글을 Cloudflare D1에 미러링하고 목록/상세를 D1 기반으로 노출</li>
+						</ul>
+					</div>
+					<div>
+						<h4 class="todo-subtitle">18-2. 서브 채팅방 (Sub Chat Room)</h4>
 						<ul class="todo-list">
 							<li>
 								<strong>용도:</strong> 내가 운영 중인 여러 개의 채팅방을 하나로 묶어서 하나의
@@ -559,7 +564,7 @@
 						</ul>
 					</div>
 				<div>
-					<h4 class="todo-subtitle">18-2. 관리자 페이지 (Dashboard) 및 관리자 기능</h4>
+					<h4 class="todo-subtitle">18-3. 관리자 페이지 (Dashboard) 및 관리자 기능</h4>
 					<ul class="todo-list">
 							<li>관리자 권한 시스템 구현 (<code>/users/{'{uid}'}/isAdmin: boolean</code>)</li>
 							<li>
@@ -608,7 +613,7 @@
 						</ul>
 					</div>
 					<div>
-						<h4 class="todo-subtitle">18-3. 팔로잉/팔로워 기반 피드</h4>
+						<h4 class="todo-subtitle">18-4. 팔로잉/팔로워 기반 피드</h4>
 						<ul class="todo-list">
 							<li><code>/user-following/{'{uid}'}/{'{targetUid}'}: true</code>, <code>/user-followers/{'{uid}'}/{'{followerUid}'}: true</code> 구조로 친구 관계 저장</li>
 							<li>친구(팔로잉) 관계를 표시하는 UI (프로필 및 친구 목록)</li>

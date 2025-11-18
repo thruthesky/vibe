@@ -404,7 +404,7 @@ last_updated: 2025-11-15
 					<span class="todo-number">15</span>
 					<div class="flex flex-col gap-1">
 						<Card.Title class="text-xl">남/여 회원 찾기 기능</Card.Title>
-						<span class="todo-badge todo-badge--pending">📋 예정</span>
+						<span class="todo-badge todo-badge--done">✅ 완료</span>
 					</div>
 				</div>
 			</Card.Header>
@@ -691,3 +691,4 @@ last_updated: 2025-11-15
 ## 변경 이력
 
 - 2025-11-15: 스펙 문서 생성
+- 2025-11-18: 15번 남/여 회원 찾기 기능을 완료 상태로 표시

@@ -22,6 +22,7 @@
     - [ ] 세부 스펙 문서를 읽고, 그 개념을 이해하고,
     - [ ] 세버 스펙의 워크플로에 따라서 작업을 해야 합니다.
 - [ ] 개발자가 요청을 하면, 본 문서의 각 항목들을 엄격히 준수하여 작업을 수행합니다.
+  - [ ] **🔥 코드 재사용 필수 (최우선)**: 모든 개발 작업 전에 반드시 `src/lib` 폴더에서 기존 함수/컴포넌트를 먼저 검색합니다. [코드 재사용 정책](#코드-재사용-정책) 섹션을 필수로 준수합니다.
   - [ ] Svelte 의 Tailwind CSS 스타일링은 아래의 [CSS 스타일링](#css-스타일링) 섹션을 따릅니다.
   - [ ] Svelte 의 paraglide i18n 다국어 처리는 아래의 [다국어 (i18n) 처리](#다국어-i18n-처리) 섹션을 따릅니다.
   - [ ] 모든 UI/UX 작업(코딩)을 할 때에 svelte-shadcn 과 Tailwind CSS 를 씁니다.
@@ -57,6 +58,97 @@ Svelte 의 Tailwind CSS 스타일링은 아래의 규칙을 따릅니다:
    - 예: `messages/ko.json`, `messages/en.json`, `messages/ja.json`, `messages/zh.json`
 4. 소스 코드에서 하드코딩된 문자열을 제거하고, 다국어 라이브러리를 사용하여 해당 키로 문자열을 불러오도록 수정합니다.
    - 예: `import * as m from '$lib/paraglide/messages.js';` 후 `m.환영_인사()` 와 같이 사용해서 i18n 번역 텍스트 데이터 불러와 다국어 번역 적용
+
+## 코드 재사용 정책
+
+### ⚠️ 최고 우선순위 정책 (CRITICAL)
+
+**모든 개발 작업을 시작하기 전에 반드시 `src/lib` 폴더에서 기존 함수, 컴포넌트, 로직이 존재하는지 먼저 검사해야 합니다.** 이는 선택사항이 아니라 **필수 규칙**입니다.
+
+### 기본 원칙 (예외 없음)
+
+1. **항상 검색부터 시작** - 새로운 기능을 구현하기 전에 `src/lib`에서 유사한 코드를 먼저 찾습니다
+2. **중복 금지** - 이미 존재하는 함수/컴포넌트를 다시 만들지 않습니다
+3. **재사용 우선** - 기존 코드가 있으면 반드시 재사용합니다
+4. **공유 우선** - 새로 만드는 코드는 재사용 가능하도록 `src/lib`에 배치합니다
+5. **RTDB 비용 최적화** - 전체 노드가 아닌 필요한 필드만 읽습니다
+
+### 필수 작업 순서 (모든 개발 작업 시작 전)
+
+**🔥 다음 순서를 반드시 따라야 합니다:**
+
+1. **요구사항 분석** - 구현해야 할 기능을 명확히 파악
+2. **기존 코드 검색** - `src/lib` 폴더에서 유사한 기능 탐색
+   ```bash
+   # 함수/컴포넌트 검색 예시
+   grep -r "getUserField" src/lib/
+   find src/lib -name "*user*.ts"
+   find src/lib/components -name "*.svelte"
+   ```
+3. **기존 코드 발견 시:**
+   - ✅ **재사용** - 기존 함수/컴포넌트를 import하여 사용
+   - ✅ **확장** - 필요시 기존 코드를 확장 (매개변수 추가 등)
+   - ❌ **중복 생성 금지** - 절대 같은 기능을 다시 만들지 않음
+
+4. **기존 코드 없을 시:**
+   - ✅ **공유 코드 생성** - `src/lib`에 재사용 가능한 형태로 구현
+   - ✅ **문서화** - JSDoc 주석으로 사용법 명시
+   - ✅ **타입 정의** - TypeScript 타입 명시
+
+### 주요 검색 위치
+
+- **함수**: `src/lib/functions/`
+  - `user.functions.ts` - 사용자 관련 함수
+  - `chat.functions.ts` - 채팅 관련 함수
+  - `post.functions.ts` - 게시글 관련 함수
+  - `comment.functions.ts` - 댓글 관련 함수
+  - `like.functions.ts` - 좋아요 관련 함수
+  - `room.functions.ts` - 채팅방 관련 함수
+
+- **컴포넌트**: `src/lib/components/`
+  - 공통 UI 컴포넌트
+  - 재사용 가능한 Svelte 컴포넌트
+
+- **타입**: `src/lib/types/`
+- **스토어**: `src/lib/stores/`
+- **유틸**: `src/lib/utils/`
+
+### RTDB 비용 최적화 예시
+
+**❌ 나쁜 예: 전체 노드 읽기**
+```typescript
+// 컴포넌트 내부에서 직접 구현 (재사용 불가)
+const userRef = ref(database, `users/${uid}`);  // ❌ 전체 노드 읽기
+const snapshot = await get(userRef);
+```
+
+**✅ 좋은 예: 기존 함수 재사용**
+```typescript
+// src/lib/functions/user.functions.ts에서 재사용
+import { getUserFields } from '$lib/functions/user.functions';
+
+// ✅ 필요한 필드만 읽어서 RTDB 비용 절감
+const userData = await getUserFields(uid, ['displayName', 'photoUrl']);
+```
+
+### 금지 사항 (절대 금지)
+
+❌ **중복 코드 생성** - 이미 존재하는 함수/컴포넌트를 다시 만들지 않습니다
+❌ **컴포넌트 내부 함수** - 재사용 불가능한 함수를 컴포넌트 내부에 구현하지 않습니다
+❌ **RTDB 전체 노드 읽기** - 필요한 필드만 개별적으로 읽습니다
+❌ **문서화 없는 함수** - JSDoc 주석 없이 공유 함수를 작성하지 않습니다
+
+### 권장 사항
+
+✅ **범용 함수 작성** - 유연하고 재사용 가능한 함수를 만듭니다
+✅ **Promise.all() 사용** - 여러 필드를 병렬로 읽어서 성능을 최적화합니다
+✅ **컴포넌트 재사용** - 항상 기존 컴포넌트를 먼저 찾아서 사용합니다
+✅ **기존 함수 확장** - 기존 함수를 활용하여 새로운 기능을 추가합니다
+
+### 상세 가이드라인
+
+더 자세한 내용은 다음 문서를 참고하세요:
+- [Sonub Design Guideline - 코드 재사용 정책](./specs/sonub-design-guideline.md#4-코드-재사용-정책-code-reusability-policy)
 
 ## 빌드 버전 업데이트
 

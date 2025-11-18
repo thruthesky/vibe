@@ -29,6 +29,7 @@ export interface ChatMessageComment {
   createdAt: number;
   listOrder: string;
   childCount?: number;
+  likeCount?: number;
   editedAt?: number | null;
   deletedAt?: number | null;
   deleted?: boolean;

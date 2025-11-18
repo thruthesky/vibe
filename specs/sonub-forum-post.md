@@ -1,7 +1,7 @@
 ---
 name: sonub-forum-post
 title: 게시판 글 목록 UI 구조
-version: 1.2.0
+version: 1.4.0
 description: 게시판 글 목록 페이지의 HTML layout 구조 및 스타일링 사양
 author: JaeHo Song
 email: thruthesky@gmail.com
@@ -42,14 +42,15 @@ tags:
 
 ```
 .post-list-container (컨테이너)
-├── .post-list-header (헤더)
-│   ├── h1.post-list-title (제목)
-│   └── Button (글쓰기 버튼)
+├── .compose-prompt (가짜 글쓰기 폼 - 최상단)
+│   ├── Avatar or .default-avatar (프로필 사진 또는 기본 아이콘)
+│   ├── .compose-input-fake (플레이스홀더 텍스트)
+│   └── .compose-actions (카메라 아이콘)
 │
-├── .category-tabs (카테고리 탭)
-│   ├── button.category-chip (전체)
-│   ├── button.category-chip (자유토론)
-│   ├── button.category-chip (질문)
+├── .category-tabs (카테고리 탭 - 가로 스크롤)
+│   ├── button.category-chip.cursor-pointer (전체)
+│   ├── button.category-chip.cursor-pointer (자유토론)
+│   ├── button.category-chip.cursor-pointer (질문)
 │   └── ... (기타 카테고리)
 │
 └── .post-list-content (게시글 목록)
@@ -1260,6 +1261,66 @@ interface Message {
 - [ ] 색상 대비 확인
 
 ## 13. 변경 이력
+
+### v1.5.0 (2025-11-18)
+- PostCreateDialog 카테고리 기본 선택 기능 추가
+  - `defaultCategory` prop 추가: 다이얼로그 열 때 기본 선택될 카테고리 지정
+  - 사용자가 "전체" 카테고리 또는 카테고리 선택 안 한 경우: 'story' 카테고리 기본 선택
+  - 사용자가 특정 카테고리 선택한 경우: 해당 카테고리 기본 선택
+  - UX 개선: 사용자가 카테고리 선택을 번거롭게 하지 않도록 함
+  - 구현 위치:
+    - `src/lib/components/post/PostCreateDialog.svelte`: `defaultCategory` prop 및 `$effect` 로직 추가
+    - `src/routes/post/list/+page.svelte`: `defaultCategory={selectedCategory}` 전달
+  - 기술적 세부사항:
+    - `$effect(() => { selectedCategory = defaultCategory ?? 'story'; })` 사용
+    - 다이얼로그가 열릴 때마다 자동으로 카테고리 설정
+
+### v1.4.0 (2025-01-17)
+- Firebase Cloud Functions 카테고리 수정 로직 개선
+  - `handleChatMessageCategoryUpdate()` 함수를 빈 함수로 변경 (로그만 남김)
+  - 카테고리 수정 시 `categoryOrder` 필드를 업데이트하지 않도록 변경
+  - 기존 작성 시간과 정렬 순서 유지 보장
+  - Firebase Security Rules를 통해 `category` 필드만 직접 수정하도록 설계
+  - `onChatMessageCategoryUpdate` 트리거의 주석을 실제 동작에 맞게 업데이트
+- 함수 시그니처 변경
+  - `handleChatMessageCategoryUpdate(messageId, category, createdAt)` → `handleChatMessageCategoryUpdate(messageId, category)`
+  - 카테고리 수정 시 `createdAt` 필드 읽기 불필요하므로 파라미터 제거
+- 배경 및 이유
+  - 게시글의 카테고리를 변경할 때 작성 시간(`categoryOrder`의 타임스탬프)이 변경되면 정렬 순서가 바뀌는 문제 해결
+  - 클라이언트가 Security Rules를 통해 `category` 필드만 업데이트하면 되므로 백엔드 로직 불필요
+  - 코드 간소화 및 불필요한 데이터베이스 읽기/쓰기 방지
+
+### v1.3.0 (2025-01-17)
+- 홈화면 레이아웃 재구성
+  - 헤더 섹션 제거 (제목 "최근 게시글", 글쓰기 버튼 제거)
+  - 가짜 글쓰기 폼(`.compose-prompt`)을 최상단으로 이동
+  - 카테고리 네비게이션을 글쓰기 폼 아래로 이동
+- 가짜 글쓰기 폼 개선
+  - 비로그인 사용자에게도 가짜 글쓰기 폼 표시
+  - 비로그인 시 기본 프로필 아이콘(`.default-avatar`) 표시
+  - 플레이스홀더 텍스트 다국어 처리 (`composePromptPlaceholder`)
+  - 클릭 시 로그인 상태면 글쓰기 모달, 비로그인 시 로그인 유도
+- 카테고리 네비게이션 간결화
+  - 가로 스크롤 지원 (`overflow-x-auto`)
+  - 스크롤바 숨김 처리 (Firefox, Chrome, Safari)
+  - 카테고리 칩에 `flex-shrink-0` 적용
+  - "전체" 버튼 텍스트 다국어 처리 (`composeAll`)
+- 디자인 가이드라인 준수
+  - 모든 클릭 가능한 요소에 `cursor-pointer` 클래스 추가
+  - Tailwind CSS 우선 사용
+  - Light Mode Only
+- CSS 스타일 추가
+  - `.compose-prompt`: 가짜 글쓰기 폼 스타일
+  - `.compose-input-fake`: 플레이스홀더 입력창 스타일
+  - `.compose-actions`: 아이콘 버튼 그룹
+  - `.compose-icon-button`: 아이콘 버튼 스타일
+  - `.compose-icon`: 아이콘 크기 및 색상
+  - `.default-avatar`: 비로그인 사용자 기본 아바타
+  - `.category-tabs`: 가로 스크롤 지원, 스크롤바 숨김
+  - `.category-chip`: `flex-shrink-0` 추가
+- 다국어(i18n) 메시지 추가
+  - `composePromptPlaceholder`: "{name}님, 무슨 생각을 하고 계신가요?" (ko), "What's on your mind, {name}?" (en), "{name}さん、何を考えていますか？" (ja), "{name}，你在想什么？" (zh)
+  - `composeAll`: "전체" (ko), "All" (en), "全体" (ja), "全部" (zh)
 
 ### v1.2.0 (2025-01-17)
 - 게시글 클릭 동작 제거
