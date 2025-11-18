@@ -53,7 +53,7 @@ import {
 		uid: string;
 		displayName: string;
 		photoUrl: string | null;
-		sortRecentWithPhoto: number;
+		sortRecentWithPhotos: number;
 	};
 
 	type OpenChatPreview = {
@@ -107,22 +107,25 @@ import {
 
 		try {
 			const usersRef: DatabaseReference = ref(rtdb, 'users');
-			const recentQuery = query(usersRef, orderByChild('sort_recentWithPhoto'), limitToLast(5));
+			const recentQuery = query(usersRef, orderByChild('sort_recentWithPhotos'), limitToLast(5));
 			const snapshot = await get(recentQuery);
 			const users: UserPreview[] = [];
 
-			snapshot.forEach((child) => {
-				const value = child.val();
-				users.push({
-					uid: child.key ?? '',
-					displayName: value?.displayName ?? '',
-					photoUrl: value?.photoUrl ?? null,
-					sortRecentWithPhoto: Number(value?.sort_recentWithPhoto) || 0
+				snapshot.forEach((child) => {
+					const value = child.val();
+					users.push({
+						uid: child.key ?? '',
+						displayName: value?.displayName ?? '',
+						photoUrl: value?.photoUrl ?? null,
+						sortRecentWithPhotos:
+							Number(value?.sort_recentWithPhotos ?? value?.sort_recentWithPhoto) || 0
+					});
 				});
-			});
 
-			users.sort((a, b) => (b.sortRecentWithPhoto ?? 0) - (a.sortRecentWithPhoto ?? 0));
-			recentUsers = users.filter((user) => Boolean(user.photoUrl));
+				users.sort((a, b) => (b.sortRecentWithPhotos ?? 0) - (a.sortRecentWithPhotos ?? 0));
+				recentUsers = users
+					.filter((user) => Boolean(user.photoUrl))
+					.slice(0, 5);
 		} catch (error) {
 			console.error('[Sidebar] 최근 사용자 로드 실패:', error);
 			recentUsers = [];
@@ -405,7 +408,7 @@ import {
 				{:else}
 					<ul class="space-y-2">
 						{#each recentUsers as user (user.uid)}
-							{@const joinedAt = Math.abs(user.sortRecentWithPhoto || 0)}
+							{@const joinedAt = Math.abs(user.sortRecentWithPhotos || 0)}
 							<li class="recent-user-item flex items-center gap-3">
 								<img src={user.photoUrl ?? ''} alt={user.displayName || 'recent user'} class="recent-user-avatar" loading="lazy" />
 								<div class="recent-user-info flex flex-col">

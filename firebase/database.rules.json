@@ -63,6 +63,23 @@
         }
       }
     },
+    "chat-comment-likes": {
+      // 댓글별 좋아요한 사용자 목록 (프로필 사진 표시용)
+      // 구조: /chat-comment-likes/{commentId}/{uid}: true
+      // Cloud Functions가 자동으로 관리 (클라이언트는 /likes 경로 사용)
+      "$commentId": {
+        // 읽기 권한: 모든 로그인한 사용자 (좋아요한 사용자 목록 조회용)
+        ".read": "auth != null",
+
+        "$uid": {
+          // 쓰기 권한: Cloud Functions만 가능 (클라이언트는 직접 쓰기 불가)
+          ".write": false,
+
+          // 값 검증: true 또는 null (삭제)만 허용
+          ".validate": "newData.isBoolean() && newData.val() === true || newData.val() === null"
+        }
+      }
+    },
     "chat-rooms": {
       // 채팅방 메타데이터
       // createdAt과 owner 필드는 Cloud Functions에서만 설정됨

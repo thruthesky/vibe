@@ -28,6 +28,16 @@ export async function handleLikeCreate(
 
     logger.info("chat-message-likes 경로에 사용자 추가 완료", {targetId, uid});
   }
+
+  // 댓글별 좋아요한 사용자 목록에 추가 (프로필 사진 표시용)
+  if (targetType === "comment") {
+    await admin
+      .database()
+      .ref(`chat-comment-likes/${targetId}/${uid}`)
+      .set(true);
+
+    logger.info("chat-comment-likes 경로에 사용자 추가 완료", {targetId, uid});
+  }
 }
 
 /**
@@ -51,6 +61,16 @@ export async function handleLikeDelete(
       .remove();
 
     logger.info("chat-message-likes 경로에서 사용자 제거 완료", {targetId, uid});
+  }
+
+  // 댓글별 좋아요한 사용자 목록에서 제거
+  if (targetType === "comment") {
+    await admin
+      .database()
+      .ref(`chat-comment-likes/${targetId}/${uid}`)
+      .remove();
+
+    logger.info("chat-comment-likes 경로에서 사용자 제거 완료", {targetId, uid});
   }
 }
 
