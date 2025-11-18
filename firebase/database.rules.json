@@ -37,6 +37,32 @@
         ".write": false
       }
     },
+    "likes": {
+      "$uid": {
+        ".read": "auth != null && auth.uid == $uid",
+        "$targetId": {
+          ".write": "auth != null && auth.uid == $uid",
+          ".validate": "newData.val() === null || (newData.isString() && (newData.val() === 'message' || newData.val() === 'comment'))"
+        }
+      }
+    },
+    "chat-message-likes": {
+      // 메시지별 좋아요한 사용자 목록 (프로필 사진 표시용)
+      // 구조: /chat-message-likes/{messageId}/{uid}: true
+      // Cloud Functions가 자동으로 관리 (클라이언트는 /likes 경로 사용)
+      "$messageId": {
+        // 읽기 권한: 모든 로그인한 사용자 (좋아요한 사용자 목록 조회용)
+        ".read": "auth != null",
+
+        "$uid": {
+          // 쓰기 권한: Cloud Functions만 가능 (클라이언트는 직접 쓰기 불가)
+          ".write": false,
+
+          // 값 검증: true 또는 null (삭제)만 허용
+          ".validate": "newData.isBoolean() && newData.val() === true || newData.val() === null"
+        }
+      }
+    },
     "chat-rooms": {
       // 채팅방 메타데이터
       // createdAt과 owner 필드는 Cloud Functions에서만 설정됨
@@ -297,6 +323,53 @@
               $uid === auth.uid"
           }
         }
+      }
+    },
+    "user-following": {
+      // 팔로잉 관계 관리 (내가 팔로우하는 사람들)
+      // 구조: /user-following/{followerUid}/{followingUid}: true
+      "$uid": {
+        // 읽기 권한: 로그인한 모든 사용자 (공개 정보)
+        ".read": "auth != null",
+        "$targetUid": {
+          // 쓰기 권한: 본인만 자신의 팔로잉 목록 관리 가능
+          // 자기 자신을 팔로우하는 것은 불가능
+          ".write": "auth != null &&
+            $uid === auth.uid &&
+            $uid !== $targetUid",
+          // 값 검증: true 또는 null (삭제)만 가능
+          ".validate": "newData.isBoolean() && newData.val() === true ||
+            newData.val() === null"
+        }
+      }
+    },
+    "user-followers": {
+      // 팔로워 관계 관리 (나를 팔로우하는 사람들)
+      // 구조: /user-followers/{followingUid}/{followerUid}: true
+      "$uid": {
+        // 읽기 권한: 로그인한 모든 사용자 (공개 정보)
+        ".read": "auth != null",
+        "$followerUid": {
+          // 쓰기 권한: 팔로워 본인만 쓰기 가능
+          // 자기 자신을 팔로워로 추가하는 것은 불가능
+          ".write": "auth != null &&
+            $followerUid === auth.uid &&
+            $uid !== $followerUid",
+          // 값 검증: true 또는 null (삭제)만 가능
+          ".validate": "newData.isBoolean() && newData.val() === true ||
+            newData.val() === null"
+        }
+      }
+    },
+    "user-feed": {
+      // 사용자별 피드 (팔로우한 사람들의 글 목록)
+      // 구조: /user-feed/{uid}/{messageId}: createdAt (timestamp)
+      // Cloud Functions 전용: 클라이언트는 읽기만 가능
+      "$uid": {
+        // 읽기 권한: 본인만 자신의 피드 읽기 가능
+        ".read": "$uid === auth.uid",
+        // 쓰기 권한: 없음 (Cloud Functions만 쓰기 가능)
+        ".write": false
       }
     },
     "test": {

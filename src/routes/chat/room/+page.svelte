@@ -12,7 +12,7 @@
 	import Avatar from '$lib/components/user/avatar.svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { userProfileStore } from '$lib/stores/user-profile.svelte';
-	import { pushData } from '$lib/stores/database.svelte';
+	import { pushData, createRealtimeStore } from '$lib/stores/database.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import {
 		buildSingleRoomId,
@@ -33,6 +33,8 @@
 		getFileExtension,
 		getExtensionFromFilename
 	} from '$lib/functions/storage.functions';
+	import { toggleLikeTarget, type LikeTargetType } from '$lib/functions/like.functions';
+	import { getUserField } from '$lib/functions/user.functions';
 	import type { FileUploadStatus } from '$lib/types/chat.types';
 	import { tick, onDestroy } from 'svelte';
 	import { rtdb } from '$lib/firebase';
@@ -40,12 +42,14 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { Button } from '$lib/components/ui/button';
 	import ChatFavoritesDialog from '$lib/components/chat/ChatFavoritesDialog.svelte';
+	import * as Tooltip from '$lib/components/ui/tooltip';
 	import UserSearchDialog from '$lib/components/user/UserSearchDialog.svelte';
 	import RoomPasswordSetting from '$lib/components/chat/room-password-setting.svelte';
 	import RoomPasswordPrompt from '$lib/components/chat/room-password-prompt.svelte';
 	import ChatMessageEditModal from '$lib/components/chat/ChatMessageEditModal.svelte';
 	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
 	import { FORUM_CATEGORIES, type ForumCategory } from '$shared/categories';
+	import UserProfile from '$lib/components/UserProfile.svelte';
 
 	// GET 파라미터 추출
 	const uidParam = $derived.by(() => $page.url.searchParams.get('uid') ?? '');
@@ -181,7 +185,8 @@
 			travel: m.chatCategoryTravel,
 			mukbang: m.chatCategoryFood,
 			realestate: m.chatCategoryRealEstate,
-			hobby: m.chatCategoryHobby
+			hobby: m.chatCategoryHobby,
+			story: m.chatCategoryStory
 		};
 		return categoryMap[category]();
 	};
@@ -224,6 +229,21 @@
 	let isRoomMember = $state(false); // 현재 사용자가 members인지 여부
 	let roomName = $state<string>('');
 	let roomDataLoaded = $state(false); // Firebase 구독이 데이터를 한 번 이상 받아왔는지 여부 (깜빡임 방지용)
+
+	// 좋아요 상태 관리
+	type UserLikesMap = Record<string, LikeTargetType>;
+	let userLikes = $state<UserLikesMap>({});
+	const pendingLikeTargets = new Set<string>();
+
+	// 좋아요 툴팁 상태
+	let likedByUsers = $state<Record<string, string[]>>({});
+	let tooltipContent = $state<Record<string, string>>({});
+
+	// 롱프레스 상태
+	let longPressTimer: NodeJS.Timeout | null = null;
+	let selectedMessageForLikes = $state<string | null>(null);
+	let showLikesModal = $state(false);
+	let allLikedByUsers = $state<string[]>([]);
 
 	/**
 	 * 채팅방 정보 구독 (그룹/오픈 채팅방만)
@@ -329,6 +349,31 @@
 
 		return () => {
 			unsubscribe();
+		};
+	});
+
+	/**
+	 * 현재 사용자의 좋아요 목록 구독
+	 *
+	 * /likes/{uid}/{messageId} 경로를 구독하여
+	 * 사용자가 좋아요한 메시지 목록을 실시간으로 가져옵니다.
+	 */
+	$effect(() => {
+		const uid = authStore.user?.uid;
+
+		if (!uid) {
+			userLikes = {};
+			return;
+		}
+
+		const store = createRealtimeStore<UserLikesMap>(`likes/${uid}`, {});
+		const unsubscribe = store.subscribe((state) => {
+			userLikes = state.data ?? {};
+		});
+
+		return () => {
+			unsubscribe();
+			store.unsubscribe();
 		};
 	});
 
@@ -916,6 +961,160 @@
 	}
 
 	/**
+	 * 좋아요 토글 핸들러
+	 *
+	 * @param event - 마우스 클릭 이벤트
+	 * @param messageId - 메시지 ID
+	 */
+	async function handleToggleLike(event: MouseEvent, messageId: string) {
+		event.stopPropagation();
+
+		if (!authStore.user) {
+			alert('로그인이 필요합니다.');
+			return;
+		}
+
+		// 이미 처리 중인 요청인지 확인 (중복 방지)
+		if (pendingLikeTargets.has(messageId)) {
+			return;
+		}
+
+		pendingLikeTargets.add(messageId);
+
+		try {
+			const result = await toggleLikeTarget({
+				uid: authStore.user.uid,
+				targetId: messageId,
+				targetType: 'message'
+			});
+
+			if (!result.success && result.error) {
+				alert(result.error);
+			}
+		} finally {
+			pendingLikeTargets.delete(messageId);
+		}
+	}
+
+	/**
+	 * 좋아요한 사용자 목록 가져오기 (최대 3명, 툴팁용)
+	 *
+	 * @param messageId - 메시지 ID
+	 * @returns 좋아요한 사용자의 displayName 배열
+	 */
+	async function fetchLikedByUsers(messageId: string): Promise<string[]> {
+		// 캐시된 데이터가 있으면 반환
+		if (likedByUsers[messageId]) {
+			return likedByUsers[messageId];
+		}
+
+		if (!rtdb) {
+			return [];
+		}
+
+		try {
+			const likesRef = ref(rtdb, `chat-message-likes/${messageId}`);
+			const snapshot = await get(likesRef);
+			const data = snapshot.val() || {};
+			let uids = Object.keys(data);
+
+			// Fallback: chat-message-likes에 데이터가 없으면 /likes 경로를 역으로 조회
+			if (uids.length === 0) {
+				const allLikesRef = ref(rtdb, 'likes');
+				const allLikesSnapshot = await get(allLikesRef);
+				const allLikesData = allLikesSnapshot.val() || {};
+
+				// 각 사용자의 좋아요 목록에서 현재 메시지를 좋아요한 사용자 찾기
+				uids = Object.keys(allLikesData).filter((uid) => {
+					const userLikes = allLikesData[uid] || {};
+					return userLikes[messageId] === 'message';
+				});
+			}
+
+			// 최대 3명만
+			const limitedUids = uids.slice(0, 3);
+
+			// 병렬로 사용자 이름 가져오기
+			const names = await Promise.all(
+				limitedUids.map(async (uid) => {
+					const displayName = await getUserField(uid, 'displayName');
+					return displayName || '익명';
+				})
+			);
+
+			// 캐시에 저장
+			likedByUsers[messageId] = names;
+			return names;
+		} catch (error) {
+			console.error('좋아요 사용자 목록 가져오기 실패:', error);
+			return [];
+		}
+	}
+
+	/**
+	 * 롱프레스 시작 핸들러
+	 *
+	 * @param messageId - 메시지 ID
+	 */
+	function handleLongPressStart(messageId: string) {
+		// 800ms 후 모달 열기
+		longPressTimer = setTimeout(() => {
+			selectedMessageForLikes = messageId;
+			showLikesModal = true;
+			// 모든 좋아요 사용자 로드
+			loadAllLikedUsers(messageId);
+		}, 800);
+	}
+
+	/**
+	 * 롱프레스 종료 핸들러
+	 */
+	function handleLongPressEnd() {
+		if (longPressTimer) {
+			clearTimeout(longPressTimer);
+			longPressTimer = null;
+		}
+	}
+
+	/**
+	 * 모든 좋아요 사용자 로드 (모달용)
+	 *
+	 * @param messageId - 메시지 ID
+	 */
+	async function loadAllLikedUsers(messageId: string) {
+		if (!rtdb) {
+			allLikedByUsers = [];
+			return;
+		}
+
+		try {
+			const likesRef = ref(rtdb, `chat-message-likes/${messageId}`);
+			const snapshot = await get(likesRef);
+			const data = snapshot.val() || {};
+			let uids = Object.keys(data);
+
+			// Fallback: chat-message-likes에 데이터가 없으면 /likes 경로를 역으로 조회
+			if (uids.length === 0) {
+				const allLikesRef = ref(rtdb, 'likes');
+				const allLikesSnapshot = await get(allLikesRef);
+				const allLikesData = allLikesSnapshot.val() || {};
+
+				// 각 사용자의 좋아요 목록에서 현재 메시지를 좋아요한 사용자 찾기
+				uids = Object.keys(allLikesData).filter((uid) => {
+					const userLikes = allLikesData[uid] || {};
+					return userLikes[messageId] === 'message';
+				});
+			}
+
+			// UID 배열을 직접 저장 (UserProfile 컴포넌트가 프로필 정보를 로드함)
+			allLikedByUsers = uids;
+		} catch (error) {
+			console.error('모든 좋아요 사용자 로드 실패:', error);
+			allLikedByUsers = [];
+		}
+	}
+
+	/**
 	 * 파일 선택 버튼 클릭 핸들러
 	 */
 	function handleFileButtonClick() {
@@ -1115,8 +1314,9 @@
 	<title>{m.pageTitleChat()}</title>
 </svelte:head>
 
-<!-- 채팅방 전체 컨테이너: Flexbox로 화면 높이 최대 활용 -->
-<div class="chat-room-container">
+<Tooltip.Provider>
+	<!-- 채팅방 전체 컨테이너: Flexbox로 화면 높이 최대 활용 -->
+	<div class="chat-room-container">
 	<!-- 채팅방 상단 헤더 -->
 	<header class="chat-room-header">
 		<!-- 뒤로가기 버튼 -->
@@ -1375,6 +1575,52 @@
 									<div class="message-footer">
 										<span class="message-timestamp">{formatChatMessageDate(message.createdAt)}</span
 										>
+
+										<!-- 좋아요 버튼 (툴팁 + 롱프레스 지원) -->
+										<Tooltip.Root>
+											<Tooltip.Trigger
+												class="inline-flex {userLikes[messageId] === 'message'
+													? 'like-button liked'
+													: 'like-button'}"
+												disabled={!authStore.user}
+												onclick={(e) => handleToggleLike(e, messageId)}
+												onmouseenter={async () => {
+													if (message.likeCount && message.likeCount > 0) {
+														const names = await fetchLikedByUsers(messageId);
+														tooltipContent[messageId] =
+															names.length > 0 ? `좋아요한 사용자: ${names.join(', ')}` : '';
+													}
+												}}
+												onmousedown={() => handleLongPressStart(messageId)}
+												onmouseup={handleLongPressEnd}
+												onmouseleave={handleLongPressEnd}
+												ontouchstart={() => handleLongPressStart(messageId)}
+												ontouchend={handleLongPressEnd}
+												aria-label="좋아요"
+											>
+												<svg
+													class="like-icon"
+													fill={userLikes[messageId] === 'message' ? 'currentColor' : 'none'}
+													stroke="currentColor"
+													viewBox="0 0 24 24"
+													stroke-width="2"
+												>
+													<path
+														stroke-linecap="round"
+														stroke-linejoin="round"
+														d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+													/>
+												</svg>
+												{#if message.likeCount && message.likeCount > 0}
+													<span class="like-count">{message.likeCount}</span>
+												{/if}
+											</Tooltip.Trigger>
+											{#if tooltipContent[messageId]}
+												<Tooltip.Content>
+													<p>{tooltipContent[messageId]}</p>
+												</Tooltip.Content>
+											{/if}
+										</Tooltip.Root>
 
 										{#if isEditable}
 											<!-- 설정 드롭다운 (90분 이내 메시지만) -->
@@ -1759,6 +2005,29 @@
 	onSaved={handleEditModalSaved}
 />
 
+<!-- 좋아요 사용자 목록 모달 -->
+<Dialog bind:open={showLikesModal}>
+	<DialogContent class="max-w-md">
+		<DialogHeader>
+			<DialogTitle>좋아요한 사용자 목록</DialogTitle>
+		</DialogHeader>
+		<div class="max-h-96 overflow-y-auto">
+			{#if allLikedByUsers.length > 0}
+				<ul class="space-y-2">
+					{#each allLikedByUsers as uid}
+						<li class="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 hover:bg-gray-100 transition-colors">
+							<UserProfile {uid} photoSize="h-10 w-10" textSize="text-base" />
+						</li>
+					{/each}
+				</ul>
+			{:else}
+				<p class="text-center text-gray-500 py-8">좋아요한 사용자가 없습니다.</p>
+			{/if}
+		</div>
+	</DialogContent>
+</Dialog>
+</Tooltip.Provider>
+
 <style>
 	@import 'tailwindcss' reference;
 
@@ -1880,6 +2149,45 @@
 	.message-settings-button {
 		@apply text-sm text-gray-400 transition-colors hover:text-gray-600;
 		@apply cursor-pointer border-0 bg-transparent p-0;
+	}
+
+	/* 좋아요 버튼 */
+	.like-button {
+		@apply flex items-center gap-1;
+		@apply cursor-pointer border-0 bg-transparent p-0;
+		@apply text-gray-400 transition-colors;
+		@apply hover:text-gray-600;
+	}
+
+	.like-button.liked {
+		@apply text-red-500;
+	}
+
+	.like-button:disabled {
+		@apply cursor-not-allowed opacity-50;
+	}
+
+	.like-icon {
+		@apply h-4 w-4;
+	}
+
+	.like-count {
+		@apply text-[11px];
+	}
+
+	/* 하트 bounce 애니메이션 */
+	@keyframes heartBounce {
+		0%,
+		100% {
+			transform: scale(1);
+		}
+		50% {
+			transform: scale(1.3);
+		}
+	}
+
+	.like-button.liked .like-icon {
+		animation: heartBounce 0.4s ease-in-out;
 	}
 
 	/* 삭제된 메시지 스타일 */
