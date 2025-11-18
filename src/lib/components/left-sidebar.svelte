@@ -24,17 +24,16 @@
 		ref,
 		type DatabaseReference
 	} from 'firebase/database';
-	import {
-		ArrowRight,
-		UsersRound,
-		UserRound,
-		UserCheck,
-		Heart,
-		BarChart3,
-		MessageSquare,
-		Activity as ActivityIcon,
-		Globe
-	} from 'lucide-svelte';
+import {
+	UsersRound,
+	UserRound,
+	UserCheck,
+	Heart,
+	BarChart3,
+	MessageSquare,
+	Activity as ActivityIcon,
+	Globe
+} from 'lucide-svelte';
 
 	const localeNames: Record<string, string> = {
 		en: 'English',
@@ -310,79 +309,74 @@
 </script>
 
 <aside class="left-sidebar hidden lg:block">
-	<div class="sidebar-inner flex flex-col gap-4">
-		{#if authStore.user}
-			<a href="/my/profile" class="profile-card flex items-center gap-3" aria-label={m.navMyProfile()}>
-				<Avatar uid={authStore.user.uid} size={48} />
-				<div class="profile-copy flex flex-col">
-					<span class="profile-label">{m.homeSidebarProfileLabel()}</span>
-					<span class="profile-name">{authStore.user.displayName || m.commonUser()}</span>
+		<div class="sidebar-inner flex flex-col gap-3">
+			{#if authStore.user}
+				<a href="/my/profile" class="profile-card flex items-center gap-3" aria-label={m.navMyProfile()}>
+					<Avatar uid={authStore.user.uid} size={48} />
+					<div class="profile-copy flex flex-col">
+						<span class="profile-label">{m.homeSidebarProfileLabel()}</span>
+						<span class="profile-name">{authStore.user.displayName || m.commonUser()}</span>
+					</div>
+				</a>
+			{:else}
+				<a href="/auth/sign-in" class="profile-card flex items-center gap-3" aria-label={m.navLogin()}>
+					<div class="guest-avatar flex items-center justify-center">
+						<UserRound class="guest-icon" aria-hidden="true" />
 				</div>
-				<ArrowRight class="profile-arrow" aria-hidden="true" />
-			</a>
-		{:else}
-			<a href="/auth/sign-in" class="profile-card flex items-center gap-3" aria-label={m.navLogin()}>
-				<div class="guest-avatar flex items-center justify-center">
-					<UserRound class="guest-icon" aria-hidden="true" />
-				</div>
-				<div class="profile-copy flex flex-col">
-					<span class="profile-label">{m.homeSidebarProfileLabel()}</span>
-					<span class="profile-name">{m.navLogin()}</span>
-				</div>
-				<ArrowRight class="profile-arrow" aria-hidden="true" />
-			</a>
-		{/if}
+					<div class="profile-copy flex flex-col">
+						<span class="profile-label">{m.homeSidebarProfileLabel()}</span>
+						<span class="profile-name">{m.navLogin()}</span>
+					</div>
+				</a>
+			{/if}
 
-		<div class="quick-link-stack divide-y divide-gray-100 rounded-2xl border border-gray-100 bg-white shadow-sm">
-			<a href={authStore.user ? '/friend/followers' : '/auth/sign-in'} class="quick-link flex items-center gap-3" aria-label={m.homeSidebarFollowers()}>
-				<span class="quick-link-icon flex items-center justify-center">
-					<UserRound class="quick-link-icon-inner" aria-hidden="true" />
-				</span>
-				<div class="quick-link-main flex flex-col">
-					<span class="quick-link-title">{m.homeSidebarFollowers()}</span>
+			<div class="quick-link-stack rounded-xl bg-white/80 shadow-sm">
+				<a href={authStore.user ? '/friend/followers' : '/auth/sign-in'} class="quick-link flex items-center gap-3" aria-label={m.homeSidebarFollowers()}>
+					<span class="quick-link-icon flex items-center justify-center">
+						<UserRound class="quick-link-icon-inner" aria-hidden="true" />
+					</span>
+					<div class="quick-link-main flex flex-col">
+						<span class="quick-link-title">{m.homeSidebarFollowers()}</span>
 					<span class="quick-link-desc">{m.homeSidebarFollowersDesc()}</span>
 				</div>
-				<span class="quick-link-count">
-					{#if !authStore.user}
-						-
-					{:else if followersLoading}
-						...
-					{:else}
-						{formatCount(followerCount)}
-					{/if}
-				</span>
-				<ArrowRight class="quick-link-arrow" aria-hidden="true" />
-			</a>
+					<span class="quick-link-count">
+						{#if !authStore.user}
+							-
+						{:else if followersLoading}
+							...
+						{:else}
+							{formatCount(followerCount)}
+						{/if}
+					</span>
+				</a>
 
-			<a href={authStore.user ? '/friend/following' : '/auth/sign-in'} class="quick-link flex items-center gap-3" aria-label={m.homeSidebarFollowing()}>
-				<span class="quick-link-icon flex items-center justify-center">
-					<UserCheck class="quick-link-icon-inner" aria-hidden="true" />
+				<a href={authStore.user ? '/friend/following' : '/auth/sign-in'} class="quick-link flex items-center gap-3" aria-label={m.homeSidebarFollowing()}>
+					<span class="quick-link-icon flex items-center justify-center">
+						<UserCheck class="quick-link-icon-inner" aria-hidden="true" />
 				</span>
 				<div class="quick-link-main flex flex-col">
 					<span class="quick-link-title">{m.homeSidebarFollowing()}</span>
 					<span class="quick-link-desc">{m.homeSidebarFollowingDesc()}</span>
 				</div>
-				<span class="quick-link-count">
-					{#if !authStore.user}
-						-
-					{:else if followingLoading}
-						...
-					{:else}
-						{formatCount(followingCount)}
-					{/if}
-				</span>
-				<ArrowRight class="quick-link-arrow" aria-hidden="true" />
-			</a>
+					<span class="quick-link-count">
+						{#if !authStore.user}
+							-
+						{:else if followingLoading}
+							...
+						{:else}
+							{formatCount(followingCount)}
+						{/if}
+					</span>
+				</a>
 
-			<a href="/my/reactions" class="quick-link flex items-center gap-3" aria-label={m.homeSidebarReactions()}>
-				<span class="quick-link-icon flex items-center justify-center">
-					<Heart class="quick-link-icon-inner" aria-hidden="true" />
+				<a href="/my/reactions" class="quick-link flex items-center gap-3" aria-label={m.homeSidebarReactions()}>
+					<span class="quick-link-icon flex items-center justify-center">
+						<Heart class="quick-link-icon-inner" aria-hidden="true" />
 				</span>
 				<div class="quick-link-main flex flex-col">
 					<span class="quick-link-title">{m.homeSidebarReactions()}</span>
 					<span class="quick-link-desc">{m.homeSidebarReactionsDesc()}</span>
 				</div>
-				<ArrowRight class="quick-link-arrow" aria-hidden="true" />
 			</a>
 
 			<a href="/my/stats" class="quick-link flex items-center gap-3" aria-label={m.homeSidebarStats()}>
@@ -393,7 +387,6 @@
 					<span class="quick-link-title">{m.homeSidebarStats()}</span>
 					<span class="quick-link-desc">{m.homeSidebarStatsDesc()}</span>
 				</div>
-				<ArrowRight class="quick-link-arrow" aria-hidden="true" />
 			</a>
 		</div>
 
@@ -426,9 +419,8 @@
 					</ul>
 				{/if}
 
-				<a href="/user/list" class="see-more-button flex items-center justify-center gap-2">
+				<a href="/user/list" class="see-more-button flex items-center justify-center">
 					<span>{m.homeSidebarSeeMore()}</span>
-					<ArrowRight class="see-more-arrow" aria-hidden="true" />
 				</a>
 			</Card.Content>
 		</Card.Root>
@@ -532,8 +524,8 @@
 	}
 
 	.profile-card {
-		@apply rounded-2xl border border-gray-100 bg-white px-4 py-3 shadow-sm transition-shadow duration-200;
-		@apply hover:shadow-lg cursor-pointer;
+		@apply rounded-xl bg-white/90 px-3 py-2 shadow-sm transition-all duration-200;
+		@apply hover:bg-white cursor-pointer;
 	}
 
 	.profile-label {
@@ -542,10 +534,6 @@
 
 	.profile-name {
 		@apply text-base font-semibold text-gray-900;
-	}
-
-	.profile-arrow {
-		@apply h-4 w-4 text-gray-400;
 	}
 
 	.guest-avatar {
@@ -557,11 +545,11 @@
 	}
 
 	.quick-link-stack {
-		@apply overflow-hidden;
+		@apply flex flex-col gap-1 p-2;
 	}
 
 	.quick-link {
-		@apply px-4 py-3 transition-colors duration-200;
+		@apply rounded-lg px-3 py-2 transition-colors duration-200;
 		@apply hover:bg-gray-50 cursor-pointer;
 	}
 
@@ -585,12 +573,8 @@
 		@apply text-sm font-semibold text-gray-600;
 	}
 
-	.quick-link-arrow {
-		@apply h-4 w-4 text-gray-400;
-	}
-
 	.sidebar-card {
-		@apply shadow-sm transition-shadow duration-200 hover:shadow-md;
+		@apply rounded-xl bg-white/90 shadow-sm transition-shadow duration-200 hover:shadow;
 	}
 
 	.card-header {
@@ -627,12 +611,8 @@
 	}
 
 	.see-more-button {
-		@apply rounded-xl border border-gray-200 px-3 py-2 text-sm font-semibold text-gray-700 transition-colors duration-200;
-		@apply hover:border-gray-300 hover:bg-gray-50 cursor-pointer;
-	}
-
-	.see-more-arrow {
-		@apply h-4 w-4 text-gray-400;
+		@apply rounded-lg px-3 py-2 text-sm font-semibold text-gray-700 transition-colors duration-200;
+		@apply hover:bg-gray-50 cursor-pointer;
 	}
 
 	.open-chat-item {
@@ -673,7 +653,7 @@
 	}
 
 	.language-row {
-		@apply rounded-2xl border border-gray-100 bg-white px-4 py-3 shadow-sm;
+		@apply rounded-xl bg-white/90 px-4 py-3 shadow-sm;
 	}
 
 	.language-label {
@@ -685,7 +665,7 @@
 	}
 
 	.language-select {
-		@apply rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-900 shadow-sm transition duration-200;
-		@apply hover:border-blue-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 cursor-pointer;
+		@apply rounded-xl border border-transparent bg-white px-3 py-2 text-sm font-medium text-gray-900 shadow-sm transition duration-200;
+		@apply hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-200 cursor-pointer;
 	}
 </style>

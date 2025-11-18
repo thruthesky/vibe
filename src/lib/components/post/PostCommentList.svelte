@@ -22,9 +22,15 @@
 	import CommentEditDialog from '$lib/components/comment/CommentEditDialog.svelte';
 	import FollowButton from '$lib/components/friend/follow-button.svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
-import { rtdb } from '$lib/firebase';
-import { ref, update } from 'firebase/database';
-import { toggleLikeTarget, type LikeTargetType } from '$lib/functions/like.functions';
+	import { rtdb } from '$lib/firebase';
+	import { ref, update } from 'firebase/database';
+	import {
+		toggleLikeTarget,
+		fetchLikedByUsers,
+		type LikeTargetType
+	} from '$lib/functions/like.functions';
+	import LikedUsersAvatarStack from '$lib/components/LikedUsersAvatarStack.svelte';
+	import LikedUsersModal from '$lib/components/LikedUsersModal.svelte';
 
 	/**
 	 * Props
@@ -54,6 +60,13 @@ import { toggleLikeTarget, type LikeTargetType } from '$lib/functions/like.funct
 	let editingCommentText = $state<string>('');
 	let editingCommentUrls = $state<Record<number, string>>({});
 	const pendingCommentLikes = new Set<string>();
+
+	// 좋아요 사용자 모달 상태
+	let likesModalOpen = $state(false);
+	let likesModalTargetId = $state<string>('');
+
+	// 각 댓글의 좋아요 사용자 목록 (commentId -> uids)
+	let commentLikedUsers = $state<Record<string, string[]>>({});
 
 	/**
 	 * 특정 게시글의 마지막 3개 댓글만 로드 (미리보기용)
@@ -167,6 +180,38 @@ import { toggleLikeTarget, type LikeTargetType } from '$lib/functions/like.funct
 			alert(result.error);
 		}
 	}
+
+	/**
+	 * 특정 댓글의 좋아요 사용자 목록 로드
+	 */
+	async function loadCommentLikedUsers(commentId: string) {
+		try {
+			const uids = await fetchLikedByUsers(commentId, 'comment');
+			commentLikedUsers[commentId] = uids;
+		} catch (error) {
+			console.error('댓글 좋아요 사용자 로드 실패:', error);
+			commentLikedUsers[commentId] = [];
+		}
+	}
+
+	/**
+	 * 좋아요 사용자 모달 열기
+	 */
+	function handleOpenLikesModal(commentId: string) {
+		likesModalTargetId = commentId;
+		likesModalOpen = true;
+	}
+
+	/**
+	 * 댓글 목록이 로드되면 각 댓글의 좋아요 사용자 자동 로드
+	 */
+	$effect(() => {
+		comments.forEach((comment) => {
+			if (comment.likeCount && comment.likeCount > 0) {
+				loadCommentLikedUsers(comment.commentId);
+			}
+		});
+	});
 
 	/**
 	 * date-fns 로케일 매핑
@@ -291,8 +336,21 @@ import { toggleLikeTarget, type LikeTargetType } from '$lib/functions/like.funct
 										d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
 									/>
 								</svg>
-								<span>좋아요 {comment.likeCount ?? 0}</span>
+								<!-- 데스크톱: "좋아요" 텍스트 표시, 모바일: 숨김 -->
+								<span class="hidden md:inline">좋아요</span>
+								<!-- 좋아요 숫자가 0보다 클 때만 표시 -->
+								{#if comment.likeCount && comment.likeCount > 0}
+									<span>{comment.likeCount}</span>
+								{/if}
 							</button>
+
+							<!-- 좋아요 사용자 아바타 스택 -->
+							{#if commentLikedUsers[comment.commentId] && commentLikedUsers[comment.commentId].length > 0}
+								<LikedUsersAvatarStack
+									likedByUids={commentLikedUsers[comment.commentId]}
+									onClick={() => handleOpenLikesModal(comment.commentId)}
+								/>
+							{/if}
 
 							<!-- 답글 버튼 -->
 							<Button
@@ -347,6 +405,9 @@ import { toggleLikeTarget, type LikeTargetType } from '$lib/functions/like.funct
 	onClose={() => (isEditDialogOpen = false)}
 	onSaved={handleCommentEdited}
 />
+
+<!-- 좋아요 사용자 모달 -->
+<LikedUsersModal bind:open={likesModalOpen} targetId={likesModalTargetId} targetType="comment" />
 
 <style>
 	@import 'tailwindcss' reference;

@@ -116,8 +116,30 @@ export async function fetchLikedByUsers(
 			return uids;
 		}
 
-		// 댓글 좋아요: 향후 구현 (현재는 빈 배열 반환)
-		// TODO: 댓글 좋아요 사용자 로드 로직 추가
+		// 댓글 좋아요: chat-comment-likes 경로에서 로드
+		if (targetType === 'comment') {
+			const likesRef = ref(rtdb, `chat-comment-likes/${targetId}`);
+			const snapshot = await get(likesRef);
+			const data = snapshot.val() || {};
+			let uids = Object.keys(data);
+
+			// Fallback: chat-comment-likes에 데이터가 없으면 /likes 경로를 역으로 조회
+			if (uids.length === 0) {
+				const allLikesRef = ref(rtdb, 'likes');
+				const allLikesSnapshot = await get(allLikesRef);
+				const allLikesData = allLikesSnapshot.val() || {};
+
+				// 각 사용자의 좋아요 목록에서 현재 댓글을 좋아요한 사용자 찾기
+				uids = Object.keys(allLikesData).filter((uid) => {
+					const userLikes = allLikesData[uid] || {};
+					return userLikes[targetId] === 'comment';
+				});
+			}
+
+			return uids;
+		}
+
+		// 기타 타입: 빈 배열 반환
 		return [];
 	} catch (error) {
 		console.error('좋아요 사용자 로드 실패:', error);

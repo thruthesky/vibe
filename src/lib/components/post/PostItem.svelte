@@ -272,7 +272,12 @@
 								d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
 							/>
 						</svg>
-						<span>좋아요 {message.likeCount ?? 0}</span>
+						<!-- 데스크톱: "좋아요" 텍스트 표시, 모바일: 숨김 -->
+						<span class="hidden md:inline">좋아요</span>
+						<!-- 좋아요 숫자가 0보다 클 때만 표시 -->
+						{#if message.likeCount && message.likeCount > 0}
+							<span>{message.likeCount}</span>
+						{/if}
 					</button>
 
 					<!-- 좋아요 사용자 아바타 스택 (3명까지 표시) -->

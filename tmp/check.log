@@ -1845,837 +1845,375 @@ https://svelte.dev/e/a11y_no_noninteractive_element_interactions (svelte)
 			/>
 		</div>
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:351:8
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:50:8
 Warn: Unused CSS selector "html"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:351:8
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:50:8
 Warn: Unused CSS selector "hr"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:351:8
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:50:8
 Warn: Unused CSS selector "abbr:where([title])"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:351:8
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:50:8
 Warn: Unused CSS selector "h1"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:351:8
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:50:8
 Warn: Unused CSS selector "h2"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:351:8
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:50:8
 Warn: Unused CSS selector "h3"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:351:8
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:50:8
 Warn: Unused CSS selector "h4"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:351:8
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:50:8
 Warn: Unused CSS selector "h5"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:351:8
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:50:8
 Warn: Unused CSS selector "h6"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:351:8
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:50:8
 Warn: Unused CSS selector "a"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:351:8
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:50:8
 Warn: Unused CSS selector "b"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:351:8
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:50:8
 Warn: Unused CSS selector "strong"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:351:8
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:50:8
 Warn: Unused CSS selector "code"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:351:8
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:50:8
 Warn: Unused CSS selector "kbd"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:351:8
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:50:8
 Warn: Unused CSS selector "samp"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:351:8
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:50:8
 Warn: Unused CSS selector "pre"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:351:8
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:50:8
 Warn: Unused CSS selector "small"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:351:8
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:50:8
 Warn: Unused CSS selector "sub"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:351:8
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:50:8
 Warn: Unused CSS selector "sup"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:351:8
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:50:8
 Warn: Unused CSS selector "sub"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:351:8
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:50:8
 Warn: Unused CSS selector "sup"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:351:8
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:50:8
 Warn: Unused CSS selector "table"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:351:8
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:50:8
 Warn: Unused CSS selector "progress"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:351:8
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:50:8
 Warn: Unused CSS selector "summary"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:351:8
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:50:8
 Warn: Unused CSS selector "ol"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:351:8
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:50:8
 Warn: Unused CSS selector "ul"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:351:8
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:50:8
 Warn: Unused CSS selector "menu"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:351:8
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:50:8
 Warn: Unused CSS selector "img"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:351:8
-Warn: Unused CSS selector "video"
-https://svelte.dev/e/css_unused_selector (svelte)
-
-<style>
-	@import 'tailwindcss' reference;
-
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:351:8
-Warn: Unused CSS selector "canvas"
-https://svelte.dev/e/css_unused_selector (svelte)
-
-<style>
-	@import 'tailwindcss' reference;
-
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:351:8
-Warn: Unused CSS selector "audio"
-https://svelte.dev/e/css_unused_selector (svelte)
-
-<style>
-	@import 'tailwindcss' reference;
-
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:351:8
-Warn: Unused CSS selector "iframe"
-https://svelte.dev/e/css_unused_selector (svelte)
-
-<style>
-	@import 'tailwindcss' reference;
-
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:351:8
-Warn: Unused CSS selector "embed"
-https://svelte.dev/e/css_unused_selector (svelte)
-
-<style>
-	@import 'tailwindcss' reference;
-
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:351:8
-Warn: Unused CSS selector "object"
-https://svelte.dev/e/css_unused_selector (svelte)
-
-<style>
-	@import 'tailwindcss' reference;
-
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:351:8
-Warn: Unused CSS selector "img"
-https://svelte.dev/e/css_unused_selector (svelte)
-
-<style>
-	@import 'tailwindcss' reference;
-
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:351:8
-Warn: Unused CSS selector "video"
-https://svelte.dev/e/css_unused_selector (svelte)
-
-<style>
-	@import 'tailwindcss' reference;
-
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:351:8
-Warn: Unused CSS selector "input"
-https://svelte.dev/e/css_unused_selector (svelte)
-
-<style>
-	@import 'tailwindcss' reference;
-
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:351:8
-Warn: Unused CSS selector "select"
-https://svelte.dev/e/css_unused_selector (svelte)
-
-<style>
-	@import 'tailwindcss' reference;
-
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:351:8
-Warn: Unused CSS selector "optgroup"
-https://svelte.dev/e/css_unused_selector (svelte)
-
-<style>
-	@import 'tailwindcss' reference;
-
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:351:8
-Warn: Unused CSS selector "textarea"
-https://svelte.dev/e/css_unused_selector (svelte)
-
-<style>
-	@import 'tailwindcss' reference;
-
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:351:8
-Warn: Unused CSS selector ":where(select:is([multiple], [size])) optgroup"
-https://svelte.dev/e/css_unused_selector (svelte)
-
-<style>
-	@import 'tailwindcss' reference;
-
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:351:8
-Warn: Unused CSS selector ":where(select:is([multiple], [size])) optgroup option"
-https://svelte.dev/e/css_unused_selector (svelte)
-
-<style>
-	@import 'tailwindcss' reference;
-
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:351:8
-Warn: Unused CSS selector "textarea"
-https://svelte.dev/e/css_unused_selector (svelte)
-
-<style>
-	@import 'tailwindcss' reference;
-
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:351:8
-Warn: Unused CSS selector "input:where([type="button"], [type="reset"], [type="submit"])"
-https://svelte.dev/e/css_unused_selector (svelte)
-
-<style>
-	@import 'tailwindcss' reference;
-
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:351:8
-Warn: Unused CSS selector "[hidden]:where(:not([hidden="until-found"]))"
-https://svelte.dev/e/css_unused_selector (svelte)
-
-<style>
-	@import 'tailwindcss' reference;
-
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:351:8
-Warn: Unused CSS selector ".comment-author"
-https://svelte.dev/e/css_unused_selector (svelte)
-
-<style>
-	@import 'tailwindcss' reference;
-
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:351:8
-Warn: Unused CSS selector ".comment-images"
-https://svelte.dev/e/css_unused_selector (svelte)
-
-<style>
-	@import 'tailwindcss' reference;
-
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:351:8
-Warn: Unused CSS selector ".comment-image-thumbnail"
-https://svelte.dev/e/css_unused_selector (svelte)
-
-<style>
-	@import 'tailwindcss' reference;
-
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:356:3
-Warn: Unknown at rule @apply (css)
-	.post-actions {
-		@apply mt-2 flex items-center justify-between border-t border-gray-100 pt-2;
-	}
-
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:360:3
-Warn: Unknown at rule @apply (css)
-	.comment-info {
-		@apply flex items-center gap-2;
-	}
-
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:364:3
-Warn: Unknown at rule @apply (css)
-	.comment-count {
-		@apply text-sm text-gray-700;
-	}
-
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:368:3
-Warn: Unknown at rule @apply (css)
-	.comment-count-empty {
-		@apply text-sm text-gray-400;
-	}
-
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:372:3
-Warn: Unknown at rule @apply (css)
-	.comments-list {
-		@apply mt-3 space-y-2 border-t border-gray-100 pt-3;
-	}
-
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:376:3
-Warn: Unknown at rule @apply (css)
-	.comment-item {
-		@apply rounded-lg bg-gray-50 p-3;
-	}
-
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:380:3
-Warn: Unknown at rule @apply (css)
-	.comment-deleted {
-		@apply py-2;
-	}
-
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:384:3
-Warn: Unknown at rule @apply (css)
-	.comment-deleted-text {
-		@apply text-gray-400 italic;
-	}
-
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:388:3
-Warn: Unknown at rule @apply (css)
-	.comment-content {
-		@apply space-y-2;
-	}
-
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:392:3
-Warn: Unknown at rule @apply (css)
-	.comment-header {
-		@apply flex items-center justify-between;
-	}
-
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:396:3
-Warn: Unknown at rule @apply (css)
-	.comment-header-left {
-		@apply flex items-center;
-	}
-
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:400:3
-Warn: Unknown at rule @apply (css)
-	.comment-author {
-		@apply text-sm font-medium text-gray-900;
-	}
-
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:404:3
-Warn: Unknown at rule @apply (css)
-	.comment-time {
-		@apply text-xs text-gray-400;
-	}
-
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:408:3
-Warn: Unknown at rule @apply (css)
-	.comment-text {
-		@apply whitespace-pre-line text-sm text-gray-800;
-	}
-
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:412:3
-Warn: Unknown at rule @apply (css)
-	.comment-actions {
-		@apply mt-2 flex gap-1;
-	}
-
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:416:3
-Warn: Unknown at rule @apply (css)
-	.comment-like-button {
-		@apply flex items-center gap-1 rounded-md px-2 py-1 text-xs text-gray-600;
-		@apply transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60;
-
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:417:3
-Warn: Unknown at rule @apply (css)
-		@apply flex items-center gap-1 rounded-md px-2 py-1 text-xs text-gray-600;
-		@apply transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60;
-	}
-
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:421:3
-Warn: Unknown at rule @apply (css)
-	.comment-like-button.liked {
-		@apply bg-rose-50 text-rose-600;
-	}
-
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:425:3
-Warn: Unknown at rule @apply (css)
-	.comment-images {
-		@apply mt-2 flex gap-2;
-	}
-
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:429:3
-Warn: Unknown at rule @apply (css)
-	.comment-image-thumbnail {
-		@apply h-16 w-16 rounded object-cover;
-	}
-
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:76:8
-Warn: Unused CSS selector "html"
-https://svelte.dev/e/css_unused_selector (svelte)
-
-<style>
-	@import 'tailwindcss' reference;
-
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:76:8
-Warn: Unused CSS selector "hr"
-https://svelte.dev/e/css_unused_selector (svelte)
-
-<style>
-	@import 'tailwindcss' reference;
-
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:76:8
-Warn: Unused CSS selector "abbr:where([title])"
-https://svelte.dev/e/css_unused_selector (svelte)
-
-<style>
-	@import 'tailwindcss' reference;
-
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:76:8
-Warn: Unused CSS selector "h1"
-https://svelte.dev/e/css_unused_selector (svelte)
-
-<style>
-	@import 'tailwindcss' reference;
-
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:76:8
-Warn: Unused CSS selector "h2"
-https://svelte.dev/e/css_unused_selector (svelte)
-
-<style>
-	@import 'tailwindcss' reference;
-
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:76:8
-Warn: Unused CSS selector "h3"
-https://svelte.dev/e/css_unused_selector (svelte)
-
-<style>
-	@import 'tailwindcss' reference;
-
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:76:8
-Warn: Unused CSS selector "h4"
-https://svelte.dev/e/css_unused_selector (svelte)
-
-<style>
-	@import 'tailwindcss' reference;
-
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:76:8
-Warn: Unused CSS selector "h5"
-https://svelte.dev/e/css_unused_selector (svelte)
-
-<style>
-	@import 'tailwindcss' reference;
-
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:76:8
-Warn: Unused CSS selector "h6"
-https://svelte.dev/e/css_unused_selector (svelte)
-
-<style>
-	@import 'tailwindcss' reference;
-
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:76:8
-Warn: Unused CSS selector "a"
-https://svelte.dev/e/css_unused_selector (svelte)
-
-<style>
-	@import 'tailwindcss' reference;
-
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:76:8
-Warn: Unused CSS selector "b"
-https://svelte.dev/e/css_unused_selector (svelte)
-
-<style>
-	@import 'tailwindcss' reference;
-
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:76:8
-Warn: Unused CSS selector "strong"
-https://svelte.dev/e/css_unused_selector (svelte)
-
-<style>
-	@import 'tailwindcss' reference;
-
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:76:8
-Warn: Unused CSS selector "code"
-https://svelte.dev/e/css_unused_selector (svelte)
-
-<style>
-	@import 'tailwindcss' reference;
-
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:76:8
-Warn: Unused CSS selector "kbd"
-https://svelte.dev/e/css_unused_selector (svelte)
-
-<style>
-	@import 'tailwindcss' reference;
-
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:76:8
-Warn: Unused CSS selector "samp"
-https://svelte.dev/e/css_unused_selector (svelte)
-
-<style>
-	@import 'tailwindcss' reference;
-
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:76:8
-Warn: Unused CSS selector "pre"
-https://svelte.dev/e/css_unused_selector (svelte)
-
-<style>
-	@import 'tailwindcss' reference;
-
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:76:8
-Warn: Unused CSS selector "small"
-https://svelte.dev/e/css_unused_selector (svelte)
-
-<style>
-	@import 'tailwindcss' reference;
-
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:76:8
-Warn: Unused CSS selector "sub"
-https://svelte.dev/e/css_unused_selector (svelte)
-
-<style>
-	@import 'tailwindcss' reference;
-
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:76:8
-Warn: Unused CSS selector "sup"
-https://svelte.dev/e/css_unused_selector (svelte)
-
-<style>
-	@import 'tailwindcss' reference;
-
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:76:8
-Warn: Unused CSS selector "sub"
-https://svelte.dev/e/css_unused_selector (svelte)
-
-<style>
-	@import 'tailwindcss' reference;
-
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:76:8
-Warn: Unused CSS selector "sup"
-https://svelte.dev/e/css_unused_selector (svelte)
-
-<style>
-	@import 'tailwindcss' reference;
-
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:76:8
-Warn: Unused CSS selector "table"
-https://svelte.dev/e/css_unused_selector (svelte)
-
-<style>
-	@import 'tailwindcss' reference;
-
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:76:8
-Warn: Unused CSS selector "progress"
-https://svelte.dev/e/css_unused_selector (svelte)
-
-<style>
-	@import 'tailwindcss' reference;
-
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:76:8
-Warn: Unused CSS selector "summary"
-https://svelte.dev/e/css_unused_selector (svelte)
-
-<style>
-	@import 'tailwindcss' reference;
-
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:76:8
-Warn: Unused CSS selector "ol"
-https://svelte.dev/e/css_unused_selector (svelte)
-
-<style>
-	@import 'tailwindcss' reference;
-
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:76:8
-Warn: Unused CSS selector "ul"
-https://svelte.dev/e/css_unused_selector (svelte)
-
-<style>
-	@import 'tailwindcss' reference;
-
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:76:8
-Warn: Unused CSS selector "menu"
-https://svelte.dev/e/css_unused_selector (svelte)
-
-<style>
-	@import 'tailwindcss' reference;
-
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:76:8
-Warn: Unused CSS selector "img"
-https://svelte.dev/e/css_unused_selector (svelte)
-
-<style>
-	@import 'tailwindcss' reference;
-
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:76:8
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:50:8
 Warn: Unused CSS selector "svg"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:76:8
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:50:8
 Warn: Unused CSS selector "video"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:76:8
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:50:8
 Warn: Unused CSS selector "canvas"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:76:8
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:50:8
 Warn: Unused CSS selector "audio"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:76:8
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:50:8
 Warn: Unused CSS selector "iframe"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:76:8
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:50:8
 Warn: Unused CSS selector "embed"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:76:8
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:50:8
 Warn: Unused CSS selector "object"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:76:8
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:50:8
 Warn: Unused CSS selector "img"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:76:8
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:50:8
 Warn: Unused CSS selector "video"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:76:8
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:50:8
 Warn: Unused CSS selector "input"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:76:8
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:50:8
 Warn: Unused CSS selector "select"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:76:8
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:50:8
 Warn: Unused CSS selector "optgroup"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:76:8
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:50:8
 Warn: Unused CSS selector "textarea"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:76:8
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:50:8
 Warn: Unused CSS selector ":where(select:is([multiple], [size])) optgroup"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:76:8
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:50:8
 Warn: Unused CSS selector ":where(select:is([multiple], [size])) optgroup option"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:76:8
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:50:8
 Warn: Unused CSS selector "textarea"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:76:8
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:50:8
 Warn: Unused CSS selector "input:where([type="button"], [type="reset"], [type="submit"])"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:76:8
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:50:8
 Warn: Unused CSS selector "[hidden]:where(:not([hidden="until-found"]))"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:80:3
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:54:3
 Warn: Unknown at rule @apply (css)
 	.avatar-stack {
 		@apply flex items-center gap-1.5;
 		@apply transition-opacity hover:opacity-80;
 
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:81:3
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:55:3
 Warn: Unknown at rule @apply (css)
 		@apply flex items-center gap-1.5;
 		@apply transition-opacity hover:opacity-80;
 		@apply cursor-pointer;
 
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:82:3
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:56:3
 Warn: Unknown at rule @apply (css)
 		@apply transition-opacity hover:opacity-80;
 		@apply cursor-pointer;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:86:3
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:60:3
 Warn: Unknown at rule @apply (css)
 	.avatar-list {
 		@apply flex items-center;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:90:3
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:64:3
 Warn: Unknown at rule @apply (css)
 	.avatar-wrapper {
 		@apply relative;
 		@apply -ml-1.5 first:ml-0;
 
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:91:3
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:65:3
 Warn: Unknown at rule @apply (css)
 		@apply relative;
 		@apply -ml-1.5 first:ml-0;
 		@apply rounded-full ring-2 ring-white;
 
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:92:3
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:66:3
 Warn: Unknown at rule @apply (css)
 		@apply -ml-1.5 first:ml-0;
 		@apply rounded-full ring-2 ring-white;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:96:3
+/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:70:3
 Warn: Unknown at rule @apply (css)
 	.remaining-count {
 		@apply text-xs text-gray-600 font-medium;
 	}
-
-/Users/thruthesky/apps/sonub/src/lib/components/LikedUsersAvatarStack.svelte:64:40
-Error: Type 'string' is not assignable to type 'number'. (ts)
-				<div class="avatar-wrapper" style="z-index: {10 - index};">
-					<Avatar photoUrl={photoUrls[uid]} size="h-6 w-6" />
-				</div>
 
 /Users/thruthesky/apps/sonub/src/lib/components/LikedUsersModal.svelte:94:8
 Warn: Unused CSS selector "html"
@@ -3030,466 +2568,922 @@ Warn: Unknown at rule @apply (css)
 		@apply h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:367:8
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:412:8
 Warn: Unused CSS selector "html"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:367:8
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:412:8
 Warn: Unused CSS selector "hr"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:367:8
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:412:8
 Warn: Unused CSS selector "abbr:where([title])"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:367:8
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:412:8
 Warn: Unused CSS selector "h1"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:367:8
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:412:8
 Warn: Unused CSS selector "h2"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:367:8
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:412:8
 Warn: Unused CSS selector "h3"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:367:8
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:412:8
 Warn: Unused CSS selector "h4"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:367:8
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:412:8
 Warn: Unused CSS selector "h5"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:367:8
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:412:8
 Warn: Unused CSS selector "h6"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:367:8
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:412:8
 Warn: Unused CSS selector "a"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:367:8
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:412:8
 Warn: Unused CSS selector "b"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:367:8
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:412:8
 Warn: Unused CSS selector "strong"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:367:8
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:412:8
 Warn: Unused CSS selector "code"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:367:8
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:412:8
 Warn: Unused CSS selector "kbd"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:367:8
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:412:8
 Warn: Unused CSS selector "samp"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:367:8
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:412:8
 Warn: Unused CSS selector "pre"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:367:8
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:412:8
 Warn: Unused CSS selector "small"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:367:8
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:412:8
 Warn: Unused CSS selector "sub"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:367:8
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:412:8
 Warn: Unused CSS selector "sup"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:367:8
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:412:8
 Warn: Unused CSS selector "sub"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:367:8
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:412:8
 Warn: Unused CSS selector "sup"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:367:8
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:412:8
 Warn: Unused CSS selector "table"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:367:8
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:412:8
 Warn: Unused CSS selector "progress"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:367:8
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:412:8
 Warn: Unused CSS selector "summary"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:367:8
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:412:8
 Warn: Unused CSS selector "ol"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:367:8
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:412:8
 Warn: Unused CSS selector "ul"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:367:8
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:412:8
 Warn: Unused CSS selector "menu"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:367:8
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:412:8
 Warn: Unused CSS selector "img"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:367:8
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:412:8
 Warn: Unused CSS selector "video"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:367:8
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:412:8
 Warn: Unused CSS selector "canvas"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:367:8
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:412:8
 Warn: Unused CSS selector "audio"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:367:8
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:412:8
 Warn: Unused CSS selector "iframe"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:367:8
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:412:8
 Warn: Unused CSS selector "embed"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:367:8
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:412:8
 Warn: Unused CSS selector "object"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:367:8
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:412:8
 Warn: Unused CSS selector "img"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:367:8
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:412:8
 Warn: Unused CSS selector "video"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:367:8
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:412:8
 Warn: Unused CSS selector "input"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:367:8
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:412:8
 Warn: Unused CSS selector "select"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:367:8
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:412:8
 Warn: Unused CSS selector "optgroup"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:367:8
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:412:8
 Warn: Unused CSS selector "textarea"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:367:8
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:412:8
 Warn: Unused CSS selector ":where(select:is([multiple], [size])) optgroup"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:367:8
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:412:8
 Warn: Unused CSS selector ":where(select:is([multiple], [size])) optgroup option"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:367:8
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:412:8
 Warn: Unused CSS selector "textarea"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:367:8
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:412:8
 Warn: Unused CSS selector "input:where([type="button"], [type="reset"], [type="submit"])"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:367:8
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:412:8
 Warn: Unused CSS selector "[hidden]:where(:not([hidden="until-found"]))"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:371:3
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:412:8
+Warn: Unused CSS selector ".comment-author"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+<style>
+	@import 'tailwindcss' reference;
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:412:8
+Warn: Unused CSS selector ".comment-images"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+<style>
+	@import 'tailwindcss' reference;
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:412:8
+Warn: Unused CSS selector ".comment-image-thumbnail"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+<style>
+	@import 'tailwindcss' reference;
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:417:3
+Warn: Unknown at rule @apply (css)
+	.post-actions {
+		@apply mt-2 flex items-center justify-between border-t border-gray-100 pt-2;
+	}
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:421:3
+Warn: Unknown at rule @apply (css)
+	.comment-info {
+		@apply flex items-center gap-2;
+	}
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:425:3
+Warn: Unknown at rule @apply (css)
+	.comment-count {
+		@apply text-sm text-gray-700;
+	}
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:429:3
+Warn: Unknown at rule @apply (css)
+	.comment-count-empty {
+		@apply text-sm text-gray-400;
+	}
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:433:3
+Warn: Unknown at rule @apply (css)
+	.comments-list {
+		@apply mt-3 space-y-2 border-t border-gray-100 pt-3;
+	}
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:437:3
+Warn: Unknown at rule @apply (css)
+	.comment-item {
+		@apply rounded-lg bg-gray-50 p-3;
+	}
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:441:3
+Warn: Unknown at rule @apply (css)
+	.comment-deleted {
+		@apply py-2;
+	}
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:445:3
+Warn: Unknown at rule @apply (css)
+	.comment-deleted-text {
+		@apply text-gray-400 italic;
+	}
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:449:3
+Warn: Unknown at rule @apply (css)
+	.comment-content {
+		@apply space-y-2;
+	}
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:453:3
+Warn: Unknown at rule @apply (css)
+	.comment-header {
+		@apply flex items-center justify-between;
+	}
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:457:3
+Warn: Unknown at rule @apply (css)
+	.comment-header-left {
+		@apply flex items-center;
+	}
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:461:3
+Warn: Unknown at rule @apply (css)
+	.comment-author {
+		@apply text-sm font-medium text-gray-900;
+	}
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:465:3
+Warn: Unknown at rule @apply (css)
+	.comment-time {
+		@apply text-xs text-gray-400;
+	}
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:469:3
+Warn: Unknown at rule @apply (css)
+	.comment-text {
+		@apply whitespace-pre-line text-sm text-gray-800;
+	}
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:473:3
+Warn: Unknown at rule @apply (css)
+	.comment-actions {
+		@apply mt-2 flex gap-1;
+	}
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:477:3
+Warn: Unknown at rule @apply (css)
+	.comment-like-button {
+		@apply flex items-center gap-1 rounded-md px-2 py-1 text-xs text-gray-600;
+		@apply transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60;
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:478:3
+Warn: Unknown at rule @apply (css)
+		@apply flex items-center gap-1 rounded-md px-2 py-1 text-xs text-gray-600;
+		@apply transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60;
+	}
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:482:3
+Warn: Unknown at rule @apply (css)
+	.comment-like-button.liked {
+		@apply bg-rose-50 text-rose-600;
+	}
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:486:3
+Warn: Unknown at rule @apply (css)
+	.comment-images {
+		@apply mt-2 flex gap-2;
+	}
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostCommentList.svelte:490:3
+Warn: Unknown at rule @apply (css)
+	.comment-image-thumbnail {
+		@apply h-16 w-16 rounded object-cover;
+	}
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:372:8
+Warn: Unused CSS selector "html"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+<style>
+	@import 'tailwindcss' reference;
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:372:8
+Warn: Unused CSS selector "hr"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+<style>
+	@import 'tailwindcss' reference;
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:372:8
+Warn: Unused CSS selector "abbr:where([title])"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+<style>
+	@import 'tailwindcss' reference;
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:372:8
+Warn: Unused CSS selector "h1"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+<style>
+	@import 'tailwindcss' reference;
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:372:8
+Warn: Unused CSS selector "h2"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+<style>
+	@import 'tailwindcss' reference;
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:372:8
+Warn: Unused CSS selector "h3"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+<style>
+	@import 'tailwindcss' reference;
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:372:8
+Warn: Unused CSS selector "h4"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+<style>
+	@import 'tailwindcss' reference;
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:372:8
+Warn: Unused CSS selector "h5"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+<style>
+	@import 'tailwindcss' reference;
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:372:8
+Warn: Unused CSS selector "h6"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+<style>
+	@import 'tailwindcss' reference;
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:372:8
+Warn: Unused CSS selector "a"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+<style>
+	@import 'tailwindcss' reference;
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:372:8
+Warn: Unused CSS selector "b"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+<style>
+	@import 'tailwindcss' reference;
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:372:8
+Warn: Unused CSS selector "strong"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+<style>
+	@import 'tailwindcss' reference;
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:372:8
+Warn: Unused CSS selector "code"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+<style>
+	@import 'tailwindcss' reference;
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:372:8
+Warn: Unused CSS selector "kbd"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+<style>
+	@import 'tailwindcss' reference;
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:372:8
+Warn: Unused CSS selector "samp"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+<style>
+	@import 'tailwindcss' reference;
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:372:8
+Warn: Unused CSS selector "pre"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+<style>
+	@import 'tailwindcss' reference;
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:372:8
+Warn: Unused CSS selector "small"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+<style>
+	@import 'tailwindcss' reference;
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:372:8
+Warn: Unused CSS selector "sub"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+<style>
+	@import 'tailwindcss' reference;
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:372:8
+Warn: Unused CSS selector "sup"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+<style>
+	@import 'tailwindcss' reference;
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:372:8
+Warn: Unused CSS selector "sub"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+<style>
+	@import 'tailwindcss' reference;
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:372:8
+Warn: Unused CSS selector "sup"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+<style>
+	@import 'tailwindcss' reference;
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:372:8
+Warn: Unused CSS selector "table"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+<style>
+	@import 'tailwindcss' reference;
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:372:8
+Warn: Unused CSS selector "progress"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+<style>
+	@import 'tailwindcss' reference;
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:372:8
+Warn: Unused CSS selector "summary"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+<style>
+	@import 'tailwindcss' reference;
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:372:8
+Warn: Unused CSS selector "ol"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+<style>
+	@import 'tailwindcss' reference;
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:372:8
+Warn: Unused CSS selector "ul"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+<style>
+	@import 'tailwindcss' reference;
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:372:8
+Warn: Unused CSS selector "menu"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+<style>
+	@import 'tailwindcss' reference;
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:372:8
+Warn: Unused CSS selector "img"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+<style>
+	@import 'tailwindcss' reference;
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:372:8
+Warn: Unused CSS selector "video"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+<style>
+	@import 'tailwindcss' reference;
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:372:8
+Warn: Unused CSS selector "canvas"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+<style>
+	@import 'tailwindcss' reference;
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:372:8
+Warn: Unused CSS selector "audio"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+<style>
+	@import 'tailwindcss' reference;
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:372:8
+Warn: Unused CSS selector "iframe"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+<style>
+	@import 'tailwindcss' reference;
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:372:8
+Warn: Unused CSS selector "embed"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+<style>
+	@import 'tailwindcss' reference;
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:372:8
+Warn: Unused CSS selector "object"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+<style>
+	@import 'tailwindcss' reference;
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:372:8
+Warn: Unused CSS selector "img"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+<style>
+	@import 'tailwindcss' reference;
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:372:8
+Warn: Unused CSS selector "video"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+<style>
+	@import 'tailwindcss' reference;
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:372:8
+Warn: Unused CSS selector "input"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+<style>
+	@import 'tailwindcss' reference;
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:372:8
+Warn: Unused CSS selector "select"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+<style>
+	@import 'tailwindcss' reference;
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:372:8
+Warn: Unused CSS selector "optgroup"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+<style>
+	@import 'tailwindcss' reference;
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:372:8
+Warn: Unused CSS selector "textarea"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+<style>
+	@import 'tailwindcss' reference;
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:372:8
+Warn: Unused CSS selector ":where(select:is([multiple], [size])) optgroup"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+<style>
+	@import 'tailwindcss' reference;
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:372:8
+Warn: Unused CSS selector ":where(select:is([multiple], [size])) optgroup option"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+<style>
+	@import 'tailwindcss' reference;
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:372:8
+Warn: Unused CSS selector "textarea"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+<style>
+	@import 'tailwindcss' reference;
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:372:8
+Warn: Unused CSS selector "input:where([type="button"], [type="reset"], [type="submit"])"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+<style>
+	@import 'tailwindcss' reference;
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:372:8
+Warn: Unused CSS selector "[hidden]:where(:not([hidden="until-found"]))"
+https://svelte.dev/e/css_unused_selector (svelte)
+
+<style>
+	@import 'tailwindcss' reference;
+
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:376:3
 Warn: Unknown at rule @apply (css)
 	.post-card-wrapper {
 		@apply mb-4;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:375:3
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:380:3
 Warn: Unknown at rule @apply (css)
 	.post-card {
 		@apply rounded-lg border border-gray-200 bg-white p-4 shadow-sm;
 		@apply transition-all hover:shadow-md;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:376:3
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:381:3
 Warn: Unknown at rule @apply (css)
 		@apply rounded-lg border border-gray-200 bg-white p-4 shadow-sm;
 		@apply transition-all hover:shadow-md;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:380:3
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:385:3
 Warn: Unknown at rule @apply (css)
 	.post-deleted {
 		@apply cursor-default bg-gray-50;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:384:3
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:389:3
 Warn: Unknown at rule @apply (css)
 	.post-deleted-text {
 		@apply py-2 text-center text-gray-400 italic;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:389:3
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:394:3
 Warn: Unknown at rule @apply (css)
 	.post-header {
 		@apply mb-3 flex items-center justify-between;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:393:3
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:398:3
 Warn: Unknown at rule @apply (css)
 	.post-header-left {
 		@apply flex items-center;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:397:3
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:402:3
 Warn: Unknown at rule @apply (css)
 	.post-header-right {
 		@apply flex items-center gap-2;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:401:3
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:406:3
 Warn: Unknown at rule @apply (css)
 	.post-category-badge {
 		@apply inline-block rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-800;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:405:3
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:410:3
 Warn: Unknown at rule @apply (css)
 	.post-room-name {
 		@apply hidden text-xs text-gray-500 md:inline-block;
 		@apply cursor-pointer transition-colors hover:text-blue-600 hover:underline;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:406:3
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:411:3
 Warn: Unknown at rule @apply (css)
 		@apply hidden text-xs text-gray-500 md:inline-block;
 		@apply cursor-pointer transition-colors hover:text-blue-600 hover:underline;
 		@apply disabled:cursor-default disabled:hover:text-gray-500 disabled:hover:no-underline;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:407:3
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:412:3
 Warn: Unknown at rule @apply (css)
 		@apply cursor-pointer transition-colors hover:text-blue-600 hover:underline;
 		@apply disabled:cursor-default disabled:hover:text-gray-500 disabled:hover:no-underline;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:412:3
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:417:3
 Warn: Unknown at rule @apply (css)
 	.post-content {
 		@apply mb-3;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:418:3
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:423:3
 Warn: Also define the standard property 'line-clamp' for compatibility (css)
 		display: -webkit-box;
 		-webkit-line-clamp: 3;
 		-webkit-box-orient: vertical;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:416:3
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:421:3
 Warn: Unknown at rule @apply (css)
 	.post-text {
 		@apply mb-2 whitespace-pre-line text-gray-800;
 		display: -webkit-box;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:425:3
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:430:3
 Warn: Unknown at rule @apply (css)
 	.post-time {
 		@apply text-xs text-gray-400;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:430:3
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:435:3
 Warn: Unknown at rule @apply (css)
 	.post-actions {
 		@apply mt-3 flex items-center justify-between border-t border-gray-100 pt-3;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:434:3
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:439:3
 Warn: Unknown at rule @apply (css)
 	.post-actions-left {
 		@apply flex items-center gap-2;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:438:3
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:443:3
 Warn: Unknown at rule @apply (css)
 	.post-actions-right {
 		@apply flex items-center gap-2;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:443:3
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:448:3
 Warn: Unknown at rule @apply (css)
 	.action-button {
 		@apply flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm text-gray-600;
 		@apply transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:444:3
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:449:3
 Warn: Unknown at rule @apply (css)
 		@apply flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm text-gray-600;
 		@apply transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:448:3
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:453:3
 Warn: Unknown at rule @apply (css)
 	.action-button.liked {
 		@apply bg-rose-50 text-rose-600;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:453:3
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:458:3
 Warn: Unknown at rule @apply (css)
 	.action-icon-button {
 		@apply flex items-center justify-center rounded-lg p-2 text-gray-600;
 		@apply transition-colors hover:bg-gray-100;
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:454:3
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:459:3
 Warn: Unknown at rule @apply (css)
 		@apply flex items-center justify-center rounded-lg p-2 text-gray-600;
 		@apply transition-colors hover:bg-gray-100;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:458:3
+/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte:463:3
 Warn: Unknown at rule @apply (css)
 	.action-icon-button-danger {
 		@apply text-red-600 hover:bg-red-50;
@@ -4445,713 +4439,686 @@ Warn: Unknown at rule @apply (css)
 		@apply disabled:cursor-not-allowed disabled:opacity-50;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:75:6
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:74:6
 Warn: `recentUsers` is updated, but is not declared with `$state(...)`. Changing its value will not correctly trigger updates
 https://svelte.dev/e/non_reactive_update (svelte)
 
 	let recentUsers: UserPreview[] = [];
 	let isLoadingRecentUsers = true;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:76:6
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:75:6
 Warn: `isLoadingRecentUsers` is updated, but is not declared with `$state(...)`. Changing its value will not correctly trigger updates
 https://svelte.dev/e/non_reactive_update (svelte)
 	let recentUsers: UserPreview[] = [];
 	let isLoadingRecentUsers = true;
 	let recentOpenChats: OpenChatPreview[] = [];
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:77:6
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:76:6
 Warn: `recentOpenChats` is updated, but is not declared with `$state(...)`. Changing its value will not correctly trigger updates
 https://svelte.dev/e/non_reactive_update (svelte)
 	let isLoadingRecentUsers = true;
 	let recentOpenChats: OpenChatPreview[] = [];
 	let isLoadingRecentOpenChats = true;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:78:6
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:77:6
 Warn: `isLoadingRecentOpenChats` is updated, but is not declared with `$state(...)`. Changing its value will not correctly trigger updates
 https://svelte.dev/e/non_reactive_update (svelte)
 	let recentOpenChats: OpenChatPreview[] = [];
 	let isLoadingRecentOpenChats = true;
 	let recentActivities: RecentActivity[] = [];
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:79:6
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:78:6
 Warn: `recentActivities` is updated, but is not declared with `$state(...)`. Changing its value will not correctly trigger updates
 https://svelte.dev/e/non_reactive_update (svelte)
 	let isLoadingRecentOpenChats = true;
 	let recentActivities: RecentActivity[] = [];
 	let isLoadingRecentActivity = true;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:80:6
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:79:6
 Warn: `isLoadingRecentActivity` is updated, but is not declared with `$state(...)`. Changing its value will not correctly trigger updates
 https://svelte.dev/e/non_reactive_update (svelte)
 	let recentActivities: RecentActivity[] = [];
 	let isLoadingRecentActivity = true;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:82:6
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:81:6
 Warn: `followerCount` is updated, but is not declared with `$state(...)`. Changing its value will not correctly trigger updates
 https://svelte.dev/e/non_reactive_update (svelte)
 
 	let followerCount = 0;
 	let followingCount = 0;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:83:6
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:82:6
 Warn: `followingCount` is updated, but is not declared with `$state(...)`. Changing its value will not correctly trigger updates
 https://svelte.dev/e/non_reactive_update (svelte)
 	let followerCount = 0;
 	let followingCount = 0;
 	let followersLoading = false;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:84:6
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:83:6
 Warn: `followersLoading` is updated, but is not declared with `$state(...)`. Changing its value will not correctly trigger updates
 https://svelte.dev/e/non_reactive_update (svelte)
 	let followingCount = 0;
 	let followersLoading = false;
 	let followingLoading = false;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:85:6
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:84:6
 Warn: `followingLoading` is updated, but is not declared with `$state(...)`. Changing its value will not correctly trigger updates
 https://svelte.dev/e/non_reactive_update (svelte)
 	let followersLoading = false;
 	let followingLoading = false;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:517:8
 Warn: Unused CSS selector "html"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:517:8
 Warn: Unused CSS selector "hr"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:517:8
 Warn: Unused CSS selector "abbr:where([title])"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:517:8
 Warn: Unused CSS selector "h1"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:517:8
 Warn: Unused CSS selector "h2"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:517:8
 Warn: Unused CSS selector "h3"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:517:8
 Warn: Unused CSS selector "h4"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:517:8
 Warn: Unused CSS selector "h5"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:517:8
 Warn: Unused CSS selector "h6"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:517:8
 Warn: Unused CSS selector "b"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:517:8
 Warn: Unused CSS selector "strong"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:517:8
 Warn: Unused CSS selector "code"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:517:8
 Warn: Unused CSS selector "kbd"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:517:8
 Warn: Unused CSS selector "samp"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:517:8
 Warn: Unused CSS selector "pre"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:517:8
 Warn: Unused CSS selector "small"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:517:8
 Warn: Unused CSS selector "sub"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:517:8
 Warn: Unused CSS selector "sup"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:517:8
 Warn: Unused CSS selector "sub"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:517:8
 Warn: Unused CSS selector "sup"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:517:8
 Warn: Unused CSS selector "table"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:517:8
 Warn: Unused CSS selector "progress"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:517:8
 Warn: Unused CSS selector "summary"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:517:8
 Warn: Unused CSS selector "ol"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:517:8
 Warn: Unused CSS selector "menu"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:517:8
 Warn: Unused CSS selector "svg"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:517:8
 Warn: Unused CSS selector "video"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:517:8
 Warn: Unused CSS selector "canvas"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:517:8
 Warn: Unused CSS selector "audio"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:517:8
 Warn: Unused CSS selector "iframe"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:517:8
 Warn: Unused CSS selector "embed"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:517:8
 Warn: Unused CSS selector "object"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:517:8
 Warn: Unused CSS selector "video"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:517:8
 Warn: Unused CSS selector "button"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:517:8
 Warn: Unused CSS selector "input"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:517:8
 Warn: Unused CSS selector "optgroup"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:517:8
 Warn: Unused CSS selector "textarea"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:517:8
 Warn: Unused CSS selector ":where(select:is([multiple], [size])) optgroup"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:517:8
 Warn: Unused CSS selector ":where(select:is([multiple], [size])) optgroup option"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:517:8
 Warn: Unused CSS selector "textarea"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:517:8
 Warn: Unused CSS selector "button"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:517:8
 Warn: Unused CSS selector "input:where([type="button"], [type="reset"], [type="submit"])"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:517:8
 Warn: Unused CSS selector "[hidden]:where(:not([hidden="until-found"]))"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
-Warn: Unused CSS selector ".profile-arrow"
-https://svelte.dev/e/css_unused_selector (svelte)
-
-<style>
-	@import 'tailwindcss' reference;
-
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:517:8
 Warn: Unused CSS selector ".guest-icon"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:517:8
 Warn: Unused CSS selector ".quick-link-icon-inner"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
-Warn: Unused CSS selector ".quick-link-arrow"
-https://svelte.dev/e/css_unused_selector (svelte)
-
-<style>
-	@import 'tailwindcss' reference;
-
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:517:8
 Warn: Unused CSS selector ".sidebar-card"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:517:8
 Warn: Unused CSS selector ".card-header"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:517:8
 Warn: Unused CSS selector ".section-icon"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
-Warn: Unused CSS selector ".see-more-arrow"
-https://svelte.dev/e/css_unused_selector (svelte)
-
-<style>
-	@import 'tailwindcss' reference;
-
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:523:8
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:517:8
 Warn: Unused CSS selector ".language-icon"
 https://svelte.dev/e/css_unused_selector (svelte)
 
 <style>
 	@import 'tailwindcss' reference;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:527:3
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:521:3
 Warn: Unknown at rule @apply (css)
 	.left-sidebar {
 		@apply lg:w-64 xl:w-72;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:531:3
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:525:3
 Warn: Unknown at rule @apply (css)
 	.sidebar-inner {
 		@apply sticky top-20;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:535:3
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:529:3
 Warn: Unknown at rule @apply (css)
 	.profile-card {
-		@apply rounded-2xl border border-gray-100 bg-white px-4 py-3 shadow-sm transition-shadow duration-200;
-		@apply hover:shadow-lg cursor-pointer;
+		@apply rounded-xl bg-white/90 px-3 py-2 shadow-sm transition-all duration-200;
+		@apply hover:bg-white cursor-pointer;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:536:3
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:530:3
 Warn: Unknown at rule @apply (css)
-		@apply rounded-2xl border border-gray-100 bg-white px-4 py-3 shadow-sm transition-shadow duration-200;
-		@apply hover:shadow-lg cursor-pointer;
+		@apply rounded-xl bg-white/90 px-3 py-2 shadow-sm transition-all duration-200;
+		@apply hover:bg-white cursor-pointer;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:540:3
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:534:3
 Warn: Unknown at rule @apply (css)
 	.profile-label {
 		@apply text-xs font-medium text-gray-500;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:544:3
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:538:3
 Warn: Unknown at rule @apply (css)
 	.profile-name {
 		@apply text-base font-semibold text-gray-900;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:548:3
-Warn: Unknown at rule @apply (css)
-	.profile-arrow {
-		@apply h-4 w-4 text-gray-400;
-	}
-
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:552:3
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:542:3
 Warn: Unknown at rule @apply (css)
 	.guest-avatar {
 		@apply h-12 w-12 rounded-full bg-gray-100;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:556:3
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:546:3
 Warn: Unknown at rule @apply (css)
 	.guest-icon {
 		@apply h-5 w-5 text-gray-500;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:560:3
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:550:3
 Warn: Unknown at rule @apply (css)
 	.quick-link-stack {
-		@apply overflow-hidden;
+		@apply flex flex-col gap-1 p-2;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:564:3
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:554:3
 Warn: Unknown at rule @apply (css)
 	.quick-link {
-		@apply px-4 py-3 transition-colors duration-200;
+		@apply rounded-lg px-3 py-2 transition-colors duration-200;
 		@apply hover:bg-gray-50 cursor-pointer;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:565:3
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:555:3
 Warn: Unknown at rule @apply (css)
-		@apply px-4 py-3 transition-colors duration-200;
+		@apply rounded-lg px-3 py-2 transition-colors duration-200;
 		@apply hover:bg-gray-50 cursor-pointer;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:569:3
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:559:3
 Warn: Unknown at rule @apply (css)
 	.quick-link-icon {
 		@apply h-10 w-10 rounded-full bg-gray-100;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:573:3
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:563:3
 Warn: Unknown at rule @apply (css)
 	.quick-link-icon-inner {
 		@apply h-5 w-5 text-gray-600;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:577:3
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:567:3
 Warn: Unknown at rule @apply (css)
 	.quick-link-title {
 		@apply text-sm font-semibold text-gray-900;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:581:3
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:571:3
 Warn: Unknown at rule @apply (css)
 	.quick-link-desc {
 		@apply text-xs text-gray-500;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:585:3
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:575:3
 Warn: Unknown at rule @apply (css)
 	.quick-link-count {
 		@apply text-sm font-semibold text-gray-600;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:589:3
-Warn: Unknown at rule @apply (css)
-	.quick-link-arrow {
-		@apply h-4 w-4 text-gray-400;
-	}
-
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:593:3
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:579:3
 Warn: Unknown at rule @apply (css)
 	.sidebar-card {
-		@apply shadow-sm transition-shadow duration-200 hover:shadow-md;
+		@apply rounded-xl bg-white/90 shadow-sm transition-shadow duration-200 hover:shadow;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:597:3
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:583:3
 Warn: Unknown at rule @apply (css)
 	.card-header {
 		@apply items-center;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:601:3
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:587:3
 Warn: Unknown at rule @apply (css)
 	.section-icon {
 		@apply h-4 w-4 text-gray-500;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:605:3
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:591:3
 Warn: Unknown at rule @apply (css)
 	.card-subtitle {
 		@apply text-xs font-medium text-gray-500;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:609:3
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:595:3
 Warn: Unknown at rule @apply (css)
 	.sidebar-placeholder-text {
 		@apply text-sm text-gray-500;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:613:3
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:599:3
 Warn: Unknown at rule @apply (css)
 	.recent-user-item {
 		@apply rounded-xl border border-transparent px-2 py-1.5 transition-colors duration-200;
 		@apply hover:border-gray-200;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:614:3
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:600:3
 Warn: Unknown at rule @apply (css)
 		@apply rounded-xl border border-transparent px-2 py-1.5 transition-colors duration-200;
 		@apply hover:border-gray-200;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:618:3
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:604:3
 Warn: Unknown at rule @apply (css)
 	.recent-user-avatar {
 		@apply h-9 w-9 rounded-full object-cover;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:622:3
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:608:3
 Warn: Unknown at rule @apply (css)
 	.recent-user-name {
 		@apply text-sm font-semibold text-gray-800;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:626:3
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:612:3
 Warn: Unknown at rule @apply (css)
 	.recent-user-joined {
 		@apply text-xs text-gray-500;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:630:3
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:616:3
 Warn: Unknown at rule @apply (css)
 	.see-more-button {
-		@apply rounded-xl border border-gray-200 px-3 py-2 text-sm font-semibold text-gray-700 transition-colors duration-200;
-		@apply hover:border-gray-300 hover:bg-gray-50 cursor-pointer;
+		@apply rounded-lg px-3 py-2 text-sm font-semibold text-gray-700 transition-colors duration-200;
+		@apply hover:bg-gray-50 cursor-pointer;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:631:3
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:617:3
 Warn: Unknown at rule @apply (css)
-		@apply rounded-xl border border-gray-200 px-3 py-2 text-sm font-semibold text-gray-700 transition-colors duration-200;
-		@apply hover:border-gray-300 hover:bg-gray-50 cursor-pointer;
+		@apply rounded-lg px-3 py-2 text-sm font-semibold text-gray-700 transition-colors duration-200;
+		@apply hover:bg-gray-50 cursor-pointer;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:635:3
-Warn: Unknown at rule @apply (css)
-	.see-more-arrow {
-		@apply h-4 w-4 text-gray-400;
-	}
-
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:639:3
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:621:3
 Warn: Unknown at rule @apply (css)
 	.open-chat-item {
 		@apply rounded-xl border border-gray-100 px-3 py-2 transition-colors duration-200;
 		@apply hover:border-blue-200 hover:bg-blue-50;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:640:3
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:622:3
 Warn: Unknown at rule @apply (css)
 		@apply rounded-xl border border-gray-100 px-3 py-2 transition-colors duration-200;
 		@apply hover:border-blue-200 hover:bg-blue-50;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:644:3
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:626:3
 Warn: Unknown at rule @apply (css)
 	.open-chat-room {
 		@apply text-sm font-semibold text-gray-900;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:648:3
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:630:3
 Warn: Unknown at rule @apply (css)
 	.open-chat-time {
 		@apply text-xs text-gray-500;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:652:3
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:634:3
 Warn: Unknown at rule @apply (css)
 	.open-chat-body {
 		@apply text-xs text-gray-600;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:656:3
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:638:3
 Warn: Unknown at rule @apply (css)
 	.open-chat-meta {
 		@apply text-xs font-medium text-blue-600;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:660:3
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:642:3
 Warn: Unknown at rule @apply (css)
 	.activity-item {
 		@apply rounded-xl border border-gray-100 px-3 py-2;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:664:3
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:646:3
 Warn: Unknown at rule @apply (css)
 	.activity-category {
 		@apply text-xs font-semibold uppercase tracking-wide text-gray-500;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:668:3
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:650:3
 Warn: Unknown at rule @apply (css)
 	.activity-time {
 		@apply text-xs text-gray-500;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:672:3
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:654:3
 Warn: Unknown at rule @apply (css)
 	.activity-text {
 		@apply text-sm text-gray-800;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:676:3
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:658:3
 Warn: Unknown at rule @apply (css)
 	.language-row {
-		@apply rounded-2xl border border-gray-100 bg-white px-4 py-3 shadow-sm;
+		@apply rounded-xl bg-white/90 px-4 py-3 shadow-sm;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:680:3
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:662:3
 Warn: Unknown at rule @apply (css)
 	.language-label {
 		@apply text-sm font-semibold text-gray-900;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:684:3
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:666:3
 Warn: Unknown at rule @apply (css)
 	.language-icon {
 		@apply h-4 w-4 text-gray-500;
 	}
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:688:3
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:670:3
 Warn: Unknown at rule @apply (css)
 	.language-select {
-		@apply rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-900 shadow-sm transition duration-200;
-		@apply hover:border-blue-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 cursor-pointer;
+		@apply rounded-xl border border-transparent bg-white px-3 py-2 text-sm font-medium text-gray-900 shadow-sm transition duration-200;
+		@apply hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-200 cursor-pointer;
 
-/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:689:3
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:671:3
 Warn: Unknown at rule @apply (css)
-		@apply rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-900 shadow-sm transition duration-200;
-		@apply hover:border-blue-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 cursor-pointer;
+		@apply rounded-xl border border-transparent bg-white px-3 py-2 text-sm font-medium text-gray-900 shadow-sm transition duration-200;
+		@apply hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-200 cursor-pointer;
 	}
+
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:380:6
+Error: Cannot find name 'ArrowRight'. (ts)
+				</div>
+				<ArrowRight class="quick-link-arrow" aria-hidden="true" />
+			</a>
+
+/Users/thruthesky/apps/sonub/src/lib/components/left-sidebar.svelte:391:6
+Error: Cannot find name 'ArrowRight'. (ts)
+				</div>
+				<ArrowRight class="quick-link-arrow" aria-hidden="true" />
+			</a>
 
 /Users/thruthesky/apps/sonub/src/lib/components/right-sidebar.svelte:146:8
 Warn: Unused CSS selector "html"
@@ -13596,4 +13563,4 @@ Warn: Unknown at rule @apply (css)
 	}
 
 ====================================
-svelte-check found 1 error and 2014 warnings in 37 files
+svelte-check found 2 errors and 2008 warnings in 37 files
