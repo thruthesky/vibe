@@ -65,6 +65,10 @@ import {
 		zh: '🇨🇳'
 	};
 
+	const copyrightLabel = $derived.by(() =>
+		getLocale() === 'ko' ? '(C) 2012 ~ 2025. 위세너' : '(C) 2012 ~ 2025. Withcenter, inc.'
+	);
+
 	type UserPreview = {
 		uid: string;
 		displayName: string;
@@ -87,17 +91,18 @@ import {
 		createdAt: number;
 	};
 
-	let recentUsers: UserPreview[] = [];
-	let isLoadingRecentUsers = true;
-	let recentOpenChats: OpenChatPreview[] = [];
-	let isLoadingRecentOpenChats = true;
-	let recentActivities: RecentActivity[] = [];
-	let isLoadingRecentActivity = true;
+	// Svelte 5 $state rune을 사용하여 반응형 상태 선언
+	let recentUsers = $state<UserPreview[]>([]);
+	let isLoadingRecentUsers = $state(true);
+	let recentOpenChats = $state<OpenChatPreview[]>([]);
+	let isLoadingRecentOpenChats = $state(true);
+	let recentActivities = $state<RecentActivity[]>([]);
+	let isLoadingRecentActivity = $state(true);
 
-	let followerCount = 0;
-	let followingCount = 0;
-	let followersLoading = false;
-	let followingLoading = false;
+	let followerCount = $state(0);
+	let followingCount = $state(0);
+	let followersLoading = $state(false);
+	let followingLoading = $state(false);
 
 	let openChatsUnsubscribe: (() => void) | null = null;
 	let activityUnsubscribe: (() => void) | null = null;
@@ -114,6 +119,10 @@ import {
 		return new Intl.NumberFormat().format(value);
 	}
 
+	/**
+	 * 최근 사용자 5명 로드
+	 * sort_recentWithPhoto 필드를 역순으로 정렬하여 최근 사용자 표시
+	 */
 	async function fetchRecentUsers() {
 		if (!rtdb) {
 			isLoadingRecentUsers = false;
@@ -123,25 +132,30 @@ import {
 
 		try {
 			const usersRef: DatabaseReference = ref(rtdb, 'users');
-			const recentQuery = query(usersRef, orderByChild('sort_recentWithPhotos'), limitToLast(5));
+			// sort_recentWithPhoto 필드 기준으로 마지막 5명 조회
+			const recentQuery = query(usersRef, orderByChild('sort_recentWithPhoto'), limitToLast(5));
 			const snapshot = await get(recentQuery);
 			const users: UserPreview[] = [];
 
-				snapshot.forEach((child) => {
-					const value = child.val();
-					users.push({
-						uid: child.key ?? '',
-						displayName: value?.displayName ?? '',
-						photoUrl: value?.photoUrl ?? null,
-						sortRecentWithPhotos:
-							Number(value?.sort_recentWithPhotos ?? value?.sort_recentWithPhoto) || 0
-					});
-				});
+			snapshot.forEach((child) => {
+				const value = child.val();
 
-				users.sort((a, b) => (b.sortRecentWithPhotos ?? 0) - (a.sortRecentWithPhotos ?? 0));
-				recentUsers = users
-					.filter((user) => Boolean(user.photoUrl))
-					.slice(0, 5);
+				users.push({
+					uid: child.key ?? '',
+					displayName: value?.displayName ?? '',
+					photoUrl: value?.photoUrl ?? null,
+					sortRecentWithPhotos: Number(value?.sort_recentWithPhoto) || 0
+				});
+			});
+
+
+			// 역순 정렬 (최근순)
+			users.sort((a, b) => (b.sortRecentWithPhotos ?? 0) - (a.sortRecentWithPhotos ?? 0));
+
+			// 프로필 사진이 있는 사용자만 필터링하여 최대 5명
+			const filteredUsers = users.filter((user) => Boolean(user.photoUrl)).slice(0, 5);
+
+			recentUsers = filteredUsers;
 		} catch (error) {
 			console.error('[Sidebar] 최근 사용자 로드 실패:', error);
 			recentUsers = [];
@@ -528,6 +542,10 @@ import {
 				{/each}
 			</select>
 		</div>
+
+		<p class="copyright-text mt-1">
+			{copyrightLabel}
+		</p>
 	</div>
 </aside>
 
@@ -543,8 +561,8 @@ import {
 	}
 
 	.profile-card {
-		@apply rounded-xl bg-white/90 px-3 py-2 shadow-sm transition-all duration-200;
-		@apply hover:bg-white cursor-pointer;
+		@apply rounded-xl px-3 py-2 transition-all duration-200;
+		@apply hover:bg-white/60 cursor-pointer;
 	}
 
 	.profile-label {
@@ -564,12 +582,12 @@ import {
 	}
 
 	.quick-link-stack {
-		@apply flex flex-col gap-1 p-2;
+		@apply flex flex-col gap-1;
 	}
 
 	.quick-link {
 		@apply rounded-lg px-3 py-2 transition-colors duration-200;
-		@apply hover:bg-gray-50 cursor-pointer;
+		@apply hover:bg-gray-100 cursor-pointer;
 	}
 
 	.quick-link-icon {
@@ -687,10 +705,15 @@ import {
 		@apply rounded-xl border border-transparent bg-white px-3 py-2 text-sm font-medium text-gray-900 shadow-sm transition duration-200;
 		@apply hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-200 cursor-pointer;
 	}
+
+	.copyright-text {
+		@apply text-center text-xs font-medium text-gray-400;
+	}
 </style>
+
 ```
 
 ## 변경 이력
 
-- 2025-11-18: 홈 좌측 사이드바 리디자인 및 정렬 필드 `sort_recentWithPhotos` 적용
+- 2025-11-18: 컴팩트 디자인 및 최신 기능 반영
 - 2025-11-15: 스펙 문서 생성

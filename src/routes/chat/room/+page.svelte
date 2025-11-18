@@ -33,7 +33,11 @@
 		getFileExtension,
 		getExtensionFromFilename
 	} from '$lib/functions/storage.functions';
-	import { toggleLikeTarget, type LikeTargetType } from '$lib/functions/like.functions';
+	import {
+		toggleLikeTarget,
+		fetchLikedByUsers,
+		type LikeTargetType
+	} from '$lib/functions/like.functions';
 	import { getUserField } from '$lib/functions/user.functions';
 	import type { FileUploadStatus } from '$lib/types/chat.types';
 	import { tick, onDestroy } from 'svelte';
@@ -51,6 +55,7 @@
 	import { FORUM_CATEGORIES, type ForumCategory } from '$shared/categories';
 	import UserProfile from '$lib/components/UserProfile.svelte';
 	import LikedUsersModal from '$lib/components/LikedUsersModal.svelte';
+	import LikedUsersAvatarStack from '$lib/components/LikedUsersAvatarStack.svelte';
 
 	// GET 파라미터 추출
 	const uidParam = $derived.by(() => $page.url.searchParams.get('uid') ?? '');
@@ -239,6 +244,9 @@
 	// 좋아요 툴팁 상태
 	let likedByUsers = $state<Record<string, string[]>>({});
 	let tooltipContent = $state<Record<string, string>>({});
+
+	// 좋아요 아바타 스택용: 메시지별 좋아요 사용자 uid 목록
+	let messageLikedUserUids = $state<Record<string, string[]>>({});
 
 	// 롱프레스 상태
 	let longPressTimer: NodeJS.Timeout | null = null;
@@ -999,12 +1007,12 @@
 	}
 
 	/**
-	 * 좋아요한 사용자 목록 가져오기 (최대 3명, 툴팁용)
+	 * 좋아요한 사용자 이름 목록 가져오기 (최대 3명, 툴팁용)
 	 *
 	 * @param messageId - 메시지 ID
 	 * @returns 좋아요한 사용자의 displayName 배열
 	 */
-	async function fetchLikedByUsers(messageId: string): Promise<string[]> {
+	async function fetchLikedByUsersNames(messageId: string): Promise<string[]> {
 		// 캐시된 데이터가 있으면 반환
 		if (likedByUsers[messageId]) {
 			return likedByUsers[messageId];
@@ -1050,6 +1058,27 @@
 		} catch (error) {
 			console.error('좋아요 사용자 목록 가져오기 실패:', error);
 			return [];
+		}
+	}
+
+	/**
+	 * 메시지별 좋아요 사용자 uid 목록 로드 (아바타 스택용)
+	 *
+	 * @param messageId - 메시지 ID
+	 */
+	async function loadMessageLikedUserUids(messageId: string) {
+		// 이미 로드된 경우 다시 로드하지 않음
+		if (messageLikedUserUids[messageId]) {
+			return;
+		}
+
+		try {
+			// $lib/functions/like.functions의 fetchLikedByUsers 사용
+			const uids = await fetchLikedByUsers(messageId, 'message');
+			messageLikedUserUids[messageId] = uids;
+		} catch (error) {
+			console.error('메시지 좋아요 사용자 uid 로드 실패:', error);
+			messageLikedUserUids[messageId] = [];
 		}
 	}
 
@@ -1548,7 +1577,7 @@
 												onclick={(e) => handleToggleLike(e, messageId)}
 												onmouseenter={async () => {
 													if (message.likeCount && message.likeCount > 0) {
-														const names = await fetchLikedByUsers(messageId);
+														const names = await fetchLikedByUsersNames(messageId);
 														tooltipContent[messageId] =
 															names.length > 0 ? `좋아요한 사용자: ${names.join(', ')}` : '';
 													}
@@ -1583,6 +1612,20 @@
 												</Tooltip.Content>
 											{/if}
 										</Tooltip.Root>
+
+										<!-- 좋아요 사용자 아바타 스택 -->
+										{#if message.likeCount && message.likeCount > 0}
+											{@const _ = loadMessageLikedUserUids(messageId)}
+											{#if messageLikedUserUids[messageId] && messageLikedUserUids[messageId].length > 0}
+												<LikedUsersAvatarStack
+													likedByUids={messageLikedUserUids[messageId]}
+													onClick={() => {
+														likesModalTargetId = messageId;
+														likesModalOpen = true;
+													}}
+												/>
+											{/if}
+										{/if}
 
 										{#if isEditable}
 											<!-- 설정 드롭다운 (90분 이내 메시지만) -->

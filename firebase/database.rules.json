@@ -1,4 +1,8 @@
 {
+  // Firebase Rules for Realtime Database
+  // JSONC 형식으로 작성됨
+  // - 풍부한 주석을 추가하고,
+  // - 조건식을 여러 줄에 걸쳐 작성합니다. (중요: 가독성 향상)
   "rules": {
     "users": {
       // 자신만 읽기 가능. 모든 사용자가 읽기 불가능
@@ -166,7 +170,8 @@
         }
       },
       ".indexOn": [
-        "openListOrder"
+        "openListOrder",
+        "createdAt"
       ]
     },
     "chat-joins": {
@@ -183,25 +188,58 @@
       }
     },
     "chat-messages": {
-      ".read": "auth != null",
+      // 🔍 쿼리 허용 규칙 (부모 레벨)
+      // Firebase RTDB는 쿼리 실행 시 부모 경로에서 먼저 read 권한을 체크합니다.
+      // 이 규칙은 쿼리 실행 자체를 허용하며, 개별 메시지 읽기는 $messageId 레벨에서 다시 체크합니다.
+      //
+      // 🔒 보안 참고:
+      //   - 쿼리 실행만 허용 (메시지 목록 가져오기)
+      //   - 각 메시지 내용을 실제로 읽으려면 $messageId 레벨의 .read 규칙도 통과해야 함
+      //   - 권한 없는 메시지는 쿼리 결과에서 null로 반환되어 클라이언트가 필터링
+      ".read": "
+        (
+          auth != null
+        )
+        &&
+        (
+          (
+            query.orderByChild == 'roomOrder'
+          )
+          ||
+          (
+            query.orderByChild == 'categoryOrder'
+          )
+          ||
+          (
+            query.orderByChild == 'allCategoryOrder'
+          )
+        )
+      ",
       "$messageId": {
-        // 읽기 권한: 로그인한 사용자이며, 다음 중 하나에 해당
-        //   1. roomId에 본인 UID가 포함됨 (1:1 채팅)
-        //   2. 오픈 채팅방
-        //   3. 채팅방 멤버
+        // 📖 개별 메시지 읽기 권한 (자식 레벨)
+        // 쿼리로 가져온 메시지 목록에서 각 메시지의 실제 내용을 읽을 때 체크합니다.
+        //
+        // 조건 1: 로그인한 사용자
+        // 조건 2: 메시지 접근 권한 (다음 중 하나에 해당)
+        //   - 1:1 채팅: roomId에 본인 UID가 포함됨 (예: 'uid1-uid2')
+        //   - 오픈 채팅방: type이 'open'인 채팅방
+        //   - 그룹 채팅방: members 목록에 본인 UID 존재
         ".read": "auth != null &&
           (
+            // 1:1 채팅: roomId에 본인 UID 포함
             data.child('roomId').val().contains(auth.uid) ||
+            // 오픈 채팅방
             root.child('chat-rooms').child(data.child('roomId').val()).child('type').val() == 'open' ||
+            // 그룹 채팅방 멤버
             root.child('chat-rooms').child(data.child('roomId').val()).child('members').child(auth.uid).exists()
           )",
-        // 쓰기 권한: 로그인한 사용자이며, 다음 조건을 모두 만족
+        // ✍️ 메시지 쓰기 권한 (생성, 수정, 삭제)
         ".write": "auth != null &&
           (
             // 조건 1: 채팅방 접근 권한 확인
-        // - roomId가 post 이거나 (게시글 작성)
-        // - roomId에 본인 UID가 포함되거나 (1:1 채팅)
-        // - 채팅방 멤버인 경우
+            // - roomId가 post 이거나 (게시글 작성)
+            // - roomId에 본인 UID가 포함되거나 (1:1 채팅)
+            // - 채팅방 멤버인 경우
             (
               newData.child('roomId').val() == 'post' ||
               newData.child('roomId').val().contains(auth.uid) ||
@@ -227,9 +265,9 @@
               ) &&
               (
                 // c) 90분(5,400,000ms) 이내 메시지여야 함
-        // now: 현재 시각(밀리초)
-        // data.child('createdAt').val(): 메시지 생성 시각(밀리초)
-        // 90분 = 90 * 60 * 1000 = 5,400,000ms
+                // now: 현재 시각(밀리초)
+                // data.child('createdAt').val(): 메시지 생성 시각(밀리초)
+                // 90분 = 90 * 60 * 1000 = 5,400,000ms
                 (now - data.child('createdAt').val()) < 5400000
               )
             )
