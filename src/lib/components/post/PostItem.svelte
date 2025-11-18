@@ -35,7 +35,7 @@
 		/** 게시글 데이터 */
 		message: any;
 		/** 게시글 ID */
-		messageId: string;
+		postId: string;
 		/** 좋아요 상태 맵 */
 		userLikes?: Record<string, LikeTargetType>;
 		/** 좋아요 토글 핸들러 */
@@ -61,7 +61,7 @@
 
 	let {
 		message,
-		messageId: postId,
+		postId,
 		userLikes = {},
 		onToggleLike,
 		onOpenCommentDialog,

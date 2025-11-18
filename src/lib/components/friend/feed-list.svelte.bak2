@@ -6,7 +6,7 @@
 	 * Fan-out 패턴으로 구현된 피드 시스템을 사용합니다.
 	 *
 	 * 핵심 원칙:
-	 * - 단일 진실 공급원(SSOT): 실제 데이터는 `/posts/{postId}`에만 존재
+	 * - 단일 진실 공급원(SSOT): 실제 데이터는 `/chat-messages/post/{messageId}`에만 존재
 	 * - 최소 정보 원칙: 피드는 타임스탬프만 저장, 실제 내용은 필요시 fetch
 	 * - 실시간 구독: `/user-feed/{myUid}` 경로를 실시간으로 구독
 	 * - PostItem 컴포넌트 재사용: 게시글 UI 일관성 유지
@@ -52,7 +52,7 @@
 	} = $props();
 
 	// 상태 관리
-	/** 피드 게시글 목록 (ID -> timestamp 맵) */
+	/** 피드 메시지 목록 (ID -> timestamp 맵) */
 	let feedMap = $state<Record<string, number>>({});
 
 	/** 게시글 데이터 캐시 (ID -> 게시글 전체 데이터) */
@@ -112,19 +112,19 @@
 				const data = snapshot.val() || {};
 				feedMap = data;
 
-				// 게시글 ID 목록 추출
-				const postIds = Object.keys(data);
+				// 메시지 ID 목록 추출
+				const messageIds = Object.keys(data);
 
-				// 각 게시글을 실시간으로 구독
-				subscribePostsData(postIds);
+				// 각 메시지를 실시간으로 구독
+				subscribeMessagesData(messageIds);
 
 				initialLoading = false;
 
 				// 페이지네이션용 마지막 타임스탬프 저장
-				if (postIds.length > 0) {
+				if (messageIds.length > 0) {
 					const timestamps = Object.values(data) as number[];
 					lastTimestamp = Math.min(...timestamps);
-					hasMore = postIds.length >= pageSize;
+					hasMore = messageIds.length >= pageSize;
 				} else {
 					hasMore = false;
 				}
@@ -144,14 +144,14 @@
 	 * - PostItem에 필요한 모든 필드를 실시간으로 업데이트
 	 * - likeCount가 변경되면 자동으로 UI에 반영됨
 	 *
-	 * @param postIds - 구독할 게시글 ID 목록
+	 * @param messageIds - 구독할 게시글 ID 목록
 	 */
-	function subscribePostsData(postIds: string[]) {
+	function subscribeMessagesData(messageIds: string[]) {
 		if (!database) return;
 
-		postIds.forEach((postId) => {
+		messageIds.forEach((messageId) => {
 			// 이미 구독 중이면 스킵
-			if (postUnsubscribers.has(postId)) {
+			if (messageUnsubscribers.has(messageId)) {
 				return;
 			}
 
@@ -159,43 +159,43 @@
 				if (!database) return;
 
 				// 게시글은 /posts/{postId}에 저장됨
-				const postRef = ref(database, `posts/${postId}`);
+				const messageRef = ref(database, `posts/${messageId}`);
 
 				// 실시간 구독 설정
-				const unsubscribePost = onValue(
-					postRef,
+				const unsubscribeMessage = onValue(
+					messageRef,
 					(snapshot) => {
 						const data = snapshot.val();
 
 						if (data && !data.deleted) {
 							// PostItem에 필요한 모든 데이터 저장
-							postsCache[postId] = data;
+							messagesCache[messageId] = data;
 						} else {
 							// 삭제된 게시글은 캐시에서 제거
-							delete postsCache[postId];
+							delete messagesCache[messageId];
 						}
 					},
 					(error) => {
-						console.error(`게시글 데이터 구독 오류 (${postId}):`, error);
+						console.error(`게시글 데이터 구독 오류 (${messageId}):`, error);
 					}
 				);
 
 				// 구독 해제 함수 저장
-				postUnsubscribers.set(postId, unsubscribePost);
+				messageUnsubscribers.set(messageId, unsubscribeMessage);
 			} catch (error) {
-				console.error(`게시글 데이터 구독 설정 오류 (${postId}):`, error);
+				console.error(`게시글 데이터 구독 설정 오류 (${messageId}):`, error);
 			}
 		});
 	}
 
 	/**
-	 * 모든 게시글 구독 해제
+	 * 모든 메시지 구독 해제
 	 */
-	function unsubscribeAllPosts() {
-		postUnsubscribers.forEach((unsubscribe) => {
+	function unsubscribeAllMessages() {
+		messageUnsubscribers.forEach((unsubscribe) => {
 			unsubscribe();
 		});
-		postUnsubscribers.clear();
+		messageUnsubscribers.clear();
 	}
 
 	/**
@@ -228,17 +228,17 @@
 			// 기존 feedMap에 추가
 			feedMap = { ...feedMap, ...data };
 
-			// 게시글 ID 목록 추출
-			const postIds = Object.keys(data);
+			// 메시지 ID 목록 추출
+			const messageIds = Object.keys(data);
 
-			// 각 게시글을 실시간으로 구독
-			subscribePostsData(postIds);
+			// 각 메시지를 실시간으로 구독
+			subscribeMessagesData(messageIds);
 
 			// 페이지네이션용 마지막 타임스탬프 업데이트
-			if (postIds.length > 0) {
+			if (messageIds.length > 0) {
 				const timestamps = Object.values(data) as number[];
 				lastTimestamp = Math.min(...timestamps);
-				hasMore = postIds.length >= pageSize;
+				hasMore = messageIds.length >= pageSize;
 			} else {
 				hasMore = false;
 			}
@@ -259,7 +259,7 @@
 		if (unsubscribe) {
 			unsubscribe();
 		}
-		unsubscribeAllPosts();
+		unsubscribeAllMessages();
 	});
 
 	// 로그인 상태 변경 시 재구독
@@ -271,9 +271,9 @@
 				unsubscribe();
 				unsubscribe = null;
 			}
-			unsubscribeAllPosts();
+			unsubscribeAllMessages();
 			feedMap = {};
-			postsCache = {};
+			messagesCache = {};
 			initialLoading = false;
 		}
 	});
@@ -297,13 +297,13 @@
 	<!-- 피드 목록 표시 - PostItem 컴포넌트 재사용 -->
 {:else}
 	<div class="feed-list">
-		{#each sortedFeedIds as postId (postId)}
-			{@const message = postsCache[postId]}
+		{#each sortedFeedIds as messageId (messageId)}
+			{@const message = messagesCache[messageId]}
 
 			{#if message}
 				<PostItem
 					{message}
-					postId={postId}
+					messageId={messageId}
 					{userLikes}
 					{onToggleLike}
 					{onOpenCommentDialog}
