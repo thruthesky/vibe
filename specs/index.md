@@ -709,6 +709,27 @@ This document provides a detailed index of all specifications related to the son
   - 팔로잉 사용자의 메시지·포스트를 `/user-feed/{uid}`에 fan-out하고 FCM/알림을 발송하는 절차
   - QA 체크리스트: 관계 데이터 일관성, 피드 노출, 알림 중복 방지
 
+### Sonub Reaction History
+- **File**: [sonub-reaction-history.md](./sonub-reaction-history.md)
+- **Title**: Sonub 리액션 히스토리 시스템
+- **Description**: 사용자가 만든 모든 활동과 다른 사용자가 남긴 반응을 `나의 발자취`·`받은 반응` 경로로 분리 저장하고, Cloud Functions와 UI 흐름을 정의한 기록 시스템 명세
+- **Version**: (미정)
+- **Step**: (미정)
+- **Priority**: (미정)
+- **Dependencies**:
+  - sonub-firebase-database-structure.md
+  - sonub-firebase-functions.md
+  - sonub-like-overview.md
+  - sonub-forum-post.md
+  - sonub-friend-overview.md
+- **Tags**: reaction, history, activity, firebase, cloud-functions
+- **주요 내용**:
+  - `/my-actions/{uid}/{pushKey}`와 `/received-reactions/{uid}/{pushKey}` 구조에 `ReactionRecord(fromUid, type, targetType, targetId, postId?, createdAt)` 필드를 저장하고 `createdAt` 인덱스를 명시해 최신순 조회를 보장
+  - 좋아요/게시글/댓글/팔로우 이벤트마다 Functions 유틸이 fan-out 기록을 생성·삭제하며 자기 자신에게는 받은 반응이 쌓이지 않게 validation
+  - 댓글 반응을 위한 `postId` 보조 필드, 취소/삭제 시 targetId·fromUid 기반 검색 절차, `.indexOn: ["createdAt"]` 규칙 등 데이터 설계 지침
+  - DatabaseListView 기반의 `나의 발자취`, `받은 반응` 페이지에서 타입 필터, 무한 스크롤, 상대 시간, 빈 상태 메시지, 아바타·대상 링크 표시 등 UX 요구사항
+  - 확장 아이디어: 읽음 플래그/배지 카운트, 알림 시스템 연동, 최소 사용자 정보(displayName/photoUrl)만 로드하여 비용 절감
+
 ### Sonub User Props
 - **File**: [sonub-user-props.md](./sonub-user-props.md)
 - **Title**: 사용자 속성 분리 및 대량 조회 최적화 명세서

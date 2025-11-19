@@ -96,6 +96,10 @@ last_updated: 2025-11-19
    * - scrollTrigger: 스크롤 트리거 위치 (기본값: "bottom")
    *   - "bottom": 아래로 스크롤하면 다음 페이지 로드 (일반 목록)
    *   - "top": 위로 스크롤하면 이전 페이지 로드 (채팅방 스타일)
+   * - newItemPosition: 새 아이템 추가 위치 (기본값: "auto")
+   *   - "top": 항상 맨 위에 추가 (게시판 목록에 적합)
+   *   - "bottom": 항상 맨 아래에 추가 (채팅 메시지에 적합)
+   *   - "auto": reverse와 scrollTrigger 옵션에 따라 자동 결정
    * - autoScrollToEnd: 초기 로드 후 자동으로 스크롤을 맨 아래로 이동 (기본값: false)
    *   - scrollTrigger="top"과 함께 사용하면 채팅방 스타일 동작
    * - autoScrollOnNewData: 새 데이터 추가 시 자동 스크롤 여부 (기본값: false)
@@ -120,6 +124,7 @@ last_updated: 2025-11-19
     threshold?: number;
     reverse?: boolean;
     scrollTrigger?: 'bottom' | 'top';
+    newItemPosition?: 'top' | 'bottom' | 'auto';
     autoScrollToEnd?: boolean;
     autoScrollOnNewData?: boolean;
     onItemAdded?: (item: ItemData) => void;
@@ -140,6 +145,7 @@ last_updated: 2025-11-19
     threshold = 300,
     reverse = false,
     scrollTrigger = 'bottom',
+    newItemPosition = 'auto',
     autoScrollToEnd = false,
     autoScrollOnNewData = false,
     onItemAdded = undefined,
@@ -710,11 +716,23 @@ last_updated: 2025-11-19
         data: newItemData
       };
 
-      // reverse 여부에 따라 배열의 앞 또는 뒤에 추가
-      if (reverse) {
-        // reverse가 true: 최신 글이 위에 → 배열 맨 앞에 추가
+      // newItemPosition 옵션에 따라 배열의 앞 또는 뒤에 추가
+      // - "top": 항상 맨 위에 추가 (게시판 목록에 적합)
+      // - "bottom": 항상 맨 아래에 추가 (채팅 메시지에 적합)
+      // - "auto": reverse 옵션에 따라 자동 결정
+      let addToTop = false;
+      if (newItemPosition === 'top') {
+        addToTop = true;
+      } else if (newItemPosition === 'bottom') {
+        addToTop = false;
+      } else { // 'auto'
+        addToTop = reverse;
+      }
+
+      if (addToTop) {
+        // 최신 글이 위에 → 배열 맨 앞에 추가
         items = [newItem, ...items];
-        // console.log('DatabaseListView: Added new item to the beginning (reverse mode)');
+        // console.log('DatabaseListView: Added new item to the beginning');
 
         // 새 아이템에 onValue 리스너 설정 (인덱스 0)
         setupItemListener(newItemKey, 0);
@@ -724,10 +742,10 @@ last_updated: 2025-11-19
         // 하지만 items[index] 업데이트를 위해 모든 리스너를 다시 설정하는 것이 안전할 수 있음
         // 성능을 위해 여기서는 새 아이템에만 리스너 설정
       } else {
-        // reverse가 false: 오래된 글이 위에 → 배열 맨 뒤에 추가
+        // 오래된 글이 위에 → 배열 맨 뒤에 추가
         const newIndex = items.length;
         items = [...items, newItem];
-        // console.log('DatabaseListView: Added new item to the end (normal mode)');
+        // console.log('DatabaseListView: Added new item to the end');
 
         // 새 아이템에 onValue 리스너 설정
         setupItemListener(newItemKey, newIndex);

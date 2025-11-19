@@ -1,10 +1,10 @@
 <!--
-  받은 반응 페이지
+  나의 발자취 페이지
 
-  다른 사용자들이 내 게시글/댓글/프로필에 보낸 리액션(좋아요, 댓글, 팔로우)을 시간순으로 표시합니다.
+  사용자가 발생시킨 모든 리액션(좋아요, 게시글, 댓글, 팔로우)을 시간순으로 표시합니다.
 
-  데이터 경로: /received-reactions/{uid}
-  정렬: createdAt 내림차순 (최신 반응이 위에)
+  데이터 경로: /my-actions/{uid}
+  정렬: createdAt 내림차순 (최신 활동이 위에)
 -->
 
 <script lang="ts">
@@ -12,12 +12,11 @@
 	import DatabaseListView from '$lib/components/DatabaseListView.svelte';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { m } from '$lib/paraglide/messages';
-	import { Heart, MessageCircle, UserPlus } from 'lucide-svelte';
+	import { Heart, FileText, MessageCircle, UserPlus } from 'lucide-svelte';
 	import { formatDistanceToNow } from 'date-fns';
 	import { ko, enUS, ja, zhCN } from 'date-fns/locale';
 	import { getLocale } from '$lib/paraglide/runtime.js';
 	import { getUserFields } from '$lib/functions/user.functions';
-	import Avatar from '$lib/components/user/avatar.svelte';
 	import { rtdb } from '$lib/firebase';
 	import { ref as dbRef, get } from 'firebase/database';
 	import { goto } from '$app/navigation';
@@ -45,6 +44,8 @@
 		switch (type) {
 			case 'like':
 				return Heart;
+			case 'post':
+				return FileText;
 			case 'comment':
 				return MessageCircle;
 			case 'follow':
@@ -55,29 +56,21 @@
 	}
 
 	/**
-	 * 리액션 타입에 따른 설명 텍스트 반환
+	 * 리액션 타입에 따른 텍스트 반환
 	 */
-	function getReactionDescription(reaction: any) {
-		const { type, targetType } = reaction;
-
-		if (type === 'like') {
-			if (targetType === 'post') {
-				return m.reactionLikedPost();
-			}
-			if (targetType === 'comment') {
-				return m.reactionLikedComment();
-			}
+	function getReactionText(type: string) {
+		switch (type) {
+			case 'like':
+				return m.reactionTypeLike();
+			case 'post':
+				return m.reactionTypePost();
+			case 'comment':
+				return m.reactionTypeComment();
+			case 'follow':
+				return m.reactionTypeFollow();
+			default:
+				return type;
 		}
-
-		if (type === 'comment') {
-			return m.reactionCommentedPost();
-		}
-
-		if (type === 'follow') {
-			return m.reactionFollowedUser();
-		}
-
-		return '';
 	}
 
 	/**
@@ -87,6 +80,8 @@
 		switch (type) {
 			case 'like':
 				return 'text-red-500';
+			case 'post':
+				return 'text-blue-500';
 			case 'comment':
 				return 'text-green-500';
 			case 'follow':
@@ -97,67 +92,91 @@
 	}
 
 	/**
-	 * 대상 콘텐츠 정보 조회 (게시글/댓글 제목)
+	 * 대상 정보 조회 (게시글/댓글 제목, 사용자 이름)
 	 */
-	async function getTargetContent(reaction: any): Promise<string> {
+	async function getTargetInfo(reaction: any): Promise<string> {
 		if (!rtdb) return '';
 
 		try {
 			const { type, targetType, targetId, postId } = reaction;
 
-			// 팔로우는 대상 콘텐츠 없음
-			if (type === 'follow') {
-				return '';
+			// 팔로우인 경우: 사용자 이름 조회
+			if (type === 'follow' && targetType === 'user') {
+				const userFields = await getUserFields(targetId, ['displayName']);
+				return userFields.displayName || '알 수 없는 사용자';
 			}
 
-			// 게시글 좋아요 또는 댓글
-			if (targetType === 'post') {
+			// 게시글인 경우: 게시글 제목 또는 본문 일부
+			if (type === 'post' && targetType === 'post') {
 				const postRef = dbRef(rtdb, `posts/${targetId}`);
 				const snapshot = await get(postRef);
 				if (snapshot.exists()) {
 					const postData = snapshot.val();
-					return postData.text?.substring(0, 100) || '(내용 없음)';
+					return postData.text?.substring(0, 50) || '(내용 없음)';
 				}
 				return '(삭제된 게시글)';
 			}
 
-			// 댓글 좋아요
-			if (targetType === 'comment' && postId) {
+			// 댓글인 경우: 댓글 내용 일부
+			if (type === 'comment' && targetType === 'comment' && postId) {
 				const commentRef = dbRef(rtdb, `comments/${postId}/${targetId}`);
 				const snapshot = await get(commentRef);
 				if (snapshot.exists()) {
 					const commentData = snapshot.val();
-					return commentData.text?.substring(0, 100) || '(내용 없음)';
+					return commentData.text?.substring(0, 50) || '(내용 없음)';
 				}
 				return '(삭제된 댓글)';
 			}
 
+			// 좋아요인 경우: targetType에 따라 게시글 또는 댓글 정보 조회
+			if (type === 'like') {
+				if (targetType === 'post') {
+					const postRef = dbRef(rtdb, `posts/${targetId}`);
+					const snapshot = await get(postRef);
+					if (snapshot.exists()) {
+						const postData = snapshot.val();
+						return postData.text?.substring(0, 50) || '(내용 없음)';
+					}
+					return '(삭제된 게시글)';
+				}
+
+				if (targetType === 'comment' && postId) {
+					const commentRef = dbRef(rtdb, `comments/${postId}/${targetId}`);
+					const snapshot = await get(commentRef);
+					if (snapshot.exists()) {
+						const commentData = snapshot.val();
+						return commentData.text?.substring(0, 50) || '(내용 없음)';
+					}
+					return '(삭제된 댓글)';
+				}
+			}
+
 			return '';
 		} catch (error) {
-			console.error('대상 콘텐츠 조회 실패:', error);
+			console.error('대상 정보 조회 실패:', error);
 			return '';
 		}
 	}
 
 	/**
-	 * 리액션 클릭 핸들러 (해당 콘텐츠 또는 사용자 프로필로 이동)
+	 * 리액션 클릭 핸들러 (해당 콘텐츠로 이동)
 	 */
 	function handleReactionClick(reaction: any) {
-		const { type, targetType, targetId, postId, fromUid } = reaction;
+		const { type, targetType, targetId, postId } = reaction;
 
 		// 팔로우: 사용자 프로필로 이동
-		if (type === 'follow') {
-			goto(`/user/profile?uid=${fromUid}`);
+		if (type === 'follow' && targetType === 'user') {
+			goto(`/user/profile?uid=${targetId}`);
 			return;
 		}
 
-		// 게시글 관련: 게시글 상세로 이동
+		// 게시글: 게시글 상세로 이동
 		if (targetType === 'post') {
 			goto(`/post/${targetId}`);
 			return;
 		}
 
-		// 댓글 관련: 게시글 상세로 이동 (댓글이 포함된 게시글)
+		// 댓글: 게시글 상세로 이동 (댓글이 포함된 게시글)
 		if (targetType === 'comment' && postId) {
 			goto(`/post/${postId}#comment-${targetId}`);
 			return;
@@ -166,7 +185,7 @@
 </script>
 
 <svelte:head>
-	<title>Sonub - {m.receivedReactionsTitle()}</title>
+	<title>Sonub - {m.myActivityTitle()}</title>
 </svelte:head>
 
 <!-- 로그인 체크 -->
@@ -178,22 +197,22 @@
 				<Card.Description>{m.authSignInRequiredDesc()}</Card.Description>
 			</Card.Header>
 			<Card.Content>
-				<p class="text-center">{m.receivedReactionsDescription()}</p>
+				<p class="text-center">{m.myActivityDescription()}</p>
 			</Card.Content>
 		</Card.Root>
 	</section>
 
-<!-- 받은 반응 목록 -->
+<!-- 나의 발자취 목록 -->
 {:else}
 	<section class="page-container">
 		<div class="header-section">
-			<h1 class="page-title">{m.receivedReactionsTitle()}</h1>
-			<p class="page-description">{m.receivedReactionsDescription()}</p>
+			<h1 class="page-title">{m.myActivityTitle()}</h1>
+			<p class="page-description">{m.myActivityDescription()}</p>
 		</div>
 
 		<div class="list-container">
 			<DatabaseListView
-				path={`received-reactions/${authStore.user.uid}`}
+				path={`my-actions/${authStore.user.uid}`}
 				pageSize={20}
 				orderBy="createdAt"
 				reverse={true}
@@ -208,66 +227,44 @@
 						onclick={() => handleReactionClick(reaction)}
 						type="button"
 					>
-						<!-- 사용자 아바타 -->
-						{#await getUserFields(reaction.fromUid, ['displayName', 'photoUrl'])}
-							<div class="avatar-placeholder"></div>
-						{:then userFields}
-							<Avatar
-								photoUrl={userFields.photoUrl}
-								displayName={userFields.displayName || ''}
-								size="md"
-							/>
-						{/await}
+						<!-- 아이콘 -->
+						<div class="icon-wrapper {getReactionColor(reaction.type)}">
+							<Icon size={24} />
+						</div>
 
 						<!-- 리액션 내용 -->
 						<div class="content-wrapper">
-							<!-- 사용자 이름 + 리액션 설명 -->
 							<div class="reaction-header">
-								{#await getUserFields(reaction.fromUid, ['displayName'])}
-									<span class="user-name loading">...</span>
-								{:then userFields}
-									<span class="user-name">{userFields.displayName || '알 수 없는 사용자'}</span>
-								{/await}
-
-								<span class="reaction-desc">{getReactionDescription(reaction)}</span>
-
-								<!-- 리액션 아이콘 -->
-								<span class="icon-badge {getReactionColor(reaction.type)}">
-									<Icon size={16} />
+								<span class="reaction-type">{getReactionText(reaction.type)}</span>
+								<span class="reaction-time">
+									{formatDistanceToNow(reaction.createdAt, {
+										addSuffix: true,
+										locale: getDateLocale()
+									})}
 								</span>
 							</div>
 
-							<!-- 시간 -->
-							<p class="reaction-time">
-								{formatDistanceToNow(reaction.createdAt, {
-									addSuffix: true,
-									locale: getDateLocale()
-								})}
-							</p>
-
-							<!-- 대상 콘텐츠 (게시글/댓글 내용) -->
-							{#if reaction.type !== 'follow'}
-								{#await getTargetContent(reaction)}
-									<p class="target-content loading">...</p>
-								{:then content}
-									{#if content}
-										<p class="target-content">{content}</p>
-									{/if}
-								{/await}
-							{/if}
+							<!-- 대상 정보 (비동기 로드) -->
+							{#await getTargetInfo(reaction)}
+								<p class="target-info loading">...</p>
+							{:then targetInfo}
+								{#if targetInfo}
+									<p class="target-info">{targetInfo}</p>
+								{/if}
+							{/await}
 						</div>
 					</button>
 				{/snippet}
 
 				{#snippet loading()}
 					<div class="status-message">
-						<p>{m.receivedReactionsLoading()}</p>
+						<p>{m.myActivityLoading()}</p>
 					</div>
 				{/snippet}
 
 				{#snippet empty()}
 					<div class="status-message">
-						<p>{m.receivedReactionsEmpty()}</p>
+						<p>{m.myActivityEmpty()}</p>
 					</div>
 				{/snippet}
 
@@ -308,8 +305,8 @@
 		@apply flex w-full cursor-pointer items-start gap-4 rounded-lg border border-gray-200 bg-white p-4 transition-all hover:border-gray-300 hover:shadow-md;
 	}
 
-	.avatar-placeholder {
-		@apply h-12 w-12 flex-shrink-0 animate-pulse rounded-full bg-gray-200;
+	.icon-wrapper {
+		@apply flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-gray-50;
 	}
 
 	.content-wrapper {
@@ -317,34 +314,22 @@
 	}
 
 	.reaction-header {
-		@apply flex flex-wrap items-center gap-2;
+		@apply flex items-center justify-between gap-2;
 	}
 
-	.user-name {
+	.reaction-type {
 		@apply font-semibold text-gray-900;
-	}
-
-	.user-name.loading {
-		@apply animate-pulse text-gray-400;
-	}
-
-	.reaction-desc {
-		@apply text-sm text-gray-600;
-	}
-
-	.icon-badge {
-		@apply flex items-center;
 	}
 
 	.reaction-time {
 		@apply text-sm text-gray-500;
 	}
 
-	.target-content {
-		@apply mt-1 rounded-md bg-gray-50 p-3 text-sm text-gray-700;
+	.target-info {
+		@apply text-sm text-gray-700;
 	}
 
-	.target-content.loading {
+	.target-info.loading {
 		@apply animate-pulse text-gray-400;
 	}
 

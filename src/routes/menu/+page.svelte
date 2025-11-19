@@ -302,6 +302,61 @@
 					<!-- 구분선 -->
 					<div class="border-t border-gray-200 my-3"></div>
 
+					<!-- 나의 발자취 -->
+					<Button
+						variant="ghost"
+						class="w-full justify-start text-left text-gray-700 hover:bg-amber-50 hover:text-amber-700 border border-transparent hover:border-amber-200 rounded-lg py-3 transition-all duration-200"
+						href="/my/activity"
+					>
+						<div
+							class="mr-3 p-2 bg-amber-100 rounded-lg group-hover:bg-amber-200 transition-colors"
+						>
+							<svg
+								class="h-5 w-5 text-amber-600"
+								fill="none"
+								stroke="currentColor"
+								viewBox="0 0 24 24"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+								/>
+							</svg>
+						</div>
+						<span class="font-medium">{m.myActivityTitle()}</span>
+					</Button>
+
+					<!-- 받은 반응 -->
+					<Button
+						variant="ghost"
+						class="w-full justify-start text-left text-gray-700 hover:bg-rose-50 hover:text-rose-700 border border-transparent hover:border-rose-200 rounded-lg py-3 transition-all duration-200"
+						href="/my/reactions"
+					>
+						<div
+							class="mr-3 p-2 bg-rose-100 rounded-lg group-hover:bg-rose-200 transition-colors"
+						>
+							<svg
+								class="h-5 w-5 text-rose-600"
+								fill="none"
+								stroke="currentColor"
+								viewBox="0 0 24 24"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+								/>
+							</svg>
+						</div>
+						<span class="font-medium">{m.receivedReactionsTitle()}</span>
+					</Button>
+
+					<!-- 구분선 -->
+					<div class="border-t border-gray-200 my-3"></div>
+
 					<!-- 인기 게시글 -->
 					<Button
 						variant="ghost"

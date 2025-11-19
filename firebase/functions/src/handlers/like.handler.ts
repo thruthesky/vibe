@@ -6,6 +6,14 @@ import * as admin from "firebase-admin";
 import * as logger from "firebase-functions/logger";
 import type {LikeTargetType} from "../types";
 import {incrementActionCounter} from "./user-action-counters.handler";
+import {
+  recordMyAction,
+  recordReceivedReaction,
+  deleteMyAction,
+  deleteReceivedReaction,
+  getTargetTypeFromValue,
+  getContentAuthorUid,
+} from "../utils/reaction-history.utils";
 
 /**
  * 좋아요 추가 처리
@@ -48,6 +56,39 @@ export async function handleLikeCreate(
     uid,
     targetType,
   });
+
+  // 리액션 히스토리 기록
+  try {
+    // 1. 나의 발자취에 기록
+    await recordMyAction({
+      uid,
+      type: "like",
+      targetType: getTargetTypeFromValue(targetType),
+      targetId,
+    });
+
+    // 2. 대상의 작성자에게 받은 반응 기록
+    const recipientUid = await getContentAuthorUid(targetType, targetId);
+    if (recipientUid) {
+      await recordReceivedReaction({
+        recipientUid,
+        fromUid: uid,
+        type: "like",
+        targetType: getTargetTypeFromValue(targetType),
+        targetId,
+      });
+    }
+
+    logger.info("✅ 좋아요 리액션 히스토리 기록 완료", {uid, targetId, targetType});
+  } catch (error) {
+    logger.error("❌ 좋아요 리액션 히스토리 기록 실패", {
+      uid,
+      targetId,
+      targetType,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    // 리액션 히스토리 실패는 비치명적이므로 throw하지 않음
+  }
 }
 
 /**
@@ -75,6 +116,37 @@ export async function handleLikeDelete(
     .remove();
 
   logger.info("likes-by 경로에서 사용자 제거 완료", {targetId, uid, targetType});
+
+  // 리액션 히스토리 삭제
+  try {
+    // 1. 나의 발자취에서 삭제
+    await deleteMyAction({
+      uid,
+      type: "like",
+      targetId,
+    });
+
+    // 2. 대상 작성자의 받은 반응에서 삭제
+    const recipientUid = await getContentAuthorUid(targetType, targetId);
+    if (recipientUid) {
+      await deleteReceivedReaction({
+        recipientUid,
+        fromUid: uid,
+        type: "like",
+        targetId,
+      });
+    }
+
+    logger.info("✅ 좋아요 리액션 히스토리 삭제 완료", {uid, targetId, targetType});
+  } catch (error) {
+    logger.error("❌ 좋아요 리액션 히스토리 삭제 실패", {
+      uid,
+      targetId,
+      targetType,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    // 리액션 히스토리 실패는 비치명적이므로 throw하지 않음
+  }
 }
 
 /**

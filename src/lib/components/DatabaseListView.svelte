@@ -884,7 +884,7 @@
       return;
     }
 
-    // console.log('DatabaseListView: Loading initial data from', path, '(reverse:', reverse, ')');
+    console.log('DatabaseListView: Loading initial data from', path, '(reverse:', reverse, ')');
     initialLoading = true;
     error = null;
     items = [];
@@ -976,7 +976,7 @@
             startAt(false),
             limitToFirst(pageSize + 1)
           );
-          // console.log('DatabaseListView: Using limitToFirst with startAt(false) to filter null/undefined');
+          console.log('DatabaseListView: Using limitToFirst with startAt(false) to filter null/undefined');
         }
       }
 
@@ -999,25 +999,25 @@
         });
 
         // 🔍 디버깅: 초기 로드 결과
-        // console.log(
-          // `%c[DatabaseListView] Initial Load - Query Settings`,
-          // 'color: #10b981; font-weight: bold;',
-          // { path, orderBy, orderPrefix, reverse, pageSize }
-        // );
-        // console.log(
-          // `%c[DatabaseListView] Initial Load - Firebase returned ${loadedItems.length} items`,
-          // 'color: #3b82f6; font-weight: bold;'
-        // );
-        // console.log(
-          // `%c[DatabaseListView] Initial Load - Items in Firebase order:`,
-          // 'color: #6366f1;',
-          // loadedItems.map((item, idx) => ({
-            // index: idx,
-            // key: item.key,
-            // [orderBy]: item.data[orderBy],
-            // title: item.data.title
-          // }))
-        // );
+        console.log(
+          `%c[DatabaseListView] Initial Load - Query Settings`,
+          'color: #10b981; font-weight: bold;',
+          { path, orderBy, orderPrefix, reverse, pageSize }
+        );
+        console.log(
+          `%c[DatabaseListView] Initial Load - Firebase returned ${loadedItems.length} items`,
+          'color: #3b82f6; font-weight: bold;'
+        );
+        console.log(
+          `%c[DatabaseListView] Initial Load - Items in Firebase order:`,
+          'color: #6366f1;',
+          loadedItems.map((item, idx) => ({
+            index: idx,
+            key: item.key,
+            [orderBy]: item.data[orderBy],
+            title: item.data.title
+          }))
+        );
 
         // orderBy 필드가 있는 항목만 필터링
         // startAt(false)를 사용했지만, 추가 안전성을 위해 클라이언트에서도 필터링합니다
@@ -1175,20 +1175,20 @@
           setupItemListener(item.key, index);
         });
 
-        // console.log(
-          // `%c[DatabaseListView] ✅ Initial Load Complete`,
-          // 'color: #10b981; font-weight: bold; font-size: 14px;',
-          // {
-            // page: currentPage,
-            // loaded: items.length,
-            // hasMore,
-            // finalOrder: items.map((item, idx) => ({
-              // index: idx,
-              // [orderBy]: item.data[orderBy],
-              // title: item.data.title
-            // }))
-          // }
-        // );
+        console.log(
+          `%c[DatabaseListView] ✅ Initial Load Complete`,
+          'color: #10b981; font-weight: bold; font-size: 14px;',
+          {
+            page: currentPage,
+            loaded: items.length,
+            hasMore,
+            finalOrder: items.map((item, idx) => ({
+              index: idx,
+              [orderBy]: item.data[orderBy],
+              title: item.data.title
+            }))
+          }
+        );
       } else {
         // console.log('DatabaseListView: No data found');
         items = [];
@@ -1234,6 +1234,15 @@
    * pageSize + 1개를 로드하여 hasMore를 판단합니다.
    */
   async function loadMore() {
+    // 🔥 디버깅: loadMore() 호출 추적
+    console.log('%c[loadMore] 호출됨!', 'color: #ff0000; font-weight: bold; font-size: 16px;', {
+      currentPage,
+      itemsCount: items.length,
+      loading,
+      hasMore,
+      stack: new Error().stack
+    });
+
     // database null 체크
     if (!database) {
       console.error('DatabaseListView: Database is not initialized');
@@ -1242,7 +1251,7 @@
     }
 
     if (loading || !hasMore) {
-      // console.log('DatabaseListView: Cannot load more - loading:', loading, 'hasMore:', hasMore);
+      console.log('DatabaseListView: Cannot load more - loading:', loading, 'hasMore:', hasMore);
       return;
     }
 
@@ -1547,25 +1556,25 @@
     if (scrollTrigger === 'top') {
       // 채팅방 스타일: 위로 스크롤하여 천장에 가까워지면 이전 페이지 로드
       if (scrollTop < threshold) {
-        // console.log('DatabaseListView: Near top (container scroll), loading more...', {
-          // scrollTop,
-          // scrollHeight,
-          // clientHeight,
-          // threshold
-        // });
+        console.log('DatabaseListView: Near top (container scroll), loading more...', {
+          scrollTop,
+          scrollHeight,
+          clientHeight,
+          threshold
+        });
         loadMore();
       }
     } else {
       // 일반 목록: 아래로 스크롤하여 바닥에 가까워지면 다음 페이지 로드
       const distanceFromBottom = scrollHeight - (scrollTop + clientHeight);
       if (distanceFromBottom < threshold) {
-        // console.log('DatabaseListView: Near bottom (container scroll), loading more...', {
-          // scrollTop,
-          // scrollHeight,
-          // clientHeight,
-          // distanceFromBottom,
-          // threshold
-        // });
+        console.log('DatabaseListView: Near bottom (container scroll), loading more...', {
+          scrollTop,
+          scrollHeight,
+          clientHeight,
+          distanceFromBottom,
+          threshold
+        });
         loadMore();
       }
     }
@@ -1579,7 +1588,7 @@
    */
   function handleWindowScroll() {
     if (loading || !hasMore) {
-      // console.log('DatabaseListView: Window scroll - skip (loading:', loading, 'hasMore:', hasMore, ')');
+      console.log('DatabaseListView: Window scroll - skip (loading:', loading, 'hasMore:', hasMore, ')');
       return;
     }
 
@@ -1591,25 +1600,25 @@
     if (scrollTrigger === 'top') {
       // 채팅방 스타일: 위로 스크롤하여 천장에 가까워지면 이전 페이지 로드
       if (scrollTop < threshold) {
-        // console.log('DatabaseListView: Near top (window scroll), loading more...', {
-          // scrollTop,
-          // scrollHeight,
-          // clientHeight,
-          // threshold
-        // });
+        console.log('DatabaseListView: Near top (window scroll), loading more...', {
+          scrollTop,
+          scrollHeight,
+          clientHeight,
+          threshold
+        });
         loadMore();
       }
     } else {
       // 일반 목록: 아래로 스크롤하여 바닥에 가까워지면 다음 페이지 로드
       const distanceFromBottom = scrollHeight - (scrollTop + clientHeight);
       if (distanceFromBottom < threshold) {
-        // console.log('DatabaseListView: Near bottom (window scroll), loading more...', {
-          // scrollTop,
-          // scrollHeight,
-          // clientHeight,
-          // distanceFromBottom,
-          // threshold
-        // });
+        console.log('DatabaseListView: Near bottom (window scroll), loading more...', {
+          scrollTop,
+          scrollHeight,
+          clientHeight,
+          distanceFromBottom,
+          threshold
+        });
         loadMore();
       }
     }

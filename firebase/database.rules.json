@@ -894,6 +894,62 @@
         }
       }
     },
+    "my-actions": {
+      // 📝 나의 발자취 - 내가 발생시킨 모든 리액션 기록
+      // 구조: /my-actions/{uid}/{pushKey}: { fromUid, type, targetType, targetId, postId?, createdAt }
+      // type: 'like' | 'post' | 'comment' | 'follow'
+      // targetType: 'post' | 'comment' | 'user'
+      // targetId: postId | commentId | userUid
+      // postId: (선택) 댓글인 경우 게시글 ID
+      // createdAt: Unix timestamp (ms)
+      // Cloud Functions 전용: 클라이언트는 읽기만 가능
+      "$uid": {
+        // 읽기 권한: 본인만 자신의 발자취 읽기 가능
+        ".read": "
+          (
+            auth != null
+          )
+          &&
+          (
+            auth.uid == $uid
+          )
+        ",
+
+        // 쓰기 권한: 없음 (Cloud Functions만 쓰기 가능)
+        ".write": false,
+
+        // 인덱스: createdAt 기준 정렬 (역순)
+        ".indexOn": ["createdAt"]
+      }
+    },
+    "received-reactions": {
+      // 💌 받은 반응 - 다른 사용자로부터 받은 모든 리액션 기록
+      // 구조: /received-reactions/{uid}/{pushKey}: { fromUid, type, targetType, targetId, postId?, createdAt }
+      // type: 'like' | 'comment' | 'follow'
+      // targetType: 'post' | 'comment' | 'user'
+      // targetId: postId | commentId | userUid
+      // postId: (선택) 댓글인 경우 게시글 ID
+      // createdAt: Unix timestamp (ms)
+      // Cloud Functions 전용: 클라이언트는 읽기만 가능
+      "$uid": {
+        // 읽기 권한: 본인만 자신에게 온 반응 읽기 가능
+        ".read": "
+          (
+            auth != null
+          )
+          &&
+          (
+            auth.uid == $uid
+          )
+        ",
+
+        // 쓰기 권한: 없음 (Cloud Functions만 쓰기 가능)
+        ".write": false,
+
+        // 인덱스: createdAt 기준 정렬 (역순)
+        ".indexOn": ["createdAt"]
+      }
+    },
     "test": {
       "data": {
         // QA 전용 테스트 데이터 노드 - 누구나 읽고 쓰기 가능

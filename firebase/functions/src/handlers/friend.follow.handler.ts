@@ -8,6 +8,12 @@
 import * as logger from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import {incrementActionCounter} from "./user-action-counters.handler";
+import {
+  recordMyAction,
+  recordReceivedReaction,
+  deleteMyAction,
+  deleteReceivedReaction,
+} from "../utils/reaction-history.utils";
 
 
 /**
@@ -60,6 +66,38 @@ export async function handleFollowingCreate(
   // 사용자별 팔로우 통계 증가
   await incrementActionCounter(followerUid, "follow", 1);
 
+  // 리액션 히스토리 기록
+  try {
+    // 1. 나의 발자취에 팔로우 기록
+    await recordMyAction({
+      uid: followerUid,
+      type: "follow",
+      targetType: "user",
+      targetId: followingUid,
+    });
+
+    // 2. 팔로우 대상자의 받은 반응에 기록
+    await recordReceivedReaction({
+      recipientUid: followingUid,
+      fromUid: followerUid,
+      type: "follow",
+      targetType: "user",
+      targetId: followingUid,
+    });
+
+    logger.info("✅ 팔로우 리액션 히스토리 기록 완료", {
+      followerUid,
+      followingUid,
+    });
+  } catch (error) {
+    logger.error("❌ 팔로우 리액션 히스토리 기록 실패", {
+      followerUid,
+      followingUid,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    // 리액션 히스토리 실패는 비치명적이므로 throw하지 않음
+  }
+
   // TODO: 향후 알림 전송 기능 추가
   // - followingUid에게 "followerUid가 당신을 팔로우했습니다" 알림
   // - /notifications/{followingUid}/{notificationId} 생성
@@ -104,4 +142,34 @@ export async function handleFollowingDelete(
 
   // 사용자별 팔로우 통계 감소
   await incrementActionCounter(followerUid, "follow", -1);
+
+  // 리액션 히스토리 삭제
+  try {
+    // 1. 나의 발자취에서 팔로우 기록 삭제
+    await deleteMyAction({
+      uid: followerUid,
+      type: "follow",
+      targetId: followingUid,
+    });
+
+    // 2. 팔로우 대상자의 받은 반응에서 기록 삭제
+    await deleteReceivedReaction({
+      recipientUid: followingUid,
+      fromUid: followerUid,
+      type: "follow",
+      targetId: followingUid,
+    });
+
+    logger.info("✅ 언팔로우 리액션 히스토리 삭제 완료", {
+      followerUid,
+      followingUid,
+    });
+  } catch (error) {
+    logger.error("❌ 언팔로우 리액션 히스토리 삭제 실패", {
+      followerUid,
+      followingUid,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    // 리액션 히스토리 실패는 비치명적이므로 throw하지 않음
+  }
 }

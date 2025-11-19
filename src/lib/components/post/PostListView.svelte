@@ -106,6 +106,7 @@
 	orderBy={category ? 'categoryOrder' : 'allCategoryOrder'}
 	orderPrefix={category ? `${category}-` : ''}
 	reverse={category ? true : false}
+	newItemPosition="top"
 	{threshold}
 >
 	{#snippet item(itemData, index)}

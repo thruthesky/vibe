@@ -16,6 +16,10 @@ import {
   sendFcmNotificationBatch,
 } from "../utils/fcm.utils";
 import {incrementActionCounter} from "./user-action-counters.handler";
+import {
+  recordMyAction,
+  recordReceivedReaction,
+} from "../utils/reaction-history.utils";
 
 
 /**
@@ -334,6 +338,54 @@ export async function handleCommentCreate(
         error: error instanceof Error ? error.message : String(error),
       });
     });
+
+    // 6. 리액션 히스토리 기록
+    try {
+      const authorUid = commentData.authorUid as string | undefined;
+      if (authorUid) {
+        // 6-1. 나의 발자취에 댓글 작성 기록
+        await recordMyAction({
+          uid: authorUid,
+          type: "comment",
+          targetType: "comment",
+          targetId: commentId,
+          postId, // 댓글의 경우 postId 추가
+        });
+
+        logger.info("✅ 댓글 작성 리액션 히스토리 기록 완료 (나의 발자취)", {
+          postId,
+          commentId,
+          authorUid,
+        });
+
+        // 6-2. 게시글 작성자에게 받은 반응 기록
+        const postAuthorUid = await getPostAuthorUid(postId);
+        if (postAuthorUid) {
+          await recordReceivedReaction({
+            recipientUid: postAuthorUid,
+            fromUid: authorUid,
+            type: "comment",
+            targetType: "comment",
+            targetId: commentId,
+            postId,
+          });
+
+          logger.info("✅ 댓글 작성 리액션 히스토리 기록 완료 (받은 반응)", {
+            postId,
+            commentId,
+            authorUid,
+            postAuthorUid,
+          });
+        }
+      }
+    } catch (error) {
+      logger.error("❌ 댓글 작성 리액션 히스토리 기록 실패", {
+        postId,
+        commentId,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      // 리액션 히스토리 실패는 비치명적이므로 throw하지 않음
+    }
   } catch (error) {
     logger.error("childCount/totalChildCount 증가 실패", {
       postId,

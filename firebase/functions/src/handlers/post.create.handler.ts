@@ -18,6 +18,7 @@
 import * as logger from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import {handleMessageCategoryCreateFanout} from "./feed.fanout.handler";
+import {recordMyAction} from "../utils/reaction-history.utils";
 
 /**
  * 게시글 생성 시 비즈니스 로직 처리
@@ -105,6 +106,28 @@ export async function handlePostCreate(
       postId,
       authorUid,
     });
+
+    // 4. 리액션 히스토리 기록: 나의 발자취에 게시글 작성 기록
+    try {
+      await recordMyAction({
+        uid: authorUid as string,
+        type: "post",
+        targetType: "post",
+        targetId: postId,
+      });
+
+      logger.info("✅ 게시글 작성 리액션 히스토리 기록 완료", {
+        postId,
+        authorUid,
+      });
+    } catch (error) {
+      logger.error("❌ 게시글 작성 리액션 히스토리 기록 실패", {
+        postId,
+        authorUid,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      // 리액션 히스토리 실패는 비치명적이므로 throw하지 않음
+    }
 
     logger.info("게시글 생성 비즈니스 로직 처리 완료", {
       postId,
