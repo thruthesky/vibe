@@ -57,12 +57,14 @@ tags:
 - `follow`: 전체 팔로우 수
 - `message`: 전체 채팅 메시지 수
 
-**사용자별 통계 (`/users/{uid}/counters/`)**:
+**사용자별 통계 (`/user-action-counters/{uid}`)**:
 - `user`: 사용자 생성 (항상 1)
 - `like`: **사용자가 누른** 좋아요 수
 - `comment`: **사용자가 작성한** 댓글 수
 - `follow`: **사용자가 팔로우한** 수
 - `chat`: **사용자가 보낸** 채팅 메시지 수
+
+> **참고**: `/users/{uid}`는 사용자 검색/목록에서 자주 조회되므로 최소한의 정보만 포함해야 합니다. 사용자의 action 카운터 정보는 별도의 경로인 `/user-action-counters/{uid}`에 저장되며, `incrementActionCounter()` 공통 함수로 일관되게 관리됩니다.
 
 ### 2.2. 좋아요 시스템
 
@@ -74,7 +76,7 @@ tags:
 **Cloud Functions**:
 - `like.handler.ts` - 좋아요 추가/취소 시 자동으로 `likeCount` 업데이트
 - `/stats/counters/like` 전역 통계 자동 증감
-- `/users/{uid}/counters/like` 사용자별 통계 자동 증감 (누른 사람 기준)
+- `/user-action-counters/{uid}/like` 사용자별 통계 자동 증감 (누른 사람 기준, `incrementActionCounter()` 함수 사용)
 
 ### 2.3. 댓글 시스템
 
@@ -97,7 +99,7 @@ tags:
 ### 2.4. 부족한 점
 
 1. **사용자가 "받은" 리액션 통계 없음**:
-   - 현재 `/users/{uid}/counters/like`는 사용자가 **누른** 좋아요 수만 기록
+   - 현재 `/user-action-counters/{uid}/like`는 사용자가 **누른** 좋아요 수만 기록
    - 사용자가 **받은** 좋아요 수는 집계되지 않음
    - 사용자가 **받은** 댓글 수도 집계되지 않음
 
@@ -338,7 +340,7 @@ interface InfluencerRanking {
 - **비즈니스 로직**: `firebase/functions/src/handlers/like.handler.ts` (기존 파일)
   - 좋아요 추가/취소 시 `likeCount` 업데이트
   - 전역 통계 (`/stats/counters/like`) 업데이트
-  - 사용자별 통계 (`/users/{uid}/counters/like`) 업데이트 (누른 사람 기준)
+  - 사용자별 통계 (`/user-action-counters/{uid}/like`) 업데이트 (누른 사람 기준, `incrementActionCounter()` 함수 사용)
 - **통계 집계 로직**: `firebase/functions/src/handlers/stats.like.handler.ts` (신규 파일)
   - 타겟 작성자의 일일/월별/연도별/전체 통계 업데이트
   - 인플루언서 점수 재계산
@@ -887,7 +889,7 @@ firebase/functions/src/handlers/
 - **책임**:
   - 타겟의 `likeCount` 증감
   - 전역 통계 (`/stats/counters/like`) 증감
-  - 사용자별 통계 (`/users/{uid}/counters/like`) 증감 (누른 사람 기준)
+  - 사용자별 통계 (`/user-action-counters/{uid}/like`) 증감 (누른 사람 기준, `incrementActionCounter()` 함수 사용)
 - **호출하지 않음**: 타겟 작성자의 `receivedLikes` 통계 (통계 핸들러 담당)
 
 **`comment.create.handler.ts`**:
@@ -975,7 +977,8 @@ export const onLikeCreated = onValueCreated(
     await admin.database().ref('/stats/counters/like').transaction((count) => (count || 0) + 1);
 
     // 3. 사용자별 통계 증가 (누른 사람 기준)
-    await admin.database().ref(`/users/${uid}/counters/like`).transaction((count) => (count || 0) + 1);
+    // incrementActionCounter() 공통 함수 사용
+    await incrementActionCounter(uid, 'like', 1);
 
     // ❌ 타겟 작성자의 receivedLikes 통계는 여기서 업데이트하지 않음
     // ✅ stats.like.handler.ts에서 처리

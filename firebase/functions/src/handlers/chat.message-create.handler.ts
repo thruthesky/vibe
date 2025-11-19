@@ -17,52 +17,8 @@ import {
   sendChatMessageNotification,
   isChatSubscribed,
 } from "../utils/fcm.utils";
+import {incrementActionCounter} from "./user-action-counters.handler";
 
-/**
- * 전체 채팅 메시지 통계 카운터 및 사용자별 통계 증가
- *
- * @param messageId - 메시지 ID
- * @param roomId - 채팅방 ID
- * @param senderUid - 발신자 UID
- *
- * 수행 작업:
- * - /stats/counters/message 경로에 ServerValue.increment(1)로 +1 증가
- * - /users/{senderUid}/counters/chat 경로에 ServerValue.increment(1)로 +1 증가
- * - 이 값은 전체 채팅 메시지 수를 나타냄
- */
-async function incrementMessageCounter(
-  messageId: string,
-  roomId: string,
-  senderUid?: string
-): Promise<void> {
-  try {
-    const updates: Record<string, unknown> = {};
-
-    // 전체 채팅 메시지 통계 증가
-    updates["stats/counters/message"] = admin.database.ServerValue.increment(1);
-
-    // 사용자별 채팅 통계 증가
-    if (senderUid) {
-      updates[`users/${senderUid}/counters/chat`] = admin.database.ServerValue.increment(1);
-    }
-
-    await admin.database().ref().update(updates);
-
-    logger.info("stats/counters/message 및 사용자별 통계 증가 완료", {
-      messageId,
-      roomId,
-      senderUid,
-    });
-  } catch (error) {
-    logger.error("stats/counters/message 증가 실패", {
-      messageId,
-      roomId,
-      senderUid,
-      error: error instanceof Error ? error.message : String(error),
-    });
-    // 통계 증가 실패는 치명적이지 않으므로 에러를 throw하지 않고 로그만 남김
-  }
-}
 
 /**
  * 채팅 메시지 생성 시 비즈니스 로직 처리
@@ -477,5 +433,5 @@ export async function handleChatMessageCreate(
   // ========================================
   // 전체 채팅 메시지 통계 및 사용자별 통계 증가
   // ========================================
-  await incrementMessageCounter(messageId, roomId, senderUid);
+  await incrementActionCounter(senderUid, "chat", 1);
 }

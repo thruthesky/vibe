@@ -321,17 +321,18 @@ Firebase Realtime Database (루트)
 
 ### 사용자별 통계 구조
 
-각 사용자의 활동 통계는 `/users/{uid}/counters/` 경로에서 관리하며, **백엔드(Cloud Functions)만** 쓰기가 가능합니다.
+각 사용자의 활동 통계는 `/user-action-counters/{uid}` 경로에서 관리하며, **백엔드(Cloud Functions)만** 쓰기가 가능합니다.
+
+**중요**: `/users/{uid}`는 검색/목록에 많이 사용되므로 최소한의 정보만 포함해야 합니다. 사용자별 상세 통계는 별도 경로인 `/user-action-counters/{uid}`에 저장됩니다.
 
 ```
-/users/
+/user-action-counters/
   /<uid>/
-    /counters/
-      ├── user: number      // 사용자 생성 (항상 1)
-      ├── like: number      // 사용자가 누른 좋아요 수
-      ├── comment: number   // 사용자가 작성한 댓글 수
-      ├── follow: number    // 사용자가 팔로우한 수
-      └── chat: number      // 사용자가 보낸 채팅 메시지 수
+    ├── user: number      // 사용자 생성 (항상 1)
+    ├── like: number      // 사용자가 누른 좋아요 수
+    ├── comment: number   // 사용자가 작성한 댓글 수
+    ├── follow: number    // 사용자가 팔로우한 수
+    └── chat: number      // 사용자가 보낸 채팅 메시지 수
 ```
 
 ### 동작 방식
@@ -346,13 +347,14 @@ Firebase Realtime Database (루트)
 
 #### 사용자별 통계 업데이트
 
-각 Cloud Functions 핸들러는 전역 통계와 함께 사용자별 통계도 자동으로 업데이트합니다:
+각 Cloud Functions 핸들러는 전역 통계와 함께 사용자별 통계도 자동으로 업데이트합니다.
+모든 사용자별 통계는 공통 핸들러 `firebase/functions/src/handlers/user-action-counters.handler.ts`의 `incrementActionCounter()` 함수를 통해 관리됩니다:
 
-- **사용자 생성 시**: `/users/{uid}/counters/user`를 1로 설정합니다.
-- **좋아요 시**: 좋아요를 누른 사용자의 `/users/{uid}/counters/like`를 증가시킵니다.
-- **댓글 작성 시**: 댓글 작성자의 `/users/{authorUid}/counters/comment`를 증가시킵니다.
-- **팔로우 시**: 팔로우하는 사용자의 `/users/{followerUid}/counters/follow`를 증가시킵니다.
-- **채팅 메시지 전송 시**: 발신자의 `/users/{senderUid}/counters/chat`를 증가시킵니다.
+- **사용자 생성 시**: `/user-action-counters/{uid}/user`를 1로 설정합니다.
+- **좋아요 시**: 좋아요를 누른 사용자의 `/user-action-counters/{uid}/like`를 증가시킵니다.
+- **댓글 작성 시**: 댓글 작성자의 `/user-action-counters/{authorUid}/comment`를 증가시킵니다.
+- **팔로우 시**: 팔로우하는 사용자의 `/user-action-counters/{followerUid}/follow`를 증가시킵니다.
+- **채팅 메시지 전송 시**: 발신자의 `/user-action-counters/{senderUid}/chat`를 증가시킵니다.
 
 모든 카운터는 `ServerValue.increment()`를 사용하여 동시성 문제 없이 원자적으로 업데이트됩니다.
 
@@ -360,9 +362,10 @@ Firebase Realtime Database (루트)
 
 - **클라이언트는** 통계 값을 읽기만 할 수 있습니다:
   - 전역 통계: `/stats/counters/*` 읽기 (홈페이지 통계 카드 표시용)
-  - 사용자별 통계: `/users/{uid}/counters/*` 읽기 (프로필 페이지 통계 표시용)
+  - 사용자별 통계: `/user-action-counters/{uid}/*` 읽기 (프로필 페이지 통계 표시용)
 - **서버(Cloud Functions)는** 통계 값을 자동으로 증감합니다:
   - Multi-path updates를 사용하여 전역 통계와 사용자별 통계를 동시에 원자적으로 업데이트
+  - `incrementActionCounter()` 공통 함수를 통해 모든 action 카운터를 일관되게 관리
   - 클라이언트의 직접 쓰기는 보안 규칙으로 차단됨
 
 ### 활용 예시

@@ -5,6 +5,7 @@
 import * as admin from "firebase-admin";
 import * as logger from "firebase-functions/logger";
 import {UserData} from "../types";
+import {incrementActionCounter} from "./user-action-counters.handler";
 
 /**
  * 사용자 등록 시 user-props 노드에 주요 필드를 분리 저장하고 createdAt을 설정합니다.
@@ -43,12 +44,6 @@ export async function handleUserCreate(
     logger.info("createdAt 저장 예정", {uid, createdAt});
   }
 
-  // 📊 전체 사용자 통계 업데이트: /stats/counters/user +1
-  updates["stats/counters/user"] = admin.database.ServerValue.increment(1);
-
-  // 📊 사용자별 통계 업데이트: /users/{uid}/counters/user +1
-  updates[`users/${uid}/counters/user`] = admin.database.ServerValue.increment(1);
-
   if (Object.keys(updates).length > 0) {
     await admin.database().ref().update(updates);
     logger.info("사용자 생성 관련 업데이트 완료", {
@@ -56,6 +51,9 @@ export async function handleUserCreate(
       updatesCount: Object.keys(updates).length,
     });
   }
+
+  // 📊 전체 사용자 통계 및 사용자별 통계 업데이트
+  await incrementActionCounter(uid, "user", 1);
 
   return {
     success: true,
