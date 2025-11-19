@@ -60,6 +60,13 @@
 	let recentKeys = $state<string[]>([]);
 
 	/**
+	 * 1초 대기 헬퍼 함수
+	 */
+	function sleep(ms: number): Promise<void> {
+		return new Promise((resolve) => setTimeout(resolve, ms));
+	}
+
+	/**
 	 * 게시글 생성 핸들러
 	 */
 	async function handleGeneratePosts(): Promise<void> {
@@ -86,12 +93,13 @@
 			const uid = authStore.user.uid;
 
 			for (let i = 0; i < selectedCount; i += 1) {
-				const timestamp = Date.now() + i; // 각 게시글에 고유한 타임스탬프
+				const timestamp = Date.now(); // 각 게시글에 현재 타임스탬프 사용
+				const postNumber = i + 1; // 게시글 번호 (1부터 시작)
 				const postData = {
 					authorUid: uid, // 작성자 UID (Firebase Rules 필수 필드)
 					category: selectedCategory, // 선택한 카테고리
 					title: `테스트 게시글 #${timestamp}`, // 제목
-					text: `이것은 ${categoryLabels[selectedCategory]} 카테고리의 테스트 게시글입니다. (생성 시각: ${new Date(timestamp).toLocaleString('ko-KR')})`, // 내용
+					text: `${categoryLabels[selectedCategory]} #${postNumber} - 이것은 테스트 게시글입니다. (생성 시각: ${new Date(timestamp).toLocaleString('ko-KR')})`, // 내용
 					createdAt: timestamp, // 생성 시각
 					updatedAt: timestamp // 수정 시각
 				};
@@ -106,6 +114,11 @@
 				// 최근 생성된 키 저장 (최대 5개)
 				if (newPostRef.key) {
 					recentKeys = [newPostRef.key, ...recentKeys].slice(0, 5);
+				}
+
+				// 다음 게시글 생성 전에 1초 대기 (마지막 게시글 제외)
+				if (i < selectedCount - 1) {
+					await sleep(1000);
 				}
 			}
 

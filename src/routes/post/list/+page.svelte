@@ -203,7 +203,7 @@ async function handleToggleLike(event: MouseEvent, targetId: string, targetType:
 	</div>
 
 	<!-- 카테고리 텍스트 네비게이션 -->
-	<div class="mb-6 flex">
+	<div class="mb-6 flex px-4 md:px-0">
 		<CategoryNavigation
 			{selectedCategory}
 			on:change={(event) => (selectedCategory = event.detail.category)}
@@ -261,11 +261,11 @@ async function handleToggleLike(event: MouseEvent, targetId: string, targetType:
 	@import 'tailwindcss' reference;
 
 	.post-list-container {
-		@apply mx-auto max-w-4xl p-4;
+		@apply mx-auto max-w-4xl md:p-4;
 	}
 
 	.post-list-header {
-		@apply mb-6 flex items-center justify-between;
+		@apply mb-6 flex items-center justify-between px-4 md:px-0;
 	}
 
 	.post-list-title {
