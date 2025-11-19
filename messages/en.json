@@ -324,6 +324,7 @@
 	"feedEmpty": "Your feed is empty. Follow people to fill your feed!",
 	"feedLoadingMore": "Loading more...",
 	"feedLoadMore": "Load More",
+	"feedNoMore": "You've reached the end of your feed",
 	"followingList": "Following List",
 	"followersList": "Followers List",
 	"noFollowing": "You are not following anyone",
@@ -356,5 +357,18 @@
 	"myStatsDescription": "Daily snapshots of followers, likes, and comments.",
 	"menuPublicProfile": "Public Profile",
 	"attachmentShowLess": "Show less",
-	"sidebarPopularUsers": "Popular Users"
+	"sidebarPopularUsers": "Popular Users",
+	"프로필_게시글_수": "Posts",
+	"프로필_댓글_수": "Comments",
+	"influencerRankingTitle": "Influencer Rankings",
+	"influencerRankingDescription": "See the most engaged users",
+	"influencerTabDaily": "Daily",
+	"influencerTabMonthly": "Monthly",
+	"influencerTabYearly": "Yearly",
+	"influencerLoading": "Loading influencer data...",
+	"influencerEmpty": "No ranking data yet.",
+	"influencerScore": "Score:",
+	"influencerUnknownUser": "Unknown User",
+	"influencerUnknown": "Unknown",
+	"loadingGeneric": "Loading..."
 }

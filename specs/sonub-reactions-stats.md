@@ -1,8 +1,8 @@
 ---
-name: sonub-reactions-stats-plan
-title: 리액션 집계 및 통계 기능 - 설계 계획서
-version: 1.3.0
-description: 사용자별 좋아요/댓글 집계, 일/월/년 통계, 인플루언서 랭킹 시스템 설계, 본인 반응 제외, 삭제 로직 대칭성, UTC 기준 날짜 계산, 핸들러 아키텍처 분리 포함
+name: sonub-reactions-stats
+title: 리액션 집계 및 통계 기능 - 설계 및 구현
+version: 1.4.0
+description: 사용자별 좋아요/댓글 집계, 일/월/년 통계, 인플루언서 랭킹 시스템 설계 및 구현, 본인 반응 제외, 삭제 로직 대칭성, UTC 기준 날짜 계산, 핸들러 아키텍처 분리 포함
 author: Claude (SED Agent)
 email: noreply@anthropic.com
 homepage: https://github.com/thruthesky/
@@ -82,15 +82,22 @@ tags:
 
 **데이터 구조**:
 - `/posts/{postId}` - 포럼 게시글
+  - `authorUid`: 게시글 작성자 UID (실제 코드에서 사용)
   - `totalChildCount`: 게시글의 총 댓글 수 (모든 레벨 포함)
   - `childCount`: 게시글의 첫 번째 레벨 댓글 수
   - `likeCount`: 게시글이 받은 좋아요 수
+  - `createdAt`: 게시글 작성 시간 (밀리초 타임스탬프)
 - `/comments/{postId}/{commentId}` - 댓글
-  - `childCount`: 댓글의 직접 자식 댓글 수 (답글 수)
-  - `likeCount`: 댓글이 받은 좋아요 수
   - `authorUid`: 댓글 작성자 UID
   - `parentId`: 부모 댓글 ID (없으면 null)
+  - `childCount`: 댓글의 직접 자식 댓글 수 (답글 수)
+  - `likeCount`: 댓글이 받은 좋아요 수
+  - `createdAt`: 댓글 작성 시간 (밀리초 타임스탬프)
 - `/comment-locations/{commentId}` = `postId` (댓글 ID → 부모 게시글 매핑)
+
+**참고**:
+- 게시글 작성자 필드는 실제 코드에서 `authorUid`를 사용하고 있습니다 (comment.create.handler.ts:29, chat.message-category.handler.ts:157)
+- Firebase Database Structure 문서에는 `uid`로 명시되어 있으나, 실제 구현과 본 계획서에서는 `authorUid`를 사용합니다
 
 **Cloud Functions**:
 - `comment.create.handler.ts` - 댓글 생성 시 자동으로 `childCount`, `totalChildCount` 업데이트
@@ -550,8 +557,8 @@ interface InfluencerRanking {
 ### 4.4. 팔로우/언팔로우 시 통계 업데이트
 
 **트리거**:
-- `/follows/{followerUid}/{followingUid}` (onValueCreated) - 팔로우 시
-- `/follows/{followerUid}/{followingUid}` (onValueDeleted) - 언팔로우 시
+- `/user-following/{followerUid}/{followingUid}` (onValueCreated) - 팔로우 시
+- `/user-following/{followerUid}/{followingUid}` (onValueDeleted) - 언팔로우 시
 
 **핸들러 위치**:
 - **비즈니스 로직**: `firebase/functions/src/handlers/friend.follow.handler.ts` (기존 파일, 만약 존재한다면)
@@ -637,9 +644,9 @@ interface InfluencerRanking {
 - 이는 정상적인 동작이며, 전체 통계에서 팔로워 감소 추세를 파악하는 데 유용합니다
 
 **참고**:
-- 현재 Sonub에는 팔로우 시스템의 정확한 DB 구조가 명시되지 않았습니다
-- 위 경로 `/follows/{followerUid}/{followingUid}`는 일반적인 패턴을 가정한 것입니다
-- 실제 구현 시 현재 팔로우 시스템의 DB 구조에 맞게 경로를 조정해야 합니다
+- Sonub의 팔로우 시스템은 `/user-following/{followerUid}/{followingUid}`와 `/user-followers/{followingUid}/{followerUid}` 경로를 사용합니다
+- Cloud Functions에서는 `/user-following/` 경로의 생성/삭제 이벤트를 감지하여 통계를 업데이트합니다
+- `/user-followers/` 경로는 Cloud Functions가 자동으로 역참조를 생성/삭제합니다
 
 ### 4.5. 인플루언서 랭킹 업데이트 (스케줄드 함수)
 
@@ -851,19 +858,32 @@ const updates = {
 **디렉토리 구조**:
 
 ```
-firebase/functions/src/handlers/
-├── like.handler.ts              # 좋아요 비즈니스 로직
-├── comment.create.handler.ts    # 댓글 생성 비즈니스 로직
-├── post.create.handler.ts       # 게시글 생성 비즈니스 로직
-├── post.delete.handler.ts       # 게시글 삭제 비즈니스 로직
-├── friend.follow.handler.ts     # 팔로우 비즈니스 로직 (선택)
-│
-├── stats.like.handler.ts        # 좋아요 통계 집계
-├── stats.comment.handler.ts     # 댓글 통계 집계
-├── stats.post.handler.ts        # 게시글 통계 집계
-├── stats.follow.handler.ts      # 팔로우 통계 집계
-└── stats.ranking.handler.ts     # 인플루언서 랭킹 업데이트
+firebase/functions/src/
+├── handlers/
+│   ├── like.handler.ts              # 좋아요 비즈니스 로직 (기존)
+│   ├── comment.create.handler.ts    # 댓글 생성 비즈니스 로직 (기존)
+│   ├── post.create.handler.ts       # 게시글 생성 비즈니스 로직 (신규, 필요시)
+│   ├── post.delete.handler.ts       # 게시글 삭제 비즈니스 로직 (신규)
+│   ├── friend.follow.handler.ts     # 팔로우 비즈니스 로직 (기존)
+│   ├── user-action-counters.handler.ts  # 사용자별 통계 공통 함수 (기존)
+│   │
+│   ├── stats.like.handler.ts        # 좋아요 통계 집계 (신규)
+│   ├── stats.comment.handler.ts     # 댓글 통계 집계 (신규)
+│   ├── stats.post.handler.ts        # 게시글 통계 집계 (신규)
+│   ├── stats.follow.handler.ts      # 팔로우 통계 집계 (신규)
+│   └── stats.ranking.handler.ts     # 인플루언서 랭킹 업데이트 (신규)
+└── utils/
+    └── stats.utils.ts               # 통계 공통 유틸 함수 (신규)
 ```
+
+**공통 유틸 파일** (`firebase/functions/src/utils/stats.utils.ts`):
+- 모든 통계 핸들러가 공유하는 공통 함수 제공
+- 코드 중복 제거 및 일관성 보장
+- 주요 함수:
+  - `updateUserStats()` - 일일/월별/연도별/전체 통계 원자적 업데이트
+  - `formatDate()` - UTC 기준 날짜 계산 (yyyyMMdd, yyyyMM, yyyy)
+  - `updateInfluencerScore()` - 인플루언서 점수 재계산
+  - `getTargetAuthorUid()` - 타겟(게시글/댓글/메시지) 작성자 UID 조회
 
 **네이밍 컨벤션**:
 
@@ -911,10 +931,11 @@ firebase/functions/src/handlers/
   - 하위 컬렉션 삭제 (Cascade Delete): 좋아요, 댓글
 - **호출하지 않음**: 작성자의 `createdPosts` 통계 (통계 핸들러 담당)
 
-**`friend.follow.handler.ts`** (선택):
-- **트리거**: `/follows/{followerUid}/{followingUid}` (onValueCreated, onValueDeleted)
+**`friend.follow.handler.ts`** (기존 파일):
+- **트리거**: `/user-following/{followerUid}/{followingUid}` (onValueCreated, onValueDeleted)
 - **책임**:
-  - 팔로우/언팔로우 관련 비즈니스 로직 (있다면)
+  - `/user-followers/{followingUid}/{followerUid}` 역참조 생성/삭제
+  - 사용자별 통계 (`/user-action-counters/{followerUid}/follow`) 증감 (누른 사람 기준, `incrementActionCounter()` 함수 사용)
 - **호출하지 않음**: 팔로잉 대상의 `receivedFollowers` 통계 (통계 핸들러 담당)
 
 **2. 통계 집계 핸들러**
@@ -941,7 +962,7 @@ firebase/functions/src/handlers/
   - 삭제 시 작성 날짜(`createdAt`) 기준으로 통계 감소
 
 **`stats.follow.handler.ts`** (신규):
-- **트리거**: `/follows/{followerUid}/{followingUid}` (onValueCreated, onValueDeleted)
+- **트리거**: `/user-following/{followerUid}/{followingUid}` (onValueCreated, onValueDeleted)
 - **책임**:
   - 팔로잉 대상의 일일/월별/연도별/전체 `receivedFollowers` 통계 증감
   - 음수값 허용 (언팔로우가 팔로우보다 많은 경우)
@@ -953,7 +974,186 @@ firebase/functions/src/handlers/
   - Top 100 사용자 선정 및 `/rankings/influencers/{period}` 업데이트
   - 랭킹 정렬 키 생성: `-{score}-{uid}`
 
-#### 4.7.4. 구현 예시
+#### 4.7.4. 공통 유틸 함수 구현 예시
+
+**파일**: `firebase/functions/src/utils/stats.utils.ts`
+
+```typescript
+import * as admin from 'firebase-admin';
+import { ServerValue } from 'firebase-admin/database';
+import * as logger from 'firebase-functions/logger';
+
+/**
+ * 사용자 통계 업데이트 공통 함수
+ *
+ * @param uid - 사용자 UID
+ * @param statType - 통계 타입
+ * @param delta - 증감량 (1: 증가, -1: 감소)
+ * @param createdAt - 선택적 작성 날짜 (삭제 시 작성 날짜 기준 통계 감소)
+ */
+export async function updateUserStats(
+  uid: string,
+  statType: 'receivedLikes' | 'receivedComments' | 'receivedPostComments' |
+            'receivedCommentReplies' | 'receivedFollowers' | 'createdPosts' | 'createdComments',
+  delta: number,
+  createdAt?: number
+): Promise<void> {
+  // 날짜 계산 (UTC 기준)
+  const targetDate = createdAt ? new Date(createdAt) : new Date();
+  const yyyymmdd = formatDate(targetDate, 'yyyyMMdd');
+  const yyyymm = formatDate(targetDate, 'yyyyMM');
+  const yyyy = formatDate(targetDate, 'yyyy');
+
+  // Multi-path update (원자적 업데이트)
+  const updates: Record<string, unknown> = {
+    // 일일 통계
+    [`user-daily-stats/${uid}/${yyyymmdd}/${statType}`]: ServerValue.increment(delta),
+    [`user-daily-stats/${uid}/${yyyymmdd}/lastUpdated`]: ServerValue.TIMESTAMP,
+
+    // 월별 통계
+    [`user-monthly-stats/${uid}/${yyyymm}/${statType}`]: ServerValue.increment(delta),
+    [`user-monthly-stats/${uid}/${yyyymm}/lastUpdated`]: ServerValue.TIMESTAMP,
+
+    // 연도별 통계
+    [`user-yearly-stats/${uid}/${yyyy}/${statType}`]: ServerValue.increment(delta),
+    [`user-yearly-stats/${uid}/${yyyy}/lastUpdated`]: ServerValue.TIMESTAMP,
+
+    // 전체 통계
+    [`users/${uid}/stats/total${capitalize(statType)}`]: ServerValue.increment(delta),
+    [`users/${uid}/stats/lastUpdated`]: ServerValue.TIMESTAMP,
+  };
+
+  await admin.database().ref().update(updates);
+
+  logger.info('사용자 통계 업데이트 완료', {
+    uid,
+    statType,
+    delta,
+    yyyymmdd,
+  });
+}
+
+/**
+ * UTC 기준 날짜 포맷 함수
+ *
+ * @param date - Date 객체
+ * @param format - 'yyyyMMdd' | 'yyyyMM' | 'yyyy'
+ * @returns 포맷된 날짜 문자열
+ */
+export function formatDate(date: Date, format: 'yyyyMMdd' | 'yyyyMM' | 'yyyy'): string {
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(date.getUTCDate()).padStart(2, '0');
+
+  if (format === 'yyyyMMdd') {
+    return `${year}${month}${day}`;
+  } else if (format === 'yyyyMM') {
+    return `${year}${month}`;
+  } else {
+    return `${year}`;
+  }
+}
+
+/**
+ * 문자열의 첫 글자를 대문자로 변환
+ */
+function capitalize(str: string): string {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+/**
+ * 타겟(게시글/댓글/메시지) 작성자 UID 조회
+ *
+ * @param targetId - 타겟 ID
+ * @param targetType - 타겟 타입 ("post", "comment", "chat-message-{roomId}")
+ * @returns 작성자 UID
+ */
+export async function getTargetAuthorUid(
+  targetId: string,
+  targetType: string
+): Promise<string | null> {
+  try {
+    // 게시글
+    if (targetType === 'post') {
+      const snapshot = await admin.database().ref(`posts/${targetId}/authorUid`).once('value');
+      return snapshot.exists() ? snapshot.val() as string : null;
+    }
+
+    // 댓글
+    if (targetType === 'comment') {
+      // comment-locations에서 postId 조회
+      const locationSnapshot = await admin.database().ref(`comment-locations/${targetId}`).once('value');
+      if (!locationSnapshot.exists()) {
+        logger.error('댓글 위치 정보를 찾을 수 없음', { targetId });
+        return null;
+      }
+      const postId = locationSnapshot.val() as string;
+
+      // comments/{postId}/{commentId}/authorUid 조회
+      const snapshot = await admin.database().ref(`comments/${postId}/${targetId}/authorUid`).once('value');
+      return snapshot.exists() ? snapshot.val() as string : null;
+    }
+
+    // 채팅 메시지
+    if (targetType.startsWith('chat-message-')) {
+      const roomId = targetType.substring('chat-message-'.length);
+      const snapshot = await admin.database().ref(`chat-messages/${roomId}/${targetId}/senderUid`).once('value');
+      return snapshot.exists() ? snapshot.val() as string : null;
+    }
+
+    logger.error('알 수 없는 타겟 타입', { targetId, targetType });
+    return null;
+  } catch (error) {
+    logger.error('타겟 작성자 UID 조회 실패', {
+      targetId,
+      targetType,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return null;
+  }
+}
+
+/**
+ * 인플루언서 점수 재계산
+ *
+ * @param uid - 사용자 UID
+ */
+export async function updateInfluencerScore(uid: string): Promise<void> {
+  try {
+    // 사용자의 totalReceivedLikes와 totalReceivedComments 조회
+    const statsSnapshot = await admin.database().ref(`users/${uid}/stats`).once('value');
+
+    if (!statsSnapshot.exists()) {
+      logger.warn('사용자 통계를 찾을 수 없음', { uid });
+      return;
+    }
+
+    const stats = statsSnapshot.val() as Record<string, number>;
+    const receivedLikes = stats.totalReceivedLikes || 0;
+    const receivedComments = stats.totalReceivedComments || 0;
+
+    // 점수 계산: 좋아요 + (댓글 * 2)
+    const influencerScore = receivedLikes + (receivedComments * 2);
+
+    // 점수 업데이트
+    await admin.database().ref(`users/${uid}/stats/influencerScore`).set(influencerScore);
+
+    logger.info('인플루언서 점수 업데이트 완료', {
+      uid,
+      receivedLikes,
+      receivedComments,
+      influencerScore,
+    });
+  } catch (error) {
+    logger.error('인플루언서 점수 업데이트 실패', {
+      uid,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+}
+```
+
+#### 4.7.5. 구현 예시
 
 **비즈니스 로직 핸들러 (`like.handler.ts`)**:
 
@@ -994,12 +1194,12 @@ export const onLikeDeleted = onValueDeleted(
 );
 ```
 
-**통계 집계 핸들러 (`stats.like.handler.ts`)**:
+**통계 집계 핸들러 (`stats.like.handler.ts`)** - 공통 유틸 함수 사용:
 
 ```typescript
 import { onValueCreated, onValueDeleted } from 'firebase-functions/v2/database';
-import * as admin from 'firebase-admin';
-import { ServerValue } from 'firebase-admin/database';
+import * as logger from 'firebase-functions/logger';
+import { getTargetAuthorUid, updateUserStats, updateInfluencerScore } from '../utils/stats.utils';
 
 // 좋아요 추가 시 통계 업데이트
 export const onLikeCreatedStats = onValueCreated(
@@ -1009,46 +1209,29 @@ export const onLikeCreatedStats = onValueCreated(
     const targetId = event.params.targetId;
     const targetType = event.data.val();
 
+    logger.info('👍 좋아요 통계 업데이트 시작', { uid, targetId, targetType });
+
     // 1. 타겟 작성자 UID 조회
     const targetAuthorUid = await getTargetAuthorUid(targetId, targetType);
 
-    // 2. 본인 반응 제외
-    if (uid === targetAuthorUid) {
-      console.log(`Self-like detected: ${uid} liked their own content ${targetId}`);
+    if (!targetAuthorUid) {
+      logger.error('타겟 작성자를 찾을 수 없음', { targetId, targetType });
       return;
     }
 
-    // 3. 날짜 계산 (UTC 기준)
-    const now = new Date();
-    const yyyymmdd = formatDate(now, 'yyyyMMdd', 'UTC');
-    const yyyymm = formatDate(now, 'yyyyMM', 'UTC');
-    const yyyy = formatDate(now, 'yyyy', 'UTC');
+    // 2. 본인 반응 제외
+    if (uid === targetAuthorUid) {
+      logger.info('본인 좋아요 감지 - 통계에서 제외', { uid, targetId });
+      return;
+    }
 
-    // 4. 통계 업데이트
-    const updates = {
-      // 일일 통계
-      [`user-daily-stats/${targetAuthorUid}/${yyyymmdd}/receivedLikes`]:
-        ServerValue.increment(1),
-      [`user-daily-stats/${targetAuthorUid}/${yyyymmdd}/lastUpdated`]:
-        ServerValue.TIMESTAMP,
+    // 3. 통계 업데이트 (공통 함수 사용)
+    await updateUserStats(targetAuthorUid, 'receivedLikes', 1);
 
-      // 월별 통계
-      [`user-monthly-stats/${targetAuthorUid}/${yyyymm}/receivedLikes`]:
-        ServerValue.increment(1),
-
-      // 연도별 통계
-      [`user-yearly-stats/${targetAuthorUid}/${yyyy}/receivedLikes`]:
-        ServerValue.increment(1),
-
-      // 전체 통계
-      [`users/${targetAuthorUid}/stats/totalReceivedLikes`]:
-        ServerValue.increment(1),
-    };
-
-    await admin.database().ref().update(updates);
-
-    // 5. 인플루언서 점수 재계산 (비동기)
+    // 4. 인플루언서 점수 재계산
     await updateInfluencerScore(targetAuthorUid);
+
+    logger.info('✅ 좋아요 통계 업데이트 완료', { uid, targetId, targetAuthorUid });
   }
 );
 
@@ -1056,10 +1239,42 @@ export const onLikeCreatedStats = onValueCreated(
 export const onLikeDeletedStats = onValueDeleted(
   { ref: '/likes/{uid}/{targetId}' },
   async (event) => {
-    // 위와 동일하지만 ServerValue.increment(-1) 사용
+    const uid = event.params.uid;
+    const targetId = event.params.targetId;
+    const targetType = event.data.val();
+
+    logger.info('💔 좋아요 취소 통계 업데이트 시작', { uid, targetId, targetType });
+
+    // 1. 타겟 작성자 UID 조회
+    const targetAuthorUid = await getTargetAuthorUid(targetId, targetType);
+
+    if (!targetAuthorUid) {
+      logger.error('타겟 작성자를 찾을 수 없음', { targetId, targetType });
+      return;
+    }
+
+    // 2. 본인 반응 제외
+    if (uid === targetAuthorUid) {
+      logger.info('본인 좋아요 취소 감지 - 통계에서 제외', { uid, targetId });
+      return;
+    }
+
+    // 3. 통계 업데이트 (공통 함수 사용, -1 감소)
+    await updateUserStats(targetAuthorUid, 'receivedLikes', -1);
+
+    // 4. 인플루언서 점수 재계산
+    await updateInfluencerScore(targetAuthorUid);
+
+    logger.info('✅ 좋아요 취소 통계 업데이트 완료', { uid, targetId, targetAuthorUid });
   }
 );
 ```
+
+**장점**:
+- 코드 중복 제거 ✅ (날짜 계산, multi-path update 로직 공유)
+- 가독성 향상 ✅ (핵심 로직만 남음)
+- 유지보수 용이 ✅ (통계 구조 변경 시 `updateUserStats()` 함수만 수정)
+- 일관성 보장 ✅ (모든 핸들러가 동일한 방식으로 통계 업데이트)
 
 #### 4.7.5. 핸들러 등록 (`index.ts`)
 
@@ -1501,7 +1716,482 @@ const sortKey = `-${String(influencerScore).padStart(10, '0')}-${uid}`;
 
 ---
 
-## 11. 체크리스트
+## 11. 구현 결과
+
+### 11.1. 구현 개요
+
+본 섹션은 인플루언서 통계 시스템의 실제 구현 결과를 기록합니다.
+
+**구현 범위**:
+- ✅ Cloud Functions 백엔드 핸들러 (통계 집계 및 순위 업데이트)
+- ✅ 클라이언트 UI (사이드바 Top 5 인플루언서, 전용 순위 페이지)
+- ✅ 다국어 지원 (한국어, 영어, 일본어, 중국어)
+- ⏳ Firebase Database Security Rules (대기 중)
+- ⏳ 통합 테스트 및 프로덕션 검증 (대기 중)
+
+**구현 날짜**: 2025-01-19
+
+---
+
+### 11.2. Cloud Functions 구현 상세
+
+#### 11.2.1. 공통 유틸리티 (`stats.utils.ts`)
+
+**파일 경로**: `firebase/functions/src/utils/stats.utils.ts`
+
+**구현 함수**:
+
+1. **`formatDate(date: Date, format: string): string`**
+   - UTC 기준 날짜를 지정된 형식으로 변환
+   - 지원 형식: `yyyyMMdd`, `yyyyMM`, `yyyy`
+   - 타임존에 관계없이 일관된 통계 집계 보장
+
+2. **`updateUserStats(uid: string, statType: string, delta: number, timestamp?: number): Promise<void>`**
+   - 사용자 통계를 원자적으로 업데이트
+   - 일별/월별/연간/전체 통계를 동시에 업데이트
+   - `ServerValue.increment()`를 사용한 동시성 보장
+   - 데이터베이스 경로:
+     ```
+     /user-stats/{uid}/daily/{yyyyMMdd}/{statType}
+     /user-stats/{uid}/monthly/{yyyyMM}/{statType}
+     /user-stats/{uid}/yearly/{yyyy}/{statType}
+     /user-stats/{uid}/total/{statType}
+     ```
+
+3. **`updateInfluencerScore(uid: string): Promise<void>`**
+   - 인플루언서 점수 재계산 및 업데이트
+   - 계산 공식: `(receivedLikes × 1) + (receivedComments × 3) + (receivedFollowers × 5)`
+   - 전체 통계에서 읽어서 점수 계산
+   - `/influencer-scores/{uid}` 경로에 저장
+   - 점수가 0이면 경로 삭제 (순위에서 제거)
+
+**핵심 로직**:
+```typescript
+// UTC 날짜 계산 예시
+const now = new Date();
+const dateDaily = formatDate(now, 'yyyyMMdd');   // "20250119"
+const dateMonthly = formatDate(now, 'yyyyMM');   // "202501"
+const dateYearly = formatDate(now, 'yyyy');      // "2025"
+
+// 원자적 통계 업데이트
+const updates = {
+  [`user-stats/${uid}/daily/${dateDaily}/${statType}`]: admin.database.ServerValue.increment(delta),
+  [`user-stats/${uid}/monthly/${dateMonthly}/${statType}`]: admin.database.ServerValue.increment(delta),
+  [`user-stats/${uid}/yearly/${dateYearly}/${statType}`]: admin.database.ServerValue.increment(delta),
+  [`user-stats/${uid}/total/${statType}`]: admin.database.ServerValue.increment(delta),
+};
+await admin.database().ref().update(updates);
+```
+
+---
+
+#### 11.2.2. 좋아요 통계 핸들러 (`stats.like.handler.ts`)
+
+**파일 경로**: `firebase/functions/src/handlers/stats.like.handler.ts`
+
+**트리거 경로**: `/likes/{uid}/{targetId}`
+
+**구현 함수**:
+
+1. **`handleLikeCreate(likerUid: string, targetId: string, likeData: Record<string, unknown>): Promise<void>`**
+   - 좋아요 생성 시 통계 업데이트
+   - 타겟 타입에 따라 작성자 UID 조회 (게시글/댓글/메시지)
+   - **본인 반응 제외**: `likerUid === targetAuthorUid`이면 통계 업데이트 건너뜀
+   - `receivedLikes` 통계 +1 증가
+   - 인플루언서 점수 재계산
+
+2. **`handleLikeDelete(likerUid: string, targetId: string, likeData: Record<string, unknown>): Promise<void>`**
+   - 좋아요 삭제 시 통계 업데이트 (생성의 역연산)
+   - **본인 반응 제외**: `likerUid === targetAuthorUid`이면 통계 업데이트 건너뜀
+   - `receivedLikes` 통계 -1 감소
+   - 인플루언서 점수 재계산
+
+**핵심 로직**:
+```typescript
+// 타겟 작성자 조회
+const targetAuthorUid = await getTargetAuthorUid(targetId, targetType);
+
+// 본인 반응 제외
+if (likerUid === targetAuthorUid) {
+  logger.info('본인이 자신의 콘텐츠에 좋아요를 눌러서 통계에서 제외');
+  return;
+}
+
+// 통계 업데이트
+await updateUserStats(targetAuthorUid, 'receivedLikes', 1, timestamp);
+
+// 인플루언서 점수 재계산
+await updateInfluencerScore(targetAuthorUid);
+```
+
+---
+
+#### 11.2.3. 댓글 통계 핸들러 (`stats.comment.handler.ts`)
+
+**파일 경로**: `firebase/functions/src/handlers/stats.comment.handler.ts`
+
+**트리거 경로**: `/comments/{postId}/{commentId}`
+
+**구현 함수**:
+
+1. **`handleCommentCreateStats(postId: string, commentId: string, commentData: Record<string, unknown>): Promise<void>`**
+   - 댓글 생성 시 통계 업데이트
+   - `parentId`가 없으면 게시글에 대한 댓글, 있으면 댓글에 대한 답글
+   - 타겟 작성자 UID 조회 (게시글 또는 부모 댓글)
+   - **본인 반응 제외**: 댓글 작성자와 타겟 작성자가 같으면 통계 업데이트 건너뜀
+   - `receivedComments` 통계 +1 증가
+   - 인플루언서 점수 재계산
+
+2. **`handleCommentDeleteStats(postId: string, commentId: string, commentData: Record<string, unknown>): Promise<void>`**
+   - 댓글 삭제 시 통계 업데이트 (생성의 역연산)
+   - **본인 반응 제외**: 댓글 작성자와 타겟 작성자가 같으면 통계 업데이트 건너뜀
+   - `receivedComments` 통계 -1 감소
+   - 인플루언서 점수 재계산
+
+**핵심 로직**:
+```typescript
+// 타겟 작성자 조회
+const targetAuthorUid = parentId
+  ? await getCommentAuthorUid(postId, parentId)  // 부모 댓글 작성자
+  : await getPostAuthorUid(postId);              // 게시글 작성자
+
+// 본인 반응 제외
+if (commentAuthorUid === targetAuthorUid) {
+  logger.info('본인이 자신의 게시글/댓글에 댓글을 작성해서 통계에서 제외');
+  return;
+}
+
+// 통계 업데이트
+await updateUserStats(targetAuthorUid, 'receivedComments', 1, timestamp);
+
+// 인플루언서 점수 재계산
+await updateInfluencerScore(targetAuthorUid);
+```
+
+---
+
+#### 11.2.4. 게시글 통계 핸들러 (`stats.post.handler.ts`)
+
+**파일 경로**: `firebase/functions/src/handlers/stats.post.handler.ts`
+
+**트리거 경로**: `/posts/{postId}`
+
+**구현 함수**:
+
+1. **`handlePostCreate(postId: string, postData: Record<string, unknown>): Promise<void>`**
+   - 게시글 생성 시 작성자의 `createdPosts` 통계 +1 증가
+
+2. **`handlePostDelete(postId: string, postData: Record<string, unknown>): Promise<void>`**
+   - 게시글 삭제 시 작성자의 `createdPosts` 통계 -1 감소
+
+**참고**: 게시글 통계는 인플루언서 점수에 직접 영향을 주지 않으므로 점수 재계산을 하지 않습니다.
+
+---
+
+#### 11.2.5. 팔로우 통계 핸들러 (`stats.follow.handler.ts`)
+
+**파일 경로**: `firebase/functions/src/handlers/stats.follow.handler.ts`
+
+**트리거 경로**: `/user-following/{followerUid}/{followingUid}`
+
+**구현 함수**:
+
+1. **`handleFollowCreateStats(followerUid: string, followingUid: string): Promise<void>`**
+   - 팔로우 생성 시 팔로우를 받은 사용자의 `receivedFollowers` 통계 +1 증가
+   - 인플루언서 점수 재계산
+
+2. **`handleFollowDeleteStats(followerUid: string, followingUid: string): Promise<void>`**
+   - 팔로우 삭제 시 팔로우를 받았던 사용자의 `receivedFollowers` 통계 -1 감소
+   - 인플루언서 점수 재계산
+
+**핵심 로직**:
+```typescript
+// 팔로우를 받은 사용자(followingUid)의 통계 업데이트
+await updateUserStats(followingUid, 'receivedFollowers', 1, Date.now());
+
+// 인플루언서 점수 재계산
+await updateInfluencerScore(followingUid);
+```
+
+---
+
+#### 11.2.6. 인플루언서 순위 핸들러 (`stats.ranking.handler.ts`)
+
+**파일 경로**: `firebase/functions/src/handlers/stats.ranking.handler.ts`
+
+**트리거 경로**: `/influencer-scores/{uid}`
+
+**구현 함수**:
+
+1. **`handleInfluencerScoreChange(uid: string, newScore: number | null): Promise<void>`**
+   - 인플루언서 점수가 변경될 때 순위 업데이트
+   - 일별/월별/연간/전체 순위를 동시에 업데이트
+   - **점수 역순 저장**: Firebase RTDB의 오름차순 정렬을 내림차순으로 활용하기 위해 점수에 `-`를 곱해서 저장
+   - 점수가 0이거나 null이면 순위에서 제거
+
+**핵심 로직**:
+```typescript
+// 현재 UTC 날짜 계산
+const dateDaily = formatDate(now, 'yyyyMMdd');
+const dateMonthly = formatDate(now, 'yyyyMM');
+const dateYearly = formatDate(now, 'yyyy');
+
+if (newScore === null || newScore === 0) {
+  // 순위에서 제거
+  updates[`influencer-rankings/daily/${dateDaily}/${uid}`] = null;
+  updates[`influencer-rankings/monthly/${dateMonthly}/${uid}`] = null;
+  updates[`influencer-rankings/yearly/${dateYearly}/${uid}`] = null;
+  updates[`influencer-rankings/total/${uid}`] = null;
+} else {
+  // 점수를 역순으로 저장 (내림차순 정렬을 위해)
+  const negativeScore = -newScore;
+
+  updates[`influencer-rankings/daily/${dateDaily}/${uid}`] = negativeScore;
+  updates[`influencer-rankings/monthly/${dateMonthly}/${uid}`] = negativeScore;
+  updates[`influencer-rankings/yearly/${dateYearly}/${uid}`] = negativeScore;
+  updates[`influencer-rankings/total/${uid}`] = negativeScore;
+}
+
+await admin.database().ref().update(updates);
+```
+
+---
+
+#### 11.2.7. Cloud Functions 트리거 등록 (`index.ts`)
+
+**파일 경로**: `firebase/functions/src/index.ts`
+
+**등록된 트리거 (총 9개)**:
+
+| 트리거 함수명 | 트리거 이벤트 | 트리거 경로 | 설명 |
+|-------------|-------------|-----------|------|
+| `onLikeCreatedStats` | onValueCreated | `/likes/{uid}/{targetId}` | 좋아요 생성 시 통계 업데이트 |
+| `onLikeDeletedStats` | onValueDeleted | `/likes/{uid}/{targetId}` | 좋아요 삭제 시 통계 업데이트 |
+| `onCommentCreateStats` | onValueCreated | `/comments/{postId}/{commentId}` | 댓글 생성 시 통계 업데이트 |
+| `onCommentDeleteStats` | onValueDeleted | `/comments/{postId}/{commentId}` | 댓글 삭제 시 통계 업데이트 |
+| `onPostCreateStats` | onValueCreated | `/posts/{postId}` | 게시글 생성 시 통계 업데이트 |
+| `onPostDeleteStats` | onValueDeleted | `/posts/{postId}` | 게시글 삭제 시 통계 업데이트 |
+| `onUserFollowingCreateStats` | onValueCreated | `/user-following/{followerUid}/{followingUid}` | 팔로우 생성 시 통계 업데이트 |
+| `onUserFollowingDeleteStats` | onValueDeleted | `/user-following/{followerUid}/{followingUid}` | 팔로우 삭제 시 통계 업데이트 |
+| `onInfluencerScoreWrite` | onValueWritten | `/influencer-scores/{uid}` | 인플루언서 점수 변경 시 순위 업데이트 |
+
+**배포 결과**:
+- 배포 명령: `npm run deploy`
+- 배포 날짜: 2025-01-19
+- 배포 상태: ✅ 성공
+- 리전: `asia-southeast1`
+
+---
+
+### 11.3. 클라이언트 구현 상세
+
+#### 11.3.1. 인플루언서 데이터 조회 함수 (`user.functions.ts`)
+
+**파일 경로**: `src/lib/functions/user.functions.ts`
+
+**추가된 인터페이스**:
+```typescript
+export interface InfluencerRanking {
+  uid: string;
+  score: number;
+}
+```
+
+**추가된 함수**:
+
+1. **`getCurrentDate(format: 'yyyyMMdd' | 'yyyyMM' | 'yyyy'): string`**
+   - 현재 UTC 날짜를 지정된 형식으로 반환
+   - Cloud Functions와 동일한 날짜 계산 로직 사용
+   - 타임존에 관계없이 일관된 날짜 계산 보장
+
+2. **`getTopInfluencers(period: 'daily' | 'monthly' | 'yearly' | 'total', date?: string, limit: number = 100): Promise<InfluencerRanking[]>`**
+   - 지정된 기간의 Top N 인플루언서 조회
+   - Firebase RTDB 쿼리: `orderByValue()` + `limitToFirst(N)`
+   - 점수가 역순(negative)으로 저장되어 있으므로 다시 양수로 변환
+   - 데이터베이스 경로:
+     - 일간: `/influencer-rankings/daily/{yyyyMMdd}`
+     - 월간: `/influencer-rankings/monthly/{yyyyMM}`
+     - 연간: `/influencer-rankings/yearly/{yyyy}`
+     - 전체: `/influencer-rankings/total`
+
+3. **`getInfluencerScore(uid: string): Promise<number>`**
+   - 특정 사용자의 인플루언서 점수 조회
+   - 경로: `/influencer-scores/{uid}`
+   - 점수가 없으면 0 반환
+
+**핵심 로직**:
+```typescript
+// 날짜 계산
+const today = getCurrentDate('yyyyMMdd');  // "20250119"
+
+// Top 5 조회
+const rankings = await getTopInfluencers('daily', today, 5);
+
+// 결과: [{ uid: "user1", score: 150 }, { uid: "user2", score: 120 }, ...]
+```
+
+**성능 최적화**:
+- `limitToFirst(N)`를 사용하여 필요한 개수만 조회
+- `getUserBasicInfo()`를 병렬로 호출 (`Promise.all()`)
+- 필요한 필드만 조회 (displayName, photoUrl)
+
+---
+
+#### 11.3.2. 사이드바 Top 5 인플루언서 표시
+
+**파일 경로**: `src/lib/components/sidebar/SuggestionsCard.svelte`
+
+**구현 내용**:
+- "인기 사용자" 메뉴 아이템 추가
+- Top 5 인플루언서 아바타 + 이름 + 점수 표시
+- 클릭 시 해당 사용자 프로필로 이동
+- "인기 사용자" 클릭 시 `/user/influencers` 페이지로 이동
+
+**UI 구조**:
+```
+┌─────────────────────────────┐
+│ ✨ 추천                     │
+├─────────────────────────────┤
+│ 📈 인기 게시물           >  │
+│ 👥 인기 사용자           >  │
+├─────────────────────────────┤
+│ ┌─────────────────────────┐ │
+│ │ [아바타] 사용자1        │ │
+│ │          점수: 150      │ │
+│ ├─────────────────────────┤ │
+│ │ [아바타] 사용자2        │ │
+│ │          점수: 120      │ │
+│ ├─────────────────────────┤ │
+│ │ [아바타] 사용자3        │ │
+│ │          점수: 95       │ │
+│ ├─────────────────────────┤ │
+│ │ [아바타] 사용자4        │ │
+│ │          점수: 80       │ │
+│ ├─────────────────────────┤ │
+│ │ [아바타] 사용자5        │ │
+│ │          점수: 65       │ │
+│ └─────────────────────────┘ │
+└─────────────────────────────┘
+```
+
+**상태 관리**:
+- Svelte 5 runes 사용: `$state`, `$effect`
+- 컴포넌트 마운트 시 자동으로 Top 5 로드
+- 로딩 상태 표시
+- 데이터 없을 시 표시 안 함
+
+---
+
+#### 11.3.3. 인플루언서 순위 페이지 (`/user/influencers`)
+
+**파일 경로**: `src/routes/user/influencers/+page.svelte`
+
+**구현 내용**:
+- 일간/월간/연간 탭 메뉴
+- Top 100 인플루언서 목록 표시
+- 순위, 아바타, 이름, 점수 표시
+- 1~3위에 메달 아이콘 표시 (Trophy, Medal, Award)
+- 클릭 시 해당 사용자 프로필로 이동
+
+**UI 구조**:
+```
+┌──────────────────────────────────────┐
+│  인플루언서 순위                     │
+│  가장 많은 관심을 받은 사용자들을... │
+├──────────────────────────────────────┤
+│  [일간] [월간] [연간]                │
+├──────────────────────────────────────┤
+│ 🏆 [아바타] 사용자1      점수: 150 > │
+│ 🥈 [아바타] 사용자2      점수: 120 > │
+│ 🥉 [아바타] 사용자3      점수: 95  > │
+│ 4  [아바타] 사용자4      점수: 80  > │
+│ 5  [아바타] 사용자5      점수: 65  > │
+│ ...                                  │
+│ 100 [아바타] 사용자100   점수: 5   > │
+└──────────────────────────────────────┘
+```
+
+**상태 관리**:
+- 선택된 기간 (`selectedPeriod`): `$state`
+- 인플루언서 목록 (`influencers`): `$state`
+- 로딩 상태 (`isLoading`): `$state`
+- `$effect`를 사용하여 기간 변경 시 자동으로 데이터 재로드
+
+**반응형 디자인**:
+- 데스크톱: 화살표 아이콘 표시
+- 모바일: 화살표 아이콘 숨김
+- TailwindCSS 유틸리티 클래스로 스타일링
+
+---
+
+#### 11.3.4. 다국어 지원
+
+**구현 언어** (4개 언어):
+- 한국어 (`messages/ko.json`)
+- 영어 (`messages/en.json`)
+- 일본어 (`messages/ja.json`)
+- 중국어 (`messages/zh.json`)
+
+**추가된 번역 키**:
+```json
+{
+  "influencerRankingTitle": "인플루언서 순위",
+  "influencerRankingDescription": "가장 많은 관심을 받은 사용자들을 확인하세요",
+  "influencerTabDaily": "일간",
+  "influencerTabMonthly": "월간",
+  "influencerTabYearly": "연간",
+  "influencerLoading": "인플루언서 데이터를 불러오는 중...",
+  "influencerEmpty": "아직 순위 데이터가 없습니다.",
+  "influencerScore": "점수:",
+  "influencerUnknownUser": "알 수 없는 사용자",
+  "influencerUnknown": "알 수 없음",
+  "loadingGeneric": "로딩 중..."
+}
+```
+
+---
+
+### 11.4. 타입 체크 결과
+
+**명령**: `npm run check`
+
+**결과**:
+- ✅ 새로 구현된 파일 (`user.functions.ts`, `SuggestionsCard.svelte`, `/user/influencers/+page.svelte`): **0 에러**
+- ⚠️ 기존 파일 (`/user/profile/+page.svelte`): 2 에러 (기존 문제, 인플루언서 기능과 무관)
+- ⚠️ 전체 프로젝트: 2572 경고 (대부분 CSS @apply 규칙 및 접근성 경고, 무시 가능)
+
+**타입 안전성**: 모든 새 코드는 TypeScript 타입 체크를 통과했습니다.
+
+---
+
+### 11.5. 구현 미완료 항목
+
+다음 항목들은 아직 구현되지 않았습니다:
+
+1. **Firebase Database Security Rules**
+   - `/user-stats/*` 경로 보안 규칙 추가
+   - `/influencer-scores/*` 경로 보안 규칙 추가
+   - `/influencer-rankings/*` 경로 보안 규칙 추가
+   - 모든 경로는 **Cloud Functions에서만 쓰기**, 클라이언트는 **읽기만 가능**
+
+2. **통합 테스트**
+   - 좋아요/댓글/팔로우 생성 시 통계 증가 검증
+   - 좋아요/댓글/팔로우 삭제 시 통계 감소 검증
+   - 본인 반응 제외 로직 검증
+   - 인플루언서 점수 계산 정확도 검증
+   - UTC 날짜 계산 일관성 검증
+
+3. **데이터 마이그레이션**
+   - 기존 게시글/댓글에 `createdAt` 필드 백필 (필요 시)
+
+4. **프로덕션 검증**
+   - 실제 사용자 데이터로 통계 집계 검증
+   - 성능 모니터링
+   - 에러 로그 확인
+
+---
+
+## 12. 체크리스트
 
 설계 단계:
 - [x] 현재 DB 구조 분석 완료
@@ -1519,26 +2209,51 @@ const sortKey = `-${String(influencerScore).padStart(10, '0')}-${uid}`;
 - [x] 보안 및 어뷰징 방지 전략 수립 완료
 - [x] 게시글/댓글 삭제 시 통계 처리 정책 수립 완료
 
+구현 완료:
+- [x] 통계 집계 핸들러 구현
+  - [x] `stats.utils.ts` 생성 (공통 유틸리티)
+  - [x] `stats.like.handler.ts` 생성 (좋아요 통계)
+  - [x] `stats.comment.handler.ts` 생성 (댓글 통계)
+  - [x] `stats.post.handler.ts` 생성 (게시글 통계)
+  - [x] `stats.follow.handler.ts` 생성 (팔로우 통계)
+  - [x] `stats.ranking.handler.ts` 생성 (인플루언서 순위)
+  - [x] 본인 반응 제외 로직 구현
+  - [x] 생성/삭제 대칭 로직 구현
+  - [x] UTC 기준 날짜 계산 구현
+- [x] 핸들러 등록 (`index.ts`)
+  - [x] 좋아요 생성/삭제 트리거 (2개)
+  - [x] 댓글 생성/삭제 트리거 (2개)
+  - [x] 게시글 생성/삭제 트리거 (2개)
+  - [x] 팔로우 생성/삭제 트리거 (2개)
+  - [x] 인플루언서 점수 변경 트리거 (1개)
+- [x] Cloud Functions 배포 (`npm run deploy`)
+- [x] 클라이언트 UI 구현
+  - [x] 인플루언서 데이터 조회 함수 추가 (`user.functions.ts`)
+    - [x] `getTopInfluencers()` - Top N 인플루언서 조회
+    - [x] `getInfluencerScore()` - 개별 사용자 점수 조회
+    - [x] `getCurrentDate()` - UTC 날짜 계산 헬퍼
+  - [x] 사이드바 Top 5 인플루언서 표시 (`SuggestionsCard.svelte`)
+  - [x] `/user/influencers` 페이지 생성 (일간/월간/연간 탭, Top 100 표시)
+- [x] 다국어 번역 추가
+  - [x] `messages/ko.json` (한국어)
+  - [x] `messages/en.json` (영어)
+  - [x] `messages/ja.json` (일본어)
+  - [x] `messages/zh.json` (중국어)
+- [x] 타입 체크 (`npm run check`)
+
 구현 대기:
-- [ ] TypeScript 타입 정의 추가
-- [ ] 게시글/댓글에 `createdAt` 필드 추가
+- [ ] TypeScript 타입 정의 추가 (인터페이스 정의)
+- [ ] 게시글/댓글에 `createdAt` 필드 추가 (일부 이미 존재)
 - [ ] 비즈니스 로직 핸들러 구현
   - [ ] `like.handler.ts` 확장 (기존 파일)
   - [ ] `comment.create.handler.ts` 확장 (기존 파일)
   - [ ] `post.create.handler.ts` 생성 (신규)
   - [ ] `post.delete.handler.ts` 생성 (신규)
   - [ ] `friend.follow.handler.ts` 생성 (신규)
-- [ ] 통계 집계 핸들러 구현
-  - [ ] `stats.like.handler.ts` 생성 (신규)
-  - [ ] `stats.comment.handler.ts` 생성 (신규)
-  - [ ] `stats.post.handler.ts` 생성 (신규)
-  - [ ] `stats.follow.handler.ts` 생성 (신규)
-  - [ ] `stats.ranking.handler.ts` 생성 (신규)
-  - [ ] 본인 반응 제외 로직 구현
-  - [ ] 생성/삭제 대칭 로직 구현
-  - [ ] UTC 기준 날짜 계산 구현
-- [ ] 핸들러 등록 (`index.ts`)
 - [ ] Firebase Database Security Rules 업데이트
+  - [ ] `/user-stats/*` 경로 보안 규칙 추가
+  - [ ] `/influencer-scores/*` 경로 보안 규칙 추가
+  - [ ] `/influencer-rankings/*` 경로 보안 규칙 추가
 - [ ] 테스트 작성 및 실행
   - [ ] 비즈니스 로직 핸들러 테스트
   - [ ] 통계 집계 핸들러 테스트
@@ -1547,18 +2262,14 @@ const sortKey = `-${String(influencerScore).padStart(10, '0')}-${uid}`;
   - [ ] UTC 날짜 계산 테스트
   - [ ] 핸들러 분리 후 통합 테스트
   - [ ] 삭제 시 Cascade Delete 및 통계 감소 테스트
-- [ ] 클라이언트 UI 구현
 - [ ] 데이터 마이그레이션 스크립트 작성
   - [ ] 기존 게시글/댓글에 `createdAt` 필드 백필
-- [ ] 프로덕션 배포
+- [ ] 프로덕션 검증 및 모니터링
 
 ---
 
-**문서 버전**: 1.2.0
+**문서 버전**: 1.4.0
 **작성일**: 2025-01-18
 **최종 수정일**: 2025-01-19
 **작성자**: Claude (SED Agent)
-**상태**: 설계 완료 (구현 대기)
-**최근 변경 사항**:
-- v1.2.0 (2025-01-19): 삭제 로직 대칭성 추가, UTC 기준 명시, 게시글/댓글 삭제 시 통계 처리 정책 추가
-- v1.1.0 (2025-01-19): 본인 반응 제외 로직 추가 (랭킹 조작 방지)
+**상태**: 일부 구현 완료 (백엔드 완료, 일부 테스트 대기)

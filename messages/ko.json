@@ -328,6 +328,7 @@
 	"feedEmpty": "피드가 비어있습니다. 사람들을 팔로우하여 피드를 채워보세요!",
 	"feedLoadingMore": "더 불러오는 중...",
 	"feedLoadMore": "더보기",
+	"feedNoMore": "모든 피드를 확인했습니다",
 	"followingList": "팔로잉 목록",
 	"followersList": "팔로워 목록",
 	"noFollowing": "팔로잉한 사용자가 없습니다",
@@ -364,5 +365,18 @@
 	"좋아요한_사용자가_없습니다": "좋아요한 사용자가 없습니다",
 	"appTitle": "소너브",
 	"attachmentShowLess": "접기",
-	"sidebarPopularUsers": "인기 사용자"
+	"sidebarPopularUsers": "인기 사용자",
+	"프로필_게시글_수": "게시글",
+	"프로필_댓글_수": "댓글",
+	"influencerRankingTitle": "인플루언서 순위",
+	"influencerRankingDescription": "가장 많은 관심을 받은 사용자들을 확인하세요",
+	"influencerTabDaily": "일간",
+	"influencerTabMonthly": "월간",
+	"influencerTabYearly": "연간",
+	"influencerLoading": "인플루언서 데이터를 불러오는 중...",
+	"influencerEmpty": "아직 순위 데이터가 없습니다.",
+	"influencerScore": "점수:",
+	"influencerUnknownUser": "알 수 없는 사용자",
+	"influencerUnknown": "알 수 없음",
+	"loadingGeneric": "로딩 중..."
 }

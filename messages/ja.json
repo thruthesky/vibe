@@ -325,6 +325,7 @@
 	"feedEmpty": "フィードが空です。人々をフォローしてフィードを埋めましょう！",
 	"feedLoadingMore": "さらに読み込み中...",
 	"feedLoadMore": "さらに読み込む",
+	"feedNoMore": "すべてのフィードを確認しました",
 	"followingList": "フォロー中リスト",
 	"followersList": "フォロワーリスト",
 	"noFollowing": "フォロー中のユーザーはいません",
@@ -357,5 +358,18 @@
 	"myStatsDescription": "フォロワー・いいね・コメントの日別スナップショットです。",
 	"menuPublicProfile": "公開プロフィール",
 	"attachmentShowLess": "閉じる",
-	"sidebarPopularUsers": "人気ユーザー"
+	"sidebarPopularUsers": "人気ユーザー",
+	"프로필_게시글_수": "投稿",
+	"프로필_댓글_수": "コメント",
+	"influencerRankingTitle": "インフルエンサーランキング",
+	"influencerRankingDescription": "最も人気のあるユーザーを確認する",
+	"influencerTabDaily": "日間",
+	"influencerTabMonthly": "月間",
+	"influencerTabYearly": "年間",
+	"influencerLoading": "インフルエンサーデータを読み込み中...",
+	"influencerEmpty": "ランキングデータがまだありません。",
+	"influencerScore": "スコア:",
+	"influencerUnknownUser": "不明なユーザー",
+	"influencerUnknown": "不明",
+	"loadingGeneric": "読み込み中..."
 }

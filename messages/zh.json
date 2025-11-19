@@ -375,6 +375,7 @@
 	"feedEmpty": "您的动态为空。关注一些人来填充您的动态！",
 	"feedLoadingMore": "正在加载更多...",
 	"feedLoadMore": "加载更多",
+	"feedNoMore": "已查看所有动态",
 	"followingList": "关注列表",
 	"followersList": "粉丝列表",
 	"noFollowing": "您没有关注任何人",
@@ -409,5 +410,18 @@
 	"myStatsTitle": "我的统计",
 	"myStatsDescription": "按日查看粉丝、点赞与评论的快照。",
 	"좋아요한_사용자_목록": "点赞的用户",
-	"좋아요한_사용자가_없습니다": "还没有人点赞"
+	"좋아요한_사용자가_없습니다": "还没有人点赞",
+	"프로필_게시글_수": "帖子",
+	"프로필_댓글_수": "评论",
+	"influencerRankingTitle": "影响力排行榜",
+	"influencerRankingDescription": "查看最受欢迎的用户",
+	"influencerTabDaily": "日榜",
+	"influencerTabMonthly": "月榜",
+	"influencerTabYearly": "年榜",
+	"influencerLoading": "正在加载影响力数据...",
+	"influencerEmpty": "暂时还没有排行数据。",
+	"influencerScore": "积分:",
+	"influencerUnknownUser": "未知用户",
+	"influencerUnknown": "未知",
+	"loadingGeneric": "加载中..."
 }

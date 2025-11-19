@@ -74,6 +74,23 @@ import {
   handleLikeCreate,
   handleLikeDelete,
 } from "./handlers/like.handler";
+import {
+  handleLikeCreate as handleLikeCreateStats,
+  handleLikeDelete as handleLikeDeleteStats,
+} from "./handlers/stats.like.handler";
+import {
+  handleCommentCreateStats,
+  handleCommentDeleteStats,
+} from "./handlers/stats.comment.handler";
+import {
+  handlePostCreate as handlePostCreateStats,
+  handlePostDelete as handlePostDeleteStats,
+} from "./handlers/stats.post.handler";
+import {
+  handleFollowCreateStats,
+  handleFollowDeleteStats,
+} from "./handlers/stats.follow.handler";
+import {handleInfluencerScoreChange} from "./handlers/stats.ranking.handler";
 
 // 상수 정의
 const FIREBASE_REGION = "asia-southeast1";
@@ -1386,6 +1403,305 @@ export const onPostCreate = onValueCreated(
       });
       throw error;
     }
+
+    return;
+  }
+);
+
+/**
+ * ============================================================================
+ * 통계 및 인플루언서 순위 관련 트리거
+ * ============================================================================
+ */
+
+/**
+ * 좋아요 생성 시 통계 업데이트 트리거
+ *
+ * 트리거 경로: /likes/{uid}/{targetId}
+ * 트리거 이벤트: onValueCreated
+ *
+ * 수행 작업:
+ * 1. 대상 작성자의 receivedLikes 통계 증가 (일별/월별/연도별/전체)
+ * 2. 자기 자신에게 한 좋아요는 통계에서 제외
+ * 3. 인플루언서 점수 재계산
+ */
+export const onLikeCreatedStats = onValueCreated(
+  {
+    ref: "/likes/{uid}/{targetId}",
+    region: FIREBASE_REGION,
+  },
+  async (event) => {
+    const likerUid = event.params.uid as string;
+    const targetId = event.params.targetId as string;
+    const likeData = (event.data.val() || {}) as Record<string, unknown>;
+
+    logger.info("좋아요 생성 통계 트리거", {
+      likerUid,
+      targetId,
+      targetType: likeData.targetType,
+    });
+
+    // 통계 핸들러 호출
+    await handleLikeCreateStats(likerUid, targetId, likeData);
+
+    return;
+  }
+);
+
+/**
+ * 좋아요 삭제 시 통계 업데이트 트리거
+ *
+ * 트리거 경로: /likes/{uid}/{targetId}
+ * 트리거 이벤트: onValueDeleted
+ *
+ * 수행 작업:
+ * 1. 대상 작성자의 receivedLikes 통계 감소 (일별/월별/연도별/전체)
+ * 2. 자기 자신에게 한 좋아요는 통계에서 제외
+ * 3. 인플루언서 점수 재계산
+ */
+export const onLikeDeletedStats = onValueDeleted(
+  {
+    ref: "/likes/{uid}/{targetId}",
+    region: FIREBASE_REGION,
+  },
+  async (event) => {
+    const likerUid = event.params.uid as string;
+    const targetId = event.params.targetId as string;
+    const likeData = (event.data.val() || {}) as Record<string, unknown>;
+
+    logger.info("좋아요 삭제 통계 트리거", {
+      likerUid,
+      targetId,
+      targetType: likeData.targetType,
+    });
+
+    // 통계 핸들러 호출
+    await handleLikeDeleteStats(likerUid, targetId, likeData);
+
+    return;
+  }
+);
+
+/**
+ * 댓글 생성 시 통계 업데이트 트리거
+ *
+ * 트리거 경로: /comments/{postId}/{commentId}
+ * 트리거 이벤트: onValueCreated
+ *
+ * 수행 작업:
+ * 1. 댓글 작성자의 createdComments 통계 증가
+ * 2. 게시글/댓글 작성자의 receivedComments 통계 증가 (일별/월별/연도별/전체)
+ * 3. 자기 자신에게 한 댓글은 통계에서 제외
+ * 4. 인플루언서 점수 재계산
+ */
+export const onCommentCreateStats = onValueCreated(
+  {
+    ref: "/comments/{postId}/{commentId}",
+    region: FIREBASE_REGION,
+  },
+  async (event) => {
+    const postId = event.params.postId as string;
+    const commentId = event.params.commentId as string;
+    const commentData = (event.data.val() || {}) as Record<string, unknown>;
+
+    logger.info("댓글 생성 통계 트리거", {
+      postId,
+      commentId,
+      authorUid: commentData.authorUid,
+      parentId: commentData.parentId,
+    });
+
+    // 통계 핸들러 호출
+    await handleCommentCreateStats(postId, commentId, commentData);
+
+    return;
+  }
+);
+
+/**
+ * 댓글 삭제 시 통계 업데이트 트리거
+ *
+ * 트리거 경로: /comments/{postId}/{commentId}
+ * 트리거 이벤트: onValueDeleted
+ *
+ * 수행 작업:
+ * 1. 댓글 작성자의 createdComments 통계 감소
+ * 2. 게시글/댓글 작성자의 receivedComments 통계 감소 (일별/월별/연도별/전체)
+ * 3. 자기 자신에게 한 댓글은 통계에서 제외
+ * 4. 인플루언서 점수 재계산
+ */
+export const onCommentDeleteStats = onValueDeleted(
+  {
+    ref: "/comments/{postId}/{commentId}",
+    region: FIREBASE_REGION,
+  },
+  async (event) => {
+    const postId = event.params.postId as string;
+    const commentId = event.params.commentId as string;
+    const commentData = (event.data.val() || {}) as Record<string, unknown>;
+
+    logger.info("댓글 삭제 통계 트리거", {
+      postId,
+      commentId,
+      authorUid: commentData.authorUid,
+      parentId: commentData.parentId,
+    });
+
+    // 통계 핸들러 호출
+    await handleCommentDeleteStats(postId, commentId, commentData);
+
+    return;
+  }
+);
+
+/**
+ * 게시글 생성 시 통계 업데이트 트리거
+ *
+ * 트리거 경로: /posts/{postId}
+ * 트리거 이벤트: onValueCreated
+ *
+ * 수행 작업:
+ * 1. 작성자의 createdPosts 통계 증가 (일별/월별/연도별/전체)
+ */
+export const onPostCreateStats = onValueCreated(
+  {
+    ref: "/posts/{postId}",
+    region: FIREBASE_REGION,
+  },
+  async (event) => {
+    const postId = event.params.postId as string;
+    const postData = (event.data.val() || {}) as Record<string, unknown>;
+
+    logger.info("게시글 생성 통계 트리거", {
+      postId,
+      authorUid: postData.authorUid,
+    });
+
+    // 통계 핸들러 호출
+    await handlePostCreateStats(postId, postData);
+
+    return;
+  }
+);
+
+/**
+ * 게시글 삭제 시 통계 업데이트 트리거
+ *
+ * 트리거 경로: /posts/{postId}
+ * 트리거 이벤트: onValueDeleted
+ *
+ * 수행 작업:
+ * 1. 작성자의 createdPosts 통계 감소 (일별/월별/연도별/전체)
+ */
+export const onPostDeleteStats = onValueDeleted(
+  {
+    ref: "/posts/{postId}",
+    region: FIREBASE_REGION,
+  },
+  async (event) => {
+    const postId = event.params.postId as string;
+    const postData = (event.data.val() || {}) as Record<string, unknown>;
+
+    logger.info("게시글 삭제 통계 트리거", {
+      postId,
+      authorUid: postData.authorUid,
+    });
+
+    // 통계 핸들러 호출
+    await handlePostDeleteStats(postId, postData);
+
+    return;
+  }
+);
+
+/**
+ * 팔로우 생성 시 통계 업데이트 트리거
+ *
+ * 트리거 경로: /user-following/{followerUid}/{followingUid}
+ * 트리거 이벤트: onValueCreated
+ *
+ * 수행 작업:
+ * 1. 팔로우를 받은 사용자의 receivedFollowers 통계 증가 (일별/월별/연도별/전체)
+ * 2. 인플루언서 점수 재계산
+ */
+export const onUserFollowingCreateStats = onValueCreated(
+  {
+    ref: "/user-following/{followerUid}/{followingUid}",
+    region: FIREBASE_REGION,
+  },
+  async (event) => {
+    const followerUid = event.params.followerUid as string;
+    const followingUid = event.params.followingUid as string;
+
+    logger.info("팔로우 생성 통계 트리거", {
+      followerUid,
+      followingUid,
+    });
+
+    // 통계 핸들러 호출
+    await handleFollowCreateStats(followerUid, followingUid);
+
+    return;
+  }
+);
+
+/**
+ * 팔로우 삭제 시 통계 업데이트 트리거
+ *
+ * 트리거 경로: /user-following/{followerUid}/{followingUid}
+ * 트리거 이벤트: onValueDeleted
+ *
+ * 수행 작업:
+ * 1. 팔로우를 받았던 사용자의 receivedFollowers 통계 감소 (일별/월별/연도별/전체)
+ * 2. 인플루언서 점수 재계산
+ */
+export const onUserFollowingDeleteStats = onValueDeleted(
+  {
+    ref: "/user-following/{followerUid}/{followingUid}",
+    region: FIREBASE_REGION,
+  },
+  async (event) => {
+    const followerUid = event.params.followerUid as string;
+    const followingUid = event.params.followingUid as string;
+
+    logger.info("팔로우 삭제 통계 트리거", {
+      followerUid,
+      followingUid,
+    });
+
+    // 통계 핸들러 호출
+    await handleFollowDeleteStats(followerUid, followingUid);
+
+    return;
+  }
+);
+
+/**
+ * 인플루언서 점수 변경 시 순위 업데이트 트리거
+ *
+ * 트리거 경로: /influencer-scores/{uid}
+ * 트리거 이벤트: onValueWritten (생성, 수정, 삭제 모두 감지)
+ *
+ * 수행 작업:
+ * 1. 일별/월별/연간/전체 인플루언서 순위 업데이트
+ * 2. 점수를 역순(negative)으로 저장하여 내림차순 정렬 지원
+ */
+export const onInfluencerScoreWrite = onValueWritten(
+  {
+    ref: "/influencer-scores/{uid}",
+    region: FIREBASE_REGION,
+  },
+  async (event) => {
+    const uid = event.params.uid as string;
+    const newScore = event.data.after.val() as number | null;
+
+    logger.info("인플루언서 점수 변경 감지", {
+      uid,
+      newScore,
+    });
+
+    // 순위 핸들러 호출
+    await handleInfluencerScoreChange(uid, newScore);
 
     return;
   }
