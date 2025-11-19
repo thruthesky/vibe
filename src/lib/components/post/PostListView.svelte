@@ -102,9 +102,8 @@
 	bind:this={listViewRef}
 	{path}
 	{pageSize}
-	orderBy={category ? 'category' : orderBy}
-	{orderPrefix}
-	equalToValue={category}
+	orderBy={category ? 'categoryOrder' : 'allCategoryOrder'}
+	orderPrefix={category ? `${category}-` : ''}
 	{reverse}
 	{threshold}
 >

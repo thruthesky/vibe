@@ -144,7 +144,9 @@
         "createdAt",
         "likeCount",
         "commentCount",
-        "category"
+        "category",
+        "categoryOrder",
+        "allCategoryOrder"
       ],
 
       // 읽기 권한: 모든 사용자 (로그인 불필요, 게시글 목록 조회용)

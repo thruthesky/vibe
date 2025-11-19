@@ -226,7 +226,6 @@ async function handleToggleLike(event: MouseEvent, targetId: string, targetType:
 				<PostListView
 					path="posts"
 					pageSize={20}
-					orderBy="createdAt"
 					reverse={true}
 					{userLikes}
 					onToggleLike={handleToggleLike}

@@ -1335,7 +1335,38 @@ export const onPostCreate = onValueCreated(
         category,
       });
 
-      // 2. 피드 fan-out: 팔로워들에게 피드 전파
+      // 2. 정렬 필드 자동 생성 (categoryOrder, allCategoryOrder)
+      if (category && createdAt) {
+        const categoryOrder = `${category}-${createdAt}`;
+        const allCategoryOrder = createdAt;
+
+        logger.info("정렬 필드 생성 시작", {
+          postId,
+          category,
+          categoryOrder,
+          allCategoryOrder,
+        });
+
+        const postRef = admin.database().ref(`posts/${postId}`);
+        await postRef.update({
+          categoryOrder,
+          allCategoryOrder,
+        });
+
+        logger.info("정렬 필드 생성 완료", {
+          postId,
+          categoryOrder,
+          allCategoryOrder,
+        });
+      } else {
+        logger.warn("category 또는 createdAt이 없어서 정렬 필드를 생성하지 않습니다", {
+          postId,
+          category,
+          createdAt,
+        });
+      }
+
+      // 3. 피드 fan-out: 팔로워들에게 피드 전파
       logger.info("피드 fan-out 시작", {
         postId,
         authorUid,

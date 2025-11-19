@@ -900,35 +900,126 @@ interface Message {
 }
 ```
 
-### 8.2. DatabaseListView Props
+### 8.2. 정렬 필드 자동 생성 (Cloud Functions)
+
+게시글이 생성될 때 Firebase Cloud Functions에서 자동으로 정렬 필드를 생성합니다.
+
+**자동 생성 필드:**
+- `categoryOrder`: `"{category}-{createdAt}"` 형식 (예: `"qna-1700000000000"`)
+- `allCategoryOrder`: `createdAt` 타임스탬프 (예: `1700000000000`)
+
+**Cloud Functions 처리 흐름:**
+```typescript
+// Firebase Cloud Functions: onPostCreate 핸들러
+export const onPostCreate = onValueCreated('/posts/{postId}', async (event) => {
+  const postId = event.params.postId;
+  const post = event.data.val();
+
+  // 1. 정렬 필드 자동 생성
+  const categoryOrder = `${post.category}-${post.createdAt}`;
+  const allCategoryOrder = post.createdAt;
+
+  // 2. DB에 저장
+  await event.data.ref.update({
+    categoryOrder,
+    allCategoryOrder
+  });
+});
+```
+
+**클라이언트 역할:**
+- ✅ 사용자 입력 데이터만 저장: `text`, `category`, `createdAt`, `urls`
+- ❌ **절대 하지 말아야 할 작업:** `categoryOrder`, `allCategoryOrder` 필드를 직접 작성
+
+### 8.3. DatabaseListView Props 및 정렬 로직
 
 ```typescript
 <DatabaseListView
-  path="chat-messages"           // Firebase RTDB 경로
+  path="posts"                   // Firebase RTDB 경로
   pageSize={20}                  // 페이지당 항목 수
   orderBy={orderByField}         // 정렬 기준 필드
   orderPrefix={orderPrefixValue} // 정렬 접두사
-  reverse={true}                 // 역순 정렬
+  reverse={true}                 // 역순 정렬 (최신 글 먼저)
   threshold={300}                // 무한 스크롤 트리거 거리 (px)
 >
 ```
 
 **orderBy 필드:**
 - `allCategoryOrder`: 전체 카테고리 통합 정렬 (홈페이지)
+  - 값 형식: 숫자 타임스탬프 (예: `1700000000000`)
+  - 용도: 모든 카테고리의 게시글을 최신순으로 정렬
 - `categoryOrder`: 카테고리별 정렬 (게시판 목록)
+  - 값 형식: `"{category}-{timestamp}"` (예: `"qna-1700000000000"`)
+  - 용도: 특정 카테고리 내의 게시글만 최신순으로 정렬
 
 **orderPrefix 값:**
 - 전체 카테고리: `""` (빈 문자열)
-- 특정 카테고리: `"discussion-"`, `"qna-"` 등
+- 특정 카테고리: `"qna-"`, `"free-"`, `"discussion-"` 등
+- 동작 원리: Firebase 쿼리에서 해당 prefix로 시작하는 항목만 필터링
+
+**클라이언트 측 정렬 로직:**
+
+DatabaseListView는 Firebase에서 데이터를 받은 후 클라이언트 측에서 명시적으로 정렬합니다. 이는 Firebase의 `limitToLast` + `reverse()` 조합이 페이지네이션 커서 로직을 깨뜨리는 문제를 해결합니다.
+
+```typescript
+// DatabaseListView 내부 정렬 로직
+loadedItems.sort((a, b) => {
+  const aValue = a.data[orderBy] ?? 0;
+  const bValue = b.data[orderBy] ?? 0;
+
+  if (reverse) {
+    return bValue - aValue; // 내림차순 (최신 글 먼저)
+  } else {
+    return aValue - bValue; // 오름차순
+  }
+});
+```
+
+**정렬 원리:**
+1. Firebase 쿼리: `orderByChild(orderBy)` + `limitToLast(pageSize)`로 데이터 가져오기
+2. orderPrefix가 있으면 해당 prefix로 시작하는 항목만 필터링
+3. 클라이언트에서 `Array.sort()`로 명시적 정렬 (orderBy 필드 값 기준)
+4. reverse=true일 경우 내림차순 정렬 (최신 글이 맨 위로)
+
+**장점:**
+- 페이지네이션 커서 로직이 정확하게 작동
+- Firebase 쿼리 순서와 무관하게 일관된 정렬 보장
+- 카테고리 필터링과 시간 정렬을 동시에 수행 가능
 
 ## 9. 성능 최적화
 
-### 9.1. 무한 스크롤 최적화
+### 9.1. Firebase Database 인덱스
+
+게시글 정렬 성능을 최적화하기 위해 다음 필드에 인덱스를 설정합니다.
+
+**설정된 인덱스:**
+```json
+{
+  "posts": {
+    ".indexOn": [
+      "createdAt",
+      "likeCount",
+      "commentCount",
+      "category",
+      "categoryOrder",      // 카테고리별 정렬용
+      "allCategoryOrder"    // 전체 게시글 정렬용
+    ]
+  }
+}
+```
+
+**인덱스 효과:**
+- `categoryOrder`: 특정 카테고리 내 게시글을 빠르게 정렬
+- `allCategoryOrder`: 전체 게시글을 빠르게 정렬
+- `category`: 카테고리별 필터링 성능 향상
+- `likeCount`, `commentCount`: 인기 게시글 정렬 성능 향상
+
+### 9.2. 무한 스크롤 최적화
 
 - `DatabaseListView`의 `pageSize`를 20으로 설정하여 초기 로딩 속도 향상
 - `threshold={300}` 설정으로 스크롤이 하단 300px 전에 다음 페이지 로드
 
-### 9.2. 이미지 지연 로딩
+### 9.3. 이미지 지연 로딩
 
 - `FileAttachments` 컴포넌트에서 이미지는 브라우저 기본 lazy loading 사용
 - 비디오는 `preload="metadata"` 설정으로 메타데이터만 로드

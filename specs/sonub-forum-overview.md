@@ -1056,8 +1056,8 @@ Cloud Functions가 좋아요 개수를 자동으로 관리합니다:
 
 3. **댓글 좋아요 처리**
    - `/likes/{uid}/{commentId} = "comment"`
-   - `/comment-locations/{commentId} = messageId` 맵을 통해 부모 게시글을 조회
-   - `/chat-message-comments/{messageId}/{commentId}/likeCount` 증감
+   - `/comment-locations/{commentId} = postId` 맵을 통해 부모 게시글을 조회
+   - `/comments/{postId}/{commentId}/likeCount` 증감
 
 ---
 
@@ -1724,7 +1724,7 @@ Cloud Functions가 신고 개수를 자동으로 업데이트:
 
 ### 데이터베이스 구조
 
-**경로**: `/chat-message-comments/{messageId}/{commentId}`
+**경로**: `/comments/{postId}/{commentId}`
 
 **필드**:
 - `text`: 댓글 내용
@@ -1882,26 +1882,26 @@ export interface CommentWithMetadata extends ChatMessageComment {
 
 **파일**: `/firebase/functions/src/handlers/comment.create.handler.ts`
 
-**트리거**: `/chat-message-comments/{messageId}/{commentId}` onCreate
+**트리거**: `/comments/{postId}/{commentId}` onCreate
 
 **기능**:
-- 댓글 생성 시 자동으로 메시지의 childCount/totalChildCount와 부모 댓글의 childCount를 증가시킵니다.
+- 댓글 생성 시 자동으로 게시글의 childCount/totalChildCount와 부모 댓글의 childCount를 증가시킵니다.
 
 **작동 방식**:
 
 1. **모든 댓글 생성 시** (최상위 댓글 및 대댓글 모두):
-   - `/chat-messages/{messageId}/totalChildCount`를 `ServerValue.increment(1)`로 +1 증가
-   - 메시지 노드에 총 댓글 개수를 기록 (모든 레벨 포함)
+   - `/posts/{postId}/totalChildCount`를 `ServerValue.increment(1)`로 +1 증가
+   - 게시글 노드에 총 댓글 개수를 기록 (모든 레벨 포함)
    - 이 값은 UI에서 "(n) 개의 댓글이 있습니다." 형태로 표시됨
 
 2. **최상위 댓글 생성 시** (parentId가 null인 경우):
-   - 메시지의 totalChildCount 증가 (1번 작업)
-   - **추가로** `/chat-messages/{messageId}/childCount`를 `ServerValue.increment(1)`로 +1 증가
+   - 게시글의 totalChildCount 증가 (1번 작업)
+   - **추가로** `/posts/{postId}/childCount`를 `ServerValue.increment(1)`로 +1 증가
    - 클라이언트에서 이 값을 읽어 첫번째 레벨 listOrder 생성에 사용
 
 3. **대댓글 생성 시** (parentId가 존재하는 경우):
-   - 메시지의 totalChildCount 증가 (1번 작업)
-   - **추가로** `/chat-message-comments/{messageId}/{parentId}/childCount`를 `ServerValue.increment(1)`로 +1 증가
+   - 게시글의 totalChildCount 증가 (1번 작업)
+   - **추가로** `/comments/{postId}/{parentId}/childCount`를 `ServerValue.increment(1)`로 +1 증가
    - 부모 댓글 노드에 직접 자식 댓글 개수를 기록
    - 클라이언트에서 부모의 childCount를 읽어 listOrder 생성에 사용
 
@@ -1918,16 +1918,16 @@ export interface CommentWithMetadata extends ChatMessageComment {
 // 2. 새 listOrder 생성 → "003-02-02"
 // 3. 댓글 저장
 // 4. Cloud Functions가:
-//    - /chat-messages/{messageId}/totalChildCount를 증가 (총 댓글 수)
-//    - /chat-message-comments/{messageId}/003-02/childCount를 2로 증가
+//    - /posts/{postId}/totalChildCount를 증가 (총 댓글 수)
+//    - /comments/{postId}/003-02/childCount를 2로 증가
 
 // 동시에 사용자 B도 "003-02" 댓글에 답글을 달 때:
 // 1. 부모 "003-02"의 childCount 읽기 → 2 (또는 1, 타이밍에 따라)
 // 2. 새 listOrder 생성 → "003-02-03" (또는 "003-02-02")
 // 3. 댓글 저장
 // 4. Cloud Functions가:
-//    - /chat-messages/{messageId}/totalChildCount를 증가 (총 댓글 수)
-//    - /chat-message-comments/{messageId}/003-02/childCount를 3으로 증가 (또는 2로)
+//    - /posts/{postId}/totalChildCount를 증가 (총 댓글 수)
+//    - /comments/{postId}/003-02/childCount를 3으로 증가 (또는 2로)
 
 // 결과: "003-02-02", "003-02-03"으로 중복 없이 순차적으로 생성됨
 ```
@@ -1935,9 +1935,9 @@ export interface CommentWithMetadata extends ChatMessageComment {
 **주의사항**:
 - childCount와 totalChildCount는 클라이언트에서 직접 수정하지 않고, Cloud Functions에서만 관리
 - 클라이언트는 읽기 전용으로만 사용 (listOrder 생성 및 UI 표시)
-- `/chat-messages/{messageId}/totalChildCount`: 총 댓글 수 (모든 레벨 포함)
-- `/chat-messages/{messageId}/childCount`: 첫번째 레벨 댓글 수만 카운트
-- `/chat-message-comments/{messageId}/{commentId}/childCount`: 특정 댓글의 직접 자식 댓글 수
+- `/posts/{postId}/totalChildCount`: 총 댓글 수 (모든 레벨 포함)
+- `/posts/{postId}/childCount`: 첫번째 레벨 댓글 수만 카운트
+- `/comments/{postId}/{commentId}/childCount`: 특정 댓글의 직접 자식 댓글 수
 
 ### 댓글 작성 모달 컴포넌트
 
@@ -2227,7 +2227,7 @@ interface Props {
 | 2025-11-16 | Claude Sonnet 4.5 | **카테고리 목록 페이지 구현 완료 (`/post/list`)**: 채팅 기능과 통합된 게시판 기능 구현. (1) `type` 필드 스펙 업데이트: `/chat-messages/{messageId}/type`는 오직 Cloud Functions에서만 "post" 값을 저장하도록 명확화 (`sonub-firebase-database-structure.md` 업데이트). (2) `/post/list` 페이지 생성: 상단에 카테고리 탭 (전체 + 10개 카테고리, Chip UI), DatabaseListView를 사용한 무한 스크롤 목록, `allCategoryOrder` (전체) 및 `categoryOrder` (카테고리별) 기준 역순 정렬. (3) `shared/categories.ts`의 `FORUM_CATEGORIES` 상수 활용, Svelte 5 runes (`$state`, `$derived`) 사용, Tailwind CSS 스타일링. (4) 개발 과정/로직/결과를 SED 사양에 맞춰 문서화 (본 파일의 "카테고리 페이지" 섹션 업데이트). **결과**: 사용자가 탑바의 게시판 메뉴를 클릭하면 `/post/list`에서 카테고리별로 게시글을 필터링하여 볼 수 있으며, 각 게시글 클릭 시 해당 채팅방으로 이동. |
 | 2025-11-16 | Claude Sonnet 4.5 | **게시글 작성 기능 구현 완료 (`PostCreateDialog.svelte`)**: 게시판 페이지에서 게시글 작성 기능 구현. (1) **PostCreateDialog 컴포넌트 생성** (`src/lib/components/post/PostCreateDialog.svelte`): 모달 다이얼로그 형태의 재사용 가능한 컴포넌트, 카테고리 선택 (FORUM_CATEGORIES), 채팅방 선택 (`/chat-joins/{uid}`의 `openAndGroupListOrder` 필드 기반 필터링, 기본값 "post"), 글 내용 입력, 다중 사진 업로드 (Firebase Storage, 진행률 표시), 저장/취소 버튼. (2) **채팅방 선택 로직**: `loadChatRooms()` 함수로 `orderByChild('openAndGroupListOrder')` 쿼리 실행, `openAndGroupListOrder` 필드가 있는 그룹/오픈 채팅방만 표시, `roomName`과 `roomId` 사용. (3) **파일 업로드**: `handleFiles()` 함수로 선택 즉시 Firebase Storage 업로드 시작, `uploadChatFile()` 재사용, 진행률 실시간 표시, 업로드 완료된 파일만 payload의 `urls` 객체에 포함, 취소 시 `deleteChatFile()`로 Storage 삭제. (4) **메시지 저장**: `pushData('chat-messages', payload)` 호출, payload에 `category` 필드 포함, Cloud Functions가 `categoryOrder`, `allCategoryOrder`, `type: "post"` 자동 생성. (5) **카테고리 자동 선택**: `onPostCreated` 콜백으로 부모 컴포넌트에 선택된 카테고리 전달, 게시판 페이지에서 `handlePostCreated(category)` 실행하여 작성한 게시글의 카테고리로 자동 이동. (6) **`/post/list` 페이지 통합**: 상단 헤더에 "글쓰기" 버튼 추가 (flex layout), PostCreateDialog 컴포넌트 통합, `bind:open` 및 `onPostCreated` 콜백 연결. (7) **에러 수정**: native HTML select 사용 (shadcn-ui Select 미사용), FileUploadStatus 타입 수정, Dialog 바인딩 수정, TypeScript 에러 0개 달성. (8) **스펙 문서 업데이트**: "게시글 작성 페이지" 섹션에 구현 세부사항 추가 (채팅방 선택 로직, 파일 업로드, 메시지 저장 payload 구조, 카테고리 자동 선택, 사용 예시), "게시글 작성 컴포넌트" 예시 코드를 실제 구현된 전체 소스 코드로 교체, 핵심 기능 설명 추가. **결과**: 사용자가 게시판 페이지에서 "글쓰기" 버튼 클릭 시 모달 다이얼로그 표시, 카테고리/채팅방/내용/사진 입력 후 `/chat-messages`에 저장, 작성 후 해당 카테고리로 자동 이동, 채팅 시스템과 완전히 통합된 게시글 작성 기능 완성. |
 | 2025-11-16 | Claude Sonnet 4.5 | **PostCreateDialog payload 최소화 및 클라이언트/서버 필드 분리 명확화**: (1) **Cloud Functions 분석**: `chat.message-create.handler.ts`는 메시지 자체를 수정하지 않고 chat-joins만 업데이트, `chat.message-category.handler.ts`는 category 필드가 있을 때 `categoryOrder`, `allCategoryOrder`, `type: "post"`를 자동 생성. (2) **채팅방 메시지 전송 코드 분석** (`/routes/chat/room/+page.svelte`): `roomOrder`와 `rootOrder`는 클라이언트에서 `-${roomId}-${timestamp}` 형식으로 직접 생성. (3) **PostCreateDialog payload 수정**: 불필요한 필드 제거 (`type: 'message'`, `editedAt: null`, `deletedAt: null`), 최소 필드만 포함 (`roomId`, `text`, `urls`, `senderUid`, `createdAt`, `category`, `roomOrder`, `rootOrder`), 상세 주석 추가 (클라이언트 제공 필드, Cloud Functions 자동 생성 필드, 생략된 선택적 필드). (4) **타입 에러 수정**: `loadChatRooms()` 함수의 `promises` 배열 타입 명시 (`Promise<void>[]`), `rtdb` null 체크 후 non-null assertion (`rtdb!`) 사용. (5) **스펙 문서 업데이트**: "메시지 저장" 섹션의 payload 구조를 실제 구현과 동일하게 수정, "클라이언트/서버 필드 분리" 하위 섹션 추가 (클라이언트 제공 필드, Cloud Functions 자동 생성 필드, 생략된 선택적 필드, 주의사항 명시), 코드 예시 부분에도 동일하게 업데이트 및 상세 주석 추가. (6) **타입 체크 통과**: `npm run check` 실행 결과 0 errors, 1448 warnings (모두 Tailwind CSS 관련 경고). **결과**: 클라이언트는 최소한의 필드만 저장하여 Cloud Functions와의 책임 분리 명확화, 데이터 일관성 유지 및 불필요한 필드 전송 방지, 스펙 문서에 클라이언트/서버 필드 분리 사항 명시적으로 문서화. |
-| 2025-11-16 | Claude Sonnet 4.5 | **댓글 시스템 구현 완료**: 게시판 페이지에 댓글 작성 및 계층적 표시 기능 구현. (1) **TypeScript 타입 정의** (`src/lib/types/comment.types.ts`): `ChatMessageComment`, `CreateCommentPayload`, `CommentWithMetadata` 인터페이스 정의. (2) **Shared Pure Function** (`/shared/thread-order.ts`): `generateThreadOrder()` 함수 구현 - 클라이언트와 서버 양쪽에서 사용 가능한 순수 함수, 최상위 댓글 3자리 zero-padding (001~999), 하위 댓글 2자리 zero-padding (01~99), 최대값 제한 자동 적용, `getDepthFromListOrder()` 헬퍼 함수 추가. (3) **댓글 작성 함수** (`src/lib/functions/comment.functions.ts`): `createComment()` (부모 listOrder 가져오기, 동일 레벨 댓글 목록 가져오기, generateThreadOrder() 호출, RTDB 저장), `loadComments()` (listOrder 순서로 정렬, depth 메타데이터 추가), `updateComment()` (텍스트 및 첨부 파일 수정), `deleteComment()` (Soft Delete). (4) **댓글 작성 모달 컴포넌트** (`src/lib/components/comment/CommentCreateDialog.svelte`): 텍스트 입력 (스페이스바 입력 지원: `onkeydown={(e) => e.stopPropagation()}`), 파일 업로드 (진행률 표시), 부모 댓글 표시 (대댓글인 경우), 저장/취소 버튼. (5) **게시판 목록 페이지 수정** (`/src/routes/post/list/+page.svelte`): 각 게시글 카드 아래에 "💬 댓글" 버튼 추가, 댓글 목록 계층적 표시 (depth에 따라 들여쓰기: `margin-left: {comment.depth * 24}px`), 각 댓글에 "답글" 버튼 추가, `commentsMap` 상태로 각 게시글의 댓글 목록 저장, `handleOpenCommentDialog()`, `handleCommentCreated()`, `loadCommentsForMessage()` 함수 구현. (6) **스펙 문서 업데이트** (`specs/sonub-forum-overview.md`): "댓글 시스템" 섹션 추가 - 데이터베이스 구조, listOrder 설계 (형식, 예시, 최대값 제한), Shared Pure Function 설명, TypeScript 타입 정의, 댓글 작성 함수 설명, 댓글 작성 모달 컴포넌트 Props 및 기능, 게시판 목록 페이지 통합 방법, 사용 예시, 주의사항. **결과**: 사용자가 게시판 페이지에서 게시글 아래 "💬 댓글" 버튼 클릭 시 댓글 작성 모달 표시, 댓글 내용 및 파일 첨부 후 저장 시 `/chat-message-comments/{messageId}/{commentId}` 경로에 저장, listOrder 순서로 계층적 표시, 각 댓글에 "답글" 버튼으로 대댓글 작성 가능, 삭제된 댓글은 "삭제된 댓글입니다" 표시. |
+| 2025-11-16 | Claude Sonnet 4.5 | **댓글 시스템 구현 완료**: 게시판 페이지에 댓글 작성 및 계층적 표시 기능 구현. (1) **TypeScript 타입 정의** (`src/lib/types/comment.types.ts`): `ChatMessageComment`, `CreateCommentPayload`, `CommentWithMetadata` 인터페이스 정의. (2) **Shared Pure Function** (`/shared/thread-order.ts`): `generateThreadOrder()` 함수 구현 - 클라이언트와 서버 양쪽에서 사용 가능한 순수 함수, 최상위 댓글 3자리 zero-padding (001~999), 하위 댓글 2자리 zero-padding (01~99), 최대값 제한 자동 적용, `getDepthFromListOrder()` 헬퍼 함수 추가. (3) **댓글 작성 함수** (`src/lib/functions/comment.functions.ts`): `createComment()` (부모 listOrder 가져오기, 동일 레벨 댓글 목록 가져오기, generateThreadOrder() 호출, RTDB 저장), `loadComments()` (listOrder 순서로 정렬, depth 메타데이터 추가), `updateComment()` (텍스트 및 첨부 파일 수정), `deleteComment()` (Soft Delete). (4) **댓글 작성 모달 컴포넌트** (`src/lib/components/comment/CommentCreateDialog.svelte`): 텍스트 입력 (스페이스바 입력 지원: `onkeydown={(e) => e.stopPropagation()}`), 파일 업로드 (진행률 표시), 부모 댓글 표시 (대댓글인 경우), 저장/취소 버튼. (5) **게시판 목록 페이지 수정** (`/src/routes/post/list/+page.svelte`): 각 게시글 카드 아래에 "💬 댓글" 버튼 추가, 댓글 목록 계층적 표시 (depth에 따라 들여쓰기: `margin-left: {comment.depth * 24}px`), 각 댓글에 "답글" 버튼 추가, `commentsMap` 상태로 각 게시글의 댓글 목록 저장, `handleOpenCommentDialog()`, `handleCommentCreated()`, `loadCommentsForMessage()` 함수 구현. (6) **스펙 문서 업데이트** (`specs/sonub-forum-overview.md`): "댓글 시스템" 섹션 추가 - 데이터베이스 구조, listOrder 설계 (형식, 예시, 최대값 제한), Shared Pure Function 설명, TypeScript 타입 정의, 댓글 작성 함수 설명, 댓글 작성 모달 컴포넌트 Props 및 기능, 게시판 목록 페이지 통합 방법, 사용 예시, 주의사항. **결과**: 사용자가 게시판 페이지에서 게시글 아래 "💬 댓글" 버튼 클릭 시 댓글 작성 모달 표시, 댓글 내용 및 파일 첨부 후 저장 시 `/comments/{postId}/{commentId}` 경로에 저장, listOrder 순서로 계층적 표시, 각 댓글에 "답글" 버튼으로 대댓글 작성 가능, 삭제된 댓글은 "삭제된 댓글입니다" 표시. |
 | 2025-11-17 | Claude Sonnet 4.5 | **PostCommentList 재사용 컴포넌트 생성**: 홈 화면과 게시판 목록 페이지에서 댓글 표시 로직 통합. (1) **PostCommentList.svelte 컴포넌트 생성** (`src/lib/components/post/PostCommentList.svelte`): Props (`messageId`, `totalChildCount`, `onOpenCommentDialog`), 자동 로드 기능 (`totalChildCount > 0`이면 마지막 3개 댓글 자동 로드), "더보기" 버튼 (3개 이상일 때 전체 댓글 로드), "댓글 쓰기" 버튼, 계층적 댓글 표시 (depth 기반 들여쓰기), Soft Delete 댓글 표시, `refresh()` 메서드 export (부모에서 호출 가능). (2) **게시판 목록 페이지 통합** (`/src/routes/post/list/+page.svelte`): `commentsMap`, `allCommentsLoadedMap` 제거, `commentListRefs` 상태로 컴포넌트 참조 저장, `handleCommentCreated()` 함수 간소화 (`commentListRefs[messageId].refresh()` 호출), 인라인 댓글 코드 (~85줄) 제거하고 `<PostCommentList>` 컴포넌트로 교체. (3) **홈 페이지 통합** (`/src/routes/+page.svelte`): 게시판 목록 페이지와 동일한 패턴으로 `<PostCommentList>` 컴포넌트 통합, 코드 중복 제거 (~100줄). (4) **타입 체크 통과**: `npm run check` 실행 결과 0 errors. (5) **스펙 문서 업데이트**: "PostCommentList 재사용 컴포넌트" 섹션 추가 - Props 및 기능 설명, `refresh()` 메서드 설명, 게시판 목록 페이지 통합 방법, 홈 페이지 통합 방법. **결과**: 댓글 표시 로직이 재사용 가능한 컴포넌트로 분리되어 코드 중복 제거 (~200줄), 단일 진실 공급원(Single Source of Truth) 확보, 유지보수 용이성 향상, 일관된 동작 보장. |
 | 2025-11-17 | Claude Sonnet 4.5 | **MessageEditModal 통합 리팩토링 완료**: 채팅 메시지, 게시글, 댓글 생성/수정 기능을 위한 공용 모달 컴포넌트 통합. (1) **MessageEditModal.svelte 공용 컴포넌트 생성** (`src/lib/components/MessageEditModal.svelte`): 순수 UI 컴포넌트로 텍스트 입력, 파일 업로드/삭제, 진행률 표시, 저장/취소 버튼 담당, Props (`title`, `textLabel`, `initialText`, `initialUrls`, `roomId`, `onSave` 콜백, `onCancel` 콜백, `hasAdditionalFields`, `children` snippet), 비즈니스 로직은 부모 컴포넌트의 `onSave` 콜백으로 위임, Svelte 5 snippet 패턴으로 추가 필드 slot 지원 (`{@render children?.()}`), 파일 업로드/삭제 로직 통합 (Firebase Storage, 진행률 표시, 미완료/실패 파일 검증), 취소 시 업로드된 파일 자동 삭제. (2) **ChatMessageEditModal.svelte로 리팩토링** (`src/lib/components/chat/ChatMessageEditModal.svelte`): 기존 `MessageEditModal.svelte`를 이름 변경 및 wrapper 컴포넌트로 변경, `MessageEditModal` 사용, `onSave` 콜백에서 Firebase RTDB 업데이트 로직 처리, `handleSave()` 함수에서 `update(messageRef, { text, urls, editedAt })` 호출, `/src/routes/chat/room/+page.svelte`에서 import 경로 및 컴포넌트 이름 변경. (3) **PostCreateDialog.svelte 리팩토링** (`src/lib/components/post/PostCreateDialog.svelte`): `MessageEditModal` 사용, `hasAdditionalFields={true}` 설정, slot으로 카테고리 및 채팅방 선택 드롭다운 제공 (`{@render children?.()}`), `onSave` 콜백에서 `pushData('chat-messages', payload)` 호출, 카테고리 자동 선택 로직 유지 (`onPostCreated` 콜백, 500ms 지연), 코드 라인 수 535줄에서 265줄로 감소 (50% 이상 감소). (4) **PostEditDialog.svelte 생성** (`src/lib/components/post/PostEditDialog.svelte`): 게시글 수정용 새 컴포넌트, `MessageEditModal` 사용, Props (`messageId`, `initialText`, `initialUrls`, `roomId`, `onClose`, `onSaved`), `onSave` 콜백에서 `update(messageRef, { text, urls, editedAt })` 호출. (5) **CommentCreateDialog.svelte 리팩토링** (`src/lib/components/comment/CommentCreateDialog.svelte`): `MessageEditModal` 사용, `hasAdditionalFields={true}` (부모 댓글 정보 표시), slot으로 "답글 대상" 정보 표시 (`{#if parentId && parentText}`), `onSave` 콜백에서 `createComment()` 함수 호출, 코드 라인 수 387줄에서 118줄로 감소 (70% 감소). (6) **CommentEditDialog.svelte 생성** (`src/lib/components/comment/CommentEditDialog.svelte`): 댓글 수정용 새 컴포넌트, `MessageEditModal` 사용, Props (`messageId`, `commentId`, `initialText`, `initialUrls`, `onClose`, `onSaved`), `onSave` 콜백에서 `updateComment()` 함수 호출. (7) **TypeScript 타입 에러 수정**: `MessageEditModal` Props에 `children?: import('svelte').Snippet` 추가, Svelte 5 snippet 패턴 지원. (8) **타입 체크 통과**: `npm run check` 실행 결과 0 errors, 1623 warnings (Tailwind CSS 관련 경고만 남음). (9) **스펙 문서 업데이트**: 본 작업 이력 추가. **결과**: (1) 코드 중복 제거 (~1000줄 이상 감소), (2) 단일 진실 공급원 확보 (UI 로직이 `MessageEditModal.svelte` 한 곳에만 존재), (3) 유지보수 용이성 향상 (파일 업로드 UI 수정 시 한 곳만 수정), (4) 일관된 UI/UX (모든 생성/수정 모달이 동일한 디자인/동작), (5) 비즈니스 로직 분리 명확화 (UI 컴포넌트 vs wrapper 컴포넌트), (6) 확장성 향상 (새로운 생성/수정 기능 추가 시 wrapper만 생성하면 됨). |
 | 2025-11-17 | Claude Sonnet 4.5 | **댓글 목록 표시를 재사용 가능한 PostCommentList 컴포넌트로 분리**: 홈 페이지와 게시판 목록 페이지에서 댓글 표시 로직이 중복되어 있어 재사용 가능한 컴포넌트로 분리. (1) **PostCommentList 컴포넌트 생성** (`src/lib/components/post/PostCommentList.svelte`): Props (`messageId`, `totalChildCount`, `onOpenCommentDialog`), 상태 관리 (`comments`, `allCommentsLoaded`), 자동 댓글 미리보기 로딩 (`$effect()` 훅 사용, `totalChildCount > 0`일 때 자동 로드), 댓글 개수 표시, 더보기 버튼 (`totalChildCount > 3`일 때), 댓글 쓰기 버튼, 댓글 목록 계층적 표시 (depth 기반 들여쓰기), `export async function refresh()` 메서드 제공 (부모에서 `bind:this`로 참조 저장 후 호출 가능). (2) **게시판 목록 페이지 수정** (`src/routes/post/list/+page.svelte`): 기존 `commentsMap`, `allCommentsLoadedMap` 상태 제거, `commentListRefs = $state<Record<string, PostCommentList>>({})` 추가, 인라인 댓글 표시 코드 (~85줄) 제거 후 `<PostCommentList bind:this={commentListRefs[messageId]} .../>` 컴포넌트로 교체, `handleCommentCreated()` 함수 간소화 (컴포넌트의 `refresh()` 메서드 호출). (3) **홈 페이지 수정** (`src/routes/+page.svelte`): 게시판 목록 페이지와 동일한 방식으로 PostCommentList 컴포넌트 통합, 기존 인라인 댓글 코드 제거, `commentListRefs` 사용. (4) **검증**: `npm run check` 실행 결과 0 errors (Tailwind CSS 경고만 존재). (5) **스펙 문서 업데이트** (`specs/sonub-forum-overview.md`): "PostCommentList 재사용 컴포넌트" 섹션 추가 (Props, 상태 관리, 주요 기능, 외부 호출 메서드, 성능 최적화), "게시판 목록 페이지 통합" 섹션 업데이트 (컴포넌트 사용 방식, 기존 방식과의 차이점), "홈 페이지 통합" 섹션 추가 (재사용 컴포넌트 사용의 이점). **결과**: 코드 중복 약 200줄 제거, 단일 소스 관리로 유지보수성 향상, 홈 페이지와 게시판 목록 페이지 모두 일관된 댓글 표시 UI/UX 제공, 버그 수정 시 한 곳만 수정하면 모든 페이지에 자동 반영. |

@@ -82,6 +82,12 @@ changelog:
     - [필드 설명](#필드-설명-5)
     - [클라이언트/서버 역할 분리](#클라이언트서버-역할-분리-7)
     - [저장 목적 및 운영 시나리오](#저장-목적-및-운영-시나리오)
+  - [게시글 (posts)](#게시글-posts)
+    - [데이터 구조](#데이터-구조-7)
+    - [필드 설명](#필드-설명-6)
+    - [정렬 필드 상세 설명](#정렬-필드-상세-설명-1)
+    - [클라이언트/서버 역할 분리](#클라이언트서버-역할-분리-8)
+    - [관련 가이드](#관련-가이드-6)
   - [주요 설계 원칙](#주요-설계-원칙)
     - [1. Flat Style 구조](#1-flat-style-구조)
     - [2. 속성 분리](#2-속성-분리)
@@ -768,16 +774,16 @@ Firebase Authentication의 다음 필드들은 `/users/<uid>` 노드에 **저장
 ## 좋아요 (likes)
 
 - **경로**: `/likes/{uid}/{targetId}`
-- **필드**: 값으로 `"message"`(게시글) 또는 `"comment"`(댓글) 문자열만 저장
+- **필드**: 값으로 `"post"`(게시글) 또는 `"comment"`(댓글) 문자열만 저장
 - **설명**:
   - 클라이언트는 해당 경로의 값을 생성하거나 삭제하여 좋아요 상태를 토글합니다.
-  - Cloud Functions는 이벤트를 감지해 `/chat-messages/{messageId}/likeCount` 또는 `/chat-message-comments/{messageId}/{commentId}/likeCount`를 `ServerValue.increment()`로 증감합니다.
+  - Cloud Functions는 이벤트를 감지해 `/posts/{postId}/likeCount` 또는 `/comments/{postId}/{commentId}/likeCount`를 `ServerValue.increment()`로 증감합니다.
   - `/stats/counters/like` 역시 Cloud Functions가 함께 관리합니다.
 
 ## 댓글 위치 맵 (comment-locations)
 
-- **경로**: `/comment-locations/{commentId} = messageId`
-- **생성 시점**: `/chat-message-comments/{messageId}/{commentId}`가 생성될 때 Cloud Functions가 자동으로 기록
+- **경로**: `/comment-locations/{commentId} = postId`
+- **생성 시점**: `/comments/{postId}/{commentId}`가 생성될 때 Cloud Functions가 자동으로 기록
 - **용도**:
   - 댓글 좋아요/신고 처리 시 부모 게시글을 빠르게 조회하기 위한 인덱스
   - 클라이언트에서는 접근할 필요가 없으며 Cloud Functions 전용 노드입니다.
@@ -1276,6 +1282,134 @@ query.on('value', (snapshot) => {
 - **멀티 디바이스 지원**: 한 사용자가 여러 디바이스를 사용할 경우 각 토큰이 서로 다른 키로 저장되어 디바이스별로 개별 푸시가 가능합니다.
 - **권한 획득 흐름**: 클라이언트 앱이 권한을 획득 → FCM 토큰 발급 → `/fcm-tokens/{tokenId}`에 `{ device, uid }` 저장 → 서버가 이 목록을 이용해 대상 디바이스로 메시지를 발송합니다.
 - **웹 케이스 명시**: 웹 환경에서는 `device` 값이 항상 `'web'`으로 고정되며, 브라우저 토큰 회전이 발생하면 동일 경로가 새 값으로 교체됩니다.
+
+---
+
+## 게시글 (posts)
+
+게시글은 사용자가 작성한 포스트를 저장합니다. 카테고리별 정렬과 전체 게시글 정렬을 위한 자동 생성 필드를 포함합니다.
+
+### 데이터 구조
+
+```
+posts/
+  └── {postId}
+      ├── uid: "user_uid_123"
+      ├── displayName: "홍길동"
+      ├── photoUrl: "https://..."
+      ├── text: "게시글 내용입니다."
+      ├── category: "qna"
+      ├── createdAt: 1700000000000
+      ├── updatedAt: 1700000001000
+      ├── urls:
+      │   ├── 0: "https://storage.../image1.jpg"
+      │   └── 1: "https://storage.../image2.jpg"
+      ├── likeCount: 5
+      ├── commentCount: 3
+      ├── categoryOrder: "qna-1700000000000"
+      └── allCategoryOrder: 1700000000000
+```
+
+### 필드 설명
+
+| 필드 | 타입 | 필수 | 작성 주체 | 설명 |
+|------|------|------|-----------|------|
+| `postId` (키) | string | ✅ | 클라이언트 | Firebase의 `push()` 메서드로 생성한 고유 ID |
+| `uid` | string | ✅ | 클라이언트 | 작성자의 Firebase Auth UID |
+| `displayName` | string | ✅ | 클라이언트 | 작성자의 표시 이름 (스냅샷용) |
+| `photoUrl` | string | ❌ | 클라이언트 | 작성자의 프로필 사진 URL (스냅샷용) |
+| `text` | string | ✅ | 클라이언트 | 게시글 본문 내용 |
+| `category` | string | ✅ | 클라이언트 | 게시글 카테고리 (예: "qna", "free", "notice" 등) |
+| `createdAt` | number | ✅ | 클라이언트 | 작성 시각 (밀리초 타임스탬프) |
+| `updatedAt` | number | ❌ | 클라이언트 | 수정 시각 (밀리초 타임스탬프) |
+| `urls` | object | ❌ | 클라이언트 | 첨부 이미지 URL 맵 (`{ 0: url1, 1: url2, ... }`) |
+| `likeCount` | number | ❌ | Cloud Functions | 좋아요 수 (자동 계산) |
+| `commentCount` | number | ❌ | Cloud Functions | 댓글 수 (자동 계산) |
+| `categoryOrder` | string | ✅ | Cloud Functions | 카테고리별 정렬 필드 (`"{category}-{createdAt}"` 형식) |
+| `allCategoryOrder` | number | ✅ | Cloud Functions | 전체 게시글 정렬 필드 (`createdAt`과 동일) |
+| `deleted` | boolean | ❌ | 클라이언트 | 삭제 여부 (true일 경우 삭제된 게시글) |
+| `deletedAt` | number | ❌ | 클라이언트 | 삭제 시각 (밀리초 타임스탬프) |
+
+### 정렬 필드 상세 설명
+
+게시글 목록을 효율적으로 정렬하고 페이지네이션하기 위해 Cloud Functions에서 자동으로 생성하는 정렬 필드입니다.
+
+#### 왜 정렬 필드가 필요한가?
+
+Firebase Realtime Database의 쿼리 제약으로 인해:
+- `orderByChild()`는 한 번에 하나의 필드만 정렬 가능
+- 카테고리 필터링과 시간 정렬을 동시에 수행하려면 복합 필드가 필요
+- 클라이언트에서 `reverse()` 사용 시 페이지네이션 커서 로직이 깨짐
+
+#### 정렬 필드 종류
+
+1. **categoryOrder** (`string`)
+   - 형식: `"{category}-{createdAt}"`
+   - 예시: `"qna-1700000000000"`
+   - 용도: 특정 카테고리 내에서 최신순 정렬
+   - 쿼리 방법: `orderByChild("categoryOrder")` + `orderPrefix="{category}-"`
+
+2. **allCategoryOrder** (`number`)
+   - 형식: `createdAt` 타임스탬프
+   - 예시: `1700000000000`
+   - 용도: 전체 카테고리에서 최신순 정렬
+   - 쿼리 방법: `orderByChild("allCategoryOrder")`
+
+#### 클라이언트 사용 예시
+
+**전체 게시글 목록 (최신순)**
+```typescript
+// PostListView에서 category가 없을 때
+orderBy = "allCategoryOrder"
+orderPrefix = ""
+reverse = true  // 클라이언트 측에서 명시적 정렬
+```
+
+**카테고리별 게시글 목록 (최신순)**
+```typescript
+// PostListView에서 category가 "qna"일 때
+orderBy = "categoryOrder"
+orderPrefix = "qna-"
+reverse = true  // 클라이언트 측에서 명시적 정렬
+```
+
+**DatabaseListView 내부 정렬 로직**
+```typescript
+// Firebase에서 받은 데이터를 orderBy 필드 기준으로 정렬
+loadedItems.sort((a, b) => {
+  const aValue = a.data[orderBy] ?? 0;
+  const bValue = b.data[orderBy] ?? 0;
+
+  if (reverse) {
+    return bValue - aValue; // 내림차순 (최신 글 먼저)
+  } else {
+    return aValue - bValue; // 오름차순
+  }
+});
+```
+
+### 클라이언트/서버 역할 분리
+
+- **클라이언트**
+  - 사용자 입력 데이터 저장: `text`, `category`, `createdAt`, `urls`
+  - 작성자 정보 스냅샷: `uid`, `displayName`, `photoUrl`
+  - 게시글 수정 시: `text`, `urls`, `updatedAt` 업데이트
+  - 게시글 삭제 시: `deleted=true`, `deletedAt` 설정 (실제 삭제는 하지 않음)
+  - ❌ **절대 하지 말아야 할 작업:**
+    - `categoryOrder`, `allCategoryOrder` 필드를 직접 작성
+    - `likeCount`, `commentCount`를 직접 증가/감소
+
+- **Cloud Functions**
+  - 게시글 생성 시 (`onPostCreate` 핸들러):
+    - `categoryOrder = "{category}-{createdAt}"` 자동 생성
+    - `allCategoryOrder = createdAt` 자동 생성
+  - 좋아요/댓글 생성/삭제 시:
+    - `likeCount`, `commentCount` 자동 업데이트
+
+### 관련 가이드
+
+- **[게시글 기능 가이드](./sonub-forum-post.md)** - 게시글 작성, 수정, 삭제, 정렬 상세 가이드
+- **[Firebase Cloud Functions 가이드](./sns-firebase-cloud-functions.md)** - 자동 필드 생성 로직
 
 ---
 

@@ -19,13 +19,13 @@ dependencies:
 
 # 1. 개요
 
-이 문서는 Sonub 전역에서 사용하는 좋아요(리액션) 시스템을 정의한다. 채팅 메시지, 게시글(type: `post`), 댓글까지 동일한 데이터 모델과 Cloud Functions 파이프라인을 공유하며, 프론트엔드는 `like.functions.ts` 를 통해 단일 토글 API만 호출하도록 설계한다.
+이 문서는 Sonub 전역에서 사용하는 좋아요(리액션) 시스템을 정의한다. 게시글(type: `post`), 댓글까지 동일한 데이터 모델과 Cloud Functions 파이프라인을 공유하며, 프론트엔드는 `like.functions.ts` 를 통해 단일 토글 API만 호출하도록 설계한다.
 
 ## 1.1 범위
 
 - `/likes/{uid}/{targetId}` 경로 모델
-- `/chat-messages`, `/chat-message-comments` 의 `likeCount` 동기화
-- 클라이언트 UI (채팅방, 게시판, 댓글 리스트, 모달) 연동
+- `/posts`, `/comments`의 `likeCount` 동기화
+- 클라이언트 UI (게시판, 댓글 리스트, 모달) 연동
 - Realtime Database 규칙 및 Cloud Functions 핸들러( `like.handler.ts` ) 동작 흐름
 
 ## 1.2 용어
@@ -41,9 +41,9 @@ dependencies:
 | 경로 | 설명 |
 | --- | --- |
 | `/likes/{uid}/{targetId}` | 로그인 사용자가 좋아요한 항목 기록. 값은 `targetType` |
-| `/chat-messages/{messageId}/likeCount` | 게시글/채팅 메시지의 총 좋아요 수 |
-| `/chat-message-comments/{messageId}/{commentId}/likeCount` | 특정 댓글의 좋아요 수 |
-| `/comment-locations/{commentId}` | 댓글이 속한 부모 `messageId`. Cloud Functions가 댓글의 likeCount를 갱신할 때 사용 |
+| `/posts/{postId}/likeCount` | 게시글의 총 좋아요 수 |
+| `/comments/{postId}/{commentId}/likeCount` | 특정 댓글의 좋아요 수 |
+| `/comment-locations/{commentId}` | 댓글이 속한 부모 `postId`. Cloud Functions가 댓글의 likeCount를 갱신할 때 사용 |
 
 - `".indexOn": ["likeCount"]` 는 `firebase/database.rules.json` 에 정의되어 있어 정렬 쿼리에서 효율적으로 사용한다.
 - `/likes` 루트에 대한 read 권한은 본인만, write 권한은 본인 UID와 일치할 때만 허용한다.
@@ -86,8 +86,8 @@ dependencies:
 2. `toggleLikeTarget` 가 `/likes/{uid}/{targetId}` 값을 조회
 3. 값이 없으면 `{ targetType }` 문자열을 write
 4. Cloud Functions `onCreate` 트리거
-   - `targetType === "message"` → `/chat-messages/{targetId}/likeCount` 를 `ServerValue.increment(1)`
-   - `targetType === "comment"` → `/comment-locations/{targetId}` 로 부모 `messageId` 획득 후 `/chat-message-comments/{messageId}/{targetId}/likeCount` 증가
+   - `targetType === "post"` → `/posts/{targetId}/likeCount` 를 `ServerValue.increment(1)`
+   - `targetType === "comment"` → `/comment-locations/{targetId}` 로 부모 `postId` 획득 후 `/comments/{postId}/{targetId}/likeCount` 증가
 5. UI는 `/likes/{uid}` 와 게시글/댓글의 데이터 경로를 실시간 구독하여 카운터를 즉시 반영
 
 ## 4.2 좋아요 취소
@@ -97,21 +97,20 @@ dependencies:
 3. Cloud Functions `onDelete` 트리거 → 해당 `likeCount` 를 `ServerValue.increment(-1)`
 4. UI 업데이트
 
-# 5. 채팅/게시글/댓글별 세부 사항
+# 5. 게시글/댓글별 세부 사항
 
-## 5.1 채팅 메시지 (실시간 채팅 + 게시글 공통)
+## 5.1 게시글
 
-- 모든 게시글은 실질적으로 `/chat-messages/{messageId}` 엔트리이다 (`type` 필드만 다름).
-- `src/routes/chat/room/+page.svelte` 와 `src/lib/components/post/PostItem.svelte` 둘 다 동일한 `PostItem`/`MessageFooter` 패턴을 사용한다.
+- 게시글 데이터는 `/posts/{postId}` 에 저장된다.
+- `src/lib/components/post/PostItem.svelte`에서 `PostItem`/`MessageFooter` 패턴을 사용한다.
 - 사용자별 좋아요 상태는 `createRealtimeStore<UserLikesMap>(\`likes/${uid}\`)` 로 구독하여 하트 아이콘을 토글한다.
-- LikedUsers 모달 (`src/lib/components/LikedUsersModal.svelte`) 은 `/chat-message-likes/{messageId}` 캐시를 읽어 좋아요한 사용자 목록을 표시한다.
+- LikedUsers 모달 (`src/lib/components/LikedUsersModal.svelte`) 은 좋아요한 사용자 목록을 표시한다.
 
 ## 5.2 댓글
 
-- 댓글 데이터는 `/chat-message-comments/{messageId}/{commentId}` 에 저장된다.
-- `commentId` 와 부모 메시지 매핑은 `/comment-locations/{commentId}` 에 캐싱되어 Cloud Functions가 참조한다.
+- 댓글 데이터는 `/comments/{postId}/{commentId}` 에 저장된다.
+- `commentId` 와 부모 게시글 매핑은 `/comment-locations/{commentId}` 에 캐싱되어 Cloud Functions가 참조한다.
 - UI는 `CommentItem.svelte` (게시글 상세 페이지)에서 `toggleLikeTarget({ targetType: 'comment' })` 으로 호출하며, 댓글 좋아요 수는 `comment.likeCount ?? 0` 을 출력한다.
-- 댓글 좋아요 목록이 필요할 경우 `/chat-message-comment-likes/{commentId}` 경로를 사용할 수 있으며, 구성은 채팅 메시지와 동일하다.
 
 # 6. 클라이언트 구현 지침
 

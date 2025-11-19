@@ -868,10 +868,10 @@ if (!admin.apps.length) {
 
 ### 5.5 핵심 함수 예제: 좋아요 개수 동기화
 
-좋아요는 `/likes/{uid}/{targetId}` 경로에 `"message"` 또는 `"comment"` 문자열만 저장합니다.
+좋아요는 `/likes/{uid}/{targetId}` 경로에 `"post"` 또는 `"comment"` 문자열만 저장합니다.
 
-- **게시글(message)**: `/chat-messages/{messageId}/likeCount` 증감
-- **댓글(comment)**: `/comment-locations/{commentId}`에서 부모 `messageId`를 조회한 뒤 `/chat-message-comments/{messageId}/{commentId}/likeCount` 증감
+- **게시글(post)**: `/posts/{postId}/likeCount` 증감
+- **댓글(comment)**: `/comment-locations/{commentId}`에서 부모 `postId`를 조회한 뒤 `/comments/{postId}/{commentId}/likeCount` 증감
 - **통계**: `/stats/counters/like`를 `ServerValue.increment(±1)`로 업데이트
 
 #### onLikeCreated (Gen 2)
@@ -926,8 +926,8 @@ export const onLikeDeleted = onValueDeleted(
 
 #### comment-locations 맵
 
-- 경로: `/comment-locations/{commentId} = messageId`
-- 생성: `/chat-message-comments/{messageId}/{commentId}` onCreate 핸들러에서 자동 기록
+- 경로: `/comment-locations/{commentId} = postId`
+- 생성: `/comments/{postId}/{commentId}` onCreate 핸들러에서 자동 기록
 - 역할: 좋아요/신고 등 댓글 단위 이벤트가 발생했을 때 부모 게시글 ID를 즉시 조회하기 위한 인덱스
 
 ---
@@ -954,22 +954,22 @@ export const onLikeDeleted = onValueDeleted(
 ##### Cloud Functions의 2단계 처리 과정
 
 1. **대상 노드 판단**
-   - targetType이 `"message"`인 경우 → `/chat-messages/{messageId}/likeCount`
-   - targetType이 `"comment"`인 경우 → `/comment-locations/{commentId}`에서 `messageId` 조회 후 `/chat-message-comments/{messageId}/{commentId}/likeCount`
+   - targetType이 `"post"`인 경우 → `/posts/{postId}/likeCount`
+   - targetType이 `"comment"`인 경우 → `/comment-locations/{commentId}`에서 `postId` 조회 후 `/comments/{postId}/{commentId}/likeCount`
 
 2. **통계 업데이트**
    - `/stats/counters/like`에 `ServerValue.increment(delta)` 적용 (delta = 1 또는 -1)
 
 **결과 예시**:
 ```
-/chat-messages/
+/posts/
   post-abc123/
     text: "안녕하세요"
     likeCount: 5   ← Cloud Functions가 자동으로 관리
 
 /likes/
   user-A-uid/
-    post-abc123: "message"
+    post-abc123: "post"
 
 /comment-locations/
   -Nv123abc: "post-abc123"
@@ -1640,7 +1640,7 @@ export async function handleLikeCreate(
   targetId: string,
   targetType: LikeTargetType
 ) {
-  // 1) /chat-messages 또는 /chat-message-comments likeCount 증감
+  // 1) /posts 또는 /comments likeCount 증감
   // 2) /stats/counters/like 업데이트
   // 3) 로깅
   return {success: true, uid, targetId, targetType};
