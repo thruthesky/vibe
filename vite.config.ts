@@ -19,7 +19,7 @@ export default defineConfig({
 	server: {
 		fs: {
 			// shared 폴더를 Vite가 서빙할 수 있도록 허용
-			allow: ['..']
+			allow: ['../..']
 		}
 	},
 	test: {
