@@ -246,7 +246,7 @@
 
 				<!-- 첨부파일 미리보기 (FileAttachments 컴포넌트 사용) -->
 				{#if message.urls}
-					<FileAttachments urls={message.urls} />
+					<FileAttachments urls={message.urls} maxDisplay={5} />
 				{/if}
 			</div>
 
@@ -379,8 +379,11 @@
 	}
 
 	.post-card {
-		@apply rounded-lg border border-gray-200 bg-white p-4 shadow-sm;
-		@apply transition-all hover:shadow-md;
+		/* 모바일: 테두리 없음, padding만 */
+		@apply bg-white p-4;
+		/* 데스크톱: 카드 스타일 (테두리, 그림자, 둥근 모서리) */
+		@apply md:rounded-lg md:border md:border-gray-200 md:shadow-sm;
+		@apply md:transition-all md:hover:shadow-md;
 	}
 
 	.post-deleted {

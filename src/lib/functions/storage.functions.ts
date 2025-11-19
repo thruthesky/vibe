@@ -317,3 +317,155 @@ export async function deleteChatFile(url: string): Promise<void> {
 		throw error;
 	}
 }
+
+/**
+ * 사용자 커버 사진을 Firebase Storage에 업로드합니다.
+ *
+ * @param file - 업로드할 이미지 파일
+ * @param uid - 사용자 UID
+ * @param onProgress - 업로드 진행률 콜백 (0-100)
+ * @returns Promise<string> 업로드된 파일의 다운로드 URL
+ *
+ * @example
+ * ```typescript
+ * const url = await uploadCoverPhoto(
+ *   file,
+ *   'user123',
+ *   (progress) => console.log(`Progress: ${progress}%`)
+ * );
+ * ```
+ */
+export async function uploadCoverPhoto(
+	file: File,
+	uid: string,
+	onProgress?: (progress: number) => void
+): Promise<string> {
+	if (!storage) {
+		throw new Error('Firebase Storage가 초기화되지 않았습니다.');
+	}
+
+	// 이미지 파일인지 확인
+	if (!file.type.startsWith('image/')) {
+		throw new Error('이미지 파일만 업로드 가능합니다.');
+	}
+
+	// 파일 크기 제한 (5MB)
+	const maxSize = 5 * 1024 * 1024;
+	if (file.size > maxSize) {
+		throw new Error('파일 크기는 5MB 이하여야 합니다.');
+	}
+
+	// 파일명 생성: cover-photo-{timestamp}.{extension}
+	const timestamp = Date.now();
+	const extension = file.name.split('.').pop() || 'jpg';
+	const filename = `cover-photo-${timestamp}.${extension}`;
+	const filePath = `users/${uid}/profile/${filename}`;
+
+	// Storage 참조 생성
+	const storageRef = ref(storage, filePath);
+
+	// 업로드 Task 생성
+	const uploadTask: UploadTask = uploadBytesResumable(storageRef, file);
+
+	return new Promise((resolve, reject) => {
+		uploadTask.on(
+			'state_changed',
+			(snapshot) => {
+				// 업로드 진행률 계산
+				const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+				onProgress?.(progress);
+			},
+			(error) => {
+				// 업로드 실패
+				console.error('❌ 커버 사진 업로드 실패:', error);
+				reject(error);
+			},
+			async () => {
+				// 업로드 성공 - URL 반환
+				try {
+					const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
+					resolve(downloadUrl);
+				} catch (error) {
+					console.error('❌ 다운로드 URL 가져오기 실패:', error);
+					reject(error);
+				}
+			}
+		);
+	});
+}
+
+/**
+ * 사용자 프로필 사진을 Firebase Storage에 업로드합니다.
+ *
+ * @param file - 업로드할 이미지 파일
+ * @param uid - 사용자 UID
+ * @param onProgress - 업로드 진행률 콜백 (0-100)
+ * @returns Promise<string> 업로드된 파일의 다운로드 URL
+ *
+ * @example
+ * ```typescript
+ * const url = await uploadProfilePhoto(
+ *   file,
+ *   'user123',
+ *   (progress) => console.log(`Progress: ${progress}%`)
+ * );
+ * ```
+ */
+export async function uploadProfilePhoto(
+	file: File,
+	uid: string,
+	onProgress?: (progress: number) => void
+): Promise<string> {
+	if (!storage) {
+		throw new Error('Firebase Storage가 초기화되지 않았습니다.');
+	}
+
+	// 이미지 파일인지 확인
+	if (!file.type.startsWith('image/')) {
+		throw new Error('이미지 파일만 업로드 가능합니다.');
+	}
+
+	// 파일 크기 제한 (2MB)
+	const maxSize = 2 * 1024 * 1024;
+	if (file.size > maxSize) {
+		throw new Error('파일 크기는 2MB 이하여야 합니다.');
+	}
+
+	// 파일명 생성: profile-photo-{timestamp}.{extension}
+	const timestamp = Date.now();
+	const extension = file.name.split('.').pop() || 'jpg';
+	const filename = `profile-photo-${timestamp}.${extension}`;
+	const filePath = `users/${uid}/profile/${filename}`;
+
+	// Storage 참조 생성
+	const storageRef = ref(storage, filePath);
+
+	// 업로드 Task 생성
+	const uploadTask: UploadTask = uploadBytesResumable(storageRef, file);
+
+	return new Promise((resolve, reject) => {
+		uploadTask.on(
+			'state_changed',
+			(snapshot) => {
+				// 업로드 진행률 계산
+				const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+				onProgress?.(progress);
+			},
+			(error) => {
+				// 업로드 실패
+				console.error('❌ 프로필 사진 업로드 실패:', error);
+				reject(error);
+			},
+			async () => {
+				// 업로드 성공 - URL 반환
+				try {
+					const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
+					resolve(downloadUrl);
+				} catch (error) {
+					console.error('❌ 다운로드 URL 가져오기 실패:', error);
+					reject(error);
+				}
+			}
+		);
+	});
+}

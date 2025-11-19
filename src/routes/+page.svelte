@@ -10,33 +10,29 @@
 -->
 
 <script lang="ts">
-	import type { ForumCategory } from '../../shared/categories';
-	import PostListView from '$lib/components/post/PostListView.svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import PostCreateDialog from '$lib/components/post/PostCreateDialog.svelte';
-	import CategoryNavigation from '$lib/components/post/CategoryNavigation.svelte';
+	import PostEditDialog from '$lib/components/post/PostEditDialog.svelte';
 	import CommentCreateDialog from '$lib/components/comment/CommentCreateDialog.svelte';
 	import Avatar from '$lib/components/user/avatar.svelte';
-	import { Camera, Image as ImageIcon, Video, Smile } from 'lucide-svelte';
+	import { Camera } from 'lucide-svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { rtdb } from '$lib/firebase';
 	import { ref, update } from 'firebase/database';
 	import FeedList from '$lib/components/friend/feed-list.svelte';
+	import PostListView from '$lib/components/post/PostListView.svelte';
 	import { createRealtimeStore } from '$lib/stores/database.svelte';
 	import { toggleLikeTarget, type LikeTargetType } from '$lib/functions/like.functions';
 
-	// 탭 선택 상태 ('feed' | 'all')
-	type TabType = 'feed' | 'all';
-	let selectedTab = $state<TabType>('feed');
-
-	// 카테고리 선택 상태 (null = 전체)
-	let selectedCategory = $state<ForumCategory | null>(null);
-
-	// PostListView 참조 (새로고침용)
-	let postListViewRef = $state<PostListView>();
-
 	// 글쓰기 모달 상태
 	let isCreateDialogOpen = $state(false);
+
+	// 수정 모달 상태
+	let isEditDialogOpen = $state(false);
+	let editPostId = $state<string>('');
+	let editPostText = $state<string>('');
+	let editPostUrls = $state<Record<number, string>>({});
+	let editRoomId = $state<string>('');
 
 	// 댓글 모달 상태
 	let isCommentDialogOpen = $state(false);
@@ -44,32 +40,42 @@
 	let selectedParentId = $state<string | null>(null);
 	let selectedParentText = $state<string | null>(null);
 
-// 좋아요 상태
-type UserLikesMap = Record<string, LikeTargetType>;
-let userLikes = $state<UserLikesMap>({});
-const pendingLikeTargets = new Set<string>();
+	// 좋아요 상태
+	type UserLikesMap = Record<string, LikeTargetType>;
+	let userLikes = $state<UserLikesMap>({});
+	const pendingLikeTargets = new Set<string>();
 
-/**
- * 현재 사용자 좋아요 목록 구독
- */
-$effect(() => {
-	const uid = authStore.user?.uid;
+	/**
+	 * 현재 사용자 좋아요 목록 구독
+	 */
+	$effect(() => {
+		const uid = authStore.user?.uid;
 
-	if (!uid) {
-		userLikes = {};
-		return;
-	}
+		if (!uid) {
+			userLikes = {};
+			return;
+		}
 
-	const store = createRealtimeStore<UserLikesMap>(`likes/${uid}`, {});
-	const unsubscribe = store.subscribe((state) => {
-		userLikes = state.data ?? {};
+		const store = createRealtimeStore<UserLikesMap>(`likes/${uid}`, {});
+		const unsubscribe = store.subscribe((state) => {
+			userLikes = state.data ?? {};
+		});
+
+		return () => {
+			unsubscribe();
+			store.unsubscribe();
+		};
 	});
 
-	return () => {
-		unsubscribe();
-		store.unsubscribe();
-	};
-});
+	const isAuthenticated = $derived(Boolean(authStore.user));
+	let composePlaceholder = $state('');
+	$effect(() => {
+		const baseName =
+			authStore.user && authStore.user.displayName
+				? authStore.user.displayName
+				: m.commonUser();
+		composePlaceholder = m.composePromptPlaceholder({ name: baseName });
+	});
 
 /**
  * 좋아요 토글
@@ -100,14 +106,6 @@ async function handleToggleLike(event: MouseEvent, targetId: string, targetType:
 }
 
 	/**
-	 * 게시글 작성 후 콜백
-	 * 작성된 게시글의 카테고리를 자동으로 선택
-	 */
-	function handlePostCreated(category: ForumCategory) {
-		selectedCategory = category;
-	}
-
-	/**
 	 * 댓글 작성 모달 열기
 	 */
 	function handleOpenCommentDialog(
@@ -122,13 +120,19 @@ async function handleToggleLike(event: MouseEvent, targetId: string, targetType:
 	}
 
 	/**
-	 * 댓글 작성 완료 후 콜백
-	 * 댓글 목록을 다시 로드하여 화면에 반영
+	 * 게시글 수정 함수
 	 */
-	async function handleCommentCreated() {
-		if (selectedPostId && postListViewRef) {
-			await postListViewRef.refreshPostComments(selectedPostId);
-		}
+	function handleEdit(
+		postId: string,
+		text: string,
+		urls: Record<number, string>,
+		roomId: string
+	) {
+		editPostId = postId;
+		editPostText = text;
+		editPostUrls = urls;
+		editRoomId = roomId;
+		isEditDialogOpen = true;
 	}
 
 	/**
@@ -166,170 +170,89 @@ async function handleToggleLike(event: MouseEvent, targetId: string, targetType:
 	<title>Sonub - 홈</title>
 </svelte:head>
 
-<div class="post-list-container">
-	<!-- 글쓰기 유도 폼 (가짜 입력 폼) - 최상단으로 이동 -->
-	{#if authStore.user}
-		<div
-			class="compose-prompt"
-			onclick={() => (isCreateDialogOpen = true)}
-			role="button"
-			tabindex="0"
-			onkeydown={(e) => {
-				if (e.key === 'Enter' || e.key === ' ') {
-					isCreateDialogOpen = true;
-				}
-			}}
-		>
-			<!-- 왼쪽: 사용자 프로필 사진 -->
-			<Avatar uid={authStore.user.uid} size={48} />
-
-			<!-- 중간: 가짜 입력창 -->
-			<div class="compose-input-fake">
-				{m.composePromptPlaceholder({ name: authStore.user.displayName || m.commonUser() })}
-			</div>
-
-			<!-- 오른쪽: 아이콘 버튼들 -->
-			<div class="compose-actions">
-				<div class="hidden items-center gap-2 sm:flex">
-					<span class="compose-icon-button" aria-hidden="true">
-						<Video class="compose-icon" />
-					</span>
-					<span class="compose-icon-button" aria-hidden="true">
-						<ImageIcon class="compose-icon" />
-					</span>
-					<span class="compose-icon-button" aria-hidden="true">
-						<Smile class="compose-icon" />
-					</span>
-				</div>
-				<div class="flex items-center sm:hidden">
-					<span class="compose-icon-button" aria-hidden="true">
-						<Camera class="compose-icon" />
-					</span>
-				</div>
-			</div>
-		</div>
-	{:else}
-		<!-- 비로그인 상태일 때도 가짜 글쓰기 폼 표시 -->
-		<div
-			class="compose-prompt"
-			onclick={() => (isCreateDialogOpen = true)}
-			role="button"
-			tabindex="0"
-			onkeydown={(e) => {
-				if (e.key === 'Enter' || e.key === ' ') {
-					isCreateDialogOpen = true;
-				}
-			}}
-		>
-			<!-- 왼쪽: 기본 프로필 아이콘 -->
-			<div class="default-avatar">
-				<svg class="h-12 w-12 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
-					<path
-						d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
-					/>
-				</svg>
-			</div>
-
-			<!-- 중간: 가짜 입력창 -->
-			<div class="compose-input-fake">
-				{m.composePromptPlaceholder({ name: m.commonUser() })}
-			</div>
-
-			<!-- 오른쪽: 아이콘 버튼들 -->
-			<div class="compose-actions">
-				<div class="hidden items-center gap-2 sm:flex">
-					<span class="compose-icon-button" aria-hidden="true">
-						<Video class="compose-icon" />
-					</span>
-					<span class="compose-icon-button" aria-hidden="true">
-						<ImageIcon class="compose-icon" />
-					</span>
-					<span class="compose-icon-button" aria-hidden="true">
-						<Smile class="compose-icon" />
-					</span>
-				</div>
-				<div class="flex items-center sm:hidden">
-					<span class="compose-icon-button" aria-hidden="true">
-						<Camera class="compose-icon" />
-					</span>
-				</div>
-			</div>
-		</div>
-	{/if}
-
-	<!-- 피드 / 전체 탭 -->
-	<div class="tab-navigation">
-		<button
-			class="tab-button"
-			class:tab-active={selectedTab === 'feed'}
-			onclick={() => {
-				selectedTab = 'feed';
-			}}
-		>
-			팔로잉 피드
-		</button>
-		<button
-			class="tab-button"
-			class:tab-active={selectedTab === 'all'}
-			onclick={() => {
-				selectedTab = 'all';
-			}}
-		>
-			{m.composeAll()}
-		</button>
-	</div>
-
-	<!-- 피드 탭 선택 시 FeedList 표시 -->
-	{#if selectedTab === 'feed'}
-		<div class="post-list-content">
-			<FeedList
-				pageSize={20}
-				{userLikes}
-				onToggleLike={handleToggleLike}
-				onOpenCommentDialog={handleOpenCommentDialog}
-				onDelete={handleDeletePost}
-			/>
-		</div>
-	{:else}
-		<!-- 전체 탭 선택 시 카테고리 네비게이션 + DatabaseListView 표시 -->
-		<!-- 카테고리 텍스트 네비게이션 -->
-		<div class="mb-4 flex">
-			<CategoryNavigation
-				{selectedCategory}
-				showCreateButton={true}
-				on:change={(event) => (selectedCategory = event.detail.category)}
-				on:create={(event) => {
-					selectedCategory = event.detail.category;
-					isCreateDialogOpen = true;
+	<div class="post-list-container">
+		<!-- 글쓰기 유도 폼 (가짜 입력 폼) - 최상단으로 이동 -->
+		<div class="compose-wrapper">
+			<div
+				class="compose-prompt"
+				onclick={() => (isCreateDialogOpen = true)}
+				role="button"
+				tabindex="0"
+				onkeydown={(e) => {
+					if (e.key === 'Enter' || e.key === ' ') {
+						isCreateDialogOpen = true;
+					}
 				}}
-			/>
+			>
+				<div class="compose-avatar-wrapper" aria-hidden="true">
+					{#if isAuthenticated && authStore.user?.uid}
+						<Avatar uid={authStore.user.uid} size={42} />
+					{:else}
+						<div class="default-avatar">
+							<svg class="h-10 w-10 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+								<path
+									d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+								/>
+							</svg>
+						</div>
+					{/if}
+				</div>
+
+				<div class="compose-input-area">
+					<div class="compose-input-fake">
+						{composePlaceholder}
+					</div>
+				</div>
+
+				<button class="compose-icon-circle" type="button" aria-label="사진 첨부">
+					<Camera class="compose-icon" />
+				</button>
+			</div>
+
 		</div>
 
-		<!-- 게시글 목록 -->
-		<div class="post-list-content">
-			<PostListView
-				bind:this={postListViewRef}
-				path="posts"
-				pageSize={20}
-				orderBy="createdAt"
-				reverse={true}
-				threshold={300}
-				category={selectedCategory}
-				{userLikes}
-				onToggleLike={handleToggleLike}
-				onOpenCommentDialog={handleOpenCommentDialog}
-				onDelete={handleDeletePost}
-				editMode="navigate"
-			/>
-		</div>
-	{/if}
+	<!-- 피드 또는 글 목록 표시 -->
+	<div class="post-list-content">
+		<FeedList
+			pageSize={20}
+			{userLikes}
+			onToggleLike={handleToggleLike}
+			onOpenCommentDialog={handleOpenCommentDialog}
+			onEdit={handleEdit}
+			onDelete={handleDeletePost}
+		>
+			{#snippet fallback()}
+				<!-- 로그인하지 않았거나 피드가 없을 때 글 목록 표시 -->
+				<PostListView
+					path="posts"
+					pageSize={20}
+					orderBy="createdAt"
+					reverse={true}
+					{userLikes}
+					onToggleLike={handleToggleLike}
+					onOpenCommentDialog={handleOpenCommentDialog}
+					onEdit={handleEdit}
+					onDelete={handleDeletePost}
+					editMode="dialog"
+				/>
+			{/snippet}
+		</FeedList>
+	</div>
 </div>
 
 <!-- 글쓰기 모달 -->
 <PostCreateDialog
 	bind:open={isCreateDialogOpen}
-	defaultCategory={selectedCategory}
-	onPostCreated={handlePostCreated}
+/>
+
+<!-- 게시글 수정 모달 -->
+<PostEditDialog
+	bind:open={isEditDialogOpen}
+	postId={editPostId}
+	initialText={editPostText}
+	initialUrls={editPostUrls}
+	roomId={editRoomId}
+	onClose={() => (isEditDialogOpen = false)}
 />
 
 <!-- 댓글 작성 모달 -->
@@ -338,50 +261,41 @@ async function handleToggleLike(event: MouseEvent, targetId: string, targetType:
 	messageId={selectedPostId}
 	parentId={selectedParentId}
 	parentText={selectedParentText}
-	onCreated={handleCommentCreated}
 />
 
 <style>
 	@import 'tailwindcss' reference;
 
 	.post-list-container {
-		@apply mx-auto max-w-4xl p-4;
+		@apply mx-auto max-w-4xl md:p-4;
 	}
 
-	/* 피드 / 전체 탭 네비게이션 */
-	.tab-navigation {
-		@apply mb-6 flex border-b border-gray-200;
-	}
-
-	.tab-button {
-		@apply flex-1 border-b-2 border-transparent px-4 py-3 text-center text-sm font-medium text-gray-600;
-		@apply transition-all duration-200;
-		@apply hover:text-blue-600;
-	}
-
-	.tab-active {
-		@apply border-blue-600 text-blue-600;
+	.compose-wrapper {
+		@apply mb-6;
 	}
 
 	/* 글쓰기 유도 폼 (가짜 입력 폼) */
 	.compose-prompt {
-		@apply mb-6 -mx-4 flex w-full items-center gap-3 rounded-none border-0 bg-transparent p-4 shadow-none;
-		@apply cursor-pointer transition-all;
-		@apply sm:mx-0 sm:rounded-lg sm:border sm:border-gray-200 sm:bg-white sm:p-4 sm:shadow-sm sm:hover:border-blue-300 sm:hover:shadow-md;
+		@apply flex w-full items-center gap-3 rounded-full bg-transparent px-2 py-1;
+		@apply cursor-pointer transition-all hover:bg-gray-50;
+	}
+
+	.compose-avatar-wrapper {
+		@apply shrink-0;
+	}
+
+	.compose-input-area {
+		@apply flex-1;
 	}
 
 	.compose-input-fake {
-		@apply flex-1 rounded-full bg-gray-100 px-4 py-3 text-gray-500;
+		@apply rounded-full bg-gray-100 px-4 py-2 text-sm text-gray-600;
 		@apply transition-colors hover:bg-gray-200;
 	}
 
-	.compose-actions {
-		@apply flex items-center gap-2;
-	}
-
-	.compose-icon-button {
-		@apply flex h-10 w-10 cursor-pointer items-center justify-center rounded-full text-2xl;
-		@apply transition-all hover:bg-gray-100;
+	.compose-icon-circle {
+		@apply flex h-10 w-10 items-center justify-center rounded-full bg-white text-gray-500 shadow;
+		@apply transition-all hover:bg-gray-100 focus:outline-none;
 	}
 
 	.compose-icon {
@@ -390,7 +304,7 @@ async function handleToggleLike(event: MouseEvent, targetId: string, targetType:
 
 	/* 기본 아바타 (비로그인 사용자용) */
 	.default-avatar {
-		@apply flex h-12 w-12 items-center justify-center rounded-full bg-gray-200;
+		@apply flex h-10 w-10 items-center justify-center rounded-full bg-gray-200;
 	}
 
 	.post-list-content {

@@ -270,6 +270,13 @@ changelog:
 ```
 Firebase Realtime Database (루트)
 ├── users/                    # 사용자 프로필
+│   └── <uid>/
+│       └── counters/         # 사용자별 활동 통계 (Cloud Functions에서만 증가)
+│           ├── user          # 사용자 생성 (항상 1)
+│           ├── like          # 사용자가 누른 좋아요 수
+│           ├── comment       # 사용자가 작성한 댓글 수
+│           ├── follow        # 사용자가 팔로우한 수
+│           └── chat          # 사용자가 보낸 채팅 메시지 수
 ├── user-props/               # 사용자 속성 (대량 쿼리 최적화)
 ├── friends/                  # 친구 관계
 ├── followers/                # 팔로워 (나를 팔로우하는 사용자)
@@ -281,7 +288,11 @@ Firebase Realtime Database (루트)
 ├── fcm-tokens/               # FCM 권한 획득 후 장치 토큰 저장
 └── stats/                    # 전역 통계
     └── counters/
-        └── user              # 전체 사용자 수 (Cloud Functions에서만 증가)
+        ├── user              # 전체 사용자 수 (Cloud Functions에서만 증가)
+        ├── like              # 전체 좋아요 수
+        ├── comment           # 전체 댓글 수
+        ├── follow            # 전체 팔로우 수
+        └── message           # 전체 채팅 메시지 수
 ```
 
 ---
@@ -290,24 +301,77 @@ Firebase Realtime Database (루트)
 
 전체 통계 값은 `/stats/counters/` 경로에서 관리하며, **백엔드(Cloud Functions)만** 쓰기가 가능합니다.
 
-### 사용자 수 통계 구조
+### 전역 통계 구조
 
 ```
 /stats/
   /counters/
-    user: number   // 전체 가입 사용자 수
+    ├── user: number      // 전체 가입 사용자 수
+    ├── like: number      // 전체 좋아요 수
+    ├── comment: number   // 전체 댓글 수
+    ├── follow: number    // 전체 팔로우 수
+    └── message: number   // 전체 채팅 메시지 수
+```
+
+### 사용자별 통계 구조
+
+각 사용자의 활동 통계는 `/users/{uid}/counters/` 경로에서 관리하며, **백엔드(Cloud Functions)만** 쓰기가 가능합니다.
+
+```
+/users/
+  /<uid>/
+    /counters/
+      ├── user: number      // 사용자 생성 (항상 1)
+      ├── like: number      // 사용자가 누른 좋아요 수
+      ├── comment: number   // 사용자가 작성한 댓글 수
+      ├── follow: number    // 사용자가 팔로우한 수
+      └── chat: number      // 사용자가 보낸 채팅 메시지 수
 ```
 
 ### 동작 방식
 
-- 새 사용자가 생성되면 `firebase/functions/src/handlers/user.handler.ts`의 `handleUserCreate()`가 실행됩니다.
-- 해당 로직은 `/stats/counters/user` 값을 `ServerValue.increment(1)`로 증가시켜 동시성 문제 없이 총 사용자 수를 집계합니다.
-- 클라이언트는 이 값을 읽기만 하며, 쓰기는 금지됩니다.
+#### 전역 통계 업데이트
+
+- **사용자 생성 시**: `firebase/functions/src/handlers/user.handler.ts`의 `handleUserCreate()`가 `/stats/counters/user`를 `ServerValue.increment(1)`로 증가시킵니다.
+- **좋아요 시**: `firebase/functions/src/handlers/like.handler.ts`의 `handleLikeCreate()`가 `/stats/counters/like`를 증가시킵니다.
+- **댓글 작성 시**: `firebase/functions/src/handlers/comment.create.handler.ts`의 `handleCommentCreate()`가 `/stats/counters/comment`를 증가시킵니다.
+- **팔로우 시**: `firebase/functions/src/handlers/friend.follow.handler.ts`의 `handleFollowingCreate()`가 `/stats/counters/follow`를 증가시킵니다.
+- **채팅 메시지 전송 시**: `firebase/functions/src/handlers/chat.message-create.handler.ts`의 `handleChatMessageCreate()`가 `/stats/counters/message`를 증가시킵니다.
+
+#### 사용자별 통계 업데이트
+
+각 Cloud Functions 핸들러는 전역 통계와 함께 사용자별 통계도 자동으로 업데이트합니다:
+
+- **사용자 생성 시**: `/users/{uid}/counters/user`를 1로 설정합니다.
+- **좋아요 시**: 좋아요를 누른 사용자의 `/users/{uid}/counters/like`를 증가시킵니다.
+- **댓글 작성 시**: 댓글 작성자의 `/users/{authorUid}/counters/comment`를 증가시킵니다.
+- **팔로우 시**: 팔로우하는 사용자의 `/users/{followerUid}/counters/follow`를 증가시킵니다.
+- **채팅 메시지 전송 시**: 발신자의 `/users/{senderUid}/counters/chat`를 증가시킵니다.
+
+모든 카운터는 `ServerValue.increment()`를 사용하여 동시성 문제 없이 원자적으로 업데이트됩니다.
+
+### 클라이언트/서버 역할 분리
+
+- **클라이언트는** 통계 값을 읽기만 할 수 있습니다:
+  - 전역 통계: `/stats/counters/*` 읽기 (홈페이지 통계 카드 표시용)
+  - 사용자별 통계: `/users/{uid}/counters/*` 읽기 (프로필 페이지 통계 표시용)
+- **서버(Cloud Functions)는** 통계 값을 자동으로 증감합니다:
+  - Multi-path updates를 사용하여 전역 통계와 사용자별 통계를 동시에 원자적으로 업데이트
+  - 클라이언트의 직접 쓰기는 보안 규칙으로 차단됨
 
 ### 활용 예시
 
-- 홈페이지 우측 사이드바의 통계 카드
-- `/stats` 페이지에서 제공하는 사용자 수 대시보드
+#### 전역 통계 활용
+- 홈페이지 우측 사이드바의 통계 카드 (전체 사용자 수, 전체 좋아요 수 등)
+- `/stats` 페이지에서 제공하는 전체 통계 대시보드
+
+#### 사용자별 통계 활용
+- 사용자 프로필 페이지 (`/user/profile`, `/my/profile`)
+  - 사용자가 누른 좋아요 수
+  - 사용자가 작성한 댓글 수
+  - 사용자가 팔로우한 수
+  - 사용자가 보낸 채팅 메시지 수
+- 사용자 활동 분석 및 랭킹 시스템
 
 ---
 
@@ -333,13 +397,25 @@ Firebase Realtime Database (루트)
 │   ├── birthMonthDay: "01-15"
 │   ├── bio: "자기소개"
 │   ├── createdAt: 1698473000000
-│   └── updatedAt: 1698474000000
+│   ├── updatedAt: 1698474000000
+│   └── counters:
+│       ├── user: 1           // 사용자 생성 (항상 1)
+│       ├── like: 10          // 사용자가 누른 좋아요 수
+│       ├── comment: 5        // 사용자가 작성한 댓글 수
+│       ├── follow: 3         // 사용자가 팔로우한 수
+│       └── chat: 20          // 사용자가 보낸 채팅 메시지 수
 └── <uid2>/
     ├── displayName: "사용자2"
     ├── photoUrl: null
     ├── gender: "F"
     ├── createdAt: 1698473100000
-    └── updatedAt: 1698474100000
+    ├── updatedAt: 1698474100000
+    └── counters:
+        ├── user: 1
+        ├── like: 0
+        ├── comment: 0
+        ├── follow: 0
+        └── chat: 0
 ```
 
 ### 필드 설명
@@ -357,12 +433,26 @@ Firebase Realtime Database (루트)
 | `bio` | string | ❌ | 자기소개 |
 | `createdAt` | number | ✅ | 계정 생성 시간 |
 | `updatedAt` | number | ✅ | 프로필 수정 시간 |
+| `counters` | object | ✅ | 사용자별 활동 통계 (Cloud Functions에서만 업데이트) |
+| `counters/user` | number | ✅ | 사용자 생성 카운터 (항상 1) |
+| `counters/like` | number | ✅ | 사용자가 누른 좋아요 수 |
+| `counters/comment` | number | ✅ | 사용자가 작성한 댓글 수 |
+| `counters/follow` | number | ✅ | 사용자가 팔로우한 수 |
+| `counters/chat` | number | ✅ | 사용자가 보낸 채팅 메시지 수 |
 
 ### 클라이언트/서버 역할 분리
 
 사용자 정보의 경우:
 - **클라이언트는** `displayName`, `photoUrl`, `gender`, `birthYear`, `birthMonth`, `birthDay`, `bio` 를 저장할 수 있고,
-- **서버는** `createdAt` 과 `updatedAt` 만 저장할 수 있습니다.
+- **서버(Cloud Functions)는** 다음 필드를 자동으로 저장/업데이트합니다:
+  - `createdAt`: 사용자 생성 시간
+  - `updatedAt`: 프로필 수정 시간
+  - `counters/*`: 사용자별 활동 통계 (좋아요, 댓글, 팔로우, 채팅 메시지)
+    - `counters/user`: 사용자 생성 시 1로 설정 (항상 1)
+    - `counters/like`: 좋아요 추가/삭제 시 자동 증감
+    - `counters/comment`: 댓글 작성/삭제 시 자동 증감
+    - `counters/follow`: 팔로우/언팔로우 시 자동 증감
+    - `counters/chat`: 채팅 메시지 전송 시 자동 증가
 
 ### ⚠️ 중요: Firebase Auth vs RTDB 필드
 

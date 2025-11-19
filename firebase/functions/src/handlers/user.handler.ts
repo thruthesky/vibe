@@ -46,6 +46,9 @@ export async function handleUserCreate(
   // 📊 전체 사용자 통계 업데이트: /stats/counters/user +1
   updates["stats/counters/user"] = admin.database.ServerValue.increment(1);
 
+  // 📊 사용자별 통계 업데이트: /users/{uid}/counters/user +1
+  updates[`users/${uid}/counters/user`] = admin.database.ServerValue.increment(1);
+
   if (Object.keys(updates).length > 0) {
     await admin.database().ref().update(updates);
     logger.info("사용자 생성 관련 업데이트 완료", {

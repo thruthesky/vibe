@@ -30,6 +30,7 @@
 	// PostItem 컴포넌트 재사용
 	import PostItem from '$lib/components/post/PostItem.svelte';
 	import type { LikeTargetType } from '$lib/functions/like.functions';
+	import type { Snippet } from 'svelte';
 
 	// Props
 	/** 한 페이지당 로드할 피드 수 */
@@ -41,14 +42,20 @@
 		onToggleLike,
 		/** 댓글 작성 모달 열기 핸들러 */
 		onOpenCommentDialog,
+		/** 수정 핸들러 */
+		onEdit,
 		/** 삭제 핸들러 */
-		onDelete
+		onDelete,
+		/** 피드가 비어있거나 로그인하지 않은 경우 표시할 fallback 콘텐츠 */
+		fallback
 	}: {
 		pageSize?: number;
 		userLikes?: Record<string, LikeTargetType>;
 		onToggleLike: (event: MouseEvent, targetId: string, targetType: LikeTargetType) => void;
 		onOpenCommentDialog: (postId: string, parentId?: string | null, parentText?: string | null) => void;
+		onEdit?: (postId: string, text: string, urls: Record<number, string>, roomId: string) => void;
 		onDelete: (postId: string) => void;
+		fallback?: Snippet;
 	} = $props();
 
 	// 상태 관리
@@ -279,20 +286,25 @@
 	});
 </script>
 
-<!-- 로그인 필요 메시지 -->
-{#if !authStore.user}
-	<div class="feed-empty">
-		<p>{m.feedLoginRequired()}</p>
-	</div>
+<!-- 로그인하지 않았거나 피드가 비어있는 경우 -->
+{#if !authStore.user || (!initialLoading && sortedFeedIds.length === 0)}
+	<!-- fallback snippet이 제공된 경우 렌더링 -->
+	{#if fallback}
+		{@render fallback()}
+	{:else}
+		<!-- fallback이 없으면 기본 메시지 표시 -->
+		<div class="feed-empty">
+			{#if !authStore.user}
+				<p>{m.feedLoginRequired()}</p>
+			{:else}
+				<p>{m.feedEmpty()}</p>
+			{/if}
+		</div>
+	{/if}
 	<!-- 초기 로딩 중 -->
 {:else if initialLoading}
 	<div class="feed-loading">
 		<p>{m.feedLoading()}</p>
-	</div>
-	<!-- 피드가 비어있음 -->
-{:else if sortedFeedIds.length === 0}
-	<div class="feed-empty">
-		<p>{m.feedEmpty()}</p>
 	</div>
 	<!-- 피드 목록 표시 - PostItem 컴포넌트 재사용 -->
 {:else}
@@ -307,8 +319,8 @@
 					{userLikes}
 					{onToggleLike}
 					{onOpenCommentDialog}
+					{onEdit}
 					onDelete={onDelete}
-					editMode="navigate"
 				/>
 			{/if}
 		{/each}

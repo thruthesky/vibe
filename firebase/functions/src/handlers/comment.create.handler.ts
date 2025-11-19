@@ -17,31 +17,45 @@ import {
 } from "../utils/fcm.utils";
 
 /**
- * 전체 댓글 통계 카운터 증가
+ * 전체 댓글 통계 카운터 및 사용자별 통계 증가
  *
  * @param postId - 게시글 ID
  * @param commentId - 댓글 ID
+ * @param authorUid - 댓글 작성자 UID
  *
  * 수행 작업:
  * - /stats/counters/comment 경로에 ServerValue.increment(1)로 +1 증가
+ * - /users/{authorUid}/counters/comment 경로에 ServerValue.increment(1)로 +1 증가
  * - 이 값은 오른쪽 사이드바의 "실시간 통계 - 댓글 수"에 실시간으로 표시됨
  */
 async function incrementCommentCounter(
   postId: string,
-  commentId: string
+  commentId: string,
+  authorUid?: string
 ): Promise<void> {
   try {
-    const commentCounterRef = admin.database().ref("stats/counters/comment");
-    await commentCounterRef.set(admin.database.ServerValue.increment(1));
+    const updates: Record<string, unknown> = {};
 
-    logger.info("stats/counters/comment 증가 완료 (전체 댓글 통계)", {
+    // 전체 댓글 통계 증가
+    updates["stats/counters/comment"] = admin.database.ServerValue.increment(1);
+
+    // 사용자별 댓글 통계 증가
+    if (authorUid) {
+      updates[`users/${authorUid}/counters/comment`] = admin.database.ServerValue.increment(1);
+    }
+
+    await admin.database().ref().update(updates);
+
+    logger.info("stats/counters/comment 및 사용자별 통계 증가 완료", {
       postId,
       commentId,
+      authorUid,
     });
   } catch (error) {
     logger.error("stats/counters/comment 증가 실패", {
       postId,
       commentId,
+      authorUid,
       error: error instanceof Error ? error.message : String(error),
     });
     // 통계 증가 실패는 치명적이지 않으므로 에러를 throw하지 않고 로그만 남김
@@ -350,7 +364,8 @@ export async function handleCommentCreate(
     logger.info("댓글 위치 정보 저장 완료", {postId, commentId});
 
     // 4. 전체 댓글 통계 증가 (최상위 댓글, 대댓글 모두 포함)
-    await incrementCommentCounter(postId, commentId);
+    const authorUid = commentData.authorUid as string | undefined;
+    await incrementCommentCounter(postId, commentId, authorUid);
 
     // 5. 관련 사용자들에게 푸시 알림 전송 (비차단)
     // 푸시 알림 실패는 비치명적이므로 await하지 않고 백그라운드에서 실행
