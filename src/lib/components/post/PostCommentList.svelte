@@ -64,6 +64,7 @@
 	// 좋아요 사용자 모달 상태
 	let likesModalOpen = $state(false);
 	let likesModalTargetId = $state<string>('');
+	let likesModalTargetType = $state<LikeTargetType>('comment');
 
 	// 각 댓글의 좋아요 사용자 목록 (commentId -> uids)
 	let commentLikedUsers = $state<Record<string, string[]>>({});
@@ -172,7 +173,8 @@
 		const result = await toggleLikeTarget({
 			uid: authStore.user.uid,
 			targetId: commentId,
-			targetType: 'comment'
+			targetType: 'comment',
+			postId: postId // 댓글의 부모 게시글 ID 전달
 		});
 		pendingCommentLikes.delete(commentId);
 
@@ -199,6 +201,7 @@
 	 */
 	function handleOpenLikesModal(commentId: string) {
 		likesModalTargetId = commentId;
+		likesModalTargetType = `comment-${postId}`; // targetType에 postId 포함
 		likesModalOpen = true;
 	}
 
@@ -407,7 +410,11 @@
 />
 
 <!-- 좋아요 사용자 모달 -->
-<LikedUsersModal bind:open={likesModalOpen} targetId={likesModalTargetId} targetType="comment" />
+<LikedUsersModal
+	bind:open={likesModalOpen}
+	targetId={likesModalTargetId}
+	targetType={likesModalTargetType}
+/>
 
 <style>
 	@import 'tailwindcss' reference;

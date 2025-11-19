@@ -2,7 +2,7 @@
 title: Sonub 좋아요 시스템 개요
 status: active
 created: 2025-01-18
-updated: 2025-11-18
+updated: 2025-11-19
 author: Codex (GPT-5)
 tags:
   - like
@@ -33,7 +33,7 @@ dependencies:
 | 용어 | 설명 |
 | --- | --- |
 | `targetId` | 좋아요 대상. 채팅/게시글일 때는 `messageId`, 댓글일 때는 `commentId` |
-| `targetType` | `"message"` 또는 `"comment"` 문자열. `/likes/{uid}/{targetId}` 값에 저장 |
+| `targetType` | `/likes/{uid}/{targetId}` 값에 저장되는 타입 문자열. `"message"`, `"post"`, `"comment"` (단독 사용 시), 또는 `"comment-{postId}"` (댓글의 경우 postId 포함) 형식 |
 | `likeCount` | Cloud Functions가 관리하는 카운터 필드. 클라이언트는 직접 수정하지 않는다 |
 
 # 2. 데이터 모델
@@ -43,7 +43,6 @@ dependencies:
 | `/likes/{uid}/{targetId}` | 로그인 사용자가 좋아요한 항목 기록. 값은 `targetType` |
 | `/posts/{postId}/likeCount` | 게시글의 총 좋아요 수 |
 | `/comments/{postId}/{commentId}/likeCount` | 특정 댓글의 좋아요 수 |
-| `/comment-locations/{commentId}` | 댓글이 속한 부모 `postId`. Cloud Functions가 댓글의 likeCount를 갱신할 때 사용 |
 
 - `".indexOn": ["likeCount"]` 는 `firebase/database.rules.json` 에 정의되어 있어 정렬 쿼리에서 효율적으로 사용한다.
 - `/likes` 루트에 대한 read 권한은 본인만, write 권한은 본인 UID와 일치할 때만 허용한다.
@@ -87,7 +86,7 @@ dependencies:
 3. 값이 없으면 `{ targetType }` 문자열을 write
 4. Cloud Functions `onCreate` 트리거
    - `targetType === "post"` → `/posts/{targetId}/likeCount` 를 `ServerValue.increment(1)`
-   - `targetType === "comment"` → `/comment-locations/{targetId}` 로 부모 `postId` 획득 후 `/comments/{postId}/{targetId}/likeCount` 증가
+   - `targetType.startsWith("comment-")` → targetType에서 postId 파싱 (`"comment-{postId}"` 형식) 후 `/comments/{postId}/{targetId}/likeCount` 증가
 5. UI는 `/likes/{uid}` 와 게시글/댓글의 데이터 경로를 실시간 구독하여 카운터를 즉시 반영
 
 ## 4.2 좋아요 취소
@@ -109,18 +108,31 @@ dependencies:
 ## 5.2 댓글
 
 - 댓글 데이터는 `/comments/{postId}/{commentId}` 에 저장된다.
-- `commentId` 와 부모 게시글 매핑은 `/comment-locations/{commentId}` 에 캐싱되어 Cloud Functions가 참조한다.
-- UI는 `CommentItem.svelte` (게시글 상세 페이지)에서 `toggleLikeTarget({ targetType: 'comment' })` 으로 호출하며, 댓글 좋아요 수는 `comment.likeCount ?? 0` 을 출력한다.
+- 댓글 좋아요 시 `targetType`은 `"comment-{postId}"` 형식으로 저장되어 Cloud Functions가 postId를 파싱할 수 있다.
+- `comment-locations` 매핑 구조는 제거되었으며, 모든 postId 정보는 targetType에 인코딩된다.
+- UI는 `PostCommentList.svelte`에서 `toggleLikeTarget({ uid, targetId: commentId, targetType: 'comment', postId })` 으로 호출한다.
+- **중요**: 댓글 좋아요 시 반드시 `postId` 파라미터를 전달해야 한다. 그렇지 않으면 Cloud Functions에서 postId를 찾을 수 없다.
+- 좋아요 사용자 모달 표시 시 `targetType`을 `"comment-{postId}"` 형식으로 전달한다.
+- 댓글 좋아요 수는 `comment.likeCount ?? 0` 을 출력한다.
 
 # 6. 클라이언트 구현 지침
 
 1. **함수 사용**: 모든 컴포넌트는 `toggleLikeTarget` 만 사용하며 직접 `/likes`를 수정하지 않는다.
-2. **pending set**: `pendingLikeTargets` Set을 사용해 중복 클릭을 방지한다 (참고: `src/routes/chat/room/+page.svelte`).
-3. **구독 해제**: `createRealtimeStore` 사용 후 컴포넌트 언마운트 시 `store.unsubscribe()` 를 호출한다.
-4. **컴포넌트 예시**
+2. **댓글 좋아요 시 postId 필수**: 댓글 좋아요 시 반드시 `postId` 파라미터를 전달해야 한다.
+   ```typescript
+   await toggleLikeTarget({
+     uid: authStore.user.uid,
+     targetId: commentId,
+     targetType: 'comment',
+     postId: postId  // 필수!
+   });
+   ```
+3. **pending set**: `pendingLikeTargets` Set을 사용해 중복 클릭을 방지한다 (참고: `src/routes/chat/room/+page.svelte`).
+4. **구독 해제**: `createRealtimeStore` 사용 후 컴포넌트 언마운트 시 `store.unsubscribe()` 를 호출한다.
+5. **컴포넌트 예시**
    - `PostItem.svelte`: 게시글 카드에서 좋아요 버튼/툴팁/카운트 UI
    - `FeedList.svelte`: 팔로잉 피드에서도 동일한 `PostItem` 을 재사용
-   - `CommentItem.svelte`: 댓글 좋아요 버튼 TODO (UX 기준 동일)
+   - `PostCommentList.svelte`: 댓글 좋아요 버튼 (postId 전달 필수)
 
 # 7. 보안 및 백엔드
 
@@ -143,15 +155,9 @@ dependencies:
 
 # 9. 테스트 체크리스트
 
-- [ ] `npm run check` 통과
+- [x] `npm run check` 통과
+- [x] 댓글 좋아요 시 postId 전달 검증 추가
+- [x] Cloud Functions 배포 완료
 - [ ] 채팅/게시글/댓글 좋아요 추가/취소 시 `/likes` 와 `likeCount` 가 동기화되는지 확인
 - [ ] 동시에 여러 사용자가 좋아요할 때 데이터 경합 없이 카운트가 증가하는지 확인
 - [ ] 비로그인 상태에서 좋아요 버튼이 로그인 유도 메시지를 노출하는지 확인
-- [ ] 댓글 삭제 후 `/comment-locations` 항목이 정리되는지 (Cloud Functions 시나리오) 확인
-
-# 10. 변경 이력 (SED Log)
-
-| 날짜 | 작성자 | 설명 |
-| --- | --- | --- |
-| 2025-11-18 | Codex | `sonub-chat-like.md` 내용을 통합하고 게시글/댓글 좋아요 관리사양을 추가함 |
-| 2025-01-18 | Claude Code | 채팅 메시지 좋아요 기능 1차 스펙 작성 |

@@ -11,10 +11,10 @@ import { get, ref, remove, set } from 'firebase/database';
 /**
  * 좋아요 대상 타입
  * - message: 채팅 메시지
- * - comment: 댓글
+ * - comment: 댓글 (사용 시 postId를 전달하여 "comment-{postId}" 형식으로 저장)
  * - post: 게시글
  */
-export type LikeTargetType = 'message' | 'comment' | 'post';
+export type LikeTargetType = 'message' | 'comment' | 'post' | `comment-${string}`;
 
 /**
  * 좋아요 토글 옵션
@@ -25,6 +25,8 @@ interface ToggleLikeOptions {
 	targetType: LikeTargetType;
 	/** 채팅 메시지의 경우 roomId를 전달하여 "chat-message-{roomId}" 형식으로 저장 */
 	roomId?: string;
+	/** 댓글의 경우 postId를 전달하여 "comment-{postId}" 형식으로 저장 (필수) */
+	postId?: string;
 }
 
 /**
@@ -42,15 +44,24 @@ export interface ToggleLikeResult {
  * - 값이 없으면 targetType 문자열을 저장 (좋아요 추가)
  * - 값이 있으면 노드를 삭제 (좋아요 취소)
  * - 채팅 메시지의 경우 roomId를 전달하면 "chat-message-{roomId}" 형식으로 저장
+ * - 댓글의 경우 postId를 전달하면 "comment-{postId}" 형식으로 저장
+ *
+ * @param options.uid - 사용자 UID
+ * @param options.targetId - 대상 ID (메시지 ID, 댓글 ID, 또는 게시글 ID)
+ * @param options.targetType - 대상 타입 ('message', 'comment', 또는 'post')
+ * @param options.roomId - (선택) 채팅 메시지의 경우 roomId
+ * @param options.postId - (선택) 댓글의 경우 postId (필수)
+ * @returns 좋아요 토글 결과
  */
 export async function toggleLikeTarget(options: ToggleLikeOptions): Promise<ToggleLikeResult> {
-	const { uid, targetId, targetType, roomId } = options;
+	const { uid, targetId, targetType, roomId, postId } = options;
 
 	console.log('👍 [toggleLikeTarget] 시작', {
 		uid,
 		targetId,
 		targetType,
 		roomId,
+		postId,
 		path: `likes/${uid}/${targetId}`
 	});
 
@@ -59,12 +70,26 @@ export async function toggleLikeTarget(options: ToggleLikeOptions): Promise<Togg
 		return { success: false, error: '로그인이 필요합니다.' };
 	}
 
-	if (
-		!targetId ||
-		(targetType !== 'message' && targetType !== 'comment' && targetType !== 'post')
-	) {
-		console.error('❌ [toggleLikeTarget] 잘못된 요청', { targetId, targetType });
+	if (!targetId) {
+		console.error('❌ [toggleLikeTarget] 잘못된 요청: targetId 없음', { targetId, targetType });
 		return { success: false, error: '잘못된 좋아요 요청입니다.' };
+	}
+
+	// targetType 검증: message, post, comment, 또는 comment-{postId} 형식
+	if (
+		targetType !== 'message' &&
+		targetType !== 'post' &&
+		targetType !== 'comment' &&
+		!targetType.startsWith('comment-')
+	) {
+		console.error('❌ [toggleLikeTarget] 잘못된 targetType', { targetId, targetType });
+		return { success: false, error: '잘못된 좋아요 요청입니다.' };
+	}
+
+	// 댓글의 경우 postId 필수 검증
+	if (targetType === 'comment' && !postId) {
+		console.error('❌ [toggleLikeTarget] 댓글 좋아요 시 postId 필수', { targetId, targetType });
+		return { success: false, error: '댓글 좋아요 시 postId가 필요합니다.' };
 	}
 
 	if (!rtdb) {
@@ -88,16 +113,23 @@ export async function toggleLikeTarget(options: ToggleLikeOptions): Promise<Togg
 
 		// 채팅 메시지의 경우 roomId 정보를 포함하여 저장
 		// 형식: "chat-message-{roomId}"
-		// 이를 통해 Cloud Functions에서 바로 roomId를 파싱하여 사용 가능
-		const valueToStore = targetType === 'message' && roomId
-			? `chat-message-${roomId}`
-			: targetType;
+		// 댓글의 경우 postId 정보를 포함하여 저장
+		// 형식: "comment-{postId}"
+		// 이를 통해 Cloud Functions에서 바로 roomId/postId를 파싱하여 사용 가능
+		let valueToStore: string = targetType;
+
+		if (targetType === 'message' && roomId) {
+			valueToStore = `chat-message-${roomId}`;
+		} else if (targetType === 'comment' && postId) {
+			valueToStore = `comment-${postId}`;
+		}
 
 		console.log('💾 [toggleLikeTarget] 좋아요 추가 (새로운 값 저장):', {
 			path: `likes/${uid}/${targetId}`,
 			valueToStore,
 			targetType,
-			roomId
+			roomId,
+			postId
 		});
 
 		await set(likeRef, valueToStore);
@@ -109,6 +141,7 @@ export async function toggleLikeTarget(options: ToggleLikeOptions): Promise<Togg
 			targetId,
 			targetType,
 			roomId,
+			postId,
 			error: error instanceof Error ? error.message : error,
 			errorStack: error instanceof Error ? error.stack : undefined
 		});
