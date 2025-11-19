@@ -380,7 +380,6 @@
 	"noFollowing": "您没有关注任何人",
 	"noFollowers": "您没有粉丝",
 	"menuPublicProfile": "公开资料",
-<<<<<<< HEAD
 	"sidebarPopularUsers": "热门用户",
 	"homeSidebarProfileLabel": "我的资料",
 	"homeSidebarFollowers": "粉丝",
@@ -411,7 +410,4 @@
 	"myStatsDescription": "按日查看粉丝、点赞与评论的快照。",
 	"좋아요한_사용자_목록": "点赞的用户",
 	"좋아요한_사용자가_없습니다": "还没有人点赞"
-=======
-	"sidebarPopularUsers": "热门用户"
->>>>>>> main
 }
