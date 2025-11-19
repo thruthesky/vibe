@@ -5,6 +5,7 @@
 import * as admin from "firebase-admin";
 import * as logger from "firebase-functions/logger";
 import type {LikeTargetType} from "../types";
+import {incrementActionCounter} from "./user-action-counters.handler";
 
 /**
  * 좋아요 추가 처리
@@ -20,7 +21,10 @@ export async function handleLikeCreate(
   const success = await applyLikeDelta(targetId, targetType, 1);
   logger.info("📥 applyLikeDelta 결과", {success, targetId, targetType});
 
-  await updateGlobalLikeStats(success ? 1 : 0, uid);
+  // 사용자별 좋아요 통계 업데이트
+  if (success) {
+    await incrementActionCounter(uid, "like", 1);
+  }
 
   // 좋아요한 사용자 목록에 추가 (프로필 사진 표시용)
   // 메시지, 게시글, 댓글 모두 통합된 /likes-by 경로 사용
@@ -57,7 +61,11 @@ export async function handleLikeDelete(
   logger.info("💔 좋아요 취소 감지", {uid, targetId, targetType});
 
   const success = await applyLikeDelta(targetId, targetType, -1);
-  await updateGlobalLikeStats(success ? -1 : 0, uid);
+
+  // 사용자별 좋아요 통계 업데이트
+  if (success) {
+    await incrementActionCounter(uid, "like", -1);
+  }
 
   // 좋아요한 사용자 목록에서 제거
   // 메시지, 게시글, 댓글 모두 통합된 /likes-by 경로 사용
@@ -67,27 +75,6 @@ export async function handleLikeDelete(
     .remove();
 
   logger.info("likes-by 경로에서 사용자 제거 완료", {targetId, uid, targetType});
-}
-
-/**
- * 전체 좋아요 통계 및 사용자별 통계 업데이트
- */
-async function updateGlobalLikeStats(delta: number, uid?: string): Promise<void> {
-  if (delta === 0) {
-    return;
-  }
-
-  const updates: Record<string, unknown> = {};
-
-  // 전체 좋아요 통계 업데이트
-  updates["stats/counters/like"] = admin.database.ServerValue.increment(delta);
-
-  // 사용자별 좋아요 통계 업데이트
-  if (uid) {
-    updates[`users/${uid}/counters/like`] = admin.database.ServerValue.increment(delta);
-  }
-
-  await admin.database().ref().update(updates);
 }
 
 /**

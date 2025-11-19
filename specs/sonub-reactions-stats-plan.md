@@ -1,13 +1,13 @@
 ---
 name: sonub-reactions-stats-plan
 title: 리액션 집계 및 통계 기능 - 설계 계획서
-version: 1.0.0
-description: 사용자별 좋아요/댓글 집계, 일/월/년 통계, 인플루언서 랭킹 시스템 설계
+version: 1.3.0
+description: 사용자별 좋아요/댓글 집계, 일/월/년 통계, 인플루언서 랭킹 시스템 설계, 본인 반응 제외, 삭제 로직 대칭성, UTC 기준 날짜 계산, 핸들러 아키텍처 분리 포함
 author: Claude (SED Agent)
 email: noreply@anthropic.com
 homepage: https://github.com/thruthesky/
 license: GPL-3.0
-updated: 2025-11-18
+updated: 2025-01-19
 dependencies:
   - sonub-firebase-database-structure.md
   - sonub-firebase-functions.md
@@ -88,12 +88,6 @@ tags:
   - `likeCount`: 댓글이 받은 좋아요 수
   - `authorUid`: 댓글 작성자 UID
   - `parentId`: 부모 댓글 ID (없으면 null)
-- `/chat-messages/{roomId}/{messageId}` - 채팅 메시지 (게시글 역할도 함)
-  - `totalChildCount`: 메시지의 총 댓글 수
-  - `likeCount`: 메시지가 받은 좋아요 수
-- `/chat-message-comments/{messageId}/{commentId}` - 채팅 메시지 댓글
-  - `childCount`: 댓글의 답글 수
-  - `likeCount`: 댓글이 받은 좋아요 수
 - `/comment-locations/{commentId}` = `postId` (댓글 ID → 부모 게시글 매핑)
 
 **Cloud Functions**:
@@ -186,6 +180,9 @@ interface UserDailyStats {
 
 **특징**:
 - **일별 집계**: 매일 자정 기준으로 새로운 날짜 노드 생성
+  - **Timezone**: UTC+0 (협정 세계시) 기준으로 날짜 계산
+  - 글로벌 서비스이므로 모든 사용자의 통계가 동일한 시간대(UTC)를 기준으로 집계됩니다
+  - 예: 한국 시간 2025-01-19 09:00:00 (KST, UTC+9) = 2025-01-19 00:00:00 (UTC)
 - **증분 업데이트**: Cloud Functions가 실시간으로 `ServerValue.increment()` 사용
 - **쿼리 최적화**: 날짜별로 노드가 분리되어 특정 기간 조회 용이
 
@@ -337,17 +334,33 @@ interface InfluencerRanking {
 
 **트리거**: `/likes/{uid}/{targetId}` (onValueCreated)
 
-**핸들러 위치**: `firebase/functions/src/handlers/like.handler.ts` (기존 파일 확장)
+**핸들러 위치**:
+- **비즈니스 로직**: `firebase/functions/src/handlers/like.handler.ts` (기존 파일)
+  - 좋아요 추가/취소 시 `likeCount` 업데이트
+  - 전역 통계 (`/stats/counters/like`) 업데이트
+  - 사용자별 통계 (`/users/{uid}/counters/like`) 업데이트 (누른 사람 기준)
+- **통계 집계 로직**: `firebase/functions/src/handlers/stats.like.handler.ts` (신규 파일)
+  - 타겟 작성자의 일일/월별/연도별/전체 통계 업데이트
+  - 인플루언서 점수 재계산
 
-**처리 로직**:
+**처리 로직** (통계 집계 핸들러):
 
 1. **targetType 파싱** - "message", "comment", "post", "chat-message-{roomId}"
 2. **타겟 작성자 UID 조회**:
    - `targetType === "post"` → `/posts/{targetId}/authorUid`
    - `targetType === "comment"` → `/comment-locations/{targetId}` → `/comments/{postId}/{targetId}/authorUid`
    - `targetType.startsWith("chat-message-")` → `/chat-messages/{roomId}/{targetId}/senderUid`
-3. **오늘 날짜 계산** - `yyyymmdd` 형식 (예: "20250118")
-4. **Multi-path update**로 다음 경로를 원자적으로 업데이트:
+3. **본인 반응 제외** - 자기 자신의 게시글/댓글에 좋아요를 누른 경우 통계에서 제외:
+   ```typescript
+   // 좋아요를 누른 사용자 UID와 타겟 작성자 UID 비교
+   if (uid === targetAuthorUid) {
+     // 본인의 게시글/댓글에 좋아요를 누른 경우 통계 업데이트 제외
+     console.log(`Self-like detected: ${uid} liked their own content ${targetId}`);
+     return; // 함수 종료
+   }
+   ```
+4. **오늘 날짜 계산** - `yyyymmdd` 형식 (UTC+0 기준, 예: "20250118")
+5. **Multi-path update**로 다음 경로를 원자적으로 업데이트:
    ```typescript
    const updates = {
      // 일일 통계
@@ -391,9 +404,15 @@ interface InfluencerRanking {
 
 **트리거**: `/comments/{postId}/{commentId}` (onValueCreated)
 
-**핸들러 위치**: `firebase/functions/src/handlers/comment.create.handler.ts` (기존 파일 확장)
+**핸들러 위치**:
+- **비즈니스 로직**: `firebase/functions/src/handlers/comment.create.handler.ts` (기존 파일)
+  - 댓글 생성 시 `childCount`, `totalChildCount` 업데이트
+  - 전역 통계 (`/stats/counters/comment`) 업데이트
+- **통계 집계 로직**: `firebase/functions/src/handlers/stats.comment.handler.ts` (신규 파일)
+  - 타겟 작성자의 일일/월별/연도별/전체 통계 업데이트
+  - 인플루언서 점수 재계산
 
-**처리 로직**:
+**처리 로직** (통계 집계 핸들러):
 
 1. **댓글 정보 조회**:
    - `authorUid`: 댓글 작성자
@@ -401,8 +420,17 @@ interface InfluencerRanking {
 2. **타겟 작성자 UID 조회**:
    - `parentId === null` → 게시글 작성자: `/posts/{postId}/authorUid`
    - `parentId !== null` → 부모 댓글 작성자: `/comments/{postId}/{parentId}/authorUid`
-3. **오늘 날짜 계산** - `yyyymmdd` 형식
-4. **Multi-path update**:
+3. **본인 반응 제외** - 자기 자신의 게시글/댓글에 댓글을 단 경우 통계에서 제외:
+   ```typescript
+   // 댓글 작성자 UID와 타겟 작성자 UID 비교
+   if (authorUid === targetAuthorUid) {
+     // 본인의 게시글/댓글에 댓글을 단 경우 통계 업데이트 제외
+     console.log(`Self-comment detected: ${authorUid} commented on their own content ${postId}`);
+     return; // 함수 종료
+   }
+   ```
+4. **오늘 날짜 계산** - `yyyymmdd` 형식 (UTC+0 기준)
+5. **Multi-path update**:
    ```typescript
    const targetAuthorUid = parentId ? parentCommentAuthorUid : postAuthorUid;
    const isPostComment = parentId === null;
@@ -438,7 +466,70 @@ interface InfluencerRanking {
 
 5. **인플루언서 점수 재계산** (비동기 백그라운드 작업)
 
-**채팅 메시지 댓글 (`/chat-message-comments/{messageId}/{commentId}`)도 동일**
+**댓글 삭제 시** (onValueDeleted):
+
+댓글이 삭제될 때는 생성 로직과 대칭적으로 통계를 감소시켜야 합니다.
+
+**트리거**: `/comments/{postId}/{commentId}` (onValueDeleted)
+
+**핸들러 위치**: `firebase/functions/src/handlers/stats.comment.handler.ts` (통계 집계 핸들러)
+
+**처리 로직** (통계 집계 핸들러):
+
+1. **댓글 정보 조회**:
+   - 삭제 전 댓글 데이터에서 `authorUid`, `parentId` 추출
+   - Firebase Functions의 `onValueDeleted`는 삭제되기 전 스냅샷을 제공합니다
+2. **타겟 작성자 UID 조회**:
+   - `parentId === null` → 게시글 작성자: `/posts/{postId}/authorUid`
+   - `parentId !== null` → 부모 댓글 작성자: `/comments/{postId}/{parentId}/authorUid`
+3. **본인 반응 제외**:
+   - 생성 시와 동일하게, 본인이 작성한 댓글은 통계에서 제외되었으므로 삭제 시에도 처리 불필요
+   ```typescript
+   if (authorUid === targetAuthorUid) {
+     console.log(`Self-comment was not counted, skip delete stats update`);
+     return;
+   }
+   ```
+4. **오늘 날짜 계산** - `yyyymmdd` 형식 (UTC 기준)
+5. **Multi-path update**:
+   ```typescript
+   const targetAuthorUid = parentId ? parentCommentAuthorUid : postAuthorUid;
+   const isPostComment = parentId === null;
+
+   const updates = {
+     // 일일 통계 (-1)
+     [`user-daily-stats/${targetAuthorUid}/${yyyymmdd}/receivedComments`]:
+       ServerValue.increment(-1),
+     [`user-daily-stats/${targetAuthorUid}/${yyyymmdd}/${isPostComment ? 'receivedPostComments' : 'receivedCommentReplies'}`]:
+       ServerValue.increment(-1),
+     [`user-daily-stats/${targetAuthorUid}/${yyyymmdd}/lastUpdated`]:
+       ServerValue.TIMESTAMP,
+
+     // 월별 통계 (-1)
+     [`user-monthly-stats/${targetAuthorUid}/${yyyymm}/receivedComments`]:
+       ServerValue.increment(-1),
+     [`user-monthly-stats/${targetAuthorUid}/${yyyymm}/${isPostComment ? 'receivedPostComments' : 'receivedCommentReplies'}`]:
+       ServerValue.increment(-1),
+
+     // 연도별 통계 (-1)
+     [`user-yearly-stats/${targetAuthorUid}/${yyyy}/receivedComments`]:
+       ServerValue.increment(-1),
+
+     // 전체 통계 (-1)
+     [`users/${targetAuthorUid}/stats/totalReceivedComments`]:
+       ServerValue.increment(-1),
+     [`users/${targetAuthorUid}/stats/${isPostComment ? 'totalReceivedPostComments' : 'totalReceivedCommentReplies'}`]:
+       ServerValue.increment(-1),
+   };
+
+   await admin.database().ref().update(updates);
+   ```
+
+6. **인플루언서 점수 재계산** (비동기 백그라운드 작업)
+
+**참고**:
+- 댓글 삭제 시 생성 로직과 정확히 대칭적으로 통계를 감소시킵니다
+- 음수값이 발생할 수 있으나, 데이터 일관성을 위해 허용합니다
 
 ### 4.3. 게시글/댓글 작성 시 통계 업데이트
 
@@ -446,7 +537,11 @@ interface InfluencerRanking {
 - `/posts/{postId}` (onValueCreated)
 - `/comments/{postId}/{commentId}` (onValueCreated)
 
-**처리 로직**:
+**핸들러 위치**:
+- **게시글 작성**: `firebase/functions/src/handlers/stats.post.handler.ts` (신규 파일)
+- **댓글 작성**: `firebase/functions/src/handlers/stats.comment.handler.ts` (신규 파일)
+
+**처리 로직** (통계 집계 핸들러):
 - 작성자의 일일/월별/연도별 통계에서 `createdPosts` 또는 `createdComments` 증가
 - 참고용 데이터로, 인플루언서 점수에는 영향 없음
 
@@ -456,9 +551,13 @@ interface InfluencerRanking {
 - `/follows/{followerUid}/{followingUid}` (onValueCreated) - 팔로우 시
 - `/follows/{followerUid}/{followingUid}` (onValueDeleted) - 언팔로우 시
 
-**핸들러 위치**: `firebase/functions/src/handlers/friend.follow.handler.ts` (신규 생성)
+**핸들러 위치**:
+- **비즈니스 로직**: `firebase/functions/src/handlers/friend.follow.handler.ts` (기존 파일, 만약 존재한다면)
+  - 팔로우/언팔로우 관련 기본 비즈니스 로직
+- **통계 집계 로직**: `firebase/functions/src/handlers/stats.follow.handler.ts` (신규 파일)
+  - 팔로잉 대상의 일일/월별/연도별/전체 통계 업데이트
 
-**처리 로직**:
+**처리 로직** (통계 집계 핸들러):
 
 **팔로우 추가 시** (onValueCreated):
 
@@ -546,6 +645,8 @@ interface InfluencerRanking {
 
 **함수 이름**: `updateInfluencerRankings`
 
+**핸들러 위치**: `firebase/functions/src/handlers/stats.ranking.handler.ts` (신규 파일)
+
 **처리 로직**:
 
 1. **일간 랭킹 업데이트**:
@@ -573,6 +674,429 @@ interface InfluencerRanking {
 - 대량 데이터 처리를 위해 batch 처리 사용
 - Top 100만 저장하여 스토리지 비용 절감
 - 클라이언트에서는 Top 100 내 사용자만 조회 가능
+
+### 4.6. 게시글/댓글 삭제 시 통계 처리 정책
+
+게시글이나 댓글이 삭제될 때 통계를 어떻게 처리할지에 대한 정책입니다.
+
+#### 4.6.1. 게시글 삭제 시 (onPostDeleted)
+
+**트리거**: `/posts/{postId}` (onValueDeleted)
+
+**핸들러 위치**:
+- **비즈니스 로직**: `firebase/functions/src/handlers/post.delete.handler.ts` (신규 파일)
+  - 게시글 삭제 시 하위 컬렉션 삭제 (Cascade Delete)
+- **통계 집계 로직**: `firebase/functions/src/handlers/stats.post.handler.ts` (신규 파일)
+  - 작성자의 일일/월별/연도별/전체 통계 업데이트
+
+**처리 정책**:
+
+1. **작성 통계 감소** (`createdPosts`):
+   - 게시글 삭제 시 작성자의 `createdPosts` 통계를 -1 감소시킵니다
+   - 일일/월별/연도별/전체 통계 모두 감소
+
+   ```typescript
+   const authorUid = deletedPostSnapshot.val().authorUid;
+
+   const updates = {
+     // 일일 통계
+     [`user-daily-stats/${authorUid}/${yyyymmdd}/createdPosts`]:
+       ServerValue.increment(-1),
+
+     // 월별 통계
+     [`user-monthly-stats/${authorUid}/${yyyymm}/createdPosts`]:
+       ServerValue.increment(-1),
+
+     // 연도별 통계
+     [`user-yearly-stats/${authorUid}/${yyyy}/createdPosts`]:
+       ServerValue.increment(-1),
+
+     // 전체 통계
+     [`users/${authorUid}/stats/totalCreatedPosts`]:
+       ServerValue.increment(-1),
+   };
+
+   await admin.database().ref().update(updates);
+   ```
+
+2. **받은 리액션 통계** (`receivedLikes`, `receivedComments`):
+   - **정책 A (권장)**: 게시글 삭제 시 하위 좋아요/댓글도 함께 삭제되며, 각각의 `onDeleted` 트리거가 자동으로 발동하여 통계가 자연스럽게 감소됩니다
+     - 좋아요 삭제: `/likes-by/{postId}/{uid}` 삭제 → `like.handler.ts`의 `onValueDeleted` 트리거 → `receivedLikes` 자동 감소
+     - 댓글 삭제: `/comments/{postId}/{commentId}` 삭제 → `comment.handler.ts`의 `onValueDeleted` 트리거 → `receivedComments` 자동 감소
+   - **정책 B (선택사항)**: "이미 받은 사랑은 유지한다" - 게시글이 삭제되어도 받은 좋아요/댓글 통계는 유지
+     - 이 경우 좋아요/댓글을 명시적으로 삭제하지 않고 게시글만 삭제
+     - 통계는 그대로 유지되어 과거의 인기도를 반영
+
+   **권장**: 정책 A (자동 감소)
+   - 데이터 일관성 유지
+   - 게시글이 삭제되면 관련된 모든 하위 데이터도 정리
+   - Firebase Realtime Database의 Cascade Delete 패턴 활용
+
+3. **구현 예시** (정책 A):
+
+   게시글 삭제 시 하위 컬렉션도 함께 삭제하는 로직:
+
+   ```typescript
+   export const onPostDeleted = onValueDeleted(
+     { ref: '/posts/{postId}' },
+     async (event) => {
+       const postId = event.params.postId;
+       const deletedPost = event.data.val();
+       const authorUid = deletedPost.authorUid;
+
+       // 1. 게시글 작성 통계 감소
+       const now = new Date();
+       const yyyymmdd = formatDate(now, 'yyyyMMdd'); // UTC 기준
+       const yyyymm = formatDate(now, 'yyyyMM');
+       const yyyy = formatDate(now, 'yyyy');
+
+       const updates = {
+         [`user-daily-stats/${authorUid}/${yyyymmdd}/createdPosts`]:
+           ServerValue.increment(-1),
+         [`user-monthly-stats/${authorUid}/${yyyymm}/createdPosts`]:
+           ServerValue.increment(-1),
+         [`user-yearly-stats/${authorUid}/${yyyy}/createdPosts`]:
+           ServerValue.increment(-1),
+         [`users/${authorUid}/stats/totalCreatedPosts`]:
+           ServerValue.increment(-1),
+       };
+
+       await admin.database().ref().update(updates);
+
+       // 2. 하위 컬렉션 삭제 (좋아요/댓글)
+       // 각각의 onDeleted 트리거가 자동으로 receivedLikes/Comments 감소
+       const likesRef = admin.database().ref(`/likes-by/${postId}`);
+       const commentsRef = admin.database().ref(`/comments/${postId}`);
+
+       await Promise.all([
+         likesRef.remove(), // 각 좋아요 삭제 시 onLikeDeleted 트리거 발동
+         commentsRef.remove(), // 각 댓글 삭제 시 onCommentDeleted 트리거 발동
+       ]);
+     }
+   );
+   ```
+
+#### 4.6.2. 댓글 삭제 시 (onCommentDeleted)
+
+**댓글 삭제는 이미 4.2절에서 상세히 다루었습니다.**
+
+**요약**:
+- 댓글 작성 통계 (`createdComments`): 삭제 시 -1 감소
+- 받은 댓글 통계 (`receivedComments`): 삭제 시 -1 감소 (대칭적 처리)
+- 본인이 작성한 댓글: 생성 시와 동일하게 통계에서 제외
+
+#### 4.6.3. 날짜 기준 (중요)
+
+**삭제 시 날짜 계산 방식**:
+
+- **옵션 A**: 삭제 당시의 날짜(UTC 기준)로 통계 감소
+  - 예: 2025-01-15에 작성, 2025-01-19에 삭제 → 2025-01-19의 `createdPosts`를 -1
+  - 장점: 구현이 간단
+  - 단점: 작성 날짜와 삭제 날짜가 다르면 일일 통계가 음수가 될 수 있음
+
+- **옵션 B (권장)**: 작성 날짜를 기준으로 통계 감소
+  - 예: 2025-01-15에 작성, 2025-01-19에 삭제 → 2025-01-15의 `createdPosts`를 -1
+  - 장점: 데이터 일관성 유지, 일일 통계가 음수가 되지 않음
+  - 단점: 게시글/댓글에 `createdAt` 필드가 필요
+
+**권장 구현**:
+- 게시글/댓글에 `createdAt` 필드 추가 (Unix timestamp)
+- 삭제 시 `createdAt`을 기준으로 날짜 계산하여 통계 감소
+- 이렇게 하면 작성 시 +1, 삭제 시 -1이 정확히 대칭적으로 동작
+
+```typescript
+const createdAt = deletedPost.createdAt; // Unix timestamp
+const createdDate = new Date(createdAt);
+const yyyymmdd = formatDate(createdDate, 'yyyyMMdd', 'UTC'); // 작성 날짜 기준
+
+const updates = {
+  [`user-daily-stats/${authorUid}/${yyyymmdd}/createdPosts`]:
+    ServerValue.increment(-1),
+  // ...
+};
+```
+
+#### 4.6.4. 주의사항
+
+**음수값 발생 가능성**:
+- 시스템 도입 전에 작성된 게시글/댓글을 삭제하면 통계가 음수가 될 수 있습니다
+- 예: 통계 시스템 도입 전 작성 (createdPosts = 0) → 도입 후 삭제 (createdPosts = -1)
+- 이는 정상적인 동작이며, 데이터 마이그레이션 시 기존 데이터를 집계하여 초기값을 설정해야 합니다
+
+**Cascade Delete 순서**:
+- 게시글 삭제 → 좋아요 삭제 → 댓글 삭제 순서로 진행
+- 각 삭제마다 트리거가 발동하여 통계가 자동으로 감소
+- 트랜잭션 없이도 `ServerValue.increment(-1)`로 원자적 연산 보장
+
+### 4.7. 핸들러 아키텍처 및 파일 구조
+
+통계 집계 로직을 별도의 핸들러 파일로 분리하여 가독성과 유지보수성을 높입니다.
+
+#### 4.7.1. 핸들러 분리 원칙
+
+**관심사의 분리 (Separation of Concerns)**:
+- **비즈니스 로직 핸들러**: 핵심 기능 (좋아요 추가/취소, 댓글 생성/삭제, 게시글 생성/삭제)
+- **통계 집계 핸들러**: 통계 업데이트 전용 (일일/월별/연도별/전체 통계, 인플루언서 점수)
+
+**장점**:
+- **가독성**: 각 파일의 역할이 명확하여 코드 이해가 쉬움
+- **유지보수성**: 통계 로직 변경 시 비즈니스 로직에 영향 없음
+- **테스트 용이성**: 통계 로직만 따로 테스트 가능
+- **확장성**: 새로운 통계 지표 추가 시 통계 핸들러만 수정
+
+#### 4.7.2. 파일 구조 및 네이밍 컨벤션
+
+**디렉토리 구조**:
+
+```
+firebase/functions/src/handlers/
+├── like.handler.ts              # 좋아요 비즈니스 로직
+├── comment.create.handler.ts    # 댓글 생성 비즈니스 로직
+├── post.create.handler.ts       # 게시글 생성 비즈니스 로직
+├── post.delete.handler.ts       # 게시글 삭제 비즈니스 로직
+├── friend.follow.handler.ts     # 팔로우 비즈니스 로직 (선택)
+│
+├── stats.like.handler.ts        # 좋아요 통계 집계
+├── stats.comment.handler.ts     # 댓글 통계 집계
+├── stats.post.handler.ts        # 게시글 통계 집계
+├── stats.follow.handler.ts      # 팔로우 통계 집계
+└── stats.ranking.handler.ts     # 인플루언서 랭킹 업데이트
+```
+
+**네이밍 컨벤션**:
+
+**옵션 1 (권장)**: `stats.{도메인}.handler.ts`
+- 예: `stats.like.handler.ts`, `stats.comment.handler.ts`
+- 장점: 통계 관련 파일들이 알파벳 순으로 그룹화됨
+- 장점: `stats.`로 시작하여 통계 전용임을 명확히 표시
+- 장점: 여러 통계 핸들러들을 쉽게 찾을 수 있음
+
+**옵션 2**: `{도메인}.stat-handler.ts`
+- 예: `like.stat-handler.ts`, `comment.stat-handler.ts`
+- 장점: 도메인별로 비즈니스 로직과 통계 로직이 인접하여 배치됨
+- 단점: 통계 핸들러들이 파일 목록에서 분산됨
+
+**권장**: 옵션 1 (`stats.{도메인}.handler.ts`)
+
+#### 4.7.3. 핸들러별 역할 및 책임
+
+**1. 비즈니스 로직 핸들러**
+
+**`like.handler.ts`**:
+- **트리거**: `/likes/{uid}/{targetId}` (onValueCreated, onValueDeleted)
+- **책임**:
+  - 타겟의 `likeCount` 증감
+  - 전역 통계 (`/stats/counters/like`) 증감
+  - 사용자별 통계 (`/users/{uid}/counters/like`) 증감 (누른 사람 기준)
+- **호출하지 않음**: 타겟 작성자의 `receivedLikes` 통계 (통계 핸들러 담당)
+
+**`comment.create.handler.ts`**:
+- **트리거**: `/comments/{postId}/{commentId}` (onValueCreated, onValueDeleted)
+- **책임**:
+  - 게시글/댓글의 `childCount`, `totalChildCount` 증감
+  - 전역 통계 (`/stats/counters/comment`) 증감
+- **호출하지 않음**: 타겟 작성자의 `receivedComments` 통계 (통계 핸들러 담당)
+
+**`post.create.handler.ts`** (신규):
+- **트리거**: `/posts/{postId}` (onValueCreated)
+- **책임**:
+  - 게시글 생성 관련 비즈니스 로직 (있다면)
+- **호출하지 않음**: 작성자의 `createdPosts` 통계 (통계 핸들러 담당)
+
+**`post.delete.handler.ts`** (신규):
+- **트리거**: `/posts/{postId}` (onValueDeleted)
+- **책임**:
+  - 하위 컬렉션 삭제 (Cascade Delete): 좋아요, 댓글
+- **호출하지 않음**: 작성자의 `createdPosts` 통계 (통계 핸들러 담당)
+
+**`friend.follow.handler.ts`** (선택):
+- **트리거**: `/follows/{followerUid}/{followingUid}` (onValueCreated, onValueDeleted)
+- **책임**:
+  - 팔로우/언팔로우 관련 비즈니스 로직 (있다면)
+- **호출하지 않음**: 팔로잉 대상의 `receivedFollowers` 통계 (통계 핸들러 담당)
+
+**2. 통계 집계 핸들러**
+
+**`stats.like.handler.ts`** (신규):
+- **트리거**: `/likes/{uid}/{targetId}` (onValueCreated, onValueDeleted)
+- **책임**:
+  - 타겟 작성자의 일일/월별/연도별/전체 `receivedLikes` 통계 증감
+  - 본인 반응 제외 로직 (`if (uid === targetAuthorUid) return;`)
+  - 인플루언서 점수 재계산
+
+**`stats.comment.handler.ts`** (신규):
+- **트리거**: `/comments/{postId}/{commentId}` (onValueCreated, onValueDeleted)
+- **책임**:
+  - 타겟 작성자의 일일/월별/연도별/전체 `receivedComments` 통계 증감
+  - 댓글 작성자의 일일/월별/연도별/전체 `createdComments` 통계 증감
+  - 본인 반응 제외 로직 (`if (authorUid === targetAuthorUid) return;`)
+  - 인플루언서 점수 재계산
+
+**`stats.post.handler.ts`** (신규):
+- **트리거**: `/posts/{postId}` (onValueCreated, onValueDeleted)
+- **책임**:
+  - 작성자의 일일/월별/연도별/전체 `createdPosts` 통계 증감
+  - 삭제 시 작성 날짜(`createdAt`) 기준으로 통계 감소
+
+**`stats.follow.handler.ts`** (신규):
+- **트리거**: `/follows/{followerUid}/{followingUid}` (onValueCreated, onValueDeleted)
+- **책임**:
+  - 팔로잉 대상의 일일/월별/연도별/전체 `receivedFollowers` 통계 증감
+  - 음수값 허용 (언팔로우가 팔로우보다 많은 경우)
+
+**`stats.ranking.handler.ts`** (신규):
+- **트리거**: 스케줄드 함수 (매일 자정 UTC)
+- **책임**:
+  - 일간/주간/월간/전체 인플루언서 랭킹 계산
+  - Top 100 사용자 선정 및 `/rankings/influencers/{period}` 업데이트
+  - 랭킹 정렬 키 생성: `-{score}-{uid}`
+
+#### 4.7.4. 구현 예시
+
+**비즈니스 로직 핸들러 (`like.handler.ts`)**:
+
+```typescript
+import { onValueCreated, onValueDeleted } from 'firebase-functions/v2/database';
+import * as admin from 'firebase-admin';
+
+// 좋아요 추가 시
+export const onLikeCreated = onValueCreated(
+  { ref: '/likes/{uid}/{targetId}' },
+  async (event) => {
+    const uid = event.params.uid;
+    const targetId = event.params.targetId;
+    const targetType = event.data.val();
+
+    // 1. 타겟의 likeCount 증가
+    const targetRef = getTargetRef(targetId, targetType);
+    await targetRef.child('likeCount').transaction((count) => (count || 0) + 1);
+
+    // 2. 전역 통계 증가
+    await admin.database().ref('/stats/counters/like').transaction((count) => (count || 0) + 1);
+
+    // 3. 사용자별 통계 증가 (누른 사람 기준)
+    await admin.database().ref(`/users/${uid}/counters/like`).transaction((count) => (count || 0) + 1);
+
+    // ❌ 타겟 작성자의 receivedLikes 통계는 여기서 업데이트하지 않음
+    // ✅ stats.like.handler.ts에서 처리
+  }
+);
+
+// 좋아요 취소 시
+export const onLikeDeleted = onValueDeleted(
+  { ref: '/likes/{uid}/{targetId}' },
+  async (event) => {
+    // 위와 동일하지만 -1 감소
+  }
+);
+```
+
+**통계 집계 핸들러 (`stats.like.handler.ts`)**:
+
+```typescript
+import { onValueCreated, onValueDeleted } from 'firebase-functions/v2/database';
+import * as admin from 'firebase-admin';
+import { ServerValue } from 'firebase-admin/database';
+
+// 좋아요 추가 시 통계 업데이트
+export const onLikeCreatedStats = onValueCreated(
+  { ref: '/likes/{uid}/{targetId}' },
+  async (event) => {
+    const uid = event.params.uid;
+    const targetId = event.params.targetId;
+    const targetType = event.data.val();
+
+    // 1. 타겟 작성자 UID 조회
+    const targetAuthorUid = await getTargetAuthorUid(targetId, targetType);
+
+    // 2. 본인 반응 제외
+    if (uid === targetAuthorUid) {
+      console.log(`Self-like detected: ${uid} liked their own content ${targetId}`);
+      return;
+    }
+
+    // 3. 날짜 계산 (UTC 기준)
+    const now = new Date();
+    const yyyymmdd = formatDate(now, 'yyyyMMdd', 'UTC');
+    const yyyymm = formatDate(now, 'yyyyMM', 'UTC');
+    const yyyy = formatDate(now, 'yyyy', 'UTC');
+
+    // 4. 통계 업데이트
+    const updates = {
+      // 일일 통계
+      [`user-daily-stats/${targetAuthorUid}/${yyyymmdd}/receivedLikes`]:
+        ServerValue.increment(1),
+      [`user-daily-stats/${targetAuthorUid}/${yyyymmdd}/lastUpdated`]:
+        ServerValue.TIMESTAMP,
+
+      // 월별 통계
+      [`user-monthly-stats/${targetAuthorUid}/${yyyymm}/receivedLikes`]:
+        ServerValue.increment(1),
+
+      // 연도별 통계
+      [`user-yearly-stats/${targetAuthorUid}/${yyyy}/receivedLikes`]:
+        ServerValue.increment(1),
+
+      // 전체 통계
+      [`users/${targetAuthorUid}/stats/totalReceivedLikes`]:
+        ServerValue.increment(1),
+    };
+
+    await admin.database().ref().update(updates);
+
+    // 5. 인플루언서 점수 재계산 (비동기)
+    await updateInfluencerScore(targetAuthorUid);
+  }
+);
+
+// 좋아요 취소 시 통계 업데이트
+export const onLikeDeletedStats = onValueDeleted(
+  { ref: '/likes/{uid}/{targetId}' },
+  async (event) => {
+    // 위와 동일하지만 ServerValue.increment(-1) 사용
+  }
+);
+```
+
+#### 4.7.5. 핸들러 등록 (`index.ts`)
+
+모든 핸들러를 `index.ts`에 등록하여 Cloud Functions에 배포합니다.
+
+```typescript
+// firebase/functions/src/index.ts
+
+// 비즈니스 로직 핸들러
+export * from './handlers/like.handler';
+export * from './handlers/comment.create.handler';
+export * from './handlers/post.create.handler';
+export * from './handlers/post.delete.handler';
+export * from './handlers/friend.follow.handler';
+
+// 통계 집계 핸들러
+export * from './handlers/stats.like.handler';
+export * from './handlers/stats.comment.handler';
+export * from './handlers/stats.post.handler';
+export * from './handlers/stats.follow.handler';
+export * from './handlers/stats.ranking.handler';
+```
+
+#### 4.7.6. 테스트 전략
+
+**비즈니스 로직 핸들러 테스트**:
+- 좋아요 추가/취소 시 `likeCount` 증감 검증
+- 전역 통계 증감 검증
+- 사용자별 통계 증감 검증 (누른 사람 기준)
+
+**통계 집계 핸들러 테스트**:
+- 타겟 작성자의 `receivedLikes` 통계 증감 검증
+- 본인 반응 제외 로직 검증
+- 일일/월별/연도별/전체 통계 동시 업데이트 검증
+- UTC 기준 날짜 계산 검증
+- 인플루언서 점수 재계산 검증
+
+**통합 테스트**:
+- 좋아요 추가 → 비즈니스 로직 핸들러 + 통계 집계 핸들러 모두 실행 검증
+- Cascade Delete → 게시글 삭제 시 하위 좋아요/댓글 삭제 및 통계 감소 검증
 
 ---
 
@@ -757,18 +1281,49 @@ const sortKey = `-${String(influencerScore).padStart(10, '0')}-${uid}`;
 **목표**: 일일/월별/연도별 통계 자동 집계
 
 **작업 항목**:
-1. DB 구조 설계 문서 작성 ✅ (본 문서)
-2. TypeScript 타입 정의 추가 (`firebase/functions/src/types/index.ts`)
-3. Cloud Functions 핸들러 확장:
-   - `like.handler.ts` - 좋아요 통계 업데이트 로직 추가
-   - `comment.create.handler.ts` - 댓글 통계 업데이트 로직 추가
-   - `post.create.handler.ts` - 게시글 통계 업데이트 로직 추가 (신규)
-   - `friend.follow.handler.ts` - 팔로우/언팔로우 통계 업데이트 로직 추가 (신규)
-4. Firebase Database Security Rules 업데이트
-5. 로컬 테스트 (Firebase Emulator Suite)
-6. 프로덕션 배포
 
-**예상 소요 시간**: 2-3일
+1. **DB 구조 설계 문서 작성** ✅ (본 문서)
+
+2. **TypeScript 타입 정의 추가** (`firebase/functions/src/types/index.ts`)
+   - `UserDailyStats`, `UserMonthlyStats`, `UserYearlyStats` 인터페이스
+   - `UserTotalStats`, `InfluencerRanking` 인터페이스
+
+3. **게시글/댓글에 `createdAt` 필드 추가**
+   - 삭제 시 작성 날짜 기준 통계 감소를 위해 필요
+   - Unix timestamp (밀리초) 형식
+
+4. **비즈니스 로직 핸들러 확장/생성**:
+   - `like.handler.ts` - 좋아요 추가/취소 비즈니스 로직 (기존 파일 유지)
+   - `comment.create.handler.ts` - 댓글 생성/삭제 비즈니스 로직 (기존 파일 유지)
+   - `post.create.handler.ts` - 게시글 생성 비즈니스 로직 (신규, 필요시)
+   - `post.delete.handler.ts` - 게시글 삭제 및 Cascade Delete (신규)
+   - `friend.follow.handler.ts` - 팔로우/언팔로우 비즈니스 로직 (신규, 필요시)
+
+5. **통계 집계 핸들러 생성** (신규 파일):
+   - `stats.like.handler.ts` - 좋아요 통계 집계 (본인 반응 제외 포함)
+   - `stats.comment.handler.ts` - 댓글 통계 집계 (본인 반응 제외 포함)
+   - `stats.post.handler.ts` - 게시글 통계 집계
+   - `stats.follow.handler.ts` - 팔로우 통계 집계
+   - `stats.ranking.handler.ts` - 인플루언서 랭킹 업데이트 (스케줄드 함수)
+
+6. **핸들러 등록** (`firebase/functions/src/index.ts`)
+   - 모든 비즈니스 로직 핸들러 export
+   - 모든 통계 집계 핸들러 export
+
+7. **Firebase Database Security Rules 업데이트**
+   - 통계 노드 읽기/쓰기 규칙 추가
+
+8. **로컬 테스트** (Firebase Emulator Suite)
+   - 비즈니스 로직 핸들러 테스트
+   - 통계 집계 핸들러 테스트
+   - 생성/삭제 로직의 대칭성 검증
+   - 본인 반응 제외 로직 테스트
+   - UTC 기준 날짜 계산 검증
+   - 핸들러 분리 후 통합 테스트
+
+9. **프로덕션 배포**
+
+**예상 소요 시간**: 4-5일 (핸들러 분리 작업 포함)
 
 ### 8.2. Phase 2: 인플루언서 랭킹 시스템
 
@@ -888,6 +1443,49 @@ const sortKey = `-${String(influencerScore).padStart(10, '0')}-${uid}`;
 - 인기 게시글 추천 알고리즘
 - 스팸/어뷰징 탐지
 
+### 9.5. 보안 및 어뷰징 방지
+
+**문제점**: 사용자가 자기 자신의 게시글/댓글에 좋아요를 누르거나 댓글을 달아 랭킹 점수를 인위적으로 조작할 수 있습니다.
+
+**해결책**: 본인 반응 제외 로직 구현
+
+**구현 방법**:
+
+1. **좋아요 핸들러 (`like.handler.ts`)**:
+   ```typescript
+   // 좋아요를 누른 사용자 UID와 타겟 작성자 UID 비교
+   if (uid === targetAuthorUid) {
+     // 본인의 게시글/댓글에 좋아요를 누른 경우 통계 업데이트 제외
+     console.log(`Self-like detected: ${uid} liked their own content ${targetId}`);
+     return; // 함수 종료
+   }
+   ```
+
+2. **댓글 핸들러 (`comment.create.handler.ts`)**:
+   ```typescript
+   // 댓글 작성자 UID와 타겟 작성자 UID 비교
+   if (authorUid === targetAuthorUid) {
+     // 본인의 게시글/댓글에 댓글을 단 경우 통계 업데이트 제외
+     console.log(`Self-comment detected: ${authorUid} commented on their own content ${postId}`);
+     return; // 함수 종료
+   }
+   ```
+
+**효과**:
+- **랭킹 조작 방지**: 사용자가 자신의 컨텐츠에 좋아요/댓글을 달아도 인플루언서 점수에 반영되지 않음
+- **공정한 랭킹**: 실제 다른 사용자들의 반응만 집계되어 더 공정한 인플루언서 랭킹 생성
+- **데이터 무결성**: 통계 데이터의 신뢰성 향상
+
+**참고**:
+- 본인 반응은 UI에서는 표시되지만, 통계 및 랭킹 점수 계산에서는 제외됩니다
+- 예: 사용자가 자신의 게시글에 좋아요를 누르면 좋아요 아이콘은 활성화되지만, `/user-daily-stats`에는 반영되지 않습니다
+
+**추가 어뷰징 방지 전략 (향후 확장 가능)**:
+- **다중 계정 탐지**: 동일 IP에서 여러 계정이 동일 사용자에게 좋아요/댓글을 하는 경우 탐지
+- **봇 탐지**: 비정상적으로 빠른 속도로 좋아요/댓글을 다는 경우 탐지
+- **스팸 댓글 필터링**: 반복적인 내용의 댓글을 자동으로 필터링
+- **사용자 신고 시스템**: 어뷰징 의심 사용자를 신고할 수 있는 기능
+
 ---
 
 ## 10. 관련 문서
@@ -906,24 +1504,58 @@ const sortKey = `-${String(influencerScore).padStart(10, '0')}-${uid}`;
 - [x] 현재 DB 구조 분석 완료
 - [x] 새로운 DB 구조 설계 완료
 - [x] Cloud Functions 설계 완료
+  - [x] 생성/삭제 로직의 대칭성 설계
+  - [x] 본인 반응 제외 로직 설계
+  - [x] UTC 기준 날짜 계산 명시
+  - [x] 핸들러 아키텍처 설계 (비즈니스 로직 vs 통계 집계 분리)
 - [x] 인플루언서 랭킹 알고리즘 정의 완료
 - [x] 쿼리 최적화 전략 수립 완료
 - [x] 보안 규칙 설계 완료
 - [x] 구현 단계별 계획 수립 완료
 - [x] 고려 사항 검토 완료
+- [x] 보안 및 어뷰징 방지 전략 수립 완료
+- [x] 게시글/댓글 삭제 시 통계 처리 정책 수립 완료
 
 구현 대기:
 - [ ] TypeScript 타입 정의 추가
-- [ ] Cloud Functions 핸들러 구현
+- [ ] 게시글/댓글에 `createdAt` 필드 추가
+- [ ] 비즈니스 로직 핸들러 구현
+  - [ ] `like.handler.ts` 확장 (기존 파일)
+  - [ ] `comment.create.handler.ts` 확장 (기존 파일)
+  - [ ] `post.create.handler.ts` 생성 (신규)
+  - [ ] `post.delete.handler.ts` 생성 (신규)
+  - [ ] `friend.follow.handler.ts` 생성 (신규)
+- [ ] 통계 집계 핸들러 구현
+  - [ ] `stats.like.handler.ts` 생성 (신규)
+  - [ ] `stats.comment.handler.ts` 생성 (신규)
+  - [ ] `stats.post.handler.ts` 생성 (신규)
+  - [ ] `stats.follow.handler.ts` 생성 (신규)
+  - [ ] `stats.ranking.handler.ts` 생성 (신규)
+  - [ ] 본인 반응 제외 로직 구현
+  - [ ] 생성/삭제 대칭 로직 구현
+  - [ ] UTC 기준 날짜 계산 구현
+- [ ] 핸들러 등록 (`index.ts`)
 - [ ] Firebase Database Security Rules 업데이트
 - [ ] 테스트 작성 및 실행
+  - [ ] 비즈니스 로직 핸들러 테스트
+  - [ ] 통계 집계 핸들러 테스트
+  - [ ] 본인 반응 제외 로직 테스트
+  - [ ] 생성/삭제 대칭성 테스트
+  - [ ] UTC 날짜 계산 테스트
+  - [ ] 핸들러 분리 후 통합 테스트
+  - [ ] 삭제 시 Cascade Delete 및 통계 감소 테스트
 - [ ] 클라이언트 UI 구현
 - [ ] 데이터 마이그레이션 스크립트 작성
+  - [ ] 기존 게시글/댓글에 `createdAt` 필드 백필
 - [ ] 프로덕션 배포
 
 ---
 
-**문서 버전**: 1.0.0
+**문서 버전**: 1.2.0
 **작성일**: 2025-01-18
+**최종 수정일**: 2025-01-19
 **작성자**: Claude (SED Agent)
 **상태**: 설계 완료 (구현 대기)
+**최근 변경 사항**:
+- v1.2.0 (2025-01-19): 삭제 로직 대칭성 추가, UTC 기준 명시, 게시글/댓글 삭제 시 통계 처리 정책 추가
+- v1.1.0 (2025-01-19): 본인 반응 제외 로직 추가 (랭킹 조작 방지)
