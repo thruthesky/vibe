@@ -1,12 +1,13 @@
 ---
 name: sonub-forum-post
 title: 게시판 글 목록 UI 구조
-version: 1.4.0
-description: 게시판 글 목록 페이지의 HTML layout 구조 및 스타일링 사양
+version: 1.5.0
+description: 게시판 글 목록 페이지의 HTML layout 구조 및 스타일링 사양 (Facebook 스타일 타일 레이아웃, 모바일 최적화)
 author: JaeHo Song
 email: thruthesky@gmail.com
 homepage: https://github.com/thruthesky/
 license: GPL-3.0
+updated: 2025-01-18
 dependencies:
   - sonub-forum-overview.md
   - sonub-firebase-database-list-view.md
@@ -18,6 +19,9 @@ tags:
   - layout
   - ui
   - html-structure
+  - responsive
+  - mobile-optimization
+  - facebook-layout
 ---
 
 ## 1. 개요
@@ -31,10 +35,16 @@ tags:
 **주요 컴포넌트:**
 - `DatabaseListView`: 무한 스크롤 게시글 목록
 - `UserProfile`: 작성자 프로필 사진 + 이름
-- `FileAttachments`: 첨부 파일 미리보기
+- `FileAttachments`: 첨부 파일 미리보기 (v1.5.0: Facebook 스타일 타일 레이아웃)
 - `PostCommentList`: 댓글 목록
 - `PostCreateDialog`: 글쓰기 모달
 - `CommentCreateDialog`: 댓글 작성 모달
+
+**v1.5.0 주요 변경사항:**
+- **Facebook 스타일 타일 레이아웃:** 첨부 파일을 1개는 100% 너비, 2개 이상은 그리드로 표시
+- **모바일 Edge-to-edge 레이아웃:** 좌/우 여백 제거로 전체 너비 활용
+- **모바일 카드 테두리 제거:** 깔끔한 화면 구성
+- **반응형 디자인 강화:** 모바일(<768px)과 데스크톱(≥768px) 최적화
 
 ## 2. 전체 페이지 구조
 
@@ -241,6 +251,7 @@ tags:
 - 이미지: 썸네일 표시 + 클릭 시 모달 확대
 - 비디오: 재생 컨트롤러 포함
 - 기타 파일: 확장자 표시 + 클릭 시 다운로드
+- **Facebook 스타일 타일 레이아웃** 지원 (v1.4.0+)
 
 **Props:**
 - `urls: Record<number, string>` - 첨부 파일 URL 목록 (필수)
@@ -254,30 +265,90 @@ tags:
 {/if}
 ```
 
+**레이아웃 규칙 (v1.4.0+):**
+- **1개 이미지:** 100% 너비 (1열)
+- **2개 이미지:** 50% 너비씩 (2열)
+- **3개 이상:** 첫 번째 100% 너비, 나머지 50% 너비씩 (2열 그리드)
+- **최소 높이:** 200px (모든 아이템)
+- **간격:** 1px (gap-1)
+
 **렌더링 결과:**
 ```html
-<div class="mt-2 flex flex-wrap gap-2">
-  <!-- 이미지 파일 -->
-  <button type="button" onclick={openModal} class="rounded transition-transform hover:scale-105">
-    <img src="..." alt="첨부 이미지" class="rounded object-cover h-32 w-32" />
+<!-- Grid 레이아웃 (Facebook 스타일) -->
+<div class="attachment-grid mt-3 grid gap-1 grid-cols-2">
+  <!-- 첫 번째 이미지: 2칸 차지 (100% 너비) -->
+  <button type="button" onclick={openModal} class="attachment-item col-span-2">
+    <img src="..." alt="첨부 이미지" class="attachment-image" />
+  </button>
+
+  <!-- 두 번째 이미지: 1칸 차지 (50% 너비) -->
+  <button type="button" onclick={openModal} class="attachment-item col-span-1">
+    <img src="..." alt="첨부 이미지" class="attachment-image" />
+  </button>
+
+  <!-- 세 번째 이미지: 1칸 차지 (50% 너비) -->
+  <button type="button" onclick={openModal} class="attachment-item col-span-1">
+    <img src="..." alt="첨부 이미지" class="attachment-image" />
   </button>
 
   <!-- 비디오 파일 -->
-  <video src="..." class="rounded object-cover h-32 w-32" controls preload="metadata">
-    <track kind="captions" />
-  </video>
+  <div class="attachment-item col-span-1">
+    <video src="..." class="attachment-video" controls preload="metadata">
+      <track kind="captions" />
+    </video>
+  </div>
 
   <!-- 기타 파일 (PDF, TXT 등) -->
-  <button type="button" onclick={downloadFile} class="flex flex-col items-center justify-center gap-1 rounded bg-gray-100 transition-colors hover:bg-gray-200 h-32 w-32">
+  <button type="button" onclick={downloadFile} class="attachment-item attachment-file col-span-1">
     <svg class="h-8 w-8 text-gray-400"><!-- 파일 아이콘 --></svg>
     <span class="text-xs font-semibold text-gray-600">PDF</span>
   </button>
 
   <!-- 남은 파일 개수 -->
-  <div class="flex items-center justify-center rounded bg-gray-100 text-sm font-medium text-gray-600 h-32 w-32">
-    +5
+  <div class="attachment-item attachment-more col-span-1">
+    <span class="text-lg font-semibold text-gray-600">+5</span>
   </div>
 </div>
+```
+
+**CSS 스타일 (v1.4.0+):**
+```css
+/* 그리드 컨테이너 */
+.attachment-grid {
+  @apply w-full;
+}
+
+/* 각 첨부 파일 아이템 */
+.attachment-item {
+  @apply relative overflow-hidden rounded-lg;
+  @apply min-h-[200px];
+  @apply transition-transform hover:scale-[1.02];
+  @apply cursor-pointer;
+}
+
+/* 이미지 스타일 */
+.attachment-image {
+  @apply h-full w-full object-cover;
+}
+
+/* 비디오 스타일 */
+.attachment-video {
+  @apply h-full w-full object-cover;
+}
+
+/* 파일 아이템 스타일 */
+.attachment-file {
+  @apply flex flex-col items-center justify-center gap-2;
+  @apply bg-gray-100;
+  @apply hover:bg-gray-200;
+}
+
+/* 남은 파일 개수 표시 (+N) */
+.attachment-more {
+  @apply flex items-center justify-center;
+  @apply bg-gray-200 text-gray-700;
+  @apply hover:bg-gray-300;
+}
 ```
 
 **자세한 내용:** [sonub-firebase-storage.md § 5.2](./sonub-firebase-storage.md)
@@ -402,10 +473,13 @@ tags:
   @apply mb-4;
 }
 
-/* 게시글 카드 */
+/* 게시글 카드 (v1.4.0+: 모바일 반응형 스타일 적용) */
 .post-card {
-  @apply rounded-lg border border-gray-200 bg-white p-4 shadow-sm;
-  @apply transition-all hover:shadow-md;
+  /* 모바일: 테두리 없음, padding만 */
+  @apply bg-white p-4;
+  /* 데스크톱: 카드 스타일 (테두리, 그림자, 둥근 모서리) */
+  @apply md:rounded-lg md:border md:border-gray-200 md:shadow-sm;
+  @apply md:transition-all md:hover:shadow-md;
 }
 
 /* 삭제된 게시글 */
@@ -565,22 +639,67 @@ tags:
 
 ## 6. 반응형 디자인
 
-### 6.1. 모바일 최적화
+### 6.1. 모바일 최적화 (v1.4.0 업데이트)
+
+**모바일 화면 (<768px):**
+- **Edge-to-edge 레이아웃:** 좌/우 여백 제거
+- **카드 테두리 제거:** 깔끔한 화면 구성
+- **컨테이너 padding 제거:** 전체 너비 활용
+
+**데스크톱 화면 (≥768px):**
+- **컨테이너 padding 유지:** 좌/우 여백 적용
+- **카드 테두리/그림자 표시:** 카드 강조
 
 ```css
-/* 모바일: 썸네일 크기 축소 */
-@media (max-width: 640px) {
-  .post-card {
-    @apply p-3;
-  }
-
-  .post-text {
-    -webkit-line-clamp: 2; /* 2줄로 축소 */
-  }
-
-  /* FileAttachments 썸네일 크기 조정 */
-  /* Props로 thumbnailSize="h-24 w-24" 전달 */
+/* 페이지 컨테이너 (v1.4.0+) */
+.post-list-container {
+  /* 모바일: padding 없음 (edge-to-edge) */
+  @apply mx-auto max-w-4xl;
+  /* 데스크톱: padding 적용 */
+  @apply md:p-4;
 }
+
+/* 게시글 카드 (v1.4.0+) */
+.post-card {
+  /* 모바일: 테두리 없음, padding만 */
+  @apply bg-white p-4;
+  /* 데스크톱: 카드 스타일 (테두리, 그림자, 둥근 모서리) */
+  @apply md:rounded-lg md:border md:border-gray-200 md:shadow-sm;
+  @apply md:transition-all md:hover:shadow-md;
+}
+
+/* 게시글 텍스트 */
+.post-text {
+  @apply mb-2 text-gray-800;
+  display: -webkit-box;
+  -webkit-line-clamp: 3; /* 데스크톱: 3줄 */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 모바일: 텍스트 2줄로 축소 (선택적) */
+@media (max-width: 640px) {
+  .post-text {
+    -webkit-line-clamp: 2; /* 모바일: 2줄 */
+  }
+}
+```
+
+**레이아웃 구조 업데이트 (v1.4.0+):**
+
+```svelte
+<!-- src/routes/+layout.svelte -->
+<div class="container mx-auto md:px-4 py-8" class:p-0={isChatRoom}>
+  <!-- 모바일: px-4 없음 (edge-to-edge) -->
+  <!-- 데스크톱: md:px-4 적용 -->
+</div>
+
+<!-- src/routes/+page.svelte -->
+<div class="post-list-container">
+  <!-- 모바일: p-4 없음 -->
+  <!-- 데스크톱: md:p-4 적용 -->
+</div>
 ```
 
 ## 7. 상호작용 (Interaction)
@@ -1260,10 +1379,7 @@ interface Message {
 - [ ] 스크린 리더 호환성
 - [ ] 색상 대비 확인
 
-## 13. 변경 이력
-
-
-## 14. 참고 문서
+## 13. 참고 문서
 
 - [sonub-forum-overview.md](./sonub-forum-overview.md) - 게시판 기능 개요
 - [sonub-firebase-database-list-view.md](./sonub-firebase-database-list-view.md) - DatabaseListView 컴포넌트

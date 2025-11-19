@@ -76,7 +76,7 @@
 	/** DatabaseListView 참조 (새로고침용) */
 	let listViewRef = $state<DatabaseListView>();
 
-	/** 각 게시글의 PostItem 컴포넌트 참조 저장 (messageId -> PostItem) */
+	/** 각 게시글의 PostItem 컴포넌트 참조 저장 (postId -> PostItem) */
 	let postItemRefs = $state<Record<string, PostItem>>({});
 
 	/**
@@ -91,9 +91,9 @@
 	 * 특정 게시글의 댓글 새로고침
 	 * 외부에서 호출 가능한 public 메서드
 	 */
-	export async function refreshPostComments(messageId: string) {
-		if (postItemRefs[messageId]) {
-			await postItemRefs[messageId].refreshComments();
+	export async function refreshPostComments(postId: string) {
+		if (postItemRefs[postId]) {
+			await postItemRefs[postId].refreshComments();
 		}
 	}
 </script>
@@ -110,11 +110,11 @@
 >
 	{#snippet item(itemData, index)}
 		{@const message = itemData.data}
-		{@const messageId = itemData.key}
+		{@const postId = itemData.key}
 		<PostItem
-			bind:this={postItemRefs[messageId]}
+			bind:this={postItemRefs[postId]}
 			{message}
-			{messageId}
+			{postId}
 			{userLikes}
 			{onToggleLike}
 			{onOpenCommentDialog}

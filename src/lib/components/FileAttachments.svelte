@@ -13,6 +13,7 @@
 
 <script lang="ts">
 	import { isImageUrl, isVideoUrl } from '$lib/functions/storage.functions';
+	import { m } from '$lib/paraglide/messages';
 
 	/**
 	 * Props
@@ -30,10 +31,51 @@
 
 	// URLs를 배열로 변환
 	const urlArray = $derived(Object.values(urls));
-	// 표시할 URLs (최대 개수만큼만)
-	const displayUrls = $derived(urlArray.slice(0, maxDisplay));
+
+	// 전체 보기 상태
+	let showAll = $state(false);
+
 	// 남은 개수
 	const remainingCount = $derived(urlArray.length - maxDisplay);
+
+	// 표시할 URLs
+	// - 전체 보기: 모든 URL 표시
+	// - 제한 보기: maxDisplay개 표시 (마지막 아이템에 overlay로 +N 표시)
+	const displayUrls = $derived(
+		showAll ? urlArray : urlArray.slice(0, maxDisplay)
+	);
+
+	/**
+	 * 전체 보기 토글
+	 */
+	function toggleShowAll() {
+		showAll = !showAll;
+	}
+
+	/**
+	 * 첨부 파일 개수에 따른 그리드 레이아웃 클래스
+	 * - 1개: 1열 (100%)
+	 * - 2개: 2열 (50% 50%)
+	 * - 3개 이상: 2열 (첫 번째는 100%, 나머지는 50%씩)
+	 */
+	const getGridClass = (count: number) => {
+		if (count === 1) return 'grid-cols-1';
+		return 'grid-cols-2';
+	};
+
+	/**
+	 * 각 아이템의 span 클래스
+	 * - 1개일 때: 모두 col-span-1
+	 * - 2개일 때: 모두 col-span-1
+	 * - 3개 이상일 때: 첫 번째만 col-span-2, 나머지는 col-span-1
+	 */
+	const getItemSpanClass = (index: number, totalCount: number) => {
+		if (totalCount === 1 || totalCount === 2) {
+			return 'col-span-1';
+		}
+		// 3개 이상: 첫 번째만 2칸, 나머지는 1칸
+		return index === 0 ? 'col-span-2' : 'col-span-1';
+	};
 
 	// 모달 상태 관리
 	let showModal = $state(false);
@@ -81,38 +123,55 @@
 
 <!-- 첨부 파일이 있는 경우에만 표시 -->
 {#if urlArray.length > 0}
-	<div class="mt-2 flex flex-wrap gap-2">
-		{#each displayUrls as url}
+	<div class="attachment-grid mt-3 grid gap-1 {getGridClass(displayUrls.length)}">
+		{#each displayUrls as url, index}
 			{@const urlString = String(url)}
+			{@const spanClass = getItemSpanClass(index, displayUrls.length)}
+			{@const isLastItem = !showAll && remainingCount > 0 && index === maxDisplay - 1}
 			{#if isImageUrl(urlString)}
-				<!-- 이미지 썸네일 - 클릭 시 모달로 확대 -->
+				<!-- 이미지 썸네일 - 클릭 시 모달로 확대 또는 전체 보기 -->
 				<button
 					type="button"
-					onclick={() => openImageModal(urlString)}
-					class="rounded transition-transform hover:scale-105"
+					onclick={() => isLastItem ? toggleShowAll() : openImageModal(urlString)}
+					class="attachment-item {spanClass}"
 				>
-					<img
-						src={urlString}
-						alt="첨부 이미지"
-						class="rounded object-cover {thumbnailSize}"
-					/>
+					<img src={urlString} alt="첨부 이미지" class="attachment-image" />
+					{#if isLastItem}
+						<!-- Overlay: 어두운 배경 + +N 텍스트 -->
+						<div class="attachment-overlay">
+							<span class="text-4xl font-bold text-white">+{remainingCount}</span>
+						</div>
+					{/if}
 				</button>
 			{:else if isVideoUrl(urlString)}
-				<!-- 비디오 썸네일 - 컨트롤러 포함 -->
-				<video
-					src={urlString}
-					class="rounded object-cover {thumbnailSize}"
-					controls
-					preload="metadata"
+				<!-- 비디오 썸네일 - 컨트롤러 포함 또는 전체 보기 -->
+				<div
+					class="attachment-item {spanClass}"
+					onclick={(e) => {
+						if (isLastItem) {
+							e.preventDefault();
+							toggleShowAll();
+						}
+					}}
+					role={isLastItem ? "button" : undefined}
+					tabindex={isLastItem ? 0 : undefined}
 				>
-					<track kind="captions" />
-				</video>
+					<video src={urlString} class="attachment-video" controls preload="metadata">
+						<track kind="captions" />
+					</video>
+					{#if isLastItem}
+						<!-- Overlay: 어두운 배경 + +N 텍스트 -->
+						<div class="attachment-overlay">
+							<span class="text-4xl font-bold text-white">+{remainingCount}</span>
+						</div>
+					{/if}
+				</div>
 			{:else}
-				<!-- 기타 파일: 확장자 표시 및 다운로드 버튼 -->
+				<!-- 기타 파일: 확장자 표시 및 다운로드 버튼 또는 전체 보기 -->
 				<button
 					type="button"
-					onclick={() => downloadFile(urlString)}
-					class="flex flex-col items-center justify-center gap-1 rounded bg-gray-100 transition-colors hover:bg-gray-200 {thumbnailSize}"
+					onclick={() => isLastItem ? toggleShowAll() : downloadFile(urlString)}
+					class="attachment-item attachment-file {spanClass}"
 				>
 					<!-- 파일 아이콘 -->
 					<svg
@@ -132,16 +191,38 @@
 					<span class="text-xs font-semibold text-gray-600">
 						{getFileExtension(urlString)}
 					</span>
+					{#if isLastItem}
+						<!-- Overlay: 어두운 배경 + +N 텍스트 -->
+						<div class="attachment-overlay">
+							<span class="text-4xl font-bold text-white">+{remainingCount}</span>
+						</div>
+					{/if}
 				</button>
 			{/if}
 		{/each}
-		<!-- 남은 파일 개수 표시 -->
-		{#if remainingCount > 0}
-			<div
-				class="flex items-center justify-center rounded bg-gray-100 text-sm font-medium text-gray-600 {thumbnailSize}"
+		<!-- 접기 버튼 -->
+		{#if showAll && urlArray.length > maxDisplay}
+			<!-- 접기 버튼 -->
+			<button
+				type="button"
+				onclick={toggleShowAll}
+				class="attachment-item attachment-more {getItemSpanClass(displayUrls.length, displayUrls.length + 1)}"
 			>
-				+{remainingCount}
-			</div>
+				<svg
+					class="h-6 w-6 text-gray-600"
+					fill="none"
+					stroke="currentColor"
+					viewBox="0 0 24 24"
+					stroke-width="2"
+				>
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						d="M5 15l7-7 7 7"
+					/>
+				</svg>
+				<span class="text-sm font-semibold text-gray-600">{m.attachmentShowLess()}</span>
+			</button>
 		{/if}
 	</div>
 {/if}
@@ -209,3 +290,81 @@
 		</div>
 	</div>
 {/if}
+
+<style>
+	@import 'tailwindcss' reference;
+
+	/**
+	 * 첨부 파일 그리드 컨테이너
+	 */
+	.attachment-grid {
+		@apply w-full;
+	}
+
+	/**
+	 * 각 첨부 파일 아이템
+	 * - 상대 위치 지정으로 내부 요소 절대 위치 가능
+	 * - overflow-hidden으로 이미지/비디오가 영역을 벗어나지 않도록
+	 * - rounded로 모서리 둥글게
+	 * - 최소 높이 지정
+	 */
+	.attachment-item {
+		@apply relative overflow-hidden rounded-lg;
+		@apply min-h-[200px];
+		@apply transition-transform hover:scale-[1.02];
+		@apply cursor-pointer;
+	}
+
+	/**
+	 * 이미지 스타일
+	 * - 부모 요소 전체 크기 채우기
+	 * - object-cover로 비율 유지하면서 영역 채우기
+	 */
+	.attachment-image {
+		@apply h-full w-full object-cover;
+	}
+
+	/**
+	 * 비디오 스타일
+	 * - 부모 요소 전체 크기 채우기
+	 * - object-cover로 비율 유지하면서 영역 채우기
+	 */
+	.attachment-video {
+		@apply h-full w-full object-cover;
+	}
+
+	/**
+	 * 파일 아이템 스타일
+	 * - flex로 중앙 정렬
+	 * - 배경색 지정
+	 */
+	.attachment-file {
+		@apply flex flex-col items-center justify-center gap-2;
+		@apply bg-gray-100;
+		@apply hover:bg-gray-200;
+	}
+
+	/**
+	 * 남은 파일 개수 표시 (+N)
+	 * - flex로 중앙 정렬
+	 * - 배경색 및 텍스트 색상 지정
+	 */
+	.attachment-more {
+		@apply flex items-center justify-center;
+		@apply bg-gray-200 text-gray-700;
+		@apply hover:bg-gray-300;
+	}
+
+	/**
+	 * 첨부 파일 Overlay (마지막 아이템에 +N 표시)
+	 * - 절대 위치로 부모 요소 전체를 덮음
+	 * - 어두운 반투명 배경
+	 * - 텍스트 중앙 정렬
+	 */
+	.attachment-overlay {
+		@apply absolute inset-0;
+		@apply flex items-center justify-center;
+		@apply bg-black/60;
+		@apply cursor-pointer;
+	}
+</style>

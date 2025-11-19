@@ -137,6 +137,32 @@
 						<span class="font-medium">{m.menuEditProfile()}</span>
 					</Button>
 
+					<!-- 공개 프로필 -->
+					<Button
+						variant="ghost"
+						class="w-full justify-start text-left text-gray-700 hover:bg-teal-50 hover:text-teal-700 border border-transparent hover:border-teal-200 rounded-lg py-3 transition-all duration-200"
+						href="/user/profile?uid={authStore.user?.uid}"
+					>
+						<div
+							class="mr-3 p-2 bg-teal-100 rounded-lg group-hover:bg-teal-200 transition-colors"
+						>
+							<svg
+								class="h-5 w-5 text-teal-600"
+								fill="none"
+								stroke="currentColor"
+								viewBox="0 0 24 24"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+								/>
+							</svg>
+						</div>
+						<span class="font-medium">{m.menuPublicProfile()}</span>
+					</Button>
+
 					<!-- 개발 계획 -->
 					<Button
 						variant="ghost"

@@ -188,27 +188,46 @@
 					roomId,
 					(progress) => {
 						// 진행률 업데이트 (각 파일마다 독립적으로)
-						uploadingFiles[currentIndex].progress = progress;
+						// uploadingFiles 배열이 변경되지 않으므로 currentIndex는 항상 유효함
+						if (uploadingFiles[currentIndex]) {
+							uploadingFiles[currentIndex].progress = progress;
+						}
 					}
 				);
 
 				// 업로드 완료
-				uploadingFiles[currentIndex].completed = true;
-				uploadingFiles[currentIndex].downloadUrl = downloadUrl;
+				if (uploadingFiles[currentIndex]) {
+					uploadingFiles[currentIndex].completed = true;
+					uploadingFiles[currentIndex].downloadUrl = downloadUrl;
+				}
 
 				// urls에 추가 (사전 할당된 인덱스 사용)
 				urls = { ...urls, [urlIndices[i]]: downloadUrl };
 
-				// uploadingFiles에서 제거 (객체 참조로 필터링하여 안전하게 제거)
-				uploadingFiles = uploadingFiles.filter((fs) => fs !== fileStatus);
+				// ✅ 수정: uploadingFiles에서 즉시 제거하지 않고 completed 플래그만 설정
+				// 업로드 완료된 파일은 나중에 일괄 제거 (저장 버튼 클릭 시 또는 자동으로)
 			} catch (err) {
-				console.error('파일 업로드 실패:', err);
-				uploadingFiles[currentIndex].error = '업로드 실패';
+				console.error('❌ 파일 업로드 실패:', file.name, err);
+				if (uploadingFiles[currentIndex]) {
+					uploadingFiles[currentIndex].error = '업로드 실패';
+				}
 			}
 		});
 
-		// 모든 업로드가 완료될 때까지 대기하지 않음 (백그라운드 업로드)
-		// 사용자는 업로드 진행 중에도 다른 작업 가능
+		// ✅ 수정: 모든 업로드가 완료될 때까지 대기
+		// 이렇게 하면 모든 파일이 안정적으로 업로드됩니다
+		await Promise.allSettled(uploadPromises);
+
+		// ✅ 수정: 모든 업로드 완료 후 성공한 파일들을 uploadingFiles에서 제거
+		uploadingFiles = uploadingFiles.filter((fs) => !fs.completed);
+
+		// 실패한 파일이 있으면 사용자에게 알림
+		const failedFiles = uploadingFiles.filter((fs) => fs.error);
+		if (failedFiles.length > 0) {
+			const failedFileNames = failedFiles.map((fs) => fs.file.name).join(', ');
+			console.error(`❌ 업로드 실패한 파일 (${failedFiles.length}개):`, failedFileNames);
+			// 에러 메시지는 이미 각 파일의 error 속성에 설정되어 있으므로 UI에 표시됨
+		}
 	}
 
 	/**

@@ -21,6 +21,7 @@
 	import { ref, update } from 'firebase/database';
 	import { createRealtimeStore } from '$lib/stores/database.svelte';
 	import { toggleLikeTarget, type LikeTargetType } from '$lib/functions/like.functions';
+	import { PenSquare } from 'lucide-svelte';
 
 	// 카테고리 선택 상태 (null = 전체)
 	let selectedCategory = $state<ForumCategory | null>(null);
@@ -195,7 +196,10 @@ async function handleToggleLike(event: MouseEvent, targetId: string, targetType:
 	<!-- 헤더 -->
 	<div class="post-list-header">
 		<h1 class="post-list-title">{m.chatCategoryLabel()}</h1>
-		<Button onclick={() => (isCreateDialogOpen = true)}>글쓰기</Button>
+		<Button onclick={() => (isCreateDialogOpen = true)}>
+			<PenSquare class="h-4 w-4" />
+			글쓰기
+		</Button>
 	</div>
 
 	<!-- 카테고리 텍스트 네비게이션 -->

@@ -9,13 +9,14 @@ import * as logger from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 
 /**
- * 전체 팔로우 통계 카운터 증가
+ * 전체 팔로우 통계 카운터 및 사용자별 통계 증가
  *
  * @param followerUid - 팔로우하는 사용자 UID
  * @param followingUid - 팔로우 대상 사용자 UID
  *
  * 수행 작업:
  * - /stats/counters/follow 경로에 ServerValue.increment(1)로 +1 증가
+ * - /users/{followerUid}/counters/follow 경로에 ServerValue.increment(1)로 +1 증가
  * - 이 값은 전체 팔로우 관계 수를 나타냄
  */
 async function incrementFollowCounter(
@@ -23,10 +24,17 @@ async function incrementFollowCounter(
   followingUid: string
 ): Promise<void> {
   try {
-    const followCounterRef = admin.database().ref("stats/counters/follow");
-    await followCounterRef.set(admin.database.ServerValue.increment(1));
+    const updates: Record<string, unknown> = {};
 
-    logger.info("stats/counters/follow 증가 완료 (전체 팔로우 통계)", {
+    // 전체 팔로우 통계 증가
+    updates["stats/counters/follow"] = admin.database.ServerValue.increment(1);
+
+    // 사용자별 팔로우 통계 증가 (팔로우하는 사람 기준)
+    updates[`users/${followerUid}/counters/follow`] = admin.database.ServerValue.increment(1);
+
+    await admin.database().ref().update(updates);
+
+    logger.info("stats/counters/follow 및 사용자별 통계 증가 완료", {
       followerUid,
       followingUid,
     });
@@ -41,13 +49,14 @@ async function incrementFollowCounter(
 }
 
 /**
- * 전체 팔로우 통계 카운터 감소
+ * 전체 팔로우 통계 카운터 및 사용자별 통계 감소
  *
  * @param followerUid - 언팔로우하는 사용자 UID
  * @param followingUid - 언팔로우 대상 사용자 UID
  *
  * 수행 작업:
  * - /stats/counters/follow 경로에 ServerValue.increment(-1)로 -1 감소
+ * - /users/{followerUid}/counters/follow 경로에 ServerValue.increment(-1)로 -1 감소
  * - 이 값은 전체 팔로우 관계 수를 나타냄
  */
 async function decrementFollowCounter(
@@ -55,10 +64,17 @@ async function decrementFollowCounter(
   followingUid: string
 ): Promise<void> {
   try {
-    const followCounterRef = admin.database().ref("stats/counters/follow");
-    await followCounterRef.set(admin.database.ServerValue.increment(-1));
+    const updates: Record<string, unknown> = {};
 
-    logger.info("stats/counters/follow 감소 완료 (전체 팔로우 통계)", {
+    // 전체 팔로우 통계 감소
+    updates["stats/counters/follow"] = admin.database.ServerValue.increment(-1);
+
+    // 사용자별 팔로우 통계 감소 (언팔로우하는 사람 기준)
+    updates[`users/${followerUid}/counters/follow`] = admin.database.ServerValue.increment(-1);
+
+    await admin.database().ref().update(updates);
+
+    logger.info("stats/counters/follow 및 사용자별 통계 감소 완료", {
       followerUid,
       followingUid,
     });
