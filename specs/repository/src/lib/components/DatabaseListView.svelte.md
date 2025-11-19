@@ -3,8 +3,8 @@ title: DatabaseListView.svelte
 type: component
 path: src/lib/components/DatabaseListView.svelte
 status: active
-version: 1.0.0
-last_updated: 2025-11-15
+version: 1.1.0
+last_updated: 2025-11-19
 ---
 
 ## 개요
@@ -1038,41 +1038,46 @@ last_updated: 2025-11-15
           // );
         }
 
-        // limitToLast를 사용하면 Firebase가 오름차순으로 반환하므로
-        // reverse가 true일 때는 배열을 뒤집어야 합니다 (최신 글이 먼저 오도록)
-        // 단, scrollTrigger='top'일 때는 채팅방 스타일이므로 reverse하지 않습니다
-        // (오래된 메시지가 위에, 최신 메시지가 아래에 있어야 함)
-        if (reverse && scrollTrigger !== 'top') {
-          // console.log(
-            // `%c[DatabaseListView] Before reverse:`,
-            // 'color: #ec4899;',
-            // loadedItems.map((item, idx) => ({
-              // index: idx,
-              // [orderBy]: item.data[orderBy],
-              // title: item.data.title
-            // }))
-          // );
-          loadedItems.reverse();
-          // console.log(
-            // `%c[DatabaseListView] After reverse (newest first):`,
-            // 'color: #10b981;',
-            // loadedItems.map((item, idx) => ({
-              // index: idx,
-              // [orderBy]: item.data[orderBy],
-              // title: item.data.title
-            // }))
-          // );
-        } else if (scrollTrigger === 'top') {
-          // console.log(
-            // `%c[DatabaseListView] Chat style - NOT reversing (oldest first, newest last):`,
-            // 'color: #10b981;',
-            // loadedItems.map((item, idx) => ({
-              // index: idx,
-              // [orderBy]: item.data[orderBy],
-              // title: item.data.title
-            // }))
-          // );
-        }
+        // 클라이언트 측 명시적 정렬
+        // Firebase에서 받은 데이터를 orderBy 필드 기준으로 정렬합니다
+        // 이렇게 하면 Firebase 쿼리 순서와 관계없이 정확한 정렬을 보장합니다
+        loadedItems.sort((a, b) => {
+          const aValue = a.data[orderBy];
+          const bValue = b.data[orderBy];
+
+          // null/undefined 처리
+          if (aValue == null && bValue == null) return 0;
+          if (aValue == null) return 1;
+          if (bValue == null) return -1;
+
+          // reverse가 true이고 scrollTrigger가 'top'이 아니면 내림차순 (최신 글 먼저)
+          // scrollTrigger가 'top'이면 오름차순 (오래된 메시지가 위에)
+          if (reverse && scrollTrigger !== 'top') {
+            // 내림차순: 큰 값이 먼저 (최신 글 먼저)
+            if (typeof aValue === 'string' && typeof bValue === 'string') {
+              return bValue.localeCompare(aValue); // 문자열 내림차순 (b > a이면 양수, b가 뒤로)
+            } else {
+              return Number(bValue) - Number(aValue); // 숫자 내림차순
+            }
+          } else {
+            // 오름차순: 작은 값이 먼저 (오래된 글 먼저)
+            if (typeof aValue === 'string' && typeof bValue === 'string') {
+              return aValue.localeCompare(bValue); // 문자열 오름차순 (a > b이면 양수, a가 뒤로)
+            } else {
+              return Number(aValue) - Number(bValue); // 숫자 오름차순
+            }
+          }
+        });
+
+        // console.log(
+          // `%c[DatabaseListView] After client-side sorting (${reverse && scrollTrigger !== 'top' ? 'newest first' : 'oldest first'}):`,
+          // 'color: #10b981;',
+          // loadedItems.map((item, idx) => ({
+            // index: idx,
+            // [orderBy]: item.data[orderBy],
+            // title: item.data.title
+          // }))
+        // );
 
         // equalToValue가 있으면 한 번의 로드로 모든 결과를 표시하고 페이징을 중단한다.
         if (hasEqualFilter) {
@@ -1339,10 +1344,32 @@ last_updated: 2025-11-15
 
         // console.log(`[loadMore] Firebase 반환: ${newItems.length}개`);
 
-        // reverse 처리
-        if (reverse && scrollTrigger !== 'top') {
-          newItems.reverse();
-        }
+        // 클라이언트 측 명시적 정렬
+        newItems.sort((a, b) => {
+          const aValue = a.data[orderBy];
+          const bValue = b.data[orderBy];
+
+          // null/undefined 처리
+          if (aValue == null && bValue == null) return 0;
+          if (aValue == null) return 1;
+          if (bValue == null) return -1;
+
+          if (reverse && scrollTrigger !== 'top') {
+            // 내림차순: 큰 값이 먼저 (최신 글 먼저)
+            if (typeof aValue === 'string' && typeof bValue === 'string') {
+              return bValue.localeCompare(aValue); // 문자열 내림차순
+            } else {
+              return Number(bValue) - Number(aValue); // 숫자 내림차순
+            }
+          } else {
+            // 오름차순: 작은 값이 먼저 (오래된 글 먼저)
+            if (typeof aValue === 'string' && typeof bValue === 'string') {
+              return aValue.localeCompare(bValue); // 문자열 오름차순
+            } else {
+              return Number(aValue) - Number(bValue); // 숫자 오름차순
+            }
+          }
+        });
 
         // 중복 제거
         const existingKeys = new Set(items.map(item => item.key));

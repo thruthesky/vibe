@@ -8,15 +8,19 @@
 
 	import NotificationCard from './sidebar/NotificationCard.svelte';
 	import StatsCard from './sidebar/StatsCard.svelte';
+	import PopularPostsCard from './sidebar/PopularPostsCard.svelte';
 	import SuggestionsCard from './sidebar/SuggestionsCard.svelte';
 </script>
 
 <aside class="hidden lg:block lg:w-64 xl:w-72">
 	<div class="sticky top-20 space-y-5">
 
-		
+
 		<!-- 알림 카드 -->
 		<NotificationCard />
+
+		<!-- 인기 게시글 카드 -->
+		<PopularPostsCard />
 
 		<!-- 통계 카드 -->
 		<StatsCard />

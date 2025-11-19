@@ -163,6 +163,200 @@
 						<span class="font-medium">{m.menuPublicProfile()}</span>
 					</Button>
 
+					<!-- 구분선 -->
+					<div class="border-t border-gray-200 my-3"></div>
+
+					<!-- 팔로워 -->
+					<Button
+						variant="ghost"
+						class="w-full justify-start text-left text-gray-700 hover:bg-pink-50 hover:text-pink-700 border border-transparent hover:border-pink-200 rounded-lg py-3 transition-all duration-200"
+						href="/friend/followers"
+					>
+						<div
+							class="mr-3 p-2 bg-pink-100 rounded-lg group-hover:bg-pink-200 transition-colors"
+						>
+							<svg
+								class="h-5 w-5 text-pink-600"
+								fill="none"
+								stroke="currentColor"
+								viewBox="0 0 24 24"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+								/>
+							</svg>
+						</div>
+						<span class="font-medium">{m.menuFollowers()}</span>
+					</Button>
+
+					<!-- 팔로잉 -->
+					<Button
+						variant="ghost"
+						class="w-full justify-start text-left text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 border border-transparent hover:border-indigo-200 rounded-lg py-3 transition-all duration-200"
+						href="/friend/following"
+					>
+						<div
+							class="mr-3 p-2 bg-indigo-100 rounded-lg group-hover:bg-indigo-200 transition-colors"
+						>
+							<svg
+								class="h-5 w-5 text-indigo-600"
+								fill="none"
+								stroke="currentColor"
+								viewBox="0 0 24 24"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+								/>
+							</svg>
+						</div>
+						<span class="font-medium">{m.menuFollowing()}</span>
+					</Button>
+
+					<!-- 사용자 목록 -->
+					<Button
+						variant="ghost"
+						class="w-full justify-start text-left text-gray-700 hover:bg-cyan-50 hover:text-cyan-700 border border-transparent hover:border-cyan-200 rounded-lg py-3 transition-all duration-200"
+						href="/user/list"
+					>
+						<div
+							class="mr-3 p-2 bg-cyan-100 rounded-lg group-hover:bg-cyan-200 transition-colors"
+						>
+							<svg
+								class="h-5 w-5 text-cyan-600"
+								fill="none"
+								stroke="currentColor"
+								viewBox="0 0 24 24"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+								/>
+							</svg>
+						</div>
+						<span class="font-medium">{m.menuUserList()}</span>
+					</Button>
+
+					<!-- 구분선 -->
+					<div class="border-t border-gray-200 my-3"></div>
+
+					<!-- 채팅방 -->
+					<Button
+						variant="ghost"
+						class="w-full justify-start text-left text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 border border-transparent hover:border-emerald-200 rounded-lg py-3 transition-all duration-200"
+						href="/chat/list"
+					>
+						<div
+							class="mr-3 p-2 bg-emerald-100 rounded-lg group-hover:bg-emerald-200 transition-colors"
+						>
+							<svg
+								class="h-5 w-5 text-emerald-600"
+								fill="none"
+								stroke="currentColor"
+								viewBox="0 0 24 24"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+								/>
+							</svg>
+						</div>
+						<span class="font-medium">{m.menuChatRooms()}</span>
+					</Button>
+
+					<!-- 오픈채팅방 -->
+					<Button
+						variant="ghost"
+						class="w-full justify-start text-left text-gray-700 hover:bg-lime-50 hover:text-lime-700 border border-transparent hover:border-lime-200 rounded-lg py-3 transition-all duration-200"
+						href="/chat/open-chat-list"
+					>
+						<div
+							class="mr-3 p-2 bg-lime-100 rounded-lg group-hover:bg-lime-200 transition-colors"
+						>
+							<svg
+								class="h-5 w-5 text-lime-600"
+								fill="none"
+								stroke="currentColor"
+								viewBox="0 0 24 24"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"
+								/>
+							</svg>
+						</div>
+						<span class="font-medium">{m.menuOpenChats()}</span>
+					</Button>
+
+					<!-- 구분선 -->
+					<div class="border-t border-gray-200 my-3"></div>
+
+					<!-- 인기 게시글 -->
+					<Button
+						variant="ghost"
+						class="w-full justify-start text-left text-gray-700 hover:bg-yellow-50 hover:text-yellow-700 border border-transparent hover:border-yellow-200 rounded-lg py-3 transition-all duration-200"
+						href="/post/popular"
+					>
+						<div
+							class="mr-3 p-2 bg-yellow-100 rounded-lg group-hover:bg-yellow-200 transition-colors"
+						>
+							<svg
+								class="h-5 w-5 text-yellow-600"
+								fill="none"
+								stroke="currentColor"
+								viewBox="0 0 24 24"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+								/>
+							</svg>
+						</div>
+						<span class="font-medium">{m.menuPopularPosts()}</span>
+					</Button>
+
+					<!-- 인플루언서 -->
+					<Button
+						variant="ghost"
+						class="w-full justify-start text-left text-gray-700 hover:bg-violet-50 hover:text-violet-700 border border-transparent hover:border-violet-200 rounded-lg py-3 transition-all duration-200"
+						href="/my/stats"
+					>
+						<div
+							class="mr-3 p-2 bg-violet-100 rounded-lg group-hover:bg-violet-200 transition-colors"
+						>
+							<svg
+								class="h-5 w-5 text-violet-600"
+								fill="none"
+								stroke="currentColor"
+								viewBox="0 0 24 24"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+								/>
+							</svg>
+						</div>
+						<span class="font-medium">{m.menuInfluencers()}</span>
+					</Button>
+
+					<!-- 구분선 -->
+					<div class="border-t border-gray-200 my-3"></div>
+
 					<!-- 개발 계획 -->
 					<Button
 						variant="ghost"

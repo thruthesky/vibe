@@ -151,21 +151,21 @@ export function formatDate(
  * 대상 작성자 UID 조회
  *
  * @param targetId - 대상 ID (게시글 ID, 댓글 ID, 메시지 ID)
- * @param targetType - 대상 타입 ("post", "comment", "message")
+ * @param targetType - 대상 타입 ("post", "comment-{postId}", "message")
  * @returns 작성자 UID (없으면 null)
  *
  * 동작 방식:
  * - post: /posts/{postId}/authorUid 조회
- * - comment: /comment-locations/{commentId}로 postId 찾고 → /comments/{postId}/{commentId}/authorUid 조회
+ * - comment-{postId}: targetType에서 postId 추출 → /comments/{postId}/{commentId}/authorUid 조회
  * - message: /chat-messages/{messageId}/uid 조회
  *
  * 예시:
  * - getTargetAuthorUid("post123", "post") → "user_uid_123"
- * - getTargetAuthorUid("comment456", "comment") → "user_uid_456"
+ * - getTargetAuthorUid("comment456", "comment-post789") → "user_uid_456"
  */
 export async function getTargetAuthorUid(
   targetId: string,
-  targetType: "post" | "comment" | "message"
+  targetType: string
 ): Promise<string | null> {
   try {
     let authorUidRef: admin.database.Reference;
@@ -173,17 +173,19 @@ export async function getTargetAuthorUid(
     if (targetType === "post") {
       // 게시글 작성자 조회
       authorUidRef = admin.database().ref(`posts/${targetId}/authorUid`);
-    } else if (targetType === "comment") {
-      // 댓글 위치 조회 → 댓글 작성자 조회
-      const locationRef = admin.database().ref(`comment-locations/${targetId}`);
-      const locationSnapshot = await locationRef.once("value");
+    } else if (targetType.startsWith("comment-")) {
+      // 댓글 작성자 조회 (targetType 형식: "comment-{postId}")
+      // postId 파싱: "comment-{postId}" -> {postId}
+      const postId = targetType.substring("comment-".length);
 
-      if (!locationSnapshot.exists()) {
-        logger.warn("댓글 위치를 찾을 수 없음", {targetId, targetType});
+      if (!postId) {
+        logger.warn("댓글 targetType에서 postId를 파싱할 수 없음", {
+          targetId,
+          targetType,
+        });
         return null;
       }
 
-      const postId = locationSnapshot.val() as string;
       authorUidRef = admin
         .database()
         .ref(`comments/${postId}/${targetId}/authorUid`);
@@ -214,62 +216,61 @@ export async function getTargetAuthorUid(
 }
 
 /**
- * 인플루언서 점수 계산 및 업데이트
+ * 인플루언서 점수 증감
  *
  * @param uid - 대상 사용자 UID
+ * @param delta - 증감량 (양수: 증가, 음수: 감소)
+ * @param reason - 점수 변경 이유 (로깅용)
  * @returns Promise<void>
  *
- * 인플루언서 점수 계산 공식:
- * score = (receivedLikes × 1) + (receivedComments × 3) + (receivedFollowers × 5)
+ * 증분 업데이트 방식:
+ * - 이벤트가 발생할 때마다 점수를 증감합니다
+ * - ServerValue.increment()를 사용하여 원자적으로 업데이트합니다
+ * - 점수 상수는 shared/influencer-scores.constants.ts에서 관리합니다
  *
- * 가중치:
- * - 좋아요: 1점 (가장 낮은 가중치)
- * - 댓글: 3점 (중간 가중치, 댓글은 좋아요보다 더 의미 있는 반응)
- * - 팔로워: 5점 (가장 높은 가중치, 지속적인 관심을 의미)
- *
- * 수행 작업:
- * 1. /user-stats/{uid}/total 에서 각 통계 조회
- * 2. 점수 계산
- * 3. /influencer-scores/{uid} 업데이트
+ * 점수 체계:
+ * - 게시글 작성: +50점, 삭제: -55점 (페널티 -5)
+ * - 댓글 작성: +5점, 삭제: -7점 (페널티 -2)
+ * - 타인으로부터 좋아요 받음: +3점, 취소: -3점
+ * - 타인이 내 글/댓글에 댓글 작성: +5점, 삭제: -5점
+ * - 타인이 나를 팔로우: +60점, 언팔로우: -60점
  *
  * 예시:
- * - 받은 좋아요 100개, 댓글 30개, 팔로워 20개
- * - 점수 = (100 × 1) + (30 × 3) + (20 × 5) = 100 + 90 + 100 = 290점
+ * - incrementInfluencerScore(uid, 50, "게시글 작성")
+ * - incrementInfluencerScore(uid, -55, "게시글 삭제")
+ * - incrementInfluencerScore(uid, 3, "좋아요 받음")
  */
-export async function updateInfluencerScore(uid: string): Promise<void> {
-  try {
-    // 1. 전체 통계 조회
-    const totalStatsRef = admin.database().ref(`user-stats/${uid}/total`);
-    const snapshot = await totalStatsRef.once("value");
-
-    if (!snapshot.exists()) {
-      logger.info("통계가 없어 인플루언서 점수를 0으로 설정", {uid});
-      await admin.database().ref(`influencer-scores/${uid}`).set(0);
-      return;
-    }
-
-    const stats = snapshot.val() as Record<string, number>;
-
-    // 2. 점수 계산
-    const receivedLikes = stats.receivedLikes || 0;
-    const receivedComments = stats.receivedComments || 0;
-    const receivedFollowers = stats.receivedFollowers || 0;
-
-    const score = receivedLikes * 1 + receivedComments * 3 + receivedFollowers * 5;
-
-    // 3. 점수 업데이트
-    await admin.database().ref(`influencer-scores/${uid}`).set(score);
-
-    logger.info("인플루언서 점수 업데이트 완료", {
+export async function incrementInfluencerScore(
+  uid: string,
+  delta: number,
+  reason?: string
+): Promise<void> {
+  if (delta === 0) {
+    logger.warn("delta가 0이므로 인플루언서 점수 업데이트를 건너뜁니다", {
       uid,
-      receivedLikes,
-      receivedComments,
-      receivedFollowers,
-      score,
+      delta,
+      reason,
+    });
+    return;
+  }
+
+  try {
+    // ServerValue.increment()를 사용하여 원자적으로 증감
+    await admin
+      .database()
+      .ref(`influencer-scores/${uid}`)
+      .set(admin.database.ServerValue.increment(delta));
+
+    logger.info("인플루언서 점수 증감 완료", {
+      uid,
+      delta,
+      reason,
     });
   } catch (error) {
-    logger.error("인플루언서 점수 업데이트 실패", {
+    logger.error("인플루언서 점수 증감 실패", {
       uid,
+      delta,
+      reason,
       error: error instanceof Error ? error.message : String(error),
     });
     // 점수 업데이트 실패는 비치명적이므로 에러를 throw하지 않음

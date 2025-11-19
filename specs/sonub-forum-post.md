@@ -905,8 +905,10 @@ interface Message {
 게시글이 생성될 때 Firebase Cloud Functions에서 자동으로 정렬 필드를 생성합니다.
 
 **자동 생성 필드:**
-- `categoryOrder`: `"{category}-{createdAt}"` 형식 (예: `"qna-1700000000000"`)
-- `allCategoryOrder`: `createdAt` 타임스탬프 (예: `1700000000000`)
+- `categoryOrder`: `"{category}-{timestamp}"` 형식 (예: `"qna-1700000000000"`)
+  - ✅ **양수 타임스탬프 사용**: 문자열 필드로 클라이언트에서 역순 정렬
+- `allCategoryOrder`: `-createdAt` 음수 타임스탬프 (예: `-1700000000000`)
+  - ⚠️ **음수 타임스탬프 사용**: 숫자 필드로 Firebase의 오름차순 정렬로 최신순 표시
 
 **Cloud Functions 처리 흐름:**
 ```typescript
@@ -916,8 +918,10 @@ export const onPostCreate = onValueCreated('/posts/{postId}', async (event) => {
   const post = event.data.val();
 
   // 1. 정렬 필드 자동 생성
-  const categoryOrder = `${post.category}-${post.createdAt}`;
-  const allCategoryOrder = post.createdAt;
+  // categoryOrder: 문자열이므로 양수 타임스탬프 사용
+  // allCategoryOrder: 숫자이므로 음수 타임스탬프 사용 (Firebase 오름차순 정렬로 최신순 표시)
+  const categoryOrder = `${post.category}-${Number(post.createdAt)}`;
+  const allCategoryOrder = -Number(post.createdAt);
 
   // 2. DB에 저장
   await event.data.ref.update({
@@ -926,6 +930,20 @@ export const onPostCreate = onValueCreated('/posts/{postId}', async (event) => {
   });
 });
 ```
+
+**정렬 필드 타입별 처리 방식:**
+
+1. **categoryOrder (문자열)**
+   - 양수 타임스탬프 사용: `"qna-1700000000000"`
+   - Firebase는 문자열을 사전순(lexicographical)으로 정렬
+   - 클라이언트에서 `reverse={true}` 옵션으로 역순 정렬하여 최신순 표시
+   - 예: `"qna-1234567890"` < `"qna-9999999999"` → 클라이언트에서 reverse로 뒤집기
+
+2. **allCategoryOrder (숫자)**
+   - 음수 타임스탬프 사용: `-1700000000000`
+   - Firebase는 숫자를 오름차순으로 정렬
+   - 더 작은 음수 = 더 최신 = 오름차순 정렬 시 자연스럽게 최신순
+   - 예: `-9999999999` < `-1234567890` (최신 글이 먼저)
 
 **클라이언트 역할:**
 - ✅ 사용자 입력 데이터만 저장: `text`, `category`, `createdAt`, `urls`

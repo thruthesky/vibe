@@ -36,6 +36,8 @@ export interface UserProfile {
 	displayName: string | null;
 	/** 프로필 사진 URL (선택) */
 	photoUrl: string | null;
+	/** 커버 사진 URL (선택) */
+	coverPhotoUrl?: string | null;
 	/** 성별 (M: 남성, F: 여성, 선택) */
 	gender?: 'M' | 'F' | null;
 	/** 생년 (선택) */

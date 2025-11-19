@@ -19,17 +19,18 @@ import * as logger from "firebase-functions/logger";
  * 각 action의 의미:
  * - like: 사용자가 누른 좋아요 수
  * - comment: 사용자가 작성한 댓글 수
+ * - post: 사용자가 작성한 게시글 수
  * - chat: 사용자가 전송한 채팅 메시지 수
  * - follow: 사용자가 팔로우한 수 (팔로잉 수)
  * - user: 사용자 가입 카운터 (특수 케이스)
  */
-export type ActionCounterType = "like" | "comment" | "chat" | "follow" | "user";
+export type ActionCounterType = "like" | "comment" | "post" | "chat" | "follow" | "user";
 
 /**
  * 사용자별 action 카운터 증감 함수
  *
  * @param uid - 사용자 UID
- * @param counterType - 카운터 타입 (like, comment, chat, follow, user)
+ * @param counterType - 카운터 타입 (like, comment, post, chat, follow, user)
  * @param delta - 증감량 (1: 증가, -1: 감소)
  * @returns Promise<void>
  *
@@ -41,6 +42,7 @@ export type ActionCounterType = "like" | "comment" | "chat" | "follow" | "user";
  * - 좋아요 추가: incrementActionCounter(uid, "like", 1)
  * - 좋아요 취소: incrementActionCounter(uid, "like", -1)
  * - 댓글 작성: incrementActionCounter(uid, "comment", 1)
+ * - 게시글 작성: incrementActionCounter(uid, "post", 1)
  * - 팔로우: incrementActionCounter(uid, "follow", 1)
  */
 export async function incrementActionCounter(

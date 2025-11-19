@@ -21,8 +21,9 @@ import * as logger from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import {
   updateUserStats,
-  updateInfluencerScore,
+  incrementInfluencerScore,
 } from "../utils/stats.utils";
+import {INFLUENCER_SCORES, SCORE_DESCRIPTIONS} from "../shared/influencer-scores.constants";
 
 /**
  * 게시글 작성자 UID 조회
@@ -131,6 +132,13 @@ export async function handleCommentCreateStats(
     // 1. 댓글 작성자의 createdComments 통계 증가
     await updateUserStats(authorUid, "createdComments", 1, createdAt);
 
+    // 1-1. 댓글 작성자의 인플루언서 점수 증가 (+5점)
+    await incrementInfluencerScore(
+      authorUid,
+      INFLUENCER_SCORES.COMMENT.CREATE,
+      SCORE_DESCRIPTIONS.COMMENT_CREATE
+    );
+
     if (!parentId) {
       // 2. 게시글 댓글인 경우
       const postAuthorUid = await getPostAuthorUid(postId);
@@ -168,8 +176,12 @@ export async function handleCommentCreateStats(
         createdAt
       );
 
-      // 인플루언서 점수 재계산
-      await updateInfluencerScore(postAuthorUid);
+      // 게시글 작성자의 인플루언서 점수 증가 (+5점)
+      await incrementInfluencerScore(
+        postAuthorUid,
+        INFLUENCER_SCORES.COMMENT.RECEIVED,
+        SCORE_DESCRIPTIONS.COMMENT_RECEIVED
+      );
 
       logger.info("게시글 댓글 통계 처리 완료", {
         postId,
@@ -216,8 +228,12 @@ export async function handleCommentCreateStats(
         createdAt
       );
 
-      // 인플루언서 점수 재계산
-      await updateInfluencerScore(parentAuthorUid);
+      // 부모 댓글 작성자의 인플루언서 점수 증가 (+5점)
+      await incrementInfluencerScore(
+        parentAuthorUid,
+        INFLUENCER_SCORES.COMMENT.RECEIVED,
+        SCORE_DESCRIPTIONS.COMMENT_RECEIVED
+      );
 
       logger.info("댓글 대댓글 통계 처리 완료", {
         postId,
@@ -285,6 +301,13 @@ export async function handleCommentDeleteStats(
     // 1. 댓글 작성자의 createdComments 통계 감소
     await updateUserStats(authorUid, "createdComments", -1);
 
+    // 1-1. 댓글 작성자의 인플루언서 점수 감소 (-7점, 페널티 포함)
+    await incrementInfluencerScore(
+      authorUid,
+      INFLUENCER_SCORES.COMMENT.DELETE,
+      SCORE_DESCRIPTIONS.COMMENT_DELETE
+    );
+
     if (!parentId) {
       // 2. 게시글 댓글인 경우
       const postAuthorUid = await getPostAuthorUid(postId);
@@ -312,8 +335,12 @@ export async function handleCommentDeleteStats(
       await updateUserStats(postAuthorUid, "receivedPostComments", -1);
       await updateUserStats(postAuthorUid, "receivedComments", -1);
 
-      // 인플루언서 점수 재계산
-      await updateInfluencerScore(postAuthorUid);
+      // 게시글 작성자의 인플루언서 점수 감소 (-5점, 페널티 없음)
+      await incrementInfluencerScore(
+        postAuthorUid,
+        INFLUENCER_SCORES.COMMENT.RECEIVED_DELETE,
+        SCORE_DESCRIPTIONS.COMMENT_RECEIVED_DELETE
+      );
 
       logger.info("게시글 댓글 삭제 통계 처리 완료", {
         postId,
@@ -350,8 +377,12 @@ export async function handleCommentDeleteStats(
       await updateUserStats(parentAuthorUid, "receivedCommentReplies", -1);
       await updateUserStats(parentAuthorUid, "receivedComments", -1);
 
-      // 인플루언서 점수 재계산
-      await updateInfluencerScore(parentAuthorUid);
+      // 부모 댓글 작성자의 인플루언서 점수 감소 (-5점, 페널티 없음)
+      await incrementInfluencerScore(
+        parentAuthorUid,
+        INFLUENCER_SCORES.COMMENT.RECEIVED_DELETE,
+        SCORE_DESCRIPTIONS.COMMENT_RECEIVED_DELETE
+      );
 
       logger.info("댓글 대댓글 삭제 통계 처리 완료", {
         postId,

@@ -156,9 +156,6 @@ async function handleToggleLike(event: MouseEvent, targetId: string, targetType:
 				deleted: true,
 				deletedAt: Date.now()
 			});
-
-			// PostListView 새로고침
-			postListViewRef?.refresh();
 		} catch (error) {
 			console.error('게시글 삭제 실패:', error);
 			alert('게시글 삭제에 실패했습니다.');

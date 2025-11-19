@@ -15,7 +15,11 @@
     "test": "mocha --require ts-node/register 'test/**/*.test.ts' --timeout 10000",
     "test:unit": "mocha --require ts-node/register 'test/unit/**/*.test.ts' --timeout 5000",
     "test:integration": "mocha --require ts-node/register 'test/integration/**/*.test.ts' --timeout 10000",
-    "test:watch": "mocha --require ts-node/register 'test/**/*.test.ts' --watch --watch-extensions ts"
+    "test:watch": "mocha --require ts-node/register 'test/**/*.test.ts' --watch --watch-extensions ts",
+    "test:vitest": "vitest run",
+    "test:vitest:watch": "vitest watch",
+    "test:vitest:ui": "vitest --ui",
+    "test:influencer": "vitest run tests/influencer-score-integration.test.ts"
   },
   "engines": {
     "node": "22"
@@ -31,6 +35,7 @@
     "@types/sinon": "^17.0.4",
     "@typescript-eslint/eslint-plugin": "^8.46.4",
     "@typescript-eslint/parser": "^8.46.4",
+    "@vitest/ui": "^4.0.10",
     "chai": "^6.2.0",
     "eslint": "^8.9.0",
     "eslint-config-google": "^0.14.0",
@@ -40,7 +45,8 @@
     "sinon": "^21.0.0",
     "ts-node": "^10.9.2",
     "tsc-alias": "^1.8.16",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.10"
   },
   "private": true
 }

@@ -15,7 +15,8 @@
  */
 
 import * as logger from "firebase-functions/logger";
-import {updateUserStats} from "../utils/stats.utils";
+import {updateUserStats, incrementInfluencerScore} from "../utils/stats.utils";
+import {INFLUENCER_SCORES, SCORE_DESCRIPTIONS} from "../shared/influencer-scores.constants";
 
 /**
  * 게시글 생성 시 통계 업데이트
@@ -48,8 +49,15 @@ export async function handlePostCreate(
   }
 
   try {
-    // 작성자의 createdPosts 통계 증가
+    // 1. 작성자의 createdPosts 통계 증가
     await updateUserStats(authorUid, "createdPosts", 1, createdAt);
+
+    // 2. 작성자의 인플루언서 점수 증가 (+50점)
+    await incrementInfluencerScore(
+      authorUid,
+      INFLUENCER_SCORES.POST.CREATE,
+      SCORE_DESCRIPTIONS.POST_CREATE
+    );
 
     logger.info("게시글 생성 통계 처리 완료", {
       postId,
@@ -94,8 +102,15 @@ export async function handlePostDelete(
   }
 
   try {
-    // 작성자의 createdPosts 통계 감소
+    // 1. 작성자의 createdPosts 통계 감소
     await updateUserStats(authorUid, "createdPosts", -1);
+
+    // 2. 작성자의 인플루언서 점수 감소 (-55점, 페널티 포함)
+    await incrementInfluencerScore(
+      authorUid,
+      INFLUENCER_SCORES.POST.DELETE,
+      SCORE_DESCRIPTIONS.POST_DELETE
+    );
 
     logger.info("게시글 삭제 통계 처리 완료", {
       postId,

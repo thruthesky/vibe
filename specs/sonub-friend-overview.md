@@ -348,7 +348,16 @@ const feedRef = database.ref(`user-feed/${myUid}`)
 - **FeedList 컴포넌트** ([src/lib/components/friend/feed-list.svelte](src/lib/components/friend/feed-list.svelte))
   - `/user-feed/{myUid}` 실시간 구독
   - 최소 정보 원칙: 필요한 필드만 조회
-  - 무한 스크롤 (페이지네이션)
+  - **무한 스크롤 구현 (2025-11-19)**:
+    - DatabaseListView 패턴을 참고하여 스크롤 기반 자동 로드 구현
+    - "더보기" 버튼 제거 → 스크롤 이벤트 리스너 기반 자동 페이지 로드
+    - `threshold` prop (기본값 300px): 바닥에서 이 값만큼 떨어지면 다음 페이지 로드
+    - `setupScrollListener` action: 스크롤 컨테이너 자동 감지 (window 또는 부모 overflow)
+    - `handleScroll` / `handleWindowScroll`: 스크롤 위치 감지 및 `loadMore()` 자동 호출
+  - **Skeleton 로딩 상태 (2025-11-19)**:
+    - 각 피드 항목에서 게시글 데이터 로딩 중 skeleton 표시
+    - `feed-item-skeleton` 컴포넌트: 아바타, 이름, 날짜, 콘텐츠 skeleton 애니메이션
+    - 실제 데이터 로드 완료 시 PostItem 컴포넌트로 전환
   - 사용자/메시지 데이터 캐싱
 
 #### 5. 홈페이지 통합
@@ -414,3 +423,4 @@ const feedRef = database.ref(`user-feed/${myUid}`)
 | 2025-11-18 | Claude Code | 버그 수정: Firebase Functions에서 `senderId`를 올바른 필드명 `senderUid`로 수정, 22개 함수 재배포 완료 |
 | 2025-11-18 | Claude Code | 개발자 도구 개선: dev-icon.svelte에서 테스트 계정 로그인 시 alert 제거, UX 향상 |
 | 2025-11-18 | Claude Code | Lucide 아이콘 통합: FollowButton 컴포넌트에 UserPlus/UserCheck 아이콘 추가, 반응형 디자인 구현 (모바일: 아이콘만, 데스크톱: 아이콘+텍스트) |
+| 2025-11-19 | Claude Code | FeedList 무한 스크롤 구현: "더보기" 버튼 제거, DatabaseListView 패턴을 참고한 스크롤 기반 자동 로드 구현, skeleton 로딩 상태 추가, 다국어 메시지 추가 (feedNoMore) |

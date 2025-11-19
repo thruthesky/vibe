@@ -62,21 +62,22 @@ describe("like.handler - 좋아요 처리", () => {
     );
   });
 
-  it("댓글 좋아요 취소 시 comment-locations를 조회해 likeCount를 감소시킨다", async () => {
-    onceStub.onFirstCall().resolves({
-      exists: () => true,
-      val: () => "message-555",
-    });
+  it("댓글 좋아요 취소 시 targetType에서 postId를 파싱하여 likeCount를 감소시킨다", async () => {
+    // targetType 형식: "comment-{postId}"
+    await handleLikeDelete("user-1", "comment-9", "comment-post-555");
 
-    await handleLikeDelete("user-1", "comment-9", "comment");
-
-    expect(refStub.firstCall.args[0]).to.equal("comment-locations/comment-9");
-    expect(refStub.getCall(1).args[0]).to.equal(
-      "chat-message-comments/message-555/comment-9/likeCount"
+    // 첫 번째 ref 호출: comments/{postId}/{commentId}/likeCount
+    expect(refStub.firstCall.args[0]).to.equal(
+      "comments/post-555/comment-9/likeCount"
     );
     expect(setStub.firstCall.args[0]).to.deep.equal(
       admin.database.ServerValue.increment(-1)
     );
+
+    // 두 번째 ref 호출: likes-by/{targetId}/{uid} 삭제
+    expect(refStub.getCall(1).args[0]).to.equal("likes-by/comment-9/user-1");
+
+    // 세 번째 ref 호출: stats/counters/like
     expect(refStub.getCall(2).args[0]).to.equal("stats/counters/like");
     expect(setStub.getCall(1).args[0]).to.deep.equal(
       admin.database.ServerValue.increment(-1)

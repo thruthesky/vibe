@@ -60,6 +60,9 @@ export function isValidCategory(category: string): category is ForumCategory {
 /**
  * 카테고리와 타임스탬프로 categoryOrder 필드 생성
  *
+ * categoryOrder는 문자열이므로 양수 타임스탬프를 사용합니다.
+ * 클라이언트에서 역순으로 정렬하여 최신순으로 표시합니다.
+ *
  * @param category - 카테고리 ID
  * @param timestamp - Unix timestamp (밀리초)
  * @returns categoryOrder 문자열 (예: "qna-1698473000000")

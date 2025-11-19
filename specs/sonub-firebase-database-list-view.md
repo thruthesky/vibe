@@ -1,9 +1,11 @@
 ---
 name: sonub-firebase-database-list-view
-version: 1.0.0
+version: 1.1.0
 description: DatabaseListView 컴포넌트 무한 스크롤 가이드
+last_updated: 2025-11-19
 dependencies:
   - sonub-firebase-database-structure.md
+  - repository/src/lib/components/DatabaseListView.svelte.md
 ---
 
 
@@ -153,6 +155,83 @@ DatabaseListView는 다양한 상태에 대한 커스터마이징 가능한 snip
 - `error(errorMessage)` - 에러 상태
 - `loadingMore()` - 더 로드 중 상태
 - `noMore()` - 더 이상 데이터 없음 상태
+
+## 4.5. 클라이언트 측 정렬 로직
+
+DatabaseListView는 Firebase에서 받은 데이터를 **클라이언트 측에서 명시적으로 정렬**합니다. 이는 Firebase 쿼리 순서와 관계없이 정확한 정렬을 보장합니다.
+
+### 📌 정렬 방식
+
+#### 1. 문자열 vs 숫자 비교
+
+`orderBy` 필드의 타입에 따라 다른 비교 방식을 사용합니다:
+
+- **문자열**: `localeCompare()` 메서드 사용 (사전순 정렬)
+- **숫자**: 숫자 빼기 연산 사용 (수치 정렬)
+
+```typescript
+// 문자열 비교 (예: "story--1763562652353")
+aValue.localeCompare(bValue); // 오름차순
+bValue.localeCompare(aValue); // 내림차순
+
+// 숫자 비교 (예: 1699999999999)
+Number(aValue) - Number(bValue); // 오름차순
+Number(bValue) - Number(aValue); // 내림차순
+```
+
+#### 2. null/undefined 처리
+
+정렬 시 null 또는 undefined 값은 항상 맨 뒤로 배치됩니다:
+
+```typescript
+if (aValue == null && bValue == null) return 0;  // 둘 다 null이면 동일
+if (aValue == null) return 1;  // a가 null이면 뒤로
+if (bValue == null) return -1; // b가 null이면 뒤로
+```
+
+#### 3. reverse 파라미터 동작
+
+`reverse` prop에 따라 정렬 방향이 결정됩니다:
+
+| reverse | scrollTrigger | 정렬 방향 | 설명 |
+|---------|---------------|----------|------|
+| `true` | `'bottom'` (기본) | **내림차순** | 최신 항목이 먼저 (큰 값 → 작은 값) |
+| `false` | `'bottom'` (기본) | **오름차순** | 오래된 항목이 먼저 (작은 값 → 큰 값) |
+| `true` | `'top'` (채팅) | **오름차순** | 채팅방 스타일: 오래된 메시지가 위에 |
+
+**예시: categoryOrder 필드 정렬**
+
+```svelte
+<!-- 게시글 목록: 최신 글이 먼저 -->
+<DatabaseListView
+  path="posts"
+  orderBy="categoryOrder"
+  orderPrefix="story-"
+  reverse={true}
+/>
+```
+
+**정렬 결과 (내림차순)**:
+```
+story--1763562652353 (최신)
+story--1763562648655
+story--1763562646262
+story--1763562642736
+story--1763562639525 (오래된 글)
+```
+
+### 🔧 버그 수정 내역 (v1.1.0)
+
+**문제**: 문자열 타입의 `orderBy` 필드 (예: `categoryOrder: "story--1763562652353"`)를 숫자 빼기 연산으로 비교하여 `NaN` 발생
+
+**해결**:
+1. 타입 검사 추가 (`typeof aValue === 'string'`)
+2. 문자열일 경우 `localeCompare()` 사용
+3. null/undefined 명시적 처리
+
+**영향받은 컴포넌트**:
+- `DatabaseListView.svelte` (초기 로드 및 loadMore 함수)
+- `PostListView.svelte` (게시글 목록 표시)
 
 ## 5. orderPrefix와 startAt(false) 필터링
 

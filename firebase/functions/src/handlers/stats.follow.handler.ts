@@ -23,8 +23,9 @@
 import * as logger from "firebase-functions/logger";
 import {
   updateUserStats,
-  updateInfluencerScore,
+  incrementInfluencerScore,
 } from "../utils/stats.utils";
+import {INFLUENCER_SCORES, SCORE_DESCRIPTIONS} from "../shared/influencer-scores.constants";
 
 /**
  * 팔로우 생성 시 통계 업데이트
@@ -59,8 +60,12 @@ export async function handleFollowCreateStats(
       Date.now()
     );
 
-    // 2. 인플루언서 점수 재계산
-    await updateInfluencerScore(followingUid);
+    // 2. 인플루언서 점수 증가 (+60점)
+    await incrementInfluencerScore(
+      followingUid,
+      INFLUENCER_SCORES.FOLLOWER.RECEIVED,
+      SCORE_DESCRIPTIONS.FOLLOWER_RECEIVED
+    );
 
     logger.info("팔로우 생성 통계 처리 완료", {
       followerUid,
@@ -104,8 +109,12 @@ export async function handleFollowDeleteStats(
     // 1. 팔로우를 받았던 사용자의 receivedFollowers 통계 감소
     await updateUserStats(followingUid, "receivedFollowers", -1);
 
-    // 2. 인플루언서 점수 재계산
-    await updateInfluencerScore(followingUid);
+    // 2. 인플루언서 점수 감소 (-60점)
+    await incrementInfluencerScore(
+      followingUid,
+      INFLUENCER_SCORES.FOLLOWER.RECEIVED_UNFOLLOW,
+      SCORE_DESCRIPTIONS.FOLLOWER_RECEIVED_UNFOLLOW
+    );
 
     logger.info("팔로우 삭제 통계 처리 완료", {
       followerUid,

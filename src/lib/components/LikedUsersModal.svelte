@@ -67,7 +67,7 @@
 <Dialog bind:open>
 	<DialogContent class="max-w-md">
 		<DialogHeader>
-			<DialogTitle>{m.좋아요한_사용자_목록()}</DialogTitle>
+			<DialogTitle>{m.likeUsersList()}</DialogTitle>
 		</DialogHeader>
 
 		<div class="max-h-96 overflow-y-auto">
@@ -85,7 +85,7 @@
 					{/each}
 				</ul>
 			{:else}
-				<p class="empty-message">{m.좋아요한_사용자가_없습니다()}</p>
+				<p class="empty-message">{m.likeUsersEmpty()}</p>
 			{/if}
 		</div>
 	</DialogContent>

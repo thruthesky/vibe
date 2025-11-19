@@ -141,7 +141,7 @@ export async function handleChatMessageCategoryCreate(
     category,
     timestamp,
     categoryOrder,
-    allCategoryOrder: timestamp,
+    allCategoryOrder: -timestamp,
     type: "post",
   });
 
@@ -155,10 +155,12 @@ export async function handleChatMessageCategoryCreate(
     [`posts/${postId}/urls`]: urls || null,
     [`posts/${postId}/createdAt`]: timestamp,
     [`posts/${postId}/authorUid`]: senderUid,
+    [`posts/${postId}/categoryOrder`]: categoryOrder,
+    [`posts/${postId}/allCategoryOrder`]: -timestamp,
 
     // 채팅 메시지 노드에 필드 추가
     [`chat-messages/${roomId}/${messageId}/categoryOrder`]: categoryOrder,
-    [`chat-messages/${roomId}/${messageId}/allCategoryOrder`]: timestamp,
+    [`chat-messages/${roomId}/${messageId}/allCategoryOrder`]: -timestamp,
     [`chat-messages/${roomId}/${messageId}/type`]: "post",
     [`chat-messages/${roomId}/${messageId}/postId`]: postId,
   };
@@ -170,7 +172,7 @@ export async function handleChatMessageCategoryCreate(
     messageId,
     postId,
     categoryOrder,
-    allCategoryOrder: timestamp,
+    allCategoryOrder: -timestamp,
     type: "post",
   });
 

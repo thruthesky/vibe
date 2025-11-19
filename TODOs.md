@@ -51,6 +51,46 @@
   모든 작업이 완료되었습니다! 🎉
 
 
+우선순위 1: Firebase Database Security Rules 업데이트
+새로 생성된 데이터베이스 경로들에 대한 보안 규칙을 추가해야 합니다:
+/user-stats/* - 사용자별 통계 (읽기 전용)
+/influencer-scores/* - 인플루언서 점수 (읽기 전용)
+/influencer-rankings/* - 인플루언서 순위 (읽기 전용)
+→ 모든 경로는 Cloud Functions에서만 쓰기, 클라이언트는 읽기만 가능하도록 설정
+우선순위 2: 통합 테스트
+실제로 좋아요/댓글/팔로우를 생성했을 때 통계가 정상적으로 집계되는지 확인:
+좋아요 생성 → 통계 증가 확인
+댓글 작성 → 통계 증가 확인
+팔로우 → 통계 증가 확인
+본인 반응 제외 검증
+인플루언서 점수 계산 검증
+우선순위 3: 데이터 마이그레이션 (필요 시)
+기존 게시글/댓글에 createdAt 필드가 없다면 백필 스크립트 작성 어떤 작업을 진행하시겠습니까?
+
+
+
+
+ 다음 단계 제안
+1. 실제 통합 테스트 수행 (권장)
+스펙 문서 specs/sonub-reactions-stats.md의 "12. 통합 테스트" 섹션을 참고하여 실제 Firebase 환경에서 테스트를 수행하세요. 준비 사항:
+최소 3개의 테스트 계정 (사용자 A, B, C)
+Firebase Console 접근 (Database 경로 확인)
+Cloud Functions 로그 모니터링 (firebase functions:log)
+테스트 순서:
+좋아요 통계 테스트 (생성 → 통계 증가 확인 → 삭제 → 통계 감소 확인)
+댓글 통계 테스트
+팔로우 통계 테스트
+자기 자신 반응 제외 테스트 (중요!)
+인플루언서 점수 계산 정확도 테스트
+UI 확인 (SuggestionsCard.svelte, /user/influencers)
+2. 데이터 마이그레이션 (선택 사항)
+기존 게시글/댓글에 createdAt 필드가 없는 경우 백필 스크립트 작성
+3. 프로덕션 모니터링 설정 (선택 사항)
+Cloud Functions 에러 로그 모니터링
+Firebase Performance Monitoring 설정
+통계 집계 성능 확인
+
+
 
 현재 팔로우 기능의 핵심 기능은 모두 구현되었습니다. 다음 단계로 추천하는 작업들:
 

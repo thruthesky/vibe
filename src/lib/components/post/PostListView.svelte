@@ -98,13 +98,14 @@
 	}
 </script>
 
+
 <DatabaseListView
 	bind:this={listViewRef}
 	{path}
 	{pageSize}
 	orderBy={category ? 'categoryOrder' : 'allCategoryOrder'}
 	orderPrefix={category ? `${category}-` : ''}
-	{reverse}
+	reverse={category ? true : false}
 	{threshold}
 >
 	{#snippet item(itemData, index)}

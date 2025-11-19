@@ -142,29 +142,36 @@ async function applyLikeDelta(
       return true;
     }
 
-    // 3. 댓글 좋아요 처리 (새 경로: /comments/{postId}/{commentId})
-    if (targetType === "comment") {
-      // comment-locations에서 postId 정보 조회
-      const locationSnapshot = await admin
-        .database()
-        .ref(`comment-locations/${targetId}`)
-        .once("value");
+    // 3. 댓글 좋아요 처리 (경로: /comments/{postId}/{commentId})
+    //    targetType 형식: "comment-{postId}"
+    if (targetType.startsWith("comment-")) {
+      logger.info("💬 댓글 좋아요 처리 시작", {targetId, targetType});
 
-      if (!locationSnapshot.exists()) {
-        logger.error("댓글 위치 정보를 찾을 수 없습니다.", {targetId});
+      // postId 파싱: "comment-{postId}" -> {postId}
+      const postId = targetType.substring("comment-".length);
+
+      if (!postId) {
+        logger.error("❌ postId를 파싱할 수 없습니다", {targetId, targetType});
         return false;
       }
 
-      const postId = locationSnapshot.val() as string;
+      const likeCountPath = `comments/${postId}/${targetId}/likeCount`;
+      logger.info("💾 댓글 likeCount 업데이트 시도", {
+        path: likeCountPath,
+        postId,
+        targetId,
+        delta,
+      });
 
       await admin
         .database()
-        .ref(`comments/${postId}/${targetId}/likeCount`)
+        .ref(likeCountPath)
         .set(admin.database.ServerValue.increment(delta));
 
-      logger.info("댓글 likeCount 업데이트 완료", {
-        targetId,
+      logger.info("✅ 댓글 likeCount 업데이트 완료", {
+        path: likeCountPath,
         postId,
+        targetId,
         delta,
       });
       return true;

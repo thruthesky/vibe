@@ -14,9 +14,10 @@ last_updated: 2025-11-18
 ## 주요 기능
 
 1. **게시글 및 부모 댓글의 childCount/totalChildCount 자동 증가**: 댓글 생성 시 관련 카운터를 `ServerValue.increment(1)`로 원자적으로 증가시킵니다.
-2. **댓글 위치 정보 저장**: `/comment-locations/{commentId}` 경로에 postId를 저장하여 댓글이 어느 게시글에 속하는지 추적합니다.
-3. **전체 댓글 통계 증가**: `/stats/counters/comment` 경로의 통계 카운터를 증가시킵니다.
-4. **푸시 알림 전송**: 댓글 작성 시 관련된 모든 사용자(게시글 작성자, 상위 댓글 작성자들)에게 FCM 푸시 알림을 전송합니다.
+2. **전체 댓글 통계 증가**: `/stats/counters/comment` 경로의 통계 카운터를 증가시킵니다.
+3. **푸시 알림 전송**: 댓글 작성 시 관련된 모든 사용자(게시글 작성자, 상위 댓글 작성자들)에게 FCM 푸시 알림을 전송합니다.
+
+**참고**: 댓글 경로가 `/comments/{postId}/{commentId}` 형태이므로, 댓글의 postId는 경로에서 직접 추출할 수 있습니다. 좋아요 시스템에서는 targetType을 `"comment-{postId}"` 형식으로 저장하여 postId 정보를 유지합니다.
 
 ## 푸시 알림 로직
 
@@ -399,9 +400,9 @@ export async function handleCommentCreate(
       });
     }
 
-    // 3. 댓글 위치 정보 저장 (commentId -> postId)
-    await admin.database().ref(`comment-locations/${commentId}`).set(postId);
-    logger.info("댓글 위치 정보 저장 완료", {postId, commentId});
+    // 3. comment-locations 매핑 제거됨
+    //    댓글 경로가 comments/{postId}/{commentId} 형태이므로
+    //    좋아요 데이터의 targetType을 "comment-{postId}" 형식으로 저장하여 postId 정보 유지
 
     // 4. 전체 댓글 통계 증가 (최상위 댓글, 대댓글 모두 포함)
     await incrementCommentCounter(postId, commentId);

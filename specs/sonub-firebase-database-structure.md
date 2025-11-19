@@ -290,7 +290,6 @@ Firebase Realtime Database (루트)
 ├── chat-messages/            # 채팅 메시지 (게시글 + 댓글 역할 통합)
 ├── chat-joins/               # 채팅방 참여 정보 (채팅방 목록용)
 ├── likes/                    # 사용자별 좋아요 상태 (uid -> targetId)
-├── comment-locations/        # 댓글 ID와 부모 메시지 매핑
 ├── fcm-tokens/               # FCM 권한 획득 후 장치 토큰 저장
 └── stats/                    # 전역 통계
     └── counters/
@@ -782,14 +781,6 @@ Firebase Authentication의 다음 필드들은 `/users/<uid>` 노드에 **저장
   - 클라이언트는 해당 경로의 값을 생성하거나 삭제하여 좋아요 상태를 토글합니다.
   - Cloud Functions는 이벤트를 감지해 `/posts/{postId}/likeCount` 또는 `/comments/{postId}/{commentId}/likeCount`를 `ServerValue.increment()`로 증감합니다.
   - `/stats/counters/like` 역시 Cloud Functions가 함께 관리합니다.
-
-## 댓글 위치 맵 (comment-locations)
-
-- **경로**: `/comment-locations/{commentId} = postId`
-- **생성 시점**: `/comments/{postId}/{commentId}`가 생성될 때 Cloud Functions가 자동으로 기록
-- **용도**:
-  - 댓글 좋아요/신고 처리 시 부모 게시글을 빠르게 조회하기 위한 인덱스
-  - 클라이언트에서는 접근할 필요가 없으며 Cloud Functions 전용 노드입니다.
 
 ---
 
@@ -1297,7 +1288,7 @@ query.on('value', (snapshot) => {
 ```
 posts/
   └── {postId}
-      ├── uid: "user_uid_123"
+      ├── authorUid: "user_uid_123"
       ├── displayName: "홍길동"
       ├── photoUrl: "https://..."
       ├── text: "게시글 내용입니다."
@@ -1318,7 +1309,7 @@ posts/
 | 필드 | 타입 | 필수 | 작성 주체 | 설명 |
 |------|------|------|-----------|------|
 | `postId` (키) | string | ✅ | 클라이언트 | Firebase의 `push()` 메서드로 생성한 고유 ID |
-| `uid` | string | ✅ | 클라이언트 | 작성자의 Firebase Auth UID |
+| `authorUid` | string | ✅ | 클라이언트 | 작성자의 Firebase Auth UID |
 | `displayName` | string | ✅ | 클라이언트 | 작성자의 표시 이름 (스냅샷용) |
 | `photoUrl` | string | ❌ | 클라이언트 | 작성자의 프로필 사진 URL (스냅샷용) |
 | `text` | string | ✅ | 클라이언트 | 게시글 본문 내용 |

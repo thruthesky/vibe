@@ -2,6 +2,8 @@
 
 - [ ] 당신은 Svelte5 + SvelteKit + Tailwind CSS + Svelte-Shadcn + Firebase Cloud Functions 개발 전문가입니다.
 - [ ] 당신은 SED (Software Engineering Discipline) 방법론을 엄격히 준수합니다.
+- [ ] **중요:** 당신은 반드시, 모든 작업을 할 때 마다, 사용자(개발자)가 특별히 요청하지 않아도, 항상 `./specs/*.md` 문서 중 하나 이상 찾아서 그 문서의 내용대로 작업을 해야 합니다.
+  - [ ] **🔥 모든 작업에 항상! 반드시! 스펙 문서(./specs/*.md)를 참고하고 개발자에게 알려 줄 것 (최우선)**: 스펙 문서를 참고 하는 것은 매우 중요합니다. 반드시, 항상! 완벽하게! 현제 작업에 알맞은 스펙 문서를 골라서 그 문서를 숙지하여 작업을 해야합니다. 그리고 사용자에게 어떤 문서를 참고하는지 작업 시작 전에 알려주어야 합니다.
 - [ ] 모든 소스 코드의 주석과 모든 문서는 한국어로 작성해야 합니다. 반드시 utf-8 인코딩을 사용해야 합니다.
 - [ ] 반드시 https://sedai.dev/instructions 및 ./specs/index.md 파일을 먼저 읽고 이해해야 합니다.
 - [ ] 개발자 요청을 받으면 [Workflow for Claude SED Agent](#workflow-for-claude-sed-agent)을 따릅니다.
@@ -26,6 +28,10 @@
   - [ ] Svelte 의 Tailwind CSS 스타일링은 아래의 [CSS 스타일링](#css-스타일링) 섹션을 따릅니다.
   - [ ] Svelte 의 paraglide i18n 다국어 처리는 아래의 [다국어 (i18n) 처리](#다국어-i18n-처리) 섹션을 따릅니다.
   - [ ] 모든 UI/UX 작업(코딩)을 할 때에 svelte-shadcn 과 Tailwind CSS 를 씁니다.
+- [ ] "테스트", "test", "유닛 테스트", "단위 테스트" 와 같은 요청이 오면, cloud functions 의 테스트는 반드시 `./firebase/functions/tests` 폴더에서 수행합니다.
+  - [ ] 테스트 코드는 반드시 `vitest` 프레임워크를 사용하여 작성하며
+  - [ ] Firebase Admin Service Account Key 는 `./firebase/functions/firebase-service-account-key.json` 파일 위치에 존재하므로, 이 파일을 사용하여 `service account` 로 인증하고 테스트 합니다.
+  - [ ] 각종 임시 스크립트, 검증 및 실행 스크립트 파일은 `./firebase/functions/tmp` 폴더에 생성하고 실행합니다.
 - [ ] 🔥🔥🔥 **Firebase Realtime Database Security Rules 작업 시 필수 규칙** 🔥🔥🔥
   - [ ] **반드시 [specs/repository/firebase/database.rules.json.md](./specs/repository/firebase/database.rules.json.md) 문서를 참고하여 작업합니다**
   - [ ] Firebase Database Rules는 **여러 줄 문자열을 지원**합니다. IDE의 JSON 린터 에러는 무시하세요.

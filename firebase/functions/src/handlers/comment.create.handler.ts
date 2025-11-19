@@ -315,9 +315,9 @@ export async function handleCommentCreate(
       });
     }
 
-    // 3. 댓글 위치 정보 저장 (commentId -> postId)
-    await admin.database().ref(`comment-locations/${commentId}`).set(postId);
-    logger.info("댓글 위치 정보 저장 완료", {postId, commentId});
+    // 3. comment-locations 매핑 제거됨
+    //    댓글 경로가 comments/{postId}/{commentId} 형태이므로
+    //    좋아요 데이터의 targetType을 "comment-{postId}" 형식으로 저장하여 postId 정보 유지
 
     // 4. 전체 댓글 통계 증가 (최상위 댓글, 대댓글 모두 포함)
     const authorUid = commentData.authorUid as string | undefined;

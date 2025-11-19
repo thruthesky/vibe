@@ -67,7 +67,6 @@ import {
   handleFollowingDelete,
 } from "./handlers/friend.follow.handler";
 import {
-  handleMessageCategoryCreateFanout,
   handleMessageDeletedFanout,
 } from "./handlers/feed.fanout.handler";
 import {
@@ -86,11 +85,13 @@ import {
   handlePostCreate as handlePostCreateStats,
   handlePostDelete as handlePostDeleteStats,
 } from "./handlers/stats.post.handler";
+import {handlePostCreate as handlePostCreateLogic} from "./handlers/post.create.handler";
 import {
   handleFollowCreateStats,
   handleFollowDeleteStats,
 } from "./handlers/stats.follow.handler";
 import {handleInfluencerScoreChange} from "./handlers/stats.ranking.handler";
+import {handlePostRankingUpdate} from "./handlers/post-ranking.handler";
 
 // 상수 정의
 const FIREBASE_REGION = "asia-southeast1";
@@ -1335,74 +1336,8 @@ export const onPostCreate = onValueCreated(
       return;
     }
 
-    const {authorUid, createdAt, category} = postData;
-
-    if (!authorUid) {
-      logger.error("게시글에 authorUid가 없습니다", {postId, postData});
-      return;
-    }
-
-    try {
-      // 1. stats/counters/post 증가
-      const postCounterRef = admin.database().ref("stats/counters/post");
-      await postCounterRef.set(admin.database.ServerValue.increment(1));
-
-      logger.info("stats/counters/post 증가 완료", {
-        postId,
-        category,
-      });
-
-      // 2. 정렬 필드 자동 생성 (categoryOrder, allCategoryOrder)
-      if (category && createdAt) {
-        const categoryOrder = `${category}-${createdAt}`;
-        const allCategoryOrder = createdAt;
-
-        logger.info("정렬 필드 생성 시작", {
-          postId,
-          category,
-          categoryOrder,
-          allCategoryOrder,
-        });
-
-        const postRef = admin.database().ref(`posts/${postId}`);
-        await postRef.update({
-          categoryOrder,
-          allCategoryOrder,
-        });
-
-        logger.info("정렬 필드 생성 완료", {
-          postId,
-          categoryOrder,
-          allCategoryOrder,
-        });
-      } else {
-        logger.warn("category 또는 createdAt이 없어서 정렬 필드를 생성하지 않습니다", {
-          postId,
-          category,
-          createdAt,
-        });
-      }
-
-      // 3. 피드 fan-out: 팔로워들에게 피드 전파
-      logger.info("피드 fan-out 시작", {
-        postId,
-        authorUid,
-        createdAt,
-      });
-
-      await handleMessageCategoryCreateFanout(postId, authorUid, createdAt);
-
-      logger.info("피드 fan-out 완료", {
-        postId,
-        authorUid,
-      });
-    } catch (error) {
-      logger.error("게시글 onCreate 처리 실패", {
-        postId,
-        error: error instanceof Error ? error.message : String(error),
-      });
-      throw error;
-    }
+    // 비즈니스 로직 핸들러 호출
+    await handlePostCreateLogic(postId, postData);
 
     return;
   }
@@ -1433,16 +1368,17 @@ export const onLikeCreatedStats = onValueCreated(
   async (event) => {
     const likerUid = event.params.uid as string;
     const targetId = event.params.targetId as string;
-    const likeData = (event.data.val() || {}) as Record<string, unknown>;
+    // 좋아요 데이터는 문자열로 저장됨 (예: "post", "comment", "chat-message-roomId")
+    const targetType = event.data.val() as string;
 
     logger.info("좋아요 생성 통계 트리거", {
       likerUid,
       targetId,
-      targetType: likeData.targetType,
+      targetType,
     });
 
-    // 통계 핸들러 호출
-    await handleLikeCreateStats(likerUid, targetId, likeData);
+    // 통계 핸들러 호출 (객체 형태로 전달)
+    await handleLikeCreateStats(likerUid, targetId, { targetType, createdAt: Date.now() });
 
     return;
   }
@@ -1467,16 +1403,17 @@ export const onLikeDeletedStats = onValueDeleted(
   async (event) => {
     const likerUid = event.params.uid as string;
     const targetId = event.params.targetId as string;
-    const likeData = (event.data.val() || {}) as Record<string, unknown>;
+    // 좋아요 데이터는 문자열로 저장됨 (예: "post", "comment", "chat-message-roomId")
+    const targetType = event.data.val() as string;
 
     logger.info("좋아요 삭제 통계 트리거", {
       likerUid,
       targetId,
-      targetType: likeData.targetType,
+      targetType,
     });
 
-    // 통계 핸들러 호출
-    await handleLikeDeleteStats(likerUid, targetId, likeData);
+    // 통계 핸들러 호출 (객체 형태로 전달)
+    await handleLikeDeleteStats(likerUid, targetId, { targetType });
 
     return;
   }
@@ -1609,6 +1546,87 @@ export const onPostDeleteStats = onValueDeleted(
 
     // 통계 핸들러 호출
     await handlePostDeleteStats(postId, postData);
+
+    return;
+  }
+);
+
+/**
+ * 게시글 좋아요 수 변경 시 인기 순위 업데이트 트리거
+ *
+ * 트리거 경로: /posts/{postId}/likeCount
+ * 트리거 이벤트: onValueWritten
+ *
+ * 수행 작업:
+ * 1. 게시글의 좋아요 수와 댓글 수를 기반으로 점수 계산
+ * 2. 일별/주별/월별 인기 순위 업데이트
+ */
+export const onPostLikeCountWritten = onValueWritten(
+  {
+    ref: "/posts/{postId}/likeCount",
+    region: FIREBASE_REGION,
+  },
+  async (event) => {
+    const postId = event.params.postId as string;
+
+    logger.info("게시글 좋아요 수 변경 트리거", {postId});
+
+    // 인기 순위 업데이트 핸들러 호출
+    await handlePostRankingUpdate(postId);
+
+    return;
+  }
+);
+
+/**
+ * 게시글 댓글 수 변경 시 인기 순위 업데이트 트리거
+ *
+ * 트리거 경로: /posts/{postId}/commentCount
+ * 트리거 이벤트: onValueWritten
+ *
+ * 수행 작업:
+ * 1. 게시글의 좋아요 수와 댓글 수를 기반으로 점수 계산
+ * 2. 일별/주별/월별 인기 순위 업데이트
+ */
+export const onPostCommentCountWritten = onValueWritten(
+  {
+    ref: "/posts/{postId}/commentCount",
+    region: FIREBASE_REGION,
+  },
+  async (event) => {
+    const postId = event.params.postId as string;
+
+    logger.info("게시글 댓글 수 변경 트리거", {postId});
+
+    // 인기 순위 업데이트 핸들러 호출
+    await handlePostRankingUpdate(postId);
+
+    return;
+  }
+);
+
+/**
+ * 게시글 전체 댓글 수 변경 시 인기 순위 업데이트 트리거
+ *
+ * 트리거 경로: /posts/{postId}/totalChildCount
+ * 트리거 이벤트: onValueWritten
+ *
+ * 수행 작업:
+ * 1. 게시글의 좋아요 수와 댓글 수를 기반으로 점수 계산
+ * 2. 일별/주별/월별 인기 순위 업데이트
+ */
+export const onPostTotalChildCountWritten = onValueWritten(
+  {
+    ref: "/posts/{postId}/totalChildCount",
+    region: FIREBASE_REGION,
+  },
+  async (event) => {
+    const postId = event.params.postId as string;
+
+    logger.info("게시글 전체 댓글 수 변경 트리거", {postId});
+
+    // 인기 순위 업데이트 핸들러 호출
+    await handlePostRankingUpdate(postId);
 
     return;
   }

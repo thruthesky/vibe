@@ -8,14 +8,32 @@
 	import { userProfileStore } from '$lib/stores/user-profile.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { uploadCoverPhoto } from '$lib/functions/storage.functions';
+	import { getUserActionCounters, getInfluencerScore } from '$lib/functions/user.functions';
 	import { ref, set } from 'firebase/database';
 	import { rtdb as database } from '$lib/firebase';
 
 	const uidParam = $derived.by(() => $page.url.searchParams.get('uid') ?? '');
 
+	// 사용자별 게시글 수와 댓글 수 상태
+	let postCount = $state(0);
+	let commentCount = $state(0);
+	// 인플루언서 점수 상태
+	let influencerScore = $state(0);
+
 	$effect(() => {
 		if (uidParam) {
 			userProfileStore.ensureSubscribed(uidParam);
+
+			// 사용자별 action 카운터 (게시글 수, 댓글 수) 가져오기
+			getUserActionCounters(uidParam, ['post', 'comment']).then((counters) => {
+				postCount = counters.post ?? 0;
+				commentCount = counters.comment ?? 0;
+			});
+
+			// 인플루언서 점수 가져오기
+			getInfluencerScore(uidParam).then((score) => {
+				influencerScore = score;
+			});
 		}
 	});
 
@@ -86,6 +104,9 @@
 			);
 
 			// Firebase Database에 coverPhotoUrl 저장
+			if (!database) {
+				throw new Error('Firebase Database가 초기화되지 않았습니다.');
+			}
 			const coverPhotoRef = ref(database, `users/${uidParam}/coverPhotoUrl`);
 			await set(coverPhotoRef, downloadUrl);
 
@@ -240,9 +261,25 @@
 				</div>
 			{/if}
 
-			<!-- 추가 정보 섹션 (향후 확장 가능) -->
+			<!-- 사용자 통계 섹션 -->
 			<div class="profile-stats">
-				<!-- 여기에 게시글 수, 팔로워 수 등 통계 정보 추가 가능 -->
+				<!-- 인플루언서 점수 -->
+				<div class="stat-item stat-influencer">
+					<div class="stat-value stat-influencer-value">{influencerScore.toLocaleString()}</div>
+					<div class="stat-label">{m.profileInfluencerScore()}</div>
+				</div>
+
+				<!-- 게시글 수 -->
+				<div class="stat-item">
+					<div class="stat-value">{postCount}</div>
+					<div class="stat-label">{m.profilePostCount()}</div>
+				</div>
+
+				<!-- 댓글 수 -->
+				<div class="stat-item">
+					<div class="stat-value">{commentCount}</div>
+					<div class="stat-label">{m.profileCommentCount()}</div>
+				</div>
 			</div>
 		</div>
 	{/if}
@@ -355,8 +392,30 @@
 		@apply w-full transition-all hover:shadow-md sm:w-auto;
 	}
 
-	/* 통계 섹션 (향후 확장용) */
+	/* 통계 섹션 */
 	.profile-stats {
 		@apply mt-8 flex flex-wrap justify-center gap-6;
+	}
+
+	/* 통계 항목 */
+	.stat-item {
+		@apply flex flex-col items-center rounded-lg bg-gray-50 px-6 py-4 shadow-sm;
+	}
+
+	.stat-value {
+		@apply text-3xl font-bold text-gray-900;
+	}
+
+	.stat-label {
+		@apply mt-1 text-sm text-gray-600;
+	}
+
+	/* 인플루언서 점수 강조 스타일 */
+	.stat-influencer {
+		@apply bg-gradient-to-br from-blue-50 to-purple-50 border-2 border-blue-200 shadow-md;
+	}
+
+	.stat-influencer-value {
+		@apply text-4xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent;
 	}
 </style>

@@ -1055,9 +1055,8 @@ Cloud Functions가 좋아요 개수를 자동으로 관리합니다:
    ```
 
 3. **댓글 좋아요 처리**
-   - `/likes/{uid}/{commentId} = "comment"`
-   - `/comment-locations/{commentId} = postId` 맵을 통해 부모 게시글을 조회
-   - `/comments/{postId}/{commentId}/likeCount` 증감
+   - `/likes/{uid}/{commentId} = "comment-{postId}"` (targetType에 postId 포함)
+   - targetType에서 postId 파싱하여 `/comments/{postId}/{commentId}/likeCount` 증감
 
 ---
 
@@ -2217,7 +2216,7 @@ interface Props {
 
 | 날짜 | 작업자 | 내용 |
 | ---- | ------ | ---- |
-| 2025-11-17 | Codex GPT-5 | **좋아요 시스템 전면 개편**: 게시글/댓글 좋아요 데이터를 `/likes/{uid}/{targetId}` (값: `"message"`/`"comment"`) 구조로 통합하고, Cloud Functions는 `/comment-locations/{commentId}` 맵을 통해 댓글의 부모 메시지를 찾아 `likeCount`를 증감하도록 스펙을 갱신했다. UI 측면에서는 홈/게시판/댓글 컴포넌트에 실시간 하이라이트와 카운트 표기를 정의하여 로그인 사용자의 상태를 즉시 반영하도록 규칙을 명시했다. |
+| 2025-11-17 | Codex GPT-5 | **좋아요 시스템 전면 개편**: 게시글/댓글 좋아요 데이터를 `/likes/{uid}/{targetId}` (값: `"message"`/`"post"`/`"comment-{postId}"`) 구조로 통합하고, Cloud Functions는 targetType에서 postId를 파싱하여 댓글의 `likeCount`를 증감하도록 스펙을 갱신했다. UI 측면에서는 홈/게시판/댓글 컴포넌트에 실시간 하이라이트와 카운트 표기를 정의하여 로그인 사용자의 상태를 즉시 반영하도록 규칙을 명시했다. |
 | 2025-11-17 | Codex GPT-5 | **story 카테고리 추가**: `shared/categories.ts`의 `FORUM_CATEGORIES`에 `story`를 추가하고, 홈/게시판/채팅/작성 UI의 카테고리 매핑과 `messages/*.json` 번역(ko: 나의 이야기, en: My Story, ja: 私の物語, zh: 我的故事)을 확장했다. 스펙 문서의 카테고리 표와 데이터베이스 필드 설명도 최신 상태로 맞췄다. |
 | 2025-11-17 | Codex GPT-5 | **카테고리 텍스트 네비게이션 재사용화**: 홈(`src/routes/+page.svelte`)과 게시판 목록(`src/routes/post/list/+page.svelte`)에서 기존 칩 버튼 UI를 제거하고, 텍스트 형태의 공용 컴포넌트(`src/lib/components/post/CategoryNavigation.svelte`)로 교체하여 스펙의 디자인 요구(텍스트 기반 카테고리 표시)를 충족시켰다. change 이벤트를 통해 상위에서 상태를 제어하도록 설계해 게시판 전반에서 재사용 가능하며, 불필요한 스타일 정의를 정리해 유지보수를 단순화했다. |
 | 2025-11-17 | Claude Sonnet 4.5 | **홈 글쓰기 폼 아이콘/반응형 업데이트**: 홈 상단 글쓰기 유도 폼의 이모지를 lucide-svelte 아이콘(Video, Image, Smile)으로 교체하고, 모바일에서는 Camera 아이콘 하나만 보이도록 `hidden sm:flex`/`sm:hidden` 레이아웃을 적용했다. 또한 작은 화면에서 공간 확보를 위해 기본 보더를 제거하고, 데스크톱에서만 테두리/호버 스타일이 적용되도록 `.compose-prompt`의 Tailwind 유틸리티를 `border-0 sm:border sm:border-gray-200` 형태로 조정했다. |

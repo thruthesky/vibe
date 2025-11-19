@@ -19,8 +19,9 @@ import * as logger from "firebase-functions/logger";
 import {
   updateUserStats,
   getTargetAuthorUid,
-  updateInfluencerScore,
+  incrementInfluencerScore,
 } from "../utils/stats.utils";
+import {INFLUENCER_SCORES, SCORE_DESCRIPTIONS} from "../shared/influencer-scores.constants";
 
 /**
  * 좋아요 생성 시 통계 업데이트
@@ -90,8 +91,12 @@ export async function handleLikeCreate(
       createdAt
     );
 
-    // 4. 인플루언서 점수 재계산
-    await updateInfluencerScore(targetAuthorUid);
+    // 4. 인플루언서 점수 증가 (+3점)
+    await incrementInfluencerScore(
+      targetAuthorUid,
+      INFLUENCER_SCORES.LIKE.RECEIVED,
+      SCORE_DESCRIPTIONS.LIKE_RECEIVED
+    );
 
     logger.info("좋아요 생성 통계 처리 완료", {
       likerUid,
@@ -175,8 +180,12 @@ export async function handleLikeDelete(
       -1
     );
 
-    // 4. 인플루언서 점수 재계산
-    await updateInfluencerScore(targetAuthorUid);
+    // 4. 인플루언서 점수 감소 (-3점)
+    await incrementInfluencerScore(
+      targetAuthorUid,
+      INFLUENCER_SCORES.LIKE.RECEIVED_CANCEL,
+      SCORE_DESCRIPTIONS.LIKE_RECEIVED_CANCEL
+    );
 
     logger.info("좋아요 삭제 통계 처리 완료", {
       likerUid,

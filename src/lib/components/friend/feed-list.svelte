@@ -10,6 +10,7 @@
 	 * - 최소 정보 원칙: 피드는 타임스탬프만 저장, 실제 내용은 필요시 fetch
 	 * - 실시간 구독: `/user-feed/{myUid}` 경로를 실시간으로 구독
 	 * - PostItem 컴포넌트 재사용: 게시글 UI 일관성 유지
+	 * - 무한 스크롤: DatabaseListView의 패턴을 참고하여 스크롤 기반 자동 로드
 	 */
 
 	import { onMount, onDestroy } from 'svelte';
@@ -36,6 +37,8 @@
 	/** 한 페이지당 로드할 피드 수 */
 	let {
 		pageSize = 20,
+		/** 스크롤 threshold (px) - 바닥에서 이 값만큼 떨어지면 다음 페이지 로드 */
+		threshold = 300,
 		/** 좋아요 상태 맵 */
 		userLikes = {},
 		/** 좋아요 토글 핸들러 */
@@ -50,6 +53,7 @@
 		fallback
 	}: {
 		pageSize?: number;
+		threshold?: number;
 		userLikes?: Record<string, LikeTargetType>;
 		onToggleLike: (event: MouseEvent, targetId: string, targetType: LikeTargetType) => void;
 		onOpenCommentDialog: (postId: string, parentId?: string | null, parentText?: string | null) => void;
@@ -68,7 +72,7 @@
 	/** 초기 로딩 상태 */
 	let initialLoading = $state(true);
 
-	/** 추가 로딩 상태 (더보기) */
+	/** 추가 로딩 상태 (무한 스크롤) */
 	let loadingMore = $state(false);
 
 	/** 더 이상 로드할 데이터가 없는지 여부 */
@@ -76,6 +80,9 @@
 
 	/** 마지막으로 로드한 타임스탬프 (페이지네이션용) */
 	let lastTimestamp: number | null = null;
+
+	/** 스크롤 컨테이너 DOM 요소 참조 (무한 스크롤용) */
+	let scrollContainerRef: HTMLElement | null = null;
 
 	// Firebase 구독 해제 함수
 	let unsubscribe: Unsubscribe | null = null;
@@ -206,7 +213,7 @@
 	}
 
 	/**
-	 * 더보기 (페이지네이션)
+	 * 더 많은 피드 로드 (무한 스크롤)
 	 *
 	 * lastTimestamp보다 오래된 피드를 추가로 로드합니다.
 	 */
@@ -250,9 +257,84 @@
 				hasMore = false;
 			}
 		} catch (error) {
-			console.error('더보기 오류:', error);
+			console.error('피드 추가 로드 오류:', error);
 		} finally {
 			loadingMore = false;
+		}
+	}
+
+	/**
+	 * 스크롤 리스너 설정 action
+	 * DOM 요소가 마운트될 때 스크롤 이벤트 리스너를 등록합니다.
+	 * DatabaseListView의 setupScrollListener 패턴을 참고하여 구현
+	 */
+	function setupScrollListener(node: HTMLDivElement) {
+		// 스크롤 컨테이너 찾기
+		// 부모 요소 중 overflow-auto 또는 overflow-scroll을 가진 요소를 찾습니다
+		let actualScrollContainer: HTMLElement = node;
+		let parent = node.parentElement;
+
+		while (parent) {
+			const overflowY = window.getComputedStyle(parent).overflowY;
+			if (overflowY === 'auto' || overflowY === 'scroll') {
+				actualScrollContainer = parent;
+				break;
+			}
+			parent = parent.parentElement;
+		}
+
+		// 스크롤 컨테이너 참조 저장
+		scrollContainerRef = actualScrollContainer;
+
+		// 실제 스크롤 컨테이너에 리스너 등록
+		actualScrollContainer.addEventListener('scroll', handleScroll);
+		// window 스크롤 감지 (body 스크롤)
+		window.addEventListener('scroll', handleWindowScroll);
+
+		return {
+			destroy() {
+				actualScrollContainer.removeEventListener('scroll', handleScroll);
+				window.removeEventListener('scroll', handleWindowScroll);
+				scrollContainerRef = null;
+			}
+		};
+	}
+
+	/**
+	 * 컨테이너 스크롤 이벤트 핸들러
+	 * 아래로 스크롤하여 바닥에 가까워지면 다음 페이지 로드
+	 */
+	function handleScroll(event: Event) {
+		if (loadingMore || !hasMore) return;
+
+		const target = event.currentTarget as HTMLDivElement;
+		if (!target) return;
+
+		const { scrollTop, scrollHeight, clientHeight } = target;
+		const distanceFromBottom = scrollHeight - (scrollTop + clientHeight);
+
+		if (distanceFromBottom < threshold) {
+			loadMore();
+		}
+	}
+
+	/**
+	 * Window 스크롤 이벤트 핸들러
+	 * 아래로 스크롤하여 바닥에 가까워지면 다음 페이지 로드
+	 */
+	function handleWindowScroll() {
+		if (loadingMore || !hasMore) {
+			return;
+		}
+
+		// document의 전체 높이와 현재 스크롤 위치를 확인
+		const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+		const scrollHeight = document.documentElement.scrollHeight;
+		const clientHeight = window.innerHeight;
+		const distanceFromBottom = scrollHeight - (scrollTop + clientHeight);
+
+		if (distanceFromBottom < threshold) {
+			loadMore();
 		}
 	}
 
@@ -308,7 +390,7 @@
 	</div>
 	<!-- 피드 목록 표시 - PostItem 컴포넌트 재사용 -->
 {:else}
-	<div class="feed-list">
+	<div class="feed-list" use:setupScrollListener>
 		{#each sortedFeedIds as postId (postId)}
 			{@const message = postsCache[postId]}
 
@@ -322,19 +404,39 @@
 					{onEdit}
 					onDelete={onDelete}
 				/>
+			{:else}
+				<!-- 게시글 데이터 로딩 중: skeleton 표시 -->
+				<div class="feed-item-skeleton">
+					<div class="skeleton-header">
+						<div class="skeleton-avatar"></div>
+						<div class="skeleton-info">
+							<div class="skeleton-name"></div>
+							<div class="skeleton-date"></div>
+						</div>
+					</div>
+					<div class="skeleton-content">
+						<div class="skeleton-line"></div>
+						<div class="skeleton-line"></div>
+						<div class="skeleton-line short"></div>
+					</div>
+				</div>
 			{/if}
 		{/each}
 
-		<!-- 더보기 버튼 -->
-		{#if hasMore}
-			<div class="feed-load-more">
-				<button onclick={loadMore} disabled={loadingMore} class="load-more-button">
-					{#if loadingMore}
-						{m.feedLoadingMore()}
-					{:else}
-						{m.feedLoadMore()}
-					{/if}
-				</button>
+		<!-- 더 로드 중 표시 (무한 스크롤) -->
+		{#if loadingMore}
+			<div class="feed-loading-more">
+				<div class="loading-spinner">
+					<div class="spinner"></div>
+					<p>{m.feedLoadingMore()}</p>
+				</div>
+			</div>
+		{/if}
+
+		<!-- 더 이상 데이터 없음 표시 -->
+		{#if !hasMore && !loadingMore && sortedFeedIds.length > 0}
+			<div class="feed-no-more">
+				<p>{m.feedNoMore()}</p>
 			</div>
 		{/if}
 	</div>
@@ -360,33 +462,66 @@
 		@apply text-gray-500 text-center;
 	}
 
-	/* 더보기 버튼 영역 */
-	.feed-load-more {
-		@apply flex justify-center py-4;
+	/* Skeleton 로딩 상태 (각 피드 항목) */
+	.feed-item-skeleton {
+		@apply p-4 border-b border-gray-200 bg-white;
 	}
 
-	.load-more-button {
-		/* Layout */
-		@apply inline-flex items-center justify-center;
-		@apply px-6 py-2;
-
-		/* Typography */
-		@apply text-sm font-medium;
-
-		/* Visual */
-		@apply rounded-full;
-		@apply border;
-		@apply transition-all duration-200;
-		@apply cursor-pointer;
-
-		/* Colors */
-		@apply bg-gray-100 text-gray-700 border-gray-300;
-		@apply hover:bg-gray-200;
-		@apply active:scale-95;
+	.skeleton-header {
+		@apply flex items-start gap-3 mb-3;
 	}
 
-	.load-more-button:disabled {
-		@apply opacity-50;
-		@apply cursor-not-allowed;
+	.skeleton-avatar {
+		@apply w-10 h-10 rounded-full bg-gray-200 animate-pulse;
+	}
+
+	.skeleton-info {
+		@apply flex-1 flex flex-col gap-2;
+	}
+
+	.skeleton-name {
+		@apply h-4 w-24 bg-gray-200 rounded animate-pulse;
+	}
+
+	.skeleton-date {
+		@apply h-3 w-16 bg-gray-200 rounded animate-pulse;
+	}
+
+	.skeleton-content {
+		@apply flex flex-col gap-2;
+	}
+
+	.skeleton-line {
+		@apply h-4 bg-gray-200 rounded animate-pulse;
+	}
+
+	.skeleton-line.short {
+		@apply w-2/3;
+	}
+
+	/* 더 로드 중 표시 (무한 스크롤) */
+	.feed-loading-more {
+		@apply flex justify-center py-6;
+	}
+
+	.loading-spinner {
+		@apply flex flex-col items-center gap-3;
+	}
+
+	.spinner {
+		@apply w-8 h-8 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin;
+	}
+
+	.loading-spinner p {
+		@apply text-sm text-gray-500;
+	}
+
+	/* 더 이상 데이터 없음 */
+	.feed-no-more {
+		@apply flex justify-center py-8;
+	}
+
+	.feed-no-more p {
+		@apply text-sm text-gray-400;
 	}
 </style>

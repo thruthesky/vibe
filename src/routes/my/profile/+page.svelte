@@ -7,6 +7,7 @@
 	 * - 닉네임 (displayName)
 	 * - 성별 (gender)
 	 * - 생년월일 (birthYear, birthMonth, birthDay)
+	 * - 공개 프로필 미리보기 탭
 	 */
 
 	import { authStore } from '$lib/stores/auth.svelte';
@@ -20,6 +21,10 @@
 	import { Camera, X } from 'lucide-svelte';
 	import Avatar from '$lib/components/user/avatar.svelte';
 	import { m } from '$lib/paraglide/messages';
+
+	// 활성 탭 상태
+	type TabType = 'edit' | 'public';
+	let activeTab = $state<TabType>('edit');
 
 	// 폼 데이터 상태
 	let displayName = $state('');
@@ -338,228 +343,288 @@
 	<title>{m.pageTitleMyProfile()}</title>
 </svelte:head>
 
-<div class="flex min-h-[calc(100vh-8rem)] flex-col items-center justify-center py-8">
-	<div class="mx-auto w-full max-w-md space-y-6">
-		<!-- 페이지 헤더 -->
-		<div class="text-center">
-			<h1 class="text-2xl font-bold text-gray-900">{m.navMyProfile()}</h1>
-			<p class="mt-2 text-sm text-gray-600">{m.profileInfoEditGuide()}</p>
-		</div>
+<div class="w-full py-6">
+	<!-- 상단 탭 네비게이션 -->
+	<div class="mx-auto max-w-4xl px-4 mb-6">
+		<nav class="flex gap-8 border-b border-gray-200">
+			<!-- 내 프로필 탭 -->
+			<button
+				type="button"
+				class="tab-button"
+				class:tab-active={activeTab === 'edit'}
+				onclick={() => (activeTab = 'edit')}
+			>
+				{m.navMyProfile()}
+			</button>
 
-		<!-- 로딩 상태 -->
-		{#if loading}
-			<Card.Root>
-				<Card.Content class="pt-6">
-					<p class="text-center text-gray-600">{m.profileLoading()}</p>
-				</Card.Content>
-			</Card.Root>
-		{:else}
-			<!-- 프로필 수정 폼 -->
-			<Card.Root>
-				<Card.Header>
-					<Card.Title>{m.profileInfo()}</Card.Title>
-					<Card.Description>{m.profileInfoGuide()}</Card.Description>
-				</Card.Header>
-				<Card.Content class="space-y-4">
-					<!-- 성공 메시지 -->
-					{#if successMessage}
-						<Alert.Root>
-							<Alert.Title>{m.commonSuccess()}</Alert.Title>
-							<Alert.Description>{successMessage}</Alert.Description>
-						</Alert.Root>
-					{/if}
+			<!-- 공개 프로필 탭 -->
+			<button
+				type="button"
+				class="tab-button"
+				class:tab-active={activeTab === 'public'}
+				onclick={() => {
+					if (authStore.user?.uid) {
+						goto(`/user/profile?uid=${authStore.user.uid}`);
+					}
+				}}
+			>
+				{m.menuPublicProfile()}
+			</button>
+		</nav>
+	</div>
 
-					<!-- 에러 메시지 -->
-					{#if errorMessage}
-						<Alert.Root variant="destructive">
-							<Alert.Title>{m.commonError()}</Alert.Title>
-							<Alert.Description>{errorMessage}</Alert.Description>
-						</Alert.Root>
-					{/if}
+	<!-- 탭 콘텐츠 -->
+	<div class="mx-auto max-w-md px-4 pt-6">
+		{#if activeTab === 'edit'}
+			<!-- 로딩 상태 -->
+			{#if loading}
+				<Card.Root>
+					<Card.Content class="pt-6">
+						<p class="text-center text-gray-600">{m.profileLoading()}</p>
+					</Card.Content>
+				</Card.Root>
+			{:else}
+				<!-- 프로필 수정 폼 -->
+				<div class="space-y-6">
+					<!-- 페이지 헤더 -->
+					<div class="text-left">
+						<h1 class="text-2xl font-bold text-gray-900">{m.navMyProfile()}</h1>
+						<p class="mt-2 text-sm text-gray-600">{m.profileInfoEditGuide()}</p>
+					</div>
 
-					<!-- 프로필 사진 -->
-					<div class="space-y-2">
-						<div class="block text-sm font-medium text-gray-700">{m.profilePicture()}</div>
-						<div class="flex items-center justify-center">
-							<div class="relative">
-								<!-- 사진 미리보기 또는 기본 회색 원 -->
-								<button
-									type="button"
-									onclick={handlePhotoClick}
-									disabled={isPhotoUploading}
-									class="relative h-32 w-32 overflow-hidden rounded-full border-4 border-gray-200 bg-gray-100 transition-all hover:border-blue-400 disabled:cursor-not-allowed disabled:opacity-50"
-								>
-									{#if authStore.user?.uid}
-										<Avatar uid={authStore.user.uid} size={128} class="pointer-events-none" />
-									{:else}
-										<div class="flex h-full w-full items-center justify-center">
-											<span class="text-4xl text-gray-400">👤</span>
-										</div>
-									{/if}
+					<!-- 프로필 수정 카드 -->
+					<Card.Root>
+						<Card.Header>
+							<Card.Title>{m.profileInfo()}</Card.Title>
+							<Card.Description>{m.profileInfoGuide()}</Card.Description>
+						</Card.Header>
+						<Card.Content class="space-y-4">
+							<!-- 성공 메시지 -->
+							{#if successMessage}
+								<Alert.Root>
+									<Alert.Title>{m.commonSuccess()}</Alert.Title>
+									<Alert.Description>{successMessage}</Alert.Description>
+								</Alert.Root>
+							{/if}
 
-									{#if photoPreview}
-										<img
-											src={photoPreview}
-											alt={m.profilePicture()}
-											class="absolute inset-0 h-full w-full object-cover pointer-events-none"
-											aria-live="polite"
-										/>
-									{/if}
-								</button>
+							<!-- 에러 메시지 -->
+							{#if errorMessage}
+								<Alert.Root variant="destructive">
+									<Alert.Title>{m.commonError()}</Alert.Title>
+									<Alert.Description>{errorMessage}</Alert.Description>
+								</Alert.Root>
+							{/if}
 
-								<!-- 카메라 아이콘 배지 (버튼 밖으로 이동) -->
-								<div
-									class="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-blue-600 text-white shadow-lg"
-								>
-									{#if isPhotoUploading}
-										<!-- 업로드 중 표시 -->
-										<svg
-											class="h-4 w-4 animate-spin"
-											xmlns="http://www.w3.org/2000/svg"
-											fill="none"
-											viewBox="0 0 24 24"
+							<!-- 프로필 사진 -->
+							<div class="space-y-2">
+								<div class="block text-sm font-medium text-gray-700">{m.profilePicture()}</div>
+								<div class="flex items-center justify-center">
+									<div class="relative">
+										<!-- 사진 미리보기 또는 기본 회색 원 -->
+										<button
+											type="button"
+											onclick={handlePhotoClick}
+											disabled={isPhotoUploading}
+											class="relative h-32 w-32 overflow-hidden rounded-full border-4 border-gray-200 bg-gray-100 transition-all hover:border-blue-400 disabled:cursor-not-allowed disabled:opacity-50"
 										>
-											<circle
-												class="opacity-25"
-												cx="12"
-												cy="12"
-												r="10"
-												stroke="currentColor"
-												stroke-width="4"
-											></circle>
-											<path
-												class="opacity-75"
-												fill="currentColor"
-												d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-											></path>
-										</svg>
-									{:else}
-										<Camera class="h-4 w-4" />
-									{/if}
+											{#if authStore.user?.uid}
+												<Avatar uid={authStore.user.uid} size={128} class="pointer-events-none" />
+											{:else}
+												<div class="flex h-full w-full items-center justify-center">
+													<span class="text-4xl text-gray-400">👤</span>
+												</div>
+											{/if}
+
+											{#if photoPreview}
+												<img
+													src={photoPreview}
+													alt={m.profilePicture()}
+													class="absolute inset-0 h-full w-full object-cover pointer-events-none"
+													aria-live="polite"
+												/>
+											{/if}
+										</button>
+
+										<!-- 카메라 아이콘 배지 (버튼 밖으로 이동) -->
+										<div
+											class="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-blue-600 text-white shadow-lg"
+										>
+											{#if isPhotoUploading}
+												<!-- 업로드 중 표시 -->
+												<svg
+													class="h-4 w-4 animate-spin"
+													xmlns="http://www.w3.org/2000/svg"
+													fill="none"
+													viewBox="0 0 24 24"
+												>
+													<circle
+														class="opacity-25"
+														cx="12"
+														cy="12"
+														r="10"
+														stroke="currentColor"
+														stroke-width="4"
+													></circle>
+													<path
+														class="opacity-75"
+														fill="currentColor"
+														d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+													></path>
+												</svg>
+											{:else}
+												<Camera class="h-4 w-4" />
+											{/if}
+										</div>
+
+										<!-- 사진 제거 버튼 (사진이 있을 때만 표시) -->
+										{#if (photoUrl || photoPreview) && !isPhotoUploading}
+											<button
+												type="button"
+												onclick={handleRemovePhoto}
+												class="absolute -right-2 -top-2 flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-red-500 text-white shadow-lg transition-all hover:bg-red-600"
+												title={m.profilePictureRemove()}
+											>
+												<X class="h-4 w-4" />
+											</button>
+										{/if}
+
+										<!-- 숨겨진 파일 input -->
+										<input
+											type="file"
+											bind:this={fileInput}
+											onchange={handlePhotoChange}
+											accept="image/*"
+											class="hidden"
+										/>
+									</div>
 								</div>
+								<p class="text-center text-xs text-gray-500">
+									{m.profilePictureUploadGuide()}
+								</p>
+							</div>
 
-								<!-- 사진 제거 버튼 (사진이 있을 때만 표시) -->
-								{#if (photoUrl || photoPreview) && !isPhotoUploading}
-									<button
-										type="button"
-										onclick={handleRemovePhoto}
-										class="absolute -right-2 -top-2 flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-red-500 text-white shadow-lg transition-all hover:bg-red-600"
-										title={m.profilePictureRemove()}
-									>
-										<X class="h-4 w-4" />
-									</button>
-								{/if}
-
-								<!-- 숨겨진 파일 input -->
+							<!-- 닉네임 -->
+							<div class="space-y-2">
+								<label for="displayName" class="block text-sm font-medium text-gray-700">
+									{m.profileNickname()} <span class="text-red-500">*</span>
+								</label>
 								<input
-									type="file"
-									bind:this={fileInput}
-									onchange={handlePhotoChange}
-									accept="image/*"
-									class="hidden"
+									type="text"
+									id="displayName"
+									bind:value={displayName}
+									placeholder={m.profileNicknameInput()}
+									class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+									maxlength="50"
 								/>
+								<p class="text-xs text-gray-500">{m.profileNicknameMaxLength()}</p>
 							</div>
-						</div>
-						<p class="text-center text-xs text-gray-500">
-							{m.profilePictureUploadGuide()}
-						</p>
-					</div>
 
-					<!-- 닉네임 -->
-					<div class="space-y-2">
-						<label for="displayName" class="block text-sm font-medium text-gray-700">
-							{m.profileNickname()} <span class="text-red-500">*</span>
-						</label>
-						<input
-							type="text"
-							id="displayName"
-							bind:value={displayName}
-							placeholder={m.profileNicknameInput()}
-							class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-							maxlength="50"
-						/>
-						<p class="text-xs text-gray-500">{m.profileNicknameMaxLength()}</p>
-					</div>
-
-					<!-- 성별 -->
-					<div class="space-y-2">
-						<label for="gender" class="block text-sm font-medium text-gray-700">
-							{m.profileGender()}
-						</label>
-						<select
-							id="gender"
-							bind:value={gender}
-							class="w-full cursor-pointer rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-						>
-							<option value="">{m.profileGenderNoAnswer()}</option>
-							<option value="M">{m.profileGenderMale()}</option>
-							<option value="F">{m.profileGenderFemale()}</option>
-						</select>
-					</div>
-
-					<!-- 생년월일 -->
-					<div class="space-y-2">
-						<label for="birthYear" class="block text-sm font-medium text-gray-700">
-							{m.profileDateOfBirth()}
-						</label>
-						<div class="grid grid-cols-3 gap-2">
-							<!-- 연도 -->
-							<div>
+							<!-- 성별 -->
+							<div class="space-y-2">
+								<label for="gender" class="block text-sm font-medium text-gray-700">
+									{m.profileGender()}
+								</label>
 								<select
-									id="birthYear"
-									bind:value={birthYear}
+									id="gender"
+									bind:value={gender}
 									class="w-full cursor-pointer rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
 								>
-									<option value={null}>{m.profileYear()}</option>
-									{#each yearOptions as year}
-										<option value={year}>{m.profileYearValue({ year })}</option>
-									{/each}
+									<option value="">{m.profileGenderNoAnswer()}</option>
+									<option value="M">{m.profileGenderMale()}</option>
+									<option value="F">{m.profileGenderFemale()}</option>
 								</select>
 							</div>
 
-							<!-- 월 -->
-							<div>
-								<select
-									bind:value={birthMonth}
-									class="w-full cursor-pointer rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-								>
-									<option value={null}>{m.profileMonth()}</option>
-									{#each monthOptions as month}
-										<option value={month}>{m.profileMonthValue({ month })}</option>
-									{/each}
-								</select>
+							<!-- 생년월일 -->
+							<div class="space-y-2">
+								<label for="birthYear" class="block text-sm font-medium text-gray-700">
+									{m.profileDateOfBirth()}
+								</label>
+								<div class="grid grid-cols-3 gap-2">
+									<!-- 연도 -->
+									<div>
+										<select
+											id="birthYear"
+											bind:value={birthYear}
+											class="w-full cursor-pointer rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+										>
+											<option value={null}>{m.profileYear()}</option>
+											{#each yearOptions as year}
+												<option value={year}>{m.profileYearValue({ year })}</option>
+											{/each}
+										</select>
+									</div>
+
+									<!-- 월 -->
+									<div>
+										<select
+											bind:value={birthMonth}
+											class="w-full cursor-pointer rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+										>
+											<option value={null}>{m.profileMonth()}</option>
+											{#each monthOptions as month}
+												<option value={month}>{m.profileMonthValue({ month })}</option>
+											{/each}
+										</select>
+									</div>
+
+									<!-- 일 -->
+									<div>
+										<select
+											bind:value={birthDay}
+											class="w-full cursor-pointer rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+										>
+											<option value={null}>{m.profileDay()}</option>
+											{#each dayOptions as day}
+												<option value={day}>{m.profileDayValue({ day })}</option>
+											{/each}
+										</select>
+									</div>
+								</div>
+								<p class="text-xs text-gray-500">
+									{m.profileAgeRestriction({ minYear, maxYear })}
+								</p>
 							</div>
 
-							<!-- 일 -->
-							<div>
-								<select
-									bind:value={birthDay}
-									class="w-full cursor-pointer rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+							<!-- 저장 버튼 -->
+							<div class="pt-6">
+								<Button
+									class="w-full cursor-pointer bg-blue-600 py-6 text-lg font-semibold text-white hover:bg-blue-700"
+									onclick={handleSave}
+									disabled={saving}
 								>
-									<option value={null}>{m.profileDay()}</option>
-									{#each dayOptions as day}
-										<option value={day}>{m.profileDayValue({ day })}</option>
-									{/each}
-								</select>
+									{saving ? m.profileSaving() : m.profileSave()}
+								</Button>
 							</div>
-						</div>
-						<p class="text-xs text-gray-500">
-							{m.profileAgeRestriction({ minYear, maxYear })}
-						</p>
-					</div>
-
-					<!-- 저장 버튼 -->
-					<div class="pt-6">
-						<Button
-							class="w-full cursor-pointer bg-blue-600 py-6 text-lg font-semibold text-white hover:bg-blue-700"
-							onclick={handleSave}
-							disabled={saving}
-						>
-							{saving ? m.profileSaving() : m.profileSave()}
-						</Button>
-					</div>
-				</Card.Content>
-			</Card.Root>
+						</Card.Content>
+					</Card.Root>
+				</div>
+			{/if}
 		{/if}
 	</div>
 </div>
+
+<style>
+	@import 'tailwindcss' reference;
+
+	/**
+	 * 탭 버튼 스타일
+	 */
+	:global(.tab-button) {
+		@apply relative pb-3 text-base font-medium text-gray-600;
+		@apply transition-colors duration-200 hover:text-gray-900;
+		@apply cursor-pointer;
+	}
+
+	/**
+	 * 활성 탭 스타일
+	 */
+	:global(.tab-active) {
+		@apply text-blue-600;
+	}
+
+	:global(.tab-active::after) {
+		@apply absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600;
+		content: '';
+	}
+</style>

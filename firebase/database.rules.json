@@ -849,6 +849,51 @@
         ".indexOn": ".value"
       }
     },
+    "post-rankings": {
+      // 🏆 게시글 인기 순위
+      // 구조: /post-rankings/{period}/{date}/{postId}: -score
+      // period: daily (일간), weekly (주간), monthly (월간)
+      // date: yyyyMMdd (일간), yyyyWww (주간, ISO week), yyyyMM (월간)
+      // score: 음수로 저장 (음수 = 내림차순 정렬)
+      // 점수 계산: (좋아요 수 × 1) + (댓글 수 × 2)
+      // Cloud Functions 전용: 클라이언트는 읽기만 가능
+
+      // 읽기 권한: 로그인한 모든 사용자 (공개 순위 정보)
+      ".read": "
+        (
+          auth != null
+        )
+      ",
+
+      // 쓰기 권한: 없음 (Cloud Functions만 쓰기 가능)
+      ".write": false,
+
+      "daily": {
+        // 일별 순위: /post-rankings/daily/{yyyyMMdd}/{postId}
+        // 예: /post-rankings/daily/20251119/post123: -150
+        "$date": {
+          // 인덱스: orderByValue() 쿼리를 위한 .value 인덱스
+          ".indexOn": ".value"
+        }
+      },
+      "weekly": {
+        // 주별 순위: /post-rankings/weekly/{yyyyWww}/{postId}
+        // 예: /post-rankings/weekly/2025W47/post123: -150
+        // yyyyWww 형식: 연도4자리 + W + 주차2자리 (ISO week 기준)
+        "$date": {
+          // 인덱스: orderByValue() 쿼리를 위한 .value 인덱스
+          ".indexOn": ".value"
+        }
+      },
+      "monthly": {
+        // 월별 순위: /post-rankings/monthly/{yyyyMM}/{postId}
+        // 예: /post-rankings/monthly/202511/post123: -150
+        "$date": {
+          // 인덱스: orderByValue() 쿼리를 위한 .value 인덱스
+          ".indexOn": ".value"
+        }
+      }
+    },
     "test": {
       "data": {
         // QA 전용 테스트 데이터 노드 - 누구나 읽고 쓰기 가능
