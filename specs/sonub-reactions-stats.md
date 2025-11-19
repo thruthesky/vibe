@@ -2164,34 +2164,387 @@ const rankings = await getTopInfluencers('daily', today, 5);
 
 ---
 
-### 11.5. 구현 미완료 항목
+### 11.5. Firebase Database Security Rules 구현
+
+**파일 경로**: `firebase/database.rules.json`
+
+**구현 일시**: 2025-01-19
+
+**추가된 보안 규칙**:
+
+#### 11.5.1. `/user-stats/{uid}` 경로
+
+```json
+"user-stats": {
+  "$uid": {
+    // 읽기 권한: 로그인한 모든 사용자 (공개 통계 정보)
+    ".read": "auth != null",
+
+    // 쓰기 권한: 없음 (Cloud Functions만 쓰기 가능)
+    ".write": false,
+
+    "daily": {
+      "$date": {
+        ".indexOn": ["receivedLikes", "receivedComments", "receivedFollowers", "createdPosts"]
+      }
+    },
+    "monthly": {
+      "$date": {
+        ".indexOn": ["receivedLikes", "receivedComments", "receivedFollowers", "createdPosts"]
+      }
+    },
+    "yearly": {
+      "$date": {
+        ".indexOn": ["receivedLikes", "receivedComments", "receivedFollowers", "createdPosts"]
+      }
+    },
+    "total": {
+      ".indexOn": ["receivedLikes", "receivedComments", "receivedFollowers", "createdPosts"]
+    }
+  }
+}
+```
+
+**설명**:
+- 클라이언트는 모든 사용자의 통계를 **읽기만** 가능
+- Cloud Functions만 통계 데이터를 **쓸 수 있음**
+- 4가지 필드(`receivedLikes`, `receivedComments`, `receivedFollowers`, `createdPosts`)에 대한 인덱스 추가
+- 일간/월간/연간/전체 기간별 인덱스 설정
+
+#### 11.5.2. `/influencer-scores/{uid}` 경로
+
+```json
+"influencer-scores": {
+  ".read": "auth != null",
+  ".write": false,
+
+  "$uid": {
+    ".validate": "newData.isNumber() || newData.val() === null"
+  }
+}
+```
+
+**설명**:
+- 클라이언트는 모든 사용자의 점수를 **읽기만** 가능
+- Cloud Functions만 점수를 **쓸 수 있음**
+- 점수는 `number` 타입만 허용 (또는 `null`)
+
+#### 11.5.3. `/influencer-rankings/{period}/{date}` 경로
+
+```json
+"influencer-rankings": {
+  ".read": "auth != null",
+  ".write": false,
+
+  "daily": {
+    "$date": { ".indexOn": ".value" }
+  },
+  "monthly": {
+    "$date": { ".indexOn": ".value" }
+  },
+  "yearly": {
+    "$date": { ".indexOn": ".value" }
+  },
+  "total": {
+    ".indexOn": ".value"
+  }
+}
+```
+
+**설명**:
+- 클라이언트는 모든 순위 데이터를 **읽기만** 가능
+- Cloud Functions만 순위 데이터를 **쓸 수 있음**
+- 각 기간(`daily`, `monthly`, `yearly`, `total`)별로 값(`.value`)에 대한 인덱스 추가
+- 음수 점수를 활용한 내림차순 정렬 지원
+
+#### 11.5.4. 배포 결과
+
+**배포 명령**: `firebase deploy --only database`
+
+**배포 일시**: 2025-01-19
+
+**결과**: ✅ 성공
+- Database rules validation: 통과
+- Database: `sonub-firebase-default-rtdb`에 성공적으로 배포
+
+---
+
+### 11.6. 구현 미완료 항목
 
 다음 항목들은 아직 구현되지 않았습니다:
 
-1. **Firebase Database Security Rules**
-   - `/user-stats/*` 경로 보안 규칙 추가
-   - `/influencer-scores/*` 경로 보안 규칙 추가
-   - `/influencer-rankings/*` 경로 보안 규칙 추가
-   - 모든 경로는 **Cloud Functions에서만 쓰기**, 클라이언트는 **읽기만 가능**
-
-2. **통합 테스트**
+1. **통합 테스트**
    - 좋아요/댓글/팔로우 생성 시 통계 증가 검증
    - 좋아요/댓글/팔로우 삭제 시 통계 감소 검증
    - 본인 반응 제외 로직 검증
    - 인플루언서 점수 계산 정확도 검증
    - UTC 날짜 계산 일관성 검증
 
-3. **데이터 마이그레이션**
+2. **데이터 마이그레이션**
    - 기존 게시글/댓글에 `createdAt` 필드 백필 (필요 시)
 
-4. **프로덕션 검증**
+3. **프로덕션 검증**
    - 실제 사용자 데이터로 통계 집계 검증
    - 성능 모니터링
    - 에러 로그 확인
 
 ---
 
-## 12. 체크리스트
+## 12. 통합 테스트
+
+### 12.1. 테스트 목적
+
+인플루언서 통계 시스템의 모든 기능이 올바르게 작동하는지 검증합니다.
+
+### 12.2. 테스트 환경
+
+- **Firebase Project**: sonub-firebase (개발 환경)
+- **테스트 계정**: 최소 3개 이상의 테스트 사용자 필요
+  - 사용자 A (반응을 주는 사용자)
+  - 사용자 B (반응을 받는 사용자, 인플루언서)
+  - 사용자 C (자기 자신 반응 테스트용)
+
+### 12.3. 테스트 체크리스트
+
+#### 12.3.1. 좋아요 통계 테스트
+
+**시나리오**: 사용자 A가 사용자 B의 게시글에 좋아요를 누름
+
+**테스트 단계**:
+
+1. **사전 조건 확인**
+   - [ ] 사용자 B의 `/user-stats/{B_uid}/daily/{today}` 경로에서 현재 `receivedLikes` 값 확인
+   - [ ] 사용자 B의 `/influencer-scores/{B_uid}` 값 확인 (없으면 0으로 간주)
+
+2. **좋아요 생성**
+   - [ ] 사용자 A로 로그인
+   - [ ] 사용자 B의 게시글에 좋아요 누르기
+   - [ ] Cloud Functions 로그 확인 (`firebase functions:log`)
+
+3. **통계 증가 검증**
+   - [ ] `/user-stats/{B_uid}/daily/{today}/receivedLikes`: +1 증가
+   - [ ] `/user-stats/{B_uid}/monthly/{month}/receivedLikes`: +1 증가
+   - [ ] `/user-stats/{B_uid}/yearly/{year}/receivedLikes`: +1 증가
+   - [ ] `/user-stats/{B_uid}/total/receivedLikes`: +1 증가
+
+4. **인플루언서 점수 증가 검증**
+   - [ ] `/influencer-scores/{B_uid}`: +1 증가 (좋아요 가중치 = 1)
+
+5. **순위 업데이트 검증**
+   - [ ] `/influencer-rankings/total/{B_uid}`: 음수 점수로 업데이트됨
+   - [ ] 순위 조회 시 정상 표시
+
+6. **좋아요 삭제**
+   - [ ] 사용자 A가 좋아요 취소
+   - [ ] Cloud Functions 로그 확인
+
+7. **통계 감소 검증**
+   - [ ] `/user-stats/{B_uid}/daily/{today}/receivedLikes`: -1 감소
+   - [ ] `/user-stats/{B_uid}/monthly/{month}/receivedLikes`: -1 감소
+   - [ ] `/user-stats/{B_uid}/yearly/{year}/receivedLikes`: -1 감소
+   - [ ] `/user-stats/{B_uid}/total/receivedLikes`: -1 감소
+   - [ ] `/influencer-scores/{B_uid}`: -1 감소
+
+#### 12.3.2. 댓글 통계 테스트
+
+**시나리오**: 사용자 A가 사용자 B의 게시글에 댓글 작성
+
+**테스트 단계**:
+
+1. **사전 조건 확인**
+   - [ ] 사용자 B의 `/user-stats/{B_uid}/daily/{today}/receivedComments` 값 확인
+
+2. **댓글 생성**
+   - [ ] 사용자 A로 로그인
+   - [ ] 사용자 B의 게시글에 댓글 작성
+   - [ ] Cloud Functions 로그 확인
+
+3. **통계 증가 검증**
+   - [ ] `/user-stats/{B_uid}/daily/{today}/receivedComments`: +1 증가
+   - [ ] `/user-stats/{B_uid}/monthly/{month}/receivedComments`: +1 증가
+   - [ ] `/user-stats/{B_uid}/yearly/{year}/receivedComments`: +1 증가
+   - [ ] `/user-stats/{B_uid}/total/receivedComments`: +1 증가
+
+4. **인플루언서 점수 증가 검증**
+   - [ ] `/influencer-scores/{B_uid}`: +3 증가 (댓글 가중치 = 3)
+
+5. **댓글 삭제**
+   - [ ] 사용자 A가 댓글 삭제
+   - [ ] Cloud Functions 로그 확인
+
+6. **통계 감소 검증**
+   - [ ] `/user-stats/{B_uid}/daily/{today}/receivedComments`: -1 감소
+   - [ ] `/influencer-scores/{B_uid}`: -3 감소
+
+#### 12.3.3. 팔로우 통계 테스트
+
+**시나리오**: 사용자 A가 사용자 B를 팔로우
+
+**테스트 단계**:
+
+1. **사전 조건 확인**
+   - [ ] 사용자 B의 `/user-stats/{B_uid}/daily/{today}/receivedFollowers` 값 확인
+
+2. **팔로우 생성**
+   - [ ] 사용자 A로 로그인
+   - [ ] 사용자 B를 팔로우
+   - [ ] Cloud Functions 로그 확인
+
+3. **통계 증가 검증**
+   - [ ] `/user-stats/{B_uid}/daily/{today}/receivedFollowers`: +1 증가
+   - [ ] `/user-stats/{B_uid}/monthly/{month}/receivedFollowers`: +1 증가
+   - [ ] `/user-stats/{B_uid}/yearly/{year}/receivedFollowers`: +1 증가
+   - [ ] `/user-stats/{B_uid}/total/receivedFollowers`: +1 증가
+
+4. **인플루언서 점수 증가 검증**
+   - [ ] `/influencer-scores/{B_uid}`: +5 증가 (팔로우 가중치 = 5)
+
+5. **팔로우 취소**
+   - [ ] 사용자 A가 팔로우 취소
+   - [ ] Cloud Functions 로그 확인
+
+6. **통계 감소 검증**
+   - [ ] `/user-stats/{B_uid}/daily/{today}/receivedFollowers`: -1 감소
+   - [ ] `/influencer-scores/{B_uid}`: -5 감소
+
+#### 12.3.4. 게시글 생성 통계 테스트
+
+**시나리오**: 사용자 A가 게시글 작성
+
+**테스트 단계**:
+
+1. **사전 조건 확인**
+   - [ ] 사용자 A의 `/user-stats/{A_uid}/daily/{today}/createdPosts` 값 확인
+
+2. **게시글 생성**
+   - [ ] 사용자 A로 로그인
+   - [ ] 새 게시글 작성
+   - [ ] Cloud Functions 로그 확인
+
+3. **통계 증가 검증**
+   - [ ] `/user-stats/{A_uid}/daily/{today}/createdPosts`: +1 증가
+   - [ ] `/user-stats/{A_uid}/monthly/{month}/createdPosts`: +1 증가
+   - [ ] `/user-stats/{A_uid}/yearly/{year}/createdPosts`: +1 증가
+   - [ ] `/user-stats/{A_uid}/total/createdPosts`: +1 증가
+
+4. **게시글 삭제**
+   - [ ] 사용자 A가 게시글 삭제
+   - [ ] Cloud Functions 로그 확인
+
+5. **통계 감소 검증**
+   - [ ] `/user-stats/{A_uid}/daily/{today}/createdPosts`: -1 감소
+
+#### 12.3.5. 자기 자신 반응 제외 테스트
+
+**시나리오**: 사용자 C가 자신의 게시글에 좋아요/댓글 작성
+
+**테스트 단계**:
+
+1. **사전 조건 확인**
+   - [ ] 사용자 C의 `/user-stats/{C_uid}/daily/{today}/receivedLikes` 값 확인
+   - [ ] 사용자 C의 `/user-stats/{C_uid}/daily/{today}/receivedComments` 값 확인
+
+2. **자기 게시글에 좋아요**
+   - [ ] 사용자 C로 로그인
+   - [ ] 사용자 C 자신의 게시글에 좋아요 누르기
+   - [ ] Cloud Functions 로그 확인
+
+3. **통계 변화 없음 검증**
+   - [ ] `/user-stats/{C_uid}/daily/{today}/receivedLikes`: **변화 없음** (본인 반응 제외)
+   - [ ] `/influencer-scores/{C_uid}`: **변화 없음**
+
+4. **자기 게시글에 댓글**
+   - [ ] 사용자 C가 자신의 게시글에 댓글 작성
+   - [ ] Cloud Functions 로그 확인
+
+5. **통계 변화 없음 검증**
+   - [ ] `/user-stats/{C_uid}/daily/{today}/receivedComments`: **변화 없음**
+   - [ ] `/influencer-scores/{C_uid}`: **변화 없음**
+
+#### 12.3.6. UTC 날짜 계산 일관성 테스트
+
+**시나리오**: 서로 다른 시간대에서 통계가 같은 UTC 날짜로 집계되는지 확인
+
+**테스트 단계**:
+
+1. **현재 UTC 날짜 확인**
+   - [ ] Cloud Functions 로그에서 UTC 날짜 확인
+   - [ ] 클라이언트에서 `getCurrentDate()` 함수 실행 결과 확인
+
+2. **일치 검증**
+   - [ ] Cloud Functions의 UTC 날짜 = 클라이언트의 UTC 날짜
+   - [ ] 통계가 올바른 날짜 경로에 저장됨
+
+#### 12.3.7. 인플루언서 점수 계산 정확도 테스트
+
+**시나리오**: 여러 반응을 받은 후 점수가 올바르게 계산되는지 확인
+
+**테스트 단계**:
+
+1. **사전 조건 초기화**
+   - [ ] 사용자 B의 `/influencer-scores/{B_uid}` 초기값 확인 (또는 0으로 초기화)
+
+2. **다양한 반응 생성**
+   - [ ] 좋아요 2개 생성 → 예상 점수: +2
+   - [ ] 댓글 1개 생성 → 예상 점수: +3
+   - [ ] 팔로우 1개 생성 → 예상 점수: +5
+   - [ ] **예상 총 점수**: 2 + 3 + 5 = 10
+
+3. **점수 검증**
+   - [ ] `/influencer-scores/{B_uid}` = 10
+
+4. **반응 삭제**
+   - [ ] 좋아요 1개 삭제 → 예상 점수: -1
+   - [ ] 댓글 1개 삭제 → 예상 점수: -3
+   - [ ] **예상 총 점수**: 10 - 1 - 3 = 6
+
+5. **점수 재검증**
+   - [ ] `/influencer-scores/{B_uid}` = 6
+
+#### 12.3.8. 순위 시스템 테스트
+
+**시나리오**: Top N 인플루언서 조회가 올바르게 작동하는지 확인
+
+**테스트 단계**:
+
+1. **테스트 데이터 생성**
+   - [ ] 사용자 B: 점수 10
+   - [ ] 사용자 D: 점수 20
+   - [ ] 사용자 E: 점수 5
+
+2. **순위 저장 확인**
+   - [ ] `/influencer-rankings/total/{B_uid}` = -10
+   - [ ] `/influencer-rankings/total/{D_uid}` = -20
+   - [ ] `/influencer-rankings/total/{E_uid}` = -5
+
+3. **클라이언트 조회**
+   - [ ] `getTopInfluencers('daily', undefined, 3)` 호출
+   - [ ] 반환 순서: D (20) → B (10) → E (5)
+
+4. **UI 표시 확인**
+   - [ ] 사이드바 Top 5 인플루언서 표시 확인 ([SuggestionsCard.svelte](../../src/lib/components/sidebar/SuggestionsCard.svelte))
+   - [ ] `/user/influencers` 페이지에서 순위 표시 확인
+
+### 12.4. 테스트 자동화 (선택 사항)
+
+향후 Jest 또는 Mocha를 사용하여 테스트 자동화 가능:
+
+```typescript
+// 예시: __tests__/stats.test.ts
+describe('Influencer Statistics', () => {
+  test('좋아요 생성 시 통계 증가', async () => {
+    // 테스트 코드
+  });
+
+  test('자기 반응 제외', async () => {
+    // 테스트 코드
+  });
+});
+```
+
+---
+
+## 13. 체크리스트
 
 설계 단계:
 - [x] 현재 DB 구조 분석 완료
