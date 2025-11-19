@@ -310,7 +310,7 @@
 	"chatCategoryStory": "나의 이야기",
 	"sidebarDevHighlightGenderSearch": "15. 남/여 회원 찾기",
 	"sidebarDevHighlightPayment": "16. 토스/페이팔 결제",
-	"composePromptPlaceholder": "{name}님, 무슨 생각을 하고 계신가요?",
+	"composePromptPlaceholder": "{name}님, 근황을 올려주세요",
 	"composeAll": "전체",
 	"followButton": "팔로우",
 	"followingButton": "팔로잉",
@@ -345,7 +345,6 @@
 	"homeSidebarRecentUsersLoading": "프로필을 불러오는 중입니다...",
 	"homeSidebarRecentUsersEmpty": "사진이 있는 신규 가입자가 없습니다.",
 	"homeSidebarSeeMore": "더보기",
-	"homeSidebarMembersCount": "{count}명 참여",
 	"homeSidebarOpenChatSubtitle": "최근 개설된 오픈 채팅방",
 	"homeSidebarOpenChatLoading": "오픈 채팅을 불러오는 중입니다...",
 	"homeSidebarOpenChatEmpty": "아직 오픈 채팅방이 없습니다.",
@@ -359,6 +358,11 @@
 	"myReactionsDescription": "내 글과 댓글에 달린 좋아요와 댓글을 한눈에 확인하세요.",
 	"myStatsTitle": "내 통계",
 	"myStatsDescription": "팔로워, 좋아요, 댓글 수를 일별로 살펴보세요.",
+	"menuPublicProfile": "공개 프로필",
+	"homeSidebarMembersCount": "{count}명 참여",
 	"좋아요한_사용자_목록": "좋아요한 사용자 목록",
-	"좋아요한_사용자가_없습니다": "좋아요한 사용자가 없습니다"
+	"좋아요한_사용자가_없습니다": "좋아요한 사용자가 없습니다",
+	"appTitle": "소너브",
+	"attachmentShowLess": "접기",
+	"sidebarPopularUsers": "인기 사용자"
 }

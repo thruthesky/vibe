@@ -342,7 +342,6 @@
 	"homeSidebarRecentUsersLoading": "プロフィールを読み込み中です...",
 	"homeSidebarRecentUsersEmpty": "写真付きの新規メンバーがまだいません。",
 	"homeSidebarSeeMore": "すべて表示",
-	"homeSidebarMembersCount": "{count}人が参加中",
 	"homeSidebarOpenChatSubtitle": "最新の公開オープンチャット",
 	"homeSidebarOpenChatLoading": "オープンチャットを読み込み中です...",
 	"homeSidebarOpenChatEmpty": "オープンチャットがまだありません。",
@@ -356,6 +355,7 @@
 	"myReactionsDescription": "自分の投稿やコメントへのいいねと返信を確認できます。",
 	"myStatsTitle": "マイ統計",
 	"myStatsDescription": "フォロワー・いいね・コメントの日別スナップショットです。",
-	"좋아요한_사용자_목록": "いいねしたユーザー",
-	"좋아요한_사용자가_없습니다": "まだいいねしたユーザーはいません"
+	"menuPublicProfile": "公開プロフィール",
+	"attachmentShowLess": "閉じる",
+	"sidebarPopularUsers": "人気ユーザー"
 }

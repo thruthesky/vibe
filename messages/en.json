@@ -341,7 +341,6 @@
 	"homeSidebarRecentUsersLoading": "Loading photo profiles...",
 	"homeSidebarRecentUsersEmpty": "No recent photo profiles yet.",
 	"homeSidebarSeeMore": "See more",
-	"homeSidebarMembersCount": "{count} members",
 	"homeSidebarOpenChatSubtitle": "Newest public open chat rooms",
 	"homeSidebarOpenChatLoading": "Loading open chats...",
 	"homeSidebarOpenChatEmpty": "No open chat rooms yet.",
@@ -355,6 +354,7 @@
 	"myReactionsDescription": "Keep track of likes and replies on your posts and comments.",
 	"myStatsTitle": "My Stats",
 	"myStatsDescription": "Daily snapshots of followers, likes, and comments.",
-	"좋아요한_사용자_목록": "Users who liked",
-	"좋아요한_사용자가_없습니다": "No users have liked this yet"
+	"menuPublicProfile": "Public Profile",
+	"attachmentShowLess": "Show less",
+	"sidebarPopularUsers": "Popular Users"
 }
