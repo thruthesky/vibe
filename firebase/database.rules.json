@@ -41,6 +41,19 @@
         ".write": false
       }
     },
+    "user-action-counters": {
+      // 사용자별 action 카운터 (게시글 수, 댓글 수, 좋아요 수, 팔로우 수, 채팅 메시지 수 등)
+      // Cloud Functions가 자동으로 관리
+      // 구조: /user-action-counters/{uid}/{counterType}: number
+      // counterType: like, comment, post, chat, follow
+      "$uid": {
+        // 읽기 권한: 모든 사용자 (통계 정보 조회용)
+        ".read": true,
+
+        // 쓰기 권한: Cloud Functions만 가능 (클라이언트는 직접 쓰기 불가)
+        ".write": false
+      }
+    },
     "likes": {
       // ❤️ 사용자별 좋아요 목록
       // 구조: /likes/{uid}/{targetId}: 'post' | 'comment' | 'message'
@@ -693,6 +706,145 @@
         ".read": "$uid === auth.uid",
         // 쓰기 권한: 없음 (Cloud Functions만 쓰기 가능)
         ".write": false,
+        // 인덱스: orderByValue() 쿼리를 위한 .value 인덱스
+        ".indexOn": ".value"
+      }
+    },
+    "user-stats": {
+      // 사용자별 통계 (좋아요, 댓글, 팔로워 등 받은 수 집계)
+      // 구조: /user-stats/{uid}/{period}/{date}/{statType}: number
+      // period: daily, monthly, yearly, total
+      // statType: receivedLikes, receivedComments, receivedFollowers, createdPosts
+      // Cloud Functions 전용: 클라이언트는 읽기만 가능
+      "$uid": {
+        // 읽기 권한: 로그인한 모든 사용자 (공개 통계 정보)
+        ".read": "
+          (
+            auth != null
+          )
+        ",
+
+        // 쓰기 권한: 없음 (Cloud Functions만 쓰기 가능)
+        ".write": false,
+
+        "daily": {
+          // 일별 통계: /user-stats/{uid}/daily/{yyyyMMdd}/{statType}
+          "$date": {
+            // 인덱스: statType 필드들
+            ".indexOn": [
+              "receivedLikes",
+              "receivedComments",
+              "receivedFollowers",
+              "createdPosts"
+            ]
+          }
+        },
+        "monthly": {
+          // 월별 통계: /user-stats/{uid}/monthly/{yyyyMM}/{statType}
+          "$date": {
+            // 인덱스: statType 필드들
+            ".indexOn": [
+              "receivedLikes",
+              "receivedComments",
+              "receivedFollowers",
+              "createdPosts"
+            ]
+          }
+        },
+        "yearly": {
+          // 연도별 통계: /user-stats/{uid}/yearly/{yyyy}/{statType}
+          "$date": {
+            // 인덱스: statType 필드들
+            ".indexOn": [
+              "receivedLikes",
+              "receivedComments",
+              "receivedFollowers",
+              "createdPosts"
+            ]
+          }
+        },
+        "total": {
+          // 전체 통계: /user-stats/{uid}/total/{statType}
+          // 인덱스: statType 필드들
+          ".indexOn": [
+            "receivedLikes",
+            "receivedComments",
+            "receivedFollowers",
+            "createdPosts"
+          ]
+        }
+      }
+    },
+    "influencer-scores": {
+      // 인플루언서 점수
+      // 구조: /influencer-scores/{uid}: number
+      // 계산 공식: (receivedLikes × 1) + (receivedComments × 3) + (receivedFollowers × 5)
+      // Cloud Functions 전용: 클라이언트는 읽기만 가능
+
+      // 읽기 권한: 로그인한 모든 사용자 (공개 정보)
+      ".read": "
+        (
+          auth != null
+        )
+      ",
+
+      // 쓰기 권한: 없음 (Cloud Functions만 쓰기 가능)
+      ".write": false,
+
+      "$uid": {
+        // 값 검증: 숫자 또는 null (삭제)만 가능
+        ".validate": "
+          (
+            newData.isNumber()
+          )
+          ||
+          (
+            newData.val() === null
+          )
+        "
+      }
+    },
+    "influencer-rankings": {
+      // 인플루언서 순위
+      // 구조: /influencer-rankings/{period}/{date}/{uid}: -score (negative for descending order)
+      // period: daily, monthly, yearly, total
+      // date: yyyyMMdd, yyyyMM, yyyy (period에 따라)
+      // score는 음수로 저장되어 orderByValue() + limitToFirst()로 내림차순 정렬
+      // Cloud Functions 전용: 클라이언트는 읽기만 가능
+
+      // 읽기 권한: 로그인한 모든 사용자 (공개 순위 정보)
+      ".read": "
+        (
+          auth != null
+        )
+      ",
+
+      // 쓰기 권한: 없음 (Cloud Functions만 쓰기 가능)
+      ".write": false,
+
+      "daily": {
+        // 일별 순위: /influencer-rankings/daily/{yyyyMMdd}/{uid}
+        "$date": {
+          // 인덱스: orderByValue() 쿼리를 위한 .value 인덱스
+          ".indexOn": ".value"
+        }
+      },
+      "monthly": {
+        // 월별 순위: /influencer-rankings/monthly/{yyyyMM}/{uid}
+        "$date": {
+          // 인덱스: orderByValue() 쿼리를 위한 .value 인덱스
+          ".indexOn": ".value"
+        }
+      },
+      "yearly": {
+        // 연도별 순위: /influencer-rankings/yearly/{yyyy}/{uid}
+        "$date": {
+          // 인덱스: orderByValue() 쿼리를 위한 .value 인덱스
+          ".indexOn": ".value"
+        }
+      },
+      "total": {
+        // 전체 순위: /influencer-rankings/total/{uid}
         // 인덱스: orderByValue() 쿼리를 위한 .value 인덱스
         ".indexOn": ".value"
       }
