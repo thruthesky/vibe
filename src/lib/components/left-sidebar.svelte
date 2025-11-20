@@ -15,11 +15,11 @@
 	import { m } from '$lib/paraglide/messages';
 	import { Globe } from 'lucide-svelte';
 
-	const localeNames: Record<string, string> = {
-		en: 'English',
-		ko: '한국어',
-		ja: '日本語',
-		zh: '中文'
+	const localeNames: Record<string, () => string> = {
+		en: () => m.localeNameEnglish(),
+		ko: () => m.localeNameKorean(),
+		ja: () => m.localeNameJapanese(),
+		zh: () => m.localeNameChinese()
 	};
 
 	const localeFlags: Record<string, string> = {
@@ -30,7 +30,7 @@
 	};
 
 	const copyrightLabel = $derived.by(() =>
-		getLocale() === 'ko' ? '(C) 2012 ~ 2025. 위세너' : '(C) 2012 ~ 2025. Withcenter, inc.'
+		getLocale() === 'ko' ? m.copyrightKorean() : m.copyrightEnglish()
 	);
 
 	/**
@@ -74,7 +74,7 @@
 			>
 				{#each locales as locale}
 					<option value={locale}>
-						{localeFlags[locale] || ''} {localeNames[locale] || locale}
+						{localeFlags[locale] || ''} {localeNames[locale]?.() || locale}
 					</option>
 				{/each}
 			</select>

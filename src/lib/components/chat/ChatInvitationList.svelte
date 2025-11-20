@@ -111,8 +111,8 @@ $effect(() => {
 			{#snippet item(itemData)}
 				{@const invitation = (itemData.data ?? {}) as InvitationData}
 				{@const roomId = (invitation.roomId ?? itemData.key ?? '') as string}
-				{@const roomName = (invitation.roomName ?? '채팅방') as string}
-				{@const inviterName = (invitation.inviterName ?? '사용자') as string}
+				{@const roomName = (invitation.roomName ?? m.chatRoomDefaultName()) as string}
+				{@const inviterName = (invitation.inviterName ?? m.userDefaultName()) as string}
 				{@const message = (invitation.message ?? '') as string}
 
 				<!-- 초대 카드 -->
@@ -126,8 +126,7 @@ $effect(() => {
 						<!-- 메시지 -->
 						<div class="invitation-message">
 							<p class="invitation-text">
-								<strong>{inviterName}</strong>님이
-								<strong>{roomName}</strong>에 초대하였습니다.
+								{m.chatInvitationMessage({ userName: inviterName, roomName })}
 							</p>
 							{#if message}
 								<p class="invitation-detail">{message}</p>

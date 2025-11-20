@@ -10,6 +10,7 @@
 
 <script lang="ts">
 	import { getUserBasicInfo } from '$lib/functions/user.functions';
+	import * as m from '$lib/paraglide/messages.js';
 
 	/**
 	 * Props
@@ -43,7 +44,7 @@
 		{#if userInfo.photoUrl}
 			<img
 				src={userInfo.photoUrl}
-				alt={userInfo.displayName || '사용자'}
+				alt={userInfo.displayName || m.userDefaultName()}
 				class="rounded-full object-cover {photoSize}"
 			/>
 		{:else}

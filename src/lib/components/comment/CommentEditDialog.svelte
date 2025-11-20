@@ -30,7 +30,7 @@
 	}
 
 	let {
-		open = $bindable(),
+		open = $bindable(false),
 		messageId: postId,
 		commentId,
 		initialText,

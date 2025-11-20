@@ -209,7 +209,8 @@
 					{#if rtdb}
 						{#if message.roomId == 'post'}
 							<!-- 채팅방 ID 가 post 이면, 채팅방 이름 표시 생략. 자세한 내용은 readme 참고 -->
-						{:else}
+						{:else if message.messageId}
+							<!-- messageId가 있는 경우에만 채팅방 링크 표시 -->
 							{#await getChatRoomName(rtdb, message.roomId)}
 								<button class="post-room-name" disabled>...</button>
 							{:then roomName}

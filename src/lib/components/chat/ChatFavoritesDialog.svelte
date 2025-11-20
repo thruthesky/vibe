@@ -21,7 +21,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { ref, push, set, remove, get, update } from 'firebase/database';
 	import { rtdb } from '$lib/firebase';
-	import * as m from '$lib/paraglide/messages.js';
+	import { m } from '$lib/paraglide/messages.js';
 
 	/**
 	 * 즐겨찾기 폴더 인터페이스
@@ -111,7 +111,7 @@
 			}
 		} catch (error) {
 			console.error('즐겨찾기 로드 실패:', error);
-			errorMessage = '즐겨찾기를 불러오는데 실패했습니다.';
+			errorMessage = m.chatFavoritesLoadFailed();
 		} finally {
 			isLoading = false;
 		}
@@ -144,12 +144,12 @@
 	async function saveFolder() {
 		const trimmedName = folderName.trim();
 		if (!trimmedName) {
-			errorMessage = '폴더 이름을 입력해주세요.';
+			errorMessage = m.chatFavoritesNameRequired();
 			return;
 		}
 
 		if (!authStore.user?.uid || !rtdb) {
-			errorMessage = '로그인이 필요합니다.';
+			errorMessage = m.authLoginRequired();
 			return;
 		}
 
@@ -189,7 +189,7 @@
 			selectedFavorite = null;
 		} catch (error) {
 			console.error('폴더 저장 실패:', error);
-			errorMessage = '폴더 저장에 실패했습니다.';
+			errorMessage = m.chatFavoritesSaveFailed();
 		} finally {
 			isSaving = false;
 		}
@@ -199,7 +199,7 @@
 	 * 폴더 삭제
 	 */
 	async function deleteFolder(favorite: Favorite) {
-		if (!confirm(`"${favorite.name}" 폴더를 삭제하시겠습니까?`)) {
+		if (!confirm(m.chatFavoritesDeleteConfirm({ name: favorite.name }))) {
 			return;
 		}
 
@@ -211,7 +211,7 @@
 			await loadFavorites();
 		} catch (error) {
 			console.error('폴더 삭제 실패:', error);
-			errorMessage = '폴더 삭제에 실패했습니다.';
+			errorMessage = m.chatFavoritesDeleteFailed();
 		}
 	}
 
@@ -239,7 +239,7 @@
 			await loadFavorites();
 		} catch (error) {
 			console.error('즐겨찾기 토글 실패:', error);
-			errorMessage = '즐겨찾기 변경에 실패했습니다.';
+			errorMessage = m.chatFavoritesToggleFailed();
 		}
 	}
 
@@ -255,7 +255,7 @@
 			await loadFavorites();
 		} catch (error) {
 			console.error('채팅방 제거 실패:', error);
-			errorMessage = '채팅방 제거에 실패했습니다.';
+			errorMessage = m.chatFavoritesRemoveRoomFailed();
 		}
 	}
 
@@ -316,18 +316,18 @@
 				<div class="flex-1">
 					<DialogTitle>
 						{#if currentRoomId && displayMode === 'add'}
-							즐겨찾기 추가
+							{m.chatFavoritesAddTitle()}
 						{:else}
 							{m.chatTabBookmarks()}
 						{/if}
 					</DialogTitle>
 					<DialogDescription>
 						{#if currentRoomId && displayMode === 'add'}
-							즐겨찾기 폴더를 선택하여 채팅방을 추가하거나 제거하세요.
+							{m.chatFavoritesAddDescription()}
 						{:else if currentRoomId && displayMode === 'browse'}
-							폴더를 클릭하여 저장된 채팅방 목록을 확인하세요.
+							{m.chatFavoritesBrowseDescription()}
 						{:else}
-							채팅방을 폴더에 정리하세요.
+							{m.chatFavoritesOrganizeRooms()}
 						{/if}
 					</DialogDescription>
 				</div>
@@ -339,7 +339,7 @@
 						onclick={toggleDisplayMode}
 						class="ml-4"
 					>
-						{displayMode === 'add' ? '목록' : '추가'}
+						{displayMode === 'add' ? m.chatFavoritesModeList() : m.chatFavoritesModeAdd()}
 					</Button>
 				{/if}
 			</div>
@@ -357,7 +357,7 @@
 				<div class="favorites-header">
 					<Button onclick={startCreateFolder} variant="outline" size="sm">
 						<span class="mr-1">+</span>
-						폴더 생성
+						{m.chatFavoritesCreateFolder()}
 					</Button>
 				</div>
 
@@ -367,8 +367,8 @@
 					</div>
 				{:else if favorites.length === 0}
 					<div class="empty-state">
-						<p>아직 폴더가 없습니다</p>
-						<p class="text-sm text-gray-500">폴더를 만들어 채팅방을 정리하세요.</p>
+						<p>{m.chatFavoritesNoFolders()}</p>
+						<p class="text-sm text-gray-500">{m.chatFavoritesNoFoldersGuide()}</p>
 					</div>
 				{:else}
 					<div class="folders-list">
@@ -391,7 +391,7 @@
 											<p class="folder-description">{favorite.description}</p>
 										{/if}
 										<p class="room-count">
-											{Object.keys(favorite.roomList || {}).length}개 방
+											{m.chatFavoritesRoomCount({ count: Object.keys(favorite.roomList || {}).length })}
 										</p>
 									</div>
 									{#if currentRoomId && displayMode === 'add'}
@@ -437,7 +437,7 @@
 														class="room-button"
 														onclick={() => handleRoomClick(roomId)}
 													>
-														<span class="room-id">방: {roomId}</span>
+														<span class="room-id">{m.chatFavoritesRoomLabel({ roomId })}</span>
 													</button>
 													{#if !currentRoomId}
 														<button
@@ -454,7 +454,7 @@
 												</div>
 											{/each}
 										{:else}
-											<p class="empty-rooms">방이 없습니다</p>
+											<p class="empty-rooms">{m.chatFavoritesNoRooms()}</p>
 										{/if}
 									</div>
 								{/if}
@@ -467,13 +467,13 @@
 			<!-- 폴더 생성/수정 모드 -->
 			<form class="folder-form" onsubmit={(e) => { e.preventDefault(); saveFolder(); }}>
 				<div class="form-group">
-					<label for="folderName" class="form-label">폴더 이름 *</label>
+					<label for="folderName" class="form-label">{m.chatFavoritesFolderNameLabel()}</label>
 					<input
 						id="folderName"
 						type="text"
 						bind:value={folderName}
 						class="form-input"
-						placeholder="예: 업무 관련"
+						placeholder={m.chatFavoritesFolderNamePlaceholder()}
 						maxlength="30"
 						required
 						onkeydown={(e) => e.stopPropagation()}
@@ -481,12 +481,12 @@
 				</div>
 
 				<div class="form-group">
-					<label for="folderDescription" class="form-label">폴더 설명 (선택사항)</label>
+					<label for="folderDescription" class="form-label">{m.chatFavoritesFolderDescLabel()}</label>
 					<textarea
 						id="folderDescription"
 						bind:value={folderDescription}
 						class="form-textarea"
-						placeholder="예: 팀 채팅을 모아둔 폴더"
+						placeholder={m.chatFavoritesFolderDescPlaceholder()}
 						maxlength="100"
 						rows="3"
 						onkeydown={(e) => e.stopPropagation()}
@@ -500,7 +500,7 @@
 							bind:checked={pinToTop}
 							class="form-checkbox"
 						/>
-						<span>상단 고정</span>
+						<span>{m.chatFavoritesPinToTop()}</span>
 					</label>
 				</div>
 
@@ -509,7 +509,7 @@
 						{m.commonCancel()}
 					</Button>
 					<Button type="submit" disabled={isSaving}>
-						{isSaving ? '저장 중...' : m.commonSave()}
+						{isSaving ? m.commonSaving() : m.commonSave()}
 					</Button>
 				</DialogFooter>
 			</form>

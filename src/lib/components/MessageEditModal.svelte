@@ -28,6 +28,7 @@
 	} from '$lib/functions/storage.functions';
 	import type { FileUploadStatus } from '$lib/types/chat.types';
 	import { authStore } from '$lib/stores/auth.svelte';
+	import * as m from '$lib/paraglide/messages.js';
 
 	/**
 	 * Props 인터페이스
@@ -67,13 +68,13 @@
 	let {
 		open = $bindable(),
 		title,
-		textLabel = '내용',
+		textLabel = m.messageEditContentLabel(),
 		initialText = '',
 		initialUrls = {},
 		roomId,
-		saveButtonText = '저장',
-		cancelButtonText = '취소',
-		textPlaceholder = '내용을 입력하세요...',
+		saveButtonText = m.messageEditSave(),
+		cancelButtonText = m.messageEditCancel(),
+		textPlaceholder = m.messageEditPlaceholder(),
 		onSave,
 		onCancel,
 		hasAdditionalFields = false,
@@ -127,7 +128,7 @@
 		if (files.length === 0) return;
 
 		if (!authStore.user?.uid) {
-			alert('로그인이 필요합니다.');
+			alert(m.authLoginRequired());
 			return;
 		}
 
@@ -150,7 +151,7 @@
 			const maxSizeMB = (maxSize / (1024 * 1024)).toFixed(0);
 
 			if (file.size > maxSize) {
-				alert(`파일 크기가 ${maxSizeMB}MB를 초과합니다: ${file.name}`);
+				alert(m.fileUploadSizeExceeded({ maxSize: maxSizeMB, fileName: file.name }));
 				continue;
 			}
 			validFiles.push(file);
@@ -314,14 +315,14 @@
 		// 업로드 중인 파일 확인
 		const incompleteFiles = uploadingFiles.filter((fs) => !fs.completed && !fs.error);
 		if (incompleteFiles.length > 0) {
-			error = `업로드 중인 파일이 ${incompleteFiles.length}개 있습니다. 업로드 완료 후 다시 시도해주세요.`;
+			error = m.fileUploadIncomplete({ count: incompleteFiles.length });
 			return;
 		}
 
 		// 업로드 실패한 파일 확인
 		const failedFiles = uploadingFiles.filter((fs) => fs.error);
 		if (failedFiles.length > 0) {
-			error = `업로드 실패한 파일이 ${failedFiles.length}개 있습니다. 삭제 후 다시 시도해주세요.`;
+			error = m.fileUploadFailed({ count: failedFiles.length });
 			return;
 		}
 
@@ -333,7 +334,7 @@
 			const result = await onSave(text.trim(), urls);
 
 			if (!result.success) {
-				error = result.error || '저장에 실패했습니다.';
+				error = result.error || m.messageEditSaveFailed();
 				saving = false;
 				return;
 			}
@@ -343,7 +344,7 @@
 			open = false;
 		} catch (err) {
 			console.error('저장 실패:', err);
-			error = '저장에 실패했습니다. 다시 시도해주세요.';
+			error = m.messageEditSaveFailedRetry();
 			saving = false;
 		}
 	}
@@ -455,7 +456,7 @@
 			<!-- 첨부파일 목록 (완료된 파일 + 업로드 중인 파일) -->
 			{#if Object.keys(urls).length > 0 || uploadingFiles.length > 0}
 				<div class="form-group">
-					<label class="form-label">첨부파일</label>
+					<label class="form-label">{m.messageAttachmentLabel()}</label>
 					<div class="file-grid">
 						<!-- 완료된 파일 -->
 						{#each Object.entries(urls) as [index, url]}
@@ -487,7 +488,7 @@
 								{/if}
 
 								<!-- 드래그 핸들 버튼 (왼쪽 하단) -->
-								<button type="button" class="file-drag-handle" aria-label="드래그하여 순서 변경">
+								<button type="button" class="file-drag-handle" aria-label={m.messageEditDragToReorder()}>
 									<svg
 										class="h-4 w-4"
 										fill="none"
@@ -613,7 +614,7 @@
 			<!-- 파일 업로드 버튼 + 취소/저장 버튼 (한 줄에 배치) -->
 			<div class="action-buttons-row">
 				<!-- 파일 업로드 버튼 (카메라 아이콘만) -->
-				<button type="button" class="upload-button-icon" onclick={handleFileButtonClick} title="파일 추가">
+				<button type="button" class="upload-button-icon" onclick={handleFileButtonClick} title={m.messageEditAddFile()}>
 					<svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 						<path
 							stroke-linecap="round"
@@ -637,7 +638,7 @@
 				<div class="button-group">
 					<Button variant="ghost" onclick={handleCancel} disabled={saving}>{cancelButtonText}</Button>
 					<Button variant="outline" onclick={handleSave} disabled={saving}
-						>{saving ? '저장 중...' : saveButtonText}</Button
+						>{saving ? m.messageEditSaving() : saveButtonText}</Button
 					>
 				</div>
 			</div>

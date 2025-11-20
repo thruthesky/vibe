@@ -22,6 +22,8 @@
 		authorName: string;
 		likeCount: number;
 		commentCount: number;
+		roomId?: string;
+		messageId?: string;
 	};
 
 	let popularPosts = $state<PopularPostData[]>([]);
@@ -49,7 +51,9 @@
 					'text',
 					'authorUid',
 					'likeCount',
-					'commentCount'
+					'commentCount',
+					'roomId',
+					'messageId'
 				]);
 
 				const authorUid = postData.authorUid as string;
@@ -67,7 +71,9 @@
 			authorUid,
 			authorName: (userData.displayName as string) || m.commonUnknownUser(),
 			likeCount: (postData.likeCount as number) || 0,
-			commentCount: (postData.commentCount as number) || 0
+			commentCount: (postData.commentCount as number) || 0,
+			roomId: postData.roomId as string | undefined,
+			messageId: postData.messageId as string | undefined
 		};
 	});
 
@@ -87,10 +93,18 @@
 	}
 
 	/**
-	 * 특정 게시글 상세 페이지로 이동
+	 * 특정 게시글로 이동
+	 * - roomId가 'post'가 아니고 messageId가 있으면 채팅방으로 이동
+	 * - 그 외의 경우 게시글 목록 페이지로 이동
 	 */
-	function goToPost(postId: string) {
-		void goto(`/post/view/${postId}`);
+	function goToPost(post: PopularPostData) {
+		// roomId가 'post'가 아니고 messageId가 있으면 채팅방으로 이동
+		if (post.roomId && post.roomId !== 'post' && post.messageId) {
+			void goto(`/chat/room?roomId=${post.roomId}`);
+		} else {
+			// 게시글 목록 페이지로 이동
+			void goto('/post/list');
+		}
 	}
 </script>
 
@@ -125,7 +139,7 @@
 		{:else}
 			<div class="posts-list">
 				{#each popularPosts as post, index}
-					<button type="button" class="post-item" onclick={() => goToPost(post.postId)}>
+					<button type="button" class="post-item" onclick={() => goToPost(post)}>
 						<!-- 순위 배지 -->
 						<div class="rank-badge {index < 3 ? 'rank-top' : ''}">
 							{index + 1}

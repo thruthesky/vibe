@@ -24,7 +24,7 @@
 	}
 
 	let {
-		open = $bindable(),
+		open = $bindable(false),
 		messageId: postId,
 		parentId = null,
 		parentText = null,

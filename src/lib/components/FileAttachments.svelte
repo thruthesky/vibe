@@ -135,7 +135,7 @@
 					onclick={() => isLastItem ? toggleShowAll() : openImageModal(urlString)}
 					class="attachment-item {spanClass}"
 				>
-					<img src={urlString} alt="첨부 이미지" class="attachment-image" />
+					<img src={urlString} alt={m.fileAttachmentImage()} class="attachment-image" />
 					{#if isLastItem}
 						<!-- Overlay: 어두운 배경 + +N 텍스트 -->
 						<div class="attachment-overlay">
@@ -248,7 +248,7 @@
 					type="button"
 					onclick={closeModal}
 					class="rounded-full bg-white/90 p-2 shadow-lg transition-colors hover:bg-white"
-					aria-label="뒤로가기"
+					aria-label={m.commonBack()}
 				>
 					<svg
 						class="h-6 w-6 text-gray-800"
@@ -266,7 +266,7 @@
 					type="button"
 					onclick={closeModal}
 					class="rounded-full bg-white/90 p-2 shadow-lg transition-colors hover:bg-white"
-					aria-label="닫기"
+					aria-label={m.commonClose()}
 				>
 					<svg
 						class="h-6 w-6 text-gray-800"
@@ -283,7 +283,7 @@
 			<!-- 확대된 이미지 -->
 			<img
 				src={selectedImageUrl}
-				alt="확대 이미지"
+				alt={m.fileAttachmentZoomed()}
 				class="max-h-[90vh] max-w-[90vw] rounded-lg object-contain shadow-2xl"
 				onclick={(e) => e.stopPropagation()}
 			/>

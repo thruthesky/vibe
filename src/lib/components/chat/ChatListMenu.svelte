@@ -139,7 +139,7 @@
 				type="button"
 				class="rounded-md p-2 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
 				onclick={toggleDropdown}
-				aria-label="설정 메뉴"
+				aria-label={m.chatListMenuAria()}
 			>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"

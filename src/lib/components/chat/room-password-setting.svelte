@@ -77,7 +77,7 @@
 				onCancel();
 			}
 		} catch (error) {
-			console.error('❌ 비밀번호 저장 실패:', error);
+			console.error(m.roomPasswordSaveFailed(), error);
 			toast.error(m.chatPasswordSaveFailure());
 		} finally {
 			isSaving = false;
@@ -117,7 +117,7 @@
 				onCancel();
 			}
 		} catch (error) {
-			console.error('❌ 비밀번호 삭제 실패:', error);
+			console.error(m.roomPasswordDeleteFailed(), error);
 			toast.error(m.chatPasswordSaveFailure());
 		} finally {
 			isSaving = false;

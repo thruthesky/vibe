@@ -106,7 +106,7 @@
 				password = '';
 			}
 		} catch (error) {
-			console.error('❌ 비밀번호 검증 에러:', error);
+			console.error(m.roomPasswordVerifyError(), error);
 			toast.error(m.chatPasswordVerifyFailure());
 		} finally {
 			isVerifying = false;

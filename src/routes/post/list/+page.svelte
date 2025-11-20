@@ -198,7 +198,7 @@ async function handleToggleLike(event: MouseEvent, targetId: string, targetType:
 		<h1 class="post-list-title">{m.chatCategoryLabel()}</h1>
 		<Button onclick={() => (isCreateDialogOpen = true)}>
 			<PenSquare class="h-4 w-4" />
-			글쓰기
+			{m.boardWritePost()}
 		</Button>
 	</div>
 

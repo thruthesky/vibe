@@ -31,7 +31,7 @@
 	}
 
 	let {
-		open = $bindable(),
+		open = $bindable(false),
 		postId,
 		initialText,
 		initialUrls,

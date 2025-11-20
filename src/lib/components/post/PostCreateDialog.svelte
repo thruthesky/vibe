@@ -31,7 +31,7 @@
 		defaultCategory?: ForumCategory | null;
 	}
 
-	let { open = $bindable(), onPostCreated, defaultCategory = null }: Props = $props();
+	let { open = $bindable(false), onPostCreated, defaultCategory = null }: Props = $props();
 
 	// 카테고리 이름을 i18n 메시지 함수로 변환
 	const getCategoryMessage = (category: ForumCategory) => {

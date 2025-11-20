@@ -18,6 +18,7 @@
 	import { get } from 'svelte/store';
 	import { requestFcmToken } from '$lib/fcm';
 	import { toast } from 'svelte-sonner';
+	import * as m from '$lib/paraglide/messages.js';
 
 	// 페이지 이동 최소 횟수 (이 횟수 이상이면 권한 요청 가능)
 	const CLICK_THRESHOLD = 10;
@@ -117,7 +118,7 @@
 
 		if (typeof Notification === 'undefined') {
 			console.error('[FCM Permission] ❌ Notification API 미지원');
-			toast.error('이 브라우저는 알림을 지원하지 않습니다.');
+			toast.error(m.fcmNotSupported());
 			showRequestDialog = false;
 			return;
 		}
@@ -126,7 +127,7 @@
 		if (Notification.permission === 'denied') {
 			console.error('[FCM Permission] ❌ 권한이 이미 차단되어 있습니다');
 			showRequestDialog = false;
-			toast.error('알림 권한이 이미 차단되어 있습니다.');
+			toast.error(m.fcmPermissionAlreadyDenied());
 			goto('/settings/fcm/permission');
 			return;
 		}
@@ -143,7 +144,7 @@
 			if (result === 'granted') {
 				// console.log('[FCM Permission] ✅✅✅ 권한 허용됨!');
 				showRequestDialog = false;
-				toast.success('알림 권한이 허용되었습니다.');
+				toast.success(m.fcmPermissionGranted());
 
 				// FCM 토큰 발급 및 저장
 				// console.log('[FCM Permission] 🔵 FCM 토큰 발급 시작...');
@@ -151,15 +152,15 @@
 
 				if (token) {
 					// console.log('[FCM Permission] ✅✅✅ FCM 토큰 발급 완료!');
-					toast.success('푸시 알림이 활성화되었습니다!');
+					toast.success(m.fcmActivated());
 				} else {
 					console.error('[FCM Permission] ❌ FCM 토큰 발급 실패');
-					toast.error('FCM 토큰 발급에 실패했습니다. 콘솔을 확인해주세요.');
+					toast.error(m.fcmTokenFailed());
 				}
 			} else if (result === 'denied') {
 				console.error('[FCM Permission] ❌ 권한 거부됨');
 				showRequestDialog = false;
-				toast.error('알림 권한이 거부되었습니다.');
+				toast.error(m.fcmPermissionDenied());
 				// 거절되면 안내 페이지로 이동
 				goto('/settings/fcm/permission');
 			} else {
@@ -174,7 +175,7 @@
 				message: (error as Error).message,
 				stack: (error as Error).stack
 			});
-			toast.error('권한 요청 중 오류가 발생했습니다.');
+			toast.error(m.fcmPermissionError());
 			showRequestDialog = false;
 		} finally {
 			isProcessing = false;
@@ -189,7 +190,7 @@
 	function handleLaterClick() {
 		showRequestDialog = false;
 		setFcmPermissionDismissed(true);
-		toast.info('푸시 알림은 나중에 설정할 수 있습니다.');
+		toast.info(m.fcmSetupLater());
 		goto('/settings/fcm/permission');
 	}
 
@@ -213,10 +214,9 @@
 {#if showRequestDialog}
 	<div class="permission-modal-overlay">
 		<div class="permission-modal-content">
-			<h2 class="modal-title">푸시 알림 권한이 필요합니다</h2>
+			<h2 class="modal-title">{m.fcmPermissionRequired()}</h2>
 			<p class="modal-description">
-				원활한 서비스 이용을 위해 브라우저 푸시 알림 권한을 허용해 주세요. 채팅 알림, 새로운 메시지
-				안내 등 주요 기능에 사용됩니다.
+				{m.fcmPermissionDescription()}
 			</p>
 
 			<div class="modal-buttons">
@@ -226,7 +226,7 @@
 					onclick={handleLaterClick}
 					disabled={isProcessing}
 				>
-					나중에
+					{m.commonLater()}
 				</button>
 				<button
 					type="button"
@@ -234,7 +234,7 @@
 					onclick={handleAllowClick}
 					disabled={isProcessing}
 				>
-					{isProcessing ? '처리 중...' : '퍼미션 허용하기'}
+					{isProcessing ? m.commonProcessing() : m.fcmAllowPermission()}
 				</button>
 			</div>
 		</div>
@@ -245,18 +245,17 @@
 {#if showDeniedDialog}
 	<div class="permission-modal-overlay">
 		<div class="permission-modal-content">
-			<h2 class="modal-title">알림 권한이 차단되어 있습니다</h2>
+			<h2 class="modal-title">{m.fcmPermissionBlockedTitle()}</h2>
 			<p class="modal-description">
-				브라우저에서 이 사이트의 알림 권한을 이미 <strong>차단</strong>한 상태입니다. 푸시 알림을
-				사용하려면 브라우저 설정에서 직접 권한을 다시 허용해야 합니다.
+				{@html m.fcmPermissionBlockedDesc()}
 			</p>
 			<p class="modal-description">
-				다음 페이지에서 브라우저별로 푸시 권한을 다시 허용하는 방법을 안내해 드릴게요.
+				{m.fcmPermissionBlockedGuide()}
 			</p>
 
 			<div class="modal-buttons">
 				<button type="button" class="btn-primary" onclick={goToSettingsFromDenied}>
-					설정 페이지로 이동
+					{m.fcmGoToSettings()}
 				</button>
 			</div>
 		</div>

@@ -91,7 +91,7 @@
 			isAuthenticated = true;
 			passwordError = '';
 		} else {
-			passwordError = '비밀번호가 올바르지 않습니다.';
+			passwordError = m.adminManagePasswordError();
 		}
 	}
 
@@ -113,13 +113,13 @@
 			console.error('[Admin] 로그인 오류:', error);
 
 			// 오류 메시지 설정
-			let errorMessage: string = '로그인에 실패했습니다.';
+			let errorMessage: string = m.adminManageLoginFailed();
 			if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
-				errorMessage = '계정을 찾을 수 없습니다. 계정이 생성되어 있는지 확인하세요.';
+				errorMessage = m.adminManageAccountNotFound();
 			} else if (error.code === 'auth/wrong-password') {
-				errorMessage = '비밀번호가 일치하지 않습니다.';
+				errorMessage = m.adminManagePasswordMismatch();
 			} else if (error.code === 'auth/too-many-requests') {
-				errorMessage = '너무 많은 요청이 발생했습니다. 잠시 후 다시 시도해주세요.';
+				errorMessage = m.adminManageTooManyRequests();
 			}
 
 			loginError = errorMessage;
@@ -130,7 +130,7 @@
 </script>
 
 <svelte:head>
-	<title>관리자 페이지 - 테스트 계정 관리</title>
+	<title>{m.pageTitleAdminManage()}</title>
 </svelte:head>
 
 <div class="container">
@@ -141,7 +141,7 @@
 				<input
 					type="password"
 					bind:value={passwordInput}
-					placeholder="관리자 비밀번호 입력"
+					placeholder={m.adminManagePasswordPlaceholder()}
 					class="input"
 					class:error={passwordError}
 				/>
@@ -153,13 +153,13 @@
 	{:else}
 		<!-- 테스트 계정 목록 화면 -->
 		<div class="accounts-container">
-			<h1>테스트 계정 관리</h1>
-			<p class="subtitle">계정을 클릭하여 로그인하세요</p>
+			<h1>{m.adminManageTitle()}</h1>
+			<p class="subtitle">{m.adminManageSubtitle()}</p>
 
 			<!-- 현재 로그인한 사용자 UID -->
 			{#if currentUser}
 				<div class="current-user">
-					<strong>현재 로그인:</strong>
+					<strong>{m.adminManageCurrentLogin()}</strong>
 					<code>{currentUser.uid}</code>
 				</div>
 			{/if}
@@ -181,7 +181,7 @@
 			</div>
 
 			{#if isLoading}
-				<div class="loading">로그인 중...</div>
+				<div class="loading">{m.adminManageLoggingIn()}</div>
 			{/if}
 		</div>
 	{/if}

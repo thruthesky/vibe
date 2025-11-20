@@ -139,7 +139,7 @@
 			type="button"
 			onclick={onTogglePin}
 			class="chat-list-item__pin-button"
-			title={isPinned ? '핀 해제' : '핀 설정'}
+			title={isPinned ? m.chatUnpin() : m.chatPin()}
 		>
 			<span class="text-xl">{isPinned ? '📌' : '📍'}</span>
 		</button>
