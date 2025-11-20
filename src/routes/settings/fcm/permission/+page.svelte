@@ -12,6 +12,7 @@
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
 	import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '$lib/components/ui/card';
+	import * as m from '$lib/paraglide/messages.js';
 
 	const DISMISSED_KEY = 'fcmPermissionDismissed';
 
@@ -26,20 +27,18 @@
 </script>
 
 <div class="container">
-	<h1 class="page-title">푸시 알림 권한 설정 안내</h1>
+	<h1 class="page-title">{m.fcmPermissionGuideTitle()}</h1>
 
 	<Card class="mb-6">
 		<CardHeader>
-			<CardTitle>알림 권한이 차단되어 있습니다</CardTitle>
+			<CardTitle>{m.fcmPermissionBlockedTitle()}</CardTitle>
 			<CardDescription>
-				현재 이 사이트의 푸시 알림 권한이 브라우저에서 차단된 상태입니다. 채팅 알림, 새로운 메시지
-				안내 등을 받으려면 아래 안내에 따라 권한을 다시 허용해 주세요.
+				{m.fcmPermissionBlockedDesc()}
 			</CardDescription>
 		</CardHeader>
 		<CardContent>
 			<p class="notice">
-				브라우저에서 한 번 차단된 알림 권한은 사이트에서 직접 요청할 수 없으며, 사용자가 브라우저
-				설정에서 직접 변경해야 합니다.
+				{m.fcmPermissionNotice()}
 			</p>
 		</CardContent>
 	</Card>
@@ -47,14 +46,14 @@
 	<!-- Chrome 데스크탑 -->
 	<Card class="mb-6">
 		<CardHeader>
-			<CardTitle>Chrome (데스크탑) 권한 허용 방법</CardTitle>
+			<CardTitle>{m.chromeDesktopInstructions()}</CardTitle>
 		</CardHeader>
 		<CardContent>
 			<ol class="instruction-list">
-				<li>주소창 왼쪽의 <strong>자물쇠 아이콘(🔒)</strong> 또는 <strong>정보 아이콘(ℹ️)</strong>을 클릭합니다.</li>
-				<li><strong>"알림(Notifications)"</strong> 항목을 찾습니다.</li>
-				<li>설정을 <strong>"허용(Allow)"</strong>으로 변경합니다.</li>
-				<li>페이지를 새로고침(F5 또는 Ctrl+R)한 뒤, 다시 서비스를 이용해 주세요.</li>
+				<li>주소창 왼쪽의 <strong>{m.lockIconLabel()}</strong> 또는 <strong>{m.infoIconLabel()}</strong>을 클릭합니다.</li>
+				<li><strong>"{m.notificationsLabel()}"</strong> 항목을 찾습니다.</li>
+				<li>설정을 <strong>"{m.allowOption()}"</strong>으로 변경합니다.</li>
+				<li>{m.refreshPageInstructions()}</li>
 			</ol>
 		</CardContent>
 	</Card>
@@ -62,15 +61,15 @@
 	<!-- Chrome Android -->
 	<Card class="mb-6">
 		<CardHeader>
-			<CardTitle>Chrome (Android) 권한 허용 방법</CardTitle>
+			<CardTitle>{m.chromeAndroidInstructions()}</CardTitle>
 		</CardHeader>
 		<CardContent>
 			<ol class="instruction-list">
-				<li>브라우저 메뉴(⋮)를 탭합니다.</li>
-				<li><strong>"사이트 설정(Site settings)"</strong>을 선택합니다.</li>
-				<li><strong>"알림(Notifications)"</strong>을 선택합니다.</li>
-				<li>차단된 사이트 목록에서 현재 사이트를 찾아 <strong>"허용"</strong>으로 변경합니다.</li>
-				<li>페이지를 새로고침한 뒤, 다시 서비스를 이용해 주세요.</li>
+				<li>{m.browserMenuAndroid()}</li>
+				<li><strong>"{m.siteSettingsLabel()}"</strong>을 선택합니다.</li>
+				<li><strong>"{m.notificationsLabel()}"</strong>을 선택합니다.</li>
+				<li>{m.allowBlockedSiteAndroid()}</li>
+				<li>{m.refreshPageInstructions()}</li>
 			</ol>
 		</CardContent>
 	</Card>
@@ -78,19 +77,18 @@
 	<!-- Safari macOS -->
 	<Card class="mb-6">
 		<CardHeader>
-			<CardTitle>Safari (macOS) 권한 허용 방법</CardTitle>
+			<CardTitle>{m.safariMacInstructions()}</CardTitle>
 		</CardHeader>
 		<CardContent>
 			<ol class="instruction-list">
-				<li><strong>Safari 메뉴 → 설정(Preferences)</strong>을 엽니다.</li>
-				<li><strong>"웹사이트(Websites)"</strong> 탭을 선택합니다.</li>
-				<li>왼쪽 목록에서 <strong>"알림(Notifications)"</strong>을 선택합니다.</li>
-				<li>오른쪽 목록에서 현재 사이트를 찾아 <strong>"허용"</strong>으로 변경합니다.</li>
-				<li>페이지를 새로고침한 뒤, 다시 서비스를 이용해 주세요.</li>
+				<li><strong>{m.safariPreferences()}</strong>을 엽니다.</li>
+				<li><strong>"{m.websitesLabel()}"</strong> 탭을 선택합니다.</li>
+				<li>왼쪽 목록에서 <strong>"{m.notificationsLabel()}"</strong>을 선택합니다.</li>
+				<li>오른쪽 목록에서 현재 사이트를 찾아 <strong>"{m.allowOption()}"</strong>으로 변경합니다.</li>
+				<li>{m.refreshPageInstructions()}</li>
 			</ol>
 			<p class="note">
-				<strong>참고:</strong> Safari iOS(iPhone/iPad)는 웹 푸시 알림을 지원하지 않습니다. iOS 16.4 이상에서는
-				홈 화면에 추가된 웹 앱에서만 제한적으로 지원됩니다.
+				<strong>참고:</strong> {m.safariIosNotice()}
 			</p>
 		</CardContent>
 	</Card>
@@ -98,16 +96,16 @@
 	<!-- Firefox 데스크탑 -->
 	<Card class="mb-6">
 		<CardHeader>
-			<CardTitle>Firefox (데스크탑) 권한 허용 방법</CardTitle>
+			<CardTitle>{m.firefoxDesktopInstructions()}</CardTitle>
 		</CardHeader>
 		<CardContent>
 			<ol class="instruction-list">
-				<li>주소창 왼쪽의 <strong>자물쇠 아이콘(🔒)</strong>을 클릭합니다.</li>
-				<li><strong>"연결이 안전함(Connection Secure)"</strong> 옆의 화살표를 클릭합니다.</li>
-				<li><strong>"추가 정보(More Information)"</strong>를 선택합니다.</li>
-				<li><strong>"권한(Permissions)"</strong> 탭을 선택합니다.</li>
-				<li><strong>"알림 전송(Send Notifications)"</strong> 항목에서 <strong>"허용"</strong>을 선택합니다.</li>
-				<li>페이지를 새로고침한 뒤, 다시 서비스를 이용해 주세요.</li>
+				<li>주소창 왼쪽의 <strong>{m.lockIconLabel()}</strong>을 클릭합니다.</li>
+				<li><strong>"{m.safeConnectionLabel()}"</strong> 옆의 화살표를 클릭합니다.</li>
+				<li><strong>"{m.moreInfoLabel()}"</strong>를 선택합니다.</li>
+				<li><strong>"{m.permissionsLabel()}"</strong> 탭을 선택합니다.</li>
+				<li><strong>"{m.sendNotificationsLabel()}"</strong> 항목에서 <strong>"{m.allowOption()}"</strong>을 선택합니다.</li>
+				<li>{m.refreshPageInstructions()}</li>
 			</ol>
 		</CardContent>
 	</Card>
@@ -115,14 +113,14 @@
 	<!-- Edge -->
 	<Card class="mb-6">
 		<CardHeader>
-			<CardTitle>Edge (데스크탑) 권한 허용 방법</CardTitle>
+			<CardTitle>{m.edgeDesktopInstructions()}</CardTitle>
 		</CardHeader>
 		<CardContent>
 			<ol class="instruction-list">
-				<li>주소창 왼쪽의 <strong>자물쇠 아이콘(🔒)</strong>을 클릭합니다.</li>
-				<li><strong>"이 사이트의 권한(Permissions for this site)"</strong>을 선택합니다.</li>
-				<li><strong>"알림(Notifications)"</strong> 항목을 <strong>"허용(Allow)"</strong>으로 변경합니다.</li>
-				<li>페이지를 새로고침한 뒤, 다시 서비스를 이용해 주세요.</li>
+				<li>주소창 왼쪽의 <strong>{m.lockIconLabel()}</strong>을 클릭합니다.</li>
+				<li><strong>"{m.sitePermissionsLabel()}"</strong>을 선택합니다.</li>
+				<li><strong>"{m.notificationsLabel()}"</strong> 항목을 <strong>"{m.allowOption()}"</strong>으로 변경합니다.</li>
+				<li>{m.refreshPageInstructions()}</li>
 			</ol>
 		</CardContent>
 	</Card>
@@ -130,16 +128,14 @@
 	<!-- 추가 안내 -->
 	<Card class="mb-6">
 		<CardHeader>
-			<CardTitle>권한 허용 후 확인 방법</CardTitle>
+			<CardTitle>{m.verificationMethodTitle()}</CardTitle>
 		</CardHeader>
 		<CardContent>
 			<p class="notice">
-				권한을 다시 허용하신 뒤에는 페이지를 새로고침하고, 채팅 목록 페이지 또는 앱 내에서 몇 번
-				이동하시면 자동으로 푸시 알림이 다시 활성화됩니다.
+				{m.permissionReenabledNotice1()}
 			</p>
 			<p class="notice">
-				만약 권한을 허용했는데도 알림이 오지 않는다면, 브라우저를 완전히 종료한 후 다시 시작해
-				보세요.
+				{m.permissionReenabledNotice2()}
 			</p>
 		</CardContent>
 	</Card>
@@ -147,11 +143,11 @@
 	<!-- 문의 안내 -->
 	<Card>
 		<CardHeader>
-			<CardTitle>추가 문의</CardTitle>
+			<CardTitle>{m.additionalInquiries()}</CardTitle>
 		</CardHeader>
 		<CardContent>
 			<p class="notice">
-				위 방법을 따라 했는데도 문제가 해결되지 않는다면, 고객 지원팀으로 문의해 주세요.
+				{m.contactSupportNotice()}
 			</p>
 		</CardContent>
 	</Card>

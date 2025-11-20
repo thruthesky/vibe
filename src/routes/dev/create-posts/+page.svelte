@@ -32,19 +32,22 @@
 		'story'
 	] as const;
 
-	// 카테고리 한글 이름 매핑
-	const categoryLabels: Record<string, string> = {
-		discussion: '토론',
-		qna: '질문과 답변',
-		news: '뉴스',
-		info: '정보',
-		selling: '판매',
-		hiring: '구인/구직',
-		travel: '여행',
-		mukbang: '먹방',
-		realestate: '부동산',
-		hobby: '취미',
-		story: '이야기'
+	// 카테고리 한글 이름 매핑 (i18n 키를 사용하여 동적으로 생성)
+	const getCategoryLabel = (category: string): string => {
+		const labelMap: Record<string, () => string> = {
+			discussion: m.categoryDiscussion,
+			qna: m.categoryQna,
+			news: m.categoryNews,
+			info: m.categoryInfo,
+			selling: m.categorySelling,
+			hiring: m.categoryHiring,
+			travel: m.categoryTravel,
+			mukbang: m.categoryMukbang,
+			realestate: m.categoryRealEstate,
+			hobby: m.categoryHobby,
+			story: m.categoryStory
+		};
+		return labelMap[category] ? labelMap[category]() : category;
 	};
 
 	// 생성 가능한 게시글 개수 옵션
@@ -98,8 +101,8 @@
 				const postData = {
 					authorUid: uid, // 작성자 UID (Firebase Rules 필수 필드)
 					category: selectedCategory, // 선택한 카테고리
-					title: `테스트 게시글 #${timestamp}`, // 제목
-					text: `${categoryLabels[selectedCategory]} #${postNumber} - 이것은 테스트 게시글입니다. (생성 시각: ${new Date(timestamp).toLocaleString('ko-KR')})`, // 내용
+					title: `${m.testPostTitle()} #${timestamp}`, // 제목
+					text: `${getCategoryLabel(selectedCategory)} #${postNumber} - ${m.testPostContent()} (생성 시각: ${new Date(timestamp).toLocaleString('ko-KR')})`, // 내용
 					createdAt: timestamp, // 생성 시각
 					updatedAt: timestamp // 수정 시각
 				};
@@ -138,15 +141,15 @@
 </script>
 
 <svelte:head>
-	<title>테스트 게시글 생성 - Sonub Dev</title>
+	<title>{m.pageTitleTestPostGen()}</title>
 </svelte:head>
 
 <div class="space-y-6">
 	<!-- 페이지 헤더 -->
 	<div>
-		<h1 class="text-3xl font-bold text-gray-900">테스트 게시글 생성</h1>
+		<h1 class="text-3xl font-bold text-gray-900">{m.testPostGenerationTitle()}</h1>
 		<p class="mt-2 text-gray-600">
-			개발 및 테스트를 위한 임시 게시글을 대량으로 생성합니다. (경로: /posts)
+			{m.testPostGenerationDesc()}
 		</p>
 	</div>
 
@@ -154,7 +157,7 @@
 	{#if !authStore.user}
 		<Alert>
 			<div class="text-sm text-red-600">
-				<strong>경고:</strong> 게시글을 생성하려면 먼저 로그인이 필요합니다.
+				<strong>{m.warningLabel()}</strong> {m.postCreationLoginRequired()}
 			</div>
 		</Alert>
 	{/if}
@@ -163,15 +166,15 @@
 	<Card>
 		<div class="space-y-6 p-6">
 			<div>
-				<h2 class="text-xl font-semibold text-gray-900">생성 설정</h2>
-				<p class="text-sm text-gray-600">카테고리와 생성할 게시글 개수를 선택하세요.</p>
+				<h2 class="text-xl font-semibold text-gray-900">{m.generationSettings()}</h2>
+				<p class="text-sm text-gray-600">{m.generationSettingsDesc()}</p>
 			</div>
 
 			<div class="grid gap-6 md:grid-cols-2">
 				<!-- 카테고리 선택 -->
 				<div>
 					<label for="category" class="block text-sm font-medium text-gray-700">
-						카테고리 선택
+						{m.categorySelectLabel()}
 					</label>
 					<select
 						id="category"
@@ -180,19 +183,19 @@
 					>
 						{#each categories as category}
 							<option value={category}>
-								{categoryLabels[category]} ({category})
+								{getCategoryLabel(category)} ({category})
 							</option>
 						{/each}
 					</select>
 					<p class="mt-2 text-sm text-gray-500">
-						선택한 카테고리: <span class="font-semibold">{categoryLabels[selectedCategory]}</span>
+						{m.selectedCategoryLabel()} <span class="font-semibold">{getCategoryLabel(selectedCategory)}</span>
 					</p>
 				</div>
 
 				<!-- 개수 선택 -->
 				<div>
 					<label for="count" class="block text-sm font-medium text-gray-700">
-						생성할 게시글 개수
+						{m.countSelectLabel()}
 					</label>
 					<select
 						id="count"
@@ -206,7 +209,7 @@
 						{/each}
 					</select>
 					<p class="mt-2 text-sm text-gray-500">
-						생성 예정: <span class="font-semibold">{selectedCount}개</span>
+						{m.generationCountLabel()} <span class="font-semibold">{selectedCount}개</span>
 					</p>
 				</div>
 			</div>
@@ -220,9 +223,9 @@
 					class="w-full bg-blue-600 text-white hover:bg-blue-700 md:w-auto"
 				>
 					{#if isGenerating}
-						게시글 생성 중... ({progress}/{selectedCount})
+						{m.generatingPosts()} ({progress}/{selectedCount})
 					{:else}
-						게시글 생성 시작
+						{m.startGeneration()}
 					{/if}
 				</Button>
 			</div>
@@ -231,7 +234,7 @@
 			{#if isGenerating || progress > 0}
 				<div class="space-y-2">
 					<div class="flex justify-between text-sm">
-						<span class="text-gray-700">진행 상황</span>
+						<span class="text-gray-700">{m.progressLabel()}</span>
 						<span class="font-semibold text-gray-900">
 							{progress} / {selectedCount} ({progressPercentage}%)
 						</span>
@@ -248,7 +251,7 @@
 			<!-- 성공 메시지 -->
 			{#if successMessage}
 				<div class="rounded-lg bg-green-50 p-4 text-sm text-green-800">
-					<strong>성공:</strong>
+					<strong>{m.successBadge()}</strong>
 					{successMessage}
 				</div>
 			{/if}
@@ -256,7 +259,7 @@
 			<!-- 에러 메시지 -->
 			{#if errorMessage}
 				<div class="rounded-lg bg-red-50 p-4 text-sm text-red-800">
-					<strong>오류:</strong>
+					<strong>{m.errorBadge()}</strong>
 					{errorMessage}
 				</div>
 			{/if}
@@ -264,7 +267,7 @@
 			<!-- 최근 생성된 키 -->
 			{#if recentKeys.length > 0}
 				<div>
-					<h3 class="text-lg font-semibold text-gray-900">최근 생성된 게시글 ID (최대 5개)</h3>
+					<h3 class="text-lg font-semibold text-gray-900">{m.recentGeneratedPostsTitle()}</h3>
 					<ul class="mt-3 space-y-2 text-sm text-gray-700">
 						{#each recentKeys as key}
 							<li
@@ -282,16 +285,16 @@
 	<!-- 안내 사항 -->
 	<Card>
 		<div class="space-y-4 p-6 text-sm text-gray-600">
-			<h2 class="text-xl font-semibold text-gray-900">생성 정보</h2>
+			<h2 class="text-xl font-semibold text-gray-900">{m.generationInfo()}</h2>
 			<ul class="list-inside list-disc space-y-2">
-				<li><strong>저장 경로:</strong> /posts/postId</li>
-				<li><strong>필수 필드:</strong> authorUid, category, text, createdAt (Firebase Rules 기준)</li>
+				<li><strong>{m.commonInfo()}:</strong> {m.postPath()}</li>
+				<li><strong>{m.requiredFields()}</strong></li>
 				<li>
 					<strong>사용 가능한 카테고리:</strong>
-					{categories.map((c) => categoryLabels[c]).join(', ')}
+					{categories.map((c) => getCategoryLabel(c)).join(', ')}
 				</li>
-				<li><strong>작성자:</strong> 현재 로그인한 사용자의 UID가 자동으로 설정됩니다.</li>
-				<li><strong>확인:</strong> Firebase Console의 Database - posts 경로에서 생성된 게시글을 확인할 수 있습니다.</li>
+				<li><strong>{m.authorUidInfo()}</strong></li>
+				<li><strong>{m.verifyPostsInfo()}</strong></li>
 			</ul>
 		</div>
 	</Card>
@@ -299,11 +302,11 @@
 	<!-- 주의 사항 -->
 	<Alert>
 		<div class="space-y-2 text-sm text-yellow-800">
-			<p><strong>주의사항:</strong></p>
+			<p><strong>{m.cautionTitle()}</strong></p>
 			<ul class="list-inside list-disc space-y-1">
-				<li>이 기능은 개발 및 테스트 목적으로만 사용하세요.</li>
-				<li>생성된 게시글은 실제 데이터베이스에 저장됩니다.</li>
-				<li>프로덕션 환경에서는 사용하지 마세요.</li>
+				<li>{m.devOnlyWarning()}</li>
+				<li>{m.realDataWarning()}</li>
+				<li>{m.noProductionWarning()}</li>
 			</ul>
 		</div>
 	</Alert>

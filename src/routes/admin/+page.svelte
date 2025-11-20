@@ -6,18 +6,19 @@
 	 */
 
 	import * as Card from '$lib/components/ui/card/index.js';
+	import * as m from '$lib/paraglide/messages.js';
 </script>
 
 <svelte:head>
-	<title>개발 계획 - Sonub</title>
+	<title>{m.pageTitleDevPlan()}</title>
 </svelte:head>
 
 <div class="mx-auto max-w-7xl space-y-8">
 	<!-- 페이지 헤더 -->
 	<div class="page-header">
-		<h1 class="page-title">개발 계획 (Development Plan)</h1>
+		<h1 class="page-title">{m.devPlanTitle()}</h1>
 		<p class="page-description">
-			Sonub 프로젝트의 향후 개발 기능 목록과 로드맵입니다. 체크 표시(✅)는 완료된 기능을 나타냅니다.
+			{m.devPlanDescription()}
 		</p>
 	</div>
 
@@ -29,31 +30,31 @@
 				<div class="flex items-start gap-3">
 					<span class="todo-number">1</span>
 					<div class="flex flex-col gap-1">
-						<Card.Title class="text-xl">그룹 채팅 기능</Card.Title>
-						<span class="todo-badge todo-badge--done">✅ 완료</span>
+						<Card.Title class="text-xl">{m.devFeatureGroupChat()}</Card.Title>
+						<span class="todo-badge todo-badge--done">{m.badgeDone()}</span>
 					</div>
 				</div>
 			</Card.Header>
 			<Card.Content>
 				<div class="space-y-4">
 					<div>
-						<h4 class="todo-subtitle">1-1. 오픈 채팅 기능</h4>
+						<h4 class="todo-subtitle">{m.devFeatureOpenChat()}</h4>
 						<ul class="todo-list">
-							<li>공개 채팅방 생성 (누구나 입장 가능)</li>
-							<li>오픈 채팅 목록 페이지 (<code>/chat/open</code>)</li>
-							<li>채팅방 이름, 설명, 태그로 검색 가능</li>
+							<li>{m.devFeatureOpenChatDesc1()}</li>
+							<li>{m.devFeatureOpenChatDesc2()}</li>
+							<li>{m.devFeatureOpenChatDesc3()}</li>
 							<li><code>/open-chats/{'{roomId}'}</code></li>
 							<li>최대 참여 인원 설정 옵션</li>
 						</ul>
 					</div>
 					<div>
-						<h4 class="todo-subtitle">1-2. 일반 그룹 채팅</h4>
+						<h4 class="todo-subtitle">{m.devFeaturePrivateGroupChat()}</h4>
 						<ul class="todo-list">
-							<li>초대 기반 비공개 그룹 채팅</li>
-							<li>오픈 채팅 메뉴에 표시되지 않음</li>
-							<li>검색 불가능 (초대 링크 또는 직접 초대만 가능)</li>
+							<li>{m.devFeaturePrivateGroupChatDesc1()}</li>
+							<li>{m.devFeaturePrivateGroupChatDesc2()}</li>
+							<li>{m.devFeaturePrivateGroupChatDesc3()}</li>
 							<li><code>/group-chats/{'{roomId}'}</code></li>
-							<li>멤버 관리: 초대, 추방, 나가기</li>
+							<li>{m.devFeaturePrivateGroupChatDesc4()}</li>
 						</ul>
 					</div>
 				</div>
@@ -66,15 +67,15 @@
 				<div class="flex items-start gap-3">
 					<span class="todo-number">2</span>
 					<div class="flex flex-col gap-1">
-						<Card.Title class="text-xl">새로운 메시지 뱃지 증가 및 방 입장시 초기화</Card.Title>
-						<span class="todo-badge todo-badge--done">✅ 완료</span>
+						<Card.Title class="text-xl">{m.devFeatureMessageBadge()}</Card.Title>
+						<span class="todo-badge todo-badge--done">{m.badgeDone()}</span>
 					</div>
 				</div>
 			</Card.Header>
 			<Card.Content>
 				<ul class="todo-list">
-					<li>채팅방 목록에서 읽지 않은 메시지 개수 뱃지 표시</li>
-					<li>채팅방 입장 시 자동으로 뱃지 카운트 초기화</li>
+					<li>{m.devFeatureMessageBadgeDesc1()}</li>
+					<li>{m.devFeatureMessageBadgeDesc2()}</li>
 					<li><code>/chat-joins/{'{uid}'}/{'{roomId}'}/newMessageCount</code> 필드 활용</li>
 				</ul>
 			</Card.Content>
@@ -86,16 +87,16 @@
 				<div class="flex items-start gap-3">
 					<span class="todo-number">3</span>
 					<div class="flex flex-col gap-1">
-						<Card.Title class="text-xl">즐겨찾기 기능 (폴더관리)</Card.Title>
-						<span class="todo-badge todo-badge--done">✅ 완료</span>
+						<Card.Title class="text-xl">{m.devFeatureFavorites()}</Card.Title>
+						<span class="todo-badge todo-badge--done">{m.badgeDone()}</span>
 					</div>
 				</div>
 			</Card.Header>
 			<Card.Content>
 				<ul class="todo-list">
-					<li>채팅방을 즐겨찾기에 추가/제거</li>
-					<li>즐겨찾기 폴더 생성 및 관리 (예: 업무, 친구, 가족 등)</li>
-					<li>즐겨찾기된 채팅방을 폴더별로 그룹화하여 표시</li>
+					<li>{m.devFeatureFavoritesDesc1()}</li>
+					<li>{m.devFeatureFavoritesDesc2()}</li>
+					<li>{m.devFeatureFavoritesDesc3()}</li>
 					<li><code>/user-favorites/{'{uid}'}/{'{folderId}'}/{'{roomId}'}</code></li>
 				</ul>
 			</Card.Content>
@@ -107,16 +108,16 @@
 				<div class="flex items-start gap-3">
 					<span class="todo-number">4</span>
 					<div class="flex flex-col gap-1">
-						<Card.Title class="text-xl">채팅 핀(Chat Pin) 기능</Card.Title>
-						<span class="todo-badge todo-badge--done">✅ 완료</span>
+						<Card.Title class="text-xl">{m.devFeatureChatPin()}</Card.Title>
+						<span class="todo-badge todo-badge--done">{m.badgeDone()}</span>
 					</div>
 				</div>
 			</Card.Header>
 			<Card.Content>
 				<ul class="todo-list">
-					<li>중요한 채팅방을 상단에 고정</li>
-					<li>핀 설정/해제 토글 버튼</li>
-					<li>핀된 채팅방은 항상 목록 최상단에 표시</li>
+					<li>{m.devFeatureChatPinDesc1()}</li>
+					<li>{m.devFeatureChatPinDesc2()}</li>
+					<li>{m.devFeatureChatPinDesc3()}</li>
 					<li><code>/chat-joins/{'{uid}'}/{'{roomId}'}/pinned: boolean</code></li>
 				</ul>
 			</Card.Content>
@@ -128,20 +129,20 @@
 				<div class="flex items-start gap-3">
 					<span class="todo-number">5</span>
 					<div class="flex flex-col gap-1">
-						<Card.Title class="text-xl">FCM 클라이언트 설정 + 채팅 메시지 알림 전송</Card.Title>
-						<span class="todo-badge todo-badge--done">✅ 완료</span>
+						<Card.Title class="text-xl">{m.devFeatureFCMNotification()}</Card.Title>
+						<span class="todo-badge todo-badge--done">{m.badgeDone()}</span>
 					</div>
 				</div>
 			</Card.Header>
 			<Card.Content>
 				<ul class="todo-list">
-					<li>Firebase Cloud Messaging (FCM) Permission 요청</li>
-					<li>FCM 토큰 생성 및 저장</li>
+					<li>{m.devFeatureFCMDesc1()}</li>
+					<li>{m.devFeatureFCMDesc2()}</li>
 					<li><code>/fcm-tokens/{'{tokenId}'}: {'{uid, createdAt}'}</code></li>
-					<li>토큰 갱신 처리 및 만료된 토큰 정리</li>
-					<li>Cloud Functions에서 새 메시지 감지 시 FCM 전송</li>
-					<li>배치 전송 구현 (255개씩 분할 전송)</li>
-					<li>알림 페이로드: 발신자 이름, 메시지 내용 미리보기, 채팅방 ID</li>
+					<li>{m.devFeatureFCMDesc3()}</li>
+					<li>{m.devFeatureFCMDesc4()}</li>
+					<li>{m.devFeatureFCMDesc5()}</li>
+					<li>{m.devFeatureFCMDesc6()}</li>
 				</ul>
 			</Card.Content>
 		</Card.Root>
@@ -152,14 +153,14 @@
 				<div class="flex items-start gap-3">
 					<span class="todo-number">6</span>
 					<div class="flex flex-col gap-1">
-						<Card.Title class="text-xl">알림 구독</Card.Title>
-						<span class="todo-badge todo-badge--done">✅ 완료</span>
+						<Card.Title class="text-xl">{m.devFeatureNotificationSubscription()}</Card.Title>
+						<span class="todo-badge todo-badge--done">{m.badgeDone()}</span>
 					</div>
 				</div>
 			</Card.Header>
 			<Card.Content>
 				<ul class="todo-list">
-					<li>채팅방 별 알림을 구독/해제 기능 추가</li>
+					<li>{m.devFeatureNotificationSubscriptionDesc1()}</li>
 					<li>
 						<strong>그룹 채팅:</strong>
 						<code>/chat-rooms/{'{roomId}'}/members/{'{uid}'}: boolean</code> - true: 알림 받기,
