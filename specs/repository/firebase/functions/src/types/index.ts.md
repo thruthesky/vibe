@@ -1,15 +1,19 @@
 ---
-title: index.ts
-type: typescript
-path: firebase/functions/src/types/index.ts
-status: active
-version: 1.0.0
-last_updated: 2025-11-15
+title: index.ts - TypeScript 소스 코드
+original_path: firebase/functions/src/types/index.ts
+category: cloud-function
+file_type: ts
+status: current
+last_updated: 2025-11-20
 ---
+
+# index.ts
 
 ## 개요
 
-이 파일은 `firebase/functions/src/types/index.ts`의 소스 코드를 포함하는 SED 스펙 문서입니다.
+**원본 경로**: `firebase/functions/src/types/index.ts`
+
+**파일 유형**: TypeScript 소스 코드
 
 ## 소스 코드
 
@@ -21,12 +25,31 @@ last_updated: 2025-11-15
 
 /**
  * 게시판 카테고리 상수
- * - community: 커뮤니티
+ * - discussion: 자유 토론
  * - qna: 질문과 답변
  * - news: 뉴스
- * - market: 회원장터
+ * - info: 정보 공유
+ * - selling: 판매
+ * - hiring: 구인구직
+ * - travel: 여행
+ * - mukbang: 먹방
+ * - realestate: 부동산
+ * - hobby: 취미
+ * - story: 사연
  */
-export const FORUM_CATEGORIES = ["community", "qna", "news", "market"] as const;
+export const FORUM_CATEGORIES = [
+  "discussion",
+  "qna",
+  "news",
+  "info",
+  "selling",
+  "hiring",
+  "travel",
+  "mukbang",
+  "realestate",
+  "hobby",
+  "story",
+] as const;
 
 /**
  * 게시판 카테고리 타입
@@ -116,17 +139,14 @@ export interface UserData {
 }
 
 /**
- * likeId 파싱 결과 인터페이스
- * 형식: "post-<post-id>-<uid>" 또는 "comment-<comment-id>-<uid>"
+ * 좋아요 대상 타입
+ * - chat-message-{roomId}: 채팅 메시지 (roomId 정보 포함)
+ * - comment: 댓글
+ * - post: 게시글
+ *
+ * ⚠️ 레거시: "message"는 더 이상 사용하지 않습니다. "chat-message-{roomId}" 형식을 사용하세요.
  */
-export interface ParsedLikeId {
-  /** 좋아요 타입 (post | comment) */
-  type: "post" | "comment";
-  /** 노드 ID (postId 또는 commentId) */
-  nodeId: string;
-  /** 사용자 UID */
-  uid: string;
-}
+export type LikeTargetType = string;
 
 /**
  * 신고 사유 타입
@@ -285,6 +305,4 @@ export interface ChatInvitationData {
   /** 정렬용 필드: "-{timestamp}" (최신순) */
   invitationOrder?: string;
 }
-
 ```
-

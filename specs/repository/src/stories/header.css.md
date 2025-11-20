@@ -1,15 +1,19 @@
 ---
-title: header.css
-type: stylesheet
-path: src/stories/header.css
-status: active
-version: 1.0.0
-last_updated: 2025-11-15
+title: header.css - CSS 스타일시트
+original_path: src/stories/header.css
+category: style
+file_type: css
+status: current
+last_updated: 2025-11-20
 ---
+
+# header.css
 
 ## 개요
 
-이 파일은 `src/stories/header.css`의 소스 코드를 포함하는 SED 스펙 문서입니다.
+**원본 경로**: `src/stories/header.css`
+
+**파일 유형**: CSS 스타일시트
 
 ## 소스 코드
 
@@ -46,6 +50,4 @@ last_updated: 2025-11-15
   color: #333;
   font-size: 14px;
 }
-
 ```
-

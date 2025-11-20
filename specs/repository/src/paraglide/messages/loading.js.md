@@ -1,15 +1,19 @@
 ---
-title: loading.js
-type: javascript
-path: src/paraglide/messages/loading.js
-status: active
-version: 1.0.0
-last_updated: 2025-11-15
+title: loading.js - JavaScript 소스 코드
+original_path: src/paraglide/messages/loading.js
+category: source
+file_type: js
+status: current
+last_updated: 2025-11-20
 ---
+
+# loading.js
 
 ## 개요
 
-이 파일은 `src/paraglide/messages/loading.js`의 소스 코드를 포함하는 SED 스펙 문서입니다.
+**원본 경로**: `src/paraglide/messages/loading.js`
+
+**파일 유형**: JavaScript 소스 코드
 
 ## 소스 코드
 
@@ -55,4 +59,3 @@ export const loading = (inputs = {}, options = {}) => {
 	return zh_loading(inputs)
 };
 ```
-

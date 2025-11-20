@@ -59,7 +59,14 @@ export async function handleUserCreate(
    - 없으면 현재 시간(`Date.now()`) 사용
    - `/users/{uid}/createdAt`에 직접 저장
 
-2. **데이터 정규화 및 동기화** (향후 구현 예정)
+2. **registerOrder 필드 자동 생성** ⭐ 핵심
+   - 최신순 정렬을 위한 역순 타임스탬프 필드
+   - 계산식: `Number.MAX_SAFE_INTEGER - createdAt`
+   - 최신 사용자일수록 작은 값을 가짐
+   - 오름차순 정렬 시 최신 사용자가 먼저 표시됨
+   - `/users/{uid}/registerOrder`에 직접 저장
+
+3. **데이터 정규화 및 동기화** (향후 구현 예정)
    - `updatedAt` 필드 자동 생성
    - `displayNameLowerCase` 자동 생성
    - `photoUrl` 처리
@@ -81,15 +88,34 @@ export async function handleUserCreate(
 
   const now = Date.now();
 
+  const updates: Record<string, unknown> = {};
+
   // createdAt 필드 자동 생성 (없는 경우만)
   const createdAt =
     typeof userData.createdAt === "number" ? userData.createdAt : now;
 
   // /users/{uid}/createdAt 직접 저장 (없는 경우만)
   if (userData.createdAt === undefined || userData.createdAt === null) {
-    await admin.database().ref(`users/${uid}/createdAt`).set(createdAt);
-    logger.info("createdAt 저장 완료", {uid, createdAt});
+    updates[`users/${uid}/createdAt`] = createdAt;
+    logger.info("createdAt 저장 예정", {uid, createdAt});
   }
+
+  // registerOrder 필드 자동 생성 (최신순 정렬용)
+  // registerOrder = Number.MAX_SAFE_INTEGER - createdAt
+  // 최신 사용자일수록 작은 값을 가져서 오름차순 정렬 시 먼저 표시됨
+  const registerOrder = Number.MAX_SAFE_INTEGER - createdAt;
+  updates[`users/${uid}/registerOrder`] = registerOrder;
+  logger.info("registerOrder 저장 예정", {uid, registerOrder, createdAt});
+
+  if (Object.keys(updates).length > 0) {
+    await admin.database().ref().update(updates);
+    logger.info("사용자 생성 관련 업데이트 완료", {
+      uid,
+      updatesCount: Object.keys(updates).length,
+    });
+  }
+
+  await incrementActionCounter(uid, "user", 1);
 
   return {
     success: true,
@@ -100,11 +126,15 @@ export async function handleUserCreate(
 
 **로깅:**
 - "새 사용자 등록 처리 시작": uid, displayName
-- "createdAt 저장 완료": uid, createdAt
+- "createdAt 저장 예정": uid, createdAt (조건부 - createdAt이 없을 때만)
+- "registerOrder 저장 예정": uid, registerOrder, createdAt
+- "사용자 생성 관련 업데이트 완료": uid, updatesCount
 
 **특징:**
 - `createdAt`이 이미 있으면 덮어쓰지 않음
-- 현재는 createdAt만 처리하고, 향후 추가 로직 구현 예정
+- `registerOrder`는 항상 생성됨 (createdAt 기반 계산)
+- 최신 사용자일수록 작은 registerOrder 값을 가짐
+- 오름차순 정렬 시 최신 사용자가 먼저 표시되는 구조
 
 ---
 
@@ -581,18 +611,17 @@ export async function handleUserGenderUpdate(
 import * as admin from "firebase-admin";
 import * as logger from "firebase-functions/logger";
 import {UserData} from "../types";
+import {incrementActionCounter} from "./user-action-counters.handler";
 
 /**
  * 사용자 등록 시 user-props 노드에 주요 필드를 분리 저장하고 createdAt을 설정합니다.
  *
  * 수행 작업:
  * 1. createdAt 필드 자동 생성 및 /users/{uid}/createdAt 직접 저장
- * 2. updateUserProps() 함수를 통해 모든 사용자 데이터 정규화 및 동기화 수행
- *    - updatedAt 필드 자동 생성
- *    - displayNameLowerCase 자동 생성
+ * 2. registerOrder 필드 자동 생성 (최신순 정렬용)
+ * 3. updateUserProps() 함수를 통해 모든 사용자 데이터 정규화 및 동기화 수행
  *    - photoUrl 처리
  *    - /users/{uid} 노드 업데이트
- *    - /user-props/ 노드 동기화
  *    - /stats/counters/user +1 (전체 사용자 통계 업데이트)
  *
  * @param {string} uid - 사용자 UID
@@ -610,15 +639,35 @@ export async function handleUserCreate(
 
   const now = Date.now();
 
+  const updates: Record<string, unknown> = {};
+
   // createdAt 필드 자동 생성 (없는 경우만)
   const createdAt =
     typeof userData.createdAt === "number" ? userData.createdAt : now;
 
   // /users/{uid}/createdAt 직접 저장 (없는 경우만)
   if (userData.createdAt === undefined || userData.createdAt === null) {
-    await admin.database().ref(`users/${uid}/createdAt`).set(createdAt);
-    logger.info("createdAt 저장 완료", {uid, createdAt});
+    updates[`users/${uid}/createdAt`] = createdAt;
+    logger.info("createdAt 저장 예정", {uid, createdAt});
   }
+
+  // registerOrder 필드 자동 생성 (최신순 정렬용)
+  // registerOrder = Number.MAX_SAFE_INTEGER - createdAt
+  // 최신 사용자일수록 작은 값을 가져서 오름차순 정렬 시 먼저 표시됨
+  const registerOrder = Number.MAX_SAFE_INTEGER - createdAt;
+  updates[`users/${uid}/registerOrder`] = registerOrder;
+  logger.info("registerOrder 저장 예정", {uid, registerOrder, createdAt});
+
+  if (Object.keys(updates).length > 0) {
+    await admin.database().ref().update(updates);
+    logger.info("사용자 생성 관련 업데이트 완료", {
+      uid,
+      updatesCount: Object.keys(updates).length,
+    });
+  }
+
+  // 📊 전체 사용자 통계 및 사용자별 통계 업데이트
+  await incrementActionCounter(uid, "user", 1);
 
   return {
     success: true,
@@ -754,9 +803,19 @@ export async function handleUserUpdate(
    - 있으면: 기존 값 사용
    - 없으면: Date.now() 사용
    ↓
-5. /users/{uid}/createdAt 저장
+5. registerOrder 계산
+   - Number.MAX_SAFE_INTEGER - createdAt
+   - 최신 사용자일수록 작은 값
    ↓
-6. 성공 응답 반환
+6. updates 객체에 필드 추가
+   - /users/{uid}/createdAt (조건부)
+   - /users/{uid}/registerOrder (항상)
+   ↓
+7. admin.database().ref().update() 호출
+   ↓
+8. 전체 사용자 통계 업데이트 (incrementActionCounter)
+   ↓
+9. 성공 응답 반환
 ```
 
 ### handleUserUpdate
@@ -803,6 +862,11 @@ export async function handleUserUpdate(
 3. displayName과 photoUrl이 모두 변경되면 모든 필드를 업데이트한다
 4. createdAt이 없으면 자동으로 생성한다
 5. createdAt이 beforeData와 afterData 모두 없으면 현재 시간으로 생성한다
+6. **registerOrder 필드 자동 생성 테스트** ⭐ 핵심
+   - createdAt이 없으면 자동으로 생성하고 registerOrder도 함께 생성한다
+   - createdAt이 제공되면 그 값을 사용하여 registerOrder를 계산한다
+   - 최신 사용자(더 큰 createdAt)가 더 작은 registerOrder를 가진다
+   - registerOrder 계산식이 정확하다 (Number.MAX_SAFE_INTEGER - createdAt)
 
 **❌ 변경 없음 케이스:**
 1. displayName과 photoUrl이 변경되지 않으면 updatedAt을 업데이트하지 않는다
@@ -848,6 +912,9 @@ interface UserData {
   // 타임스탬프
   createdAt?: number;
   updatedAt?: number;
+
+  // 정렬 필드 (최신순)
+  registerOrder?: number;  // Cloud Functions가 자동 생성 (Number.MAX_SAFE_INTEGER - createdAt)
 
   // 검색용
   displayNameLowerCase?: string;
@@ -1297,7 +1364,6 @@ recentUsers.reverse();
 
 1. **handleUserCreate 확장**
    - user-props 노드 동기화
-   - 전체 사용자 통계 업데이트 (/stats/counters/user +1)
    - updatedAt 자동 생성
 
 2. **에러 처리 강화**

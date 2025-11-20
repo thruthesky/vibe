@@ -1,15 +1,19 @@
 ---
-title: package.json
-type: config
-path: package.json
-status: active
-version: 1.0.0
-last_updated: 2025-11-15
+title: package.json - JSON 설정 파일
+original_path: package.json
+category: configuration
+file_type: json
+status: current
+last_updated: 2025-11-20
 ---
+
+# package.json
 
 ## 개요
 
-이 파일은 `package.json`의 소스 코드를 포함하는 SED 스펙 문서입니다.
+**원본 경로**: `package.json`
+
+**파일 유형**: JSON 설정 파일
 
 ## 소스 코드
 
@@ -25,6 +29,7 @@ last_updated: 2025-11-15
 		"build": "vite build",
 		"preview": "vite preview",
 		"start": "node build",
+		"deploy": "npm run build && wrangler deploy",
 		"prepare": "svelte-kit sync",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
@@ -50,6 +55,7 @@ last_updated: 2025-11-15
 		"@storybook/addon-svelte-csf": "^5.0.10",
 		"@storybook/addon-vitest": "^10.0.6",
 		"@storybook/sveltekit": "^10.0.6",
+		"@sveltejs/adapter-cloudflare": "^7.2.4",
 		"@sveltejs/adapter-node": "^5.4.0",
 		"@sveltejs/kit": "^2.47.1",
 		"@sveltejs/vite-plugin-svelte": "^6.2.1",
@@ -82,16 +88,16 @@ last_updated: 2025-11-15
 		"vite": "^7.1.10",
 		"vite-plugin-devtools-json": "^1.0.0",
 		"vitest": "^4.0.5",
-		"vitest-browser-svelte": "^2.0.1"
+		"vitest-browser-svelte": "^2.0.1",
+		"wrangler": "^4.47.0"
 	},
 	"dependencies": {
 		"clsx": "^2.1.1",
+		"date-fns": "^4.1.0",
 		"firebase": "^12.5.0",
 		"lucide-svelte": "^0.553.0",
 		"svelte-sonner": "^1.0.6",
 		"tailwind-merge": "^3.3.1"
 	}
 }
-
 ```
-

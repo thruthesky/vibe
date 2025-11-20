@@ -1,0 +1,2957 @@
+[
+  {
+    "original": "svelte.config.js",
+    "spec": "specs/repository/svelte.config.js.md",
+    "success": true
+  },
+  {
+    "original": "messages/zh.json",
+    "spec": "specs/repository/messages/zh.json.md",
+    "success": true
+  },
+  {
+    "original": "messages/ja.json",
+    "spec": "specs/repository/messages/ja.json.md",
+    "success": true
+  },
+  {
+    "original": "messages/en.json",
+    "spec": "specs/repository/messages/en.json.md",
+    "success": true
+  },
+  {
+    "original": "messages/ko.json",
+    "spec": "specs/repository/messages/ko.json.md",
+    "success": true
+  },
+  {
+    "original": ".mcp.json",
+    "spec": "specs/repository/.mcp.json.md",
+    "success": true
+  },
+  {
+    "original": "shared/date.pure-functions.ts",
+    "spec": "specs/repository/shared/date.pure-functions.ts.md",
+    "success": true
+  },
+  {
+    "original": "shared/order-value.utils.ts",
+    "spec": "specs/repository/shared/order-value.utils.ts.md",
+    "success": true
+  },
+  {
+    "original": "shared/thread-order.ts",
+    "spec": "specs/repository/shared/thread-order.ts.md",
+    "success": true
+  },
+  {
+    "original": "shared/categories.ts",
+    "spec": "specs/repository/shared/categories.ts.md",
+    "success": true
+  },
+  {
+    "original": "shared/chat.pure-functions.ts",
+    "spec": "specs/repository/shared/chat.pure-functions.ts.md",
+    "success": true
+  },
+  {
+    "original": "firebase/cors.json",
+    "spec": "specs/repository/firebase/cors.json.md",
+    "success": true
+  },
+  {
+    "original": "firebase/functions/tsconfig.dev.json",
+    "spec": "specs/repository/firebase/functions/tsconfig.dev.json.md",
+    "success": true
+  },
+  {
+    "original": "firebase/functions/package-lock.json",
+    "spec": "specs/repository/firebase/functions/package-lock.json.md",
+    "success": true
+  },
+  {
+    "original": "firebase/functions/package.json",
+    "spec": "specs/repository/firebase/functions/package.json.md",
+    "success": true
+  },
+  {
+    "original": "firebase/functions/.eslintrc.js",
+    "spec": "specs/repository/firebase/functions/.eslintrc.js.md",
+    "success": true
+  },
+  {
+    "original": "firebase/functions/tsconfig.json",
+    "spec": "specs/repository/firebase/functions/tsconfig.json.md",
+    "success": true
+  },
+  {
+    "original": "firebase/functions/vitest.config.ts",
+    "spec": "specs/repository/firebase/functions/vitest.config.ts.md",
+    "success": true
+  },
+  {
+    "original": "firebase/functions/src/types/index.ts",
+    "spec": "specs/repository/firebase/functions/src/types/index.ts.md",
+    "success": true
+  },
+  {
+    "original": "firebase/functions/src/i18n.ts",
+    "spec": "specs/repository/firebase/functions/src/i18n.ts.md",
+    "success": true
+  },
+  {
+    "original": "firebase/functions/src/utils/report.utils.ts",
+    "spec": "specs/repository/firebase/functions/src/utils/report.utils.ts.md",
+    "success": true
+  },
+  {
+    "original": "firebase/functions/src/utils/stats.utils.ts",
+    "spec": "specs/repository/firebase/functions/src/utils/stats.utils.ts.md",
+    "success": true
+  },
+  {
+    "original": "firebase/functions/src/utils/comment.utils.ts",
+    "spec": "specs/repository/firebase/functions/src/utils/comment.utils.ts.md",
+    "success": true
+  },
+  {
+    "original": "firebase/functions/src/utils/fcm.utils.ts",
+    "spec": "specs/repository/firebase/functions/src/utils/fcm.utils.ts.md",
+    "success": true
+  },
+  {
+    "original": "firebase/functions/src/utils/post.utils.ts",
+    "spec": "specs/repository/firebase/functions/src/utils/post.utils.ts.md",
+    "success": true
+  },
+  {
+    "original": "firebase/functions/src/utils/reaction-history.utils.ts",
+    "spec": "specs/repository/firebase/functions/src/utils/reaction-history.utils.ts.md",
+    "success": true
+  },
+  {
+    "original": "firebase/functions/src/shared/influencer-scores.constants.ts",
+    "spec": "specs/repository/firebase/functions/src/shared/influencer-scores.constants.ts.md",
+    "success": true
+  },
+  {
+    "original": "firebase/functions/src/index.ts",
+    "spec": "specs/repository/firebase/functions/src/index.ts.md",
+    "success": true
+  },
+  {
+    "original": "firebase/functions/src/handlers/chat.invitation-create.handler.ts",
+    "spec": "specs/repository/firebase/functions/src/handlers/chat.invitation-create.handler.ts.md",
+    "success": true
+  },
+  {
+    "original": "firebase/functions/src/handlers/chat.message-create.handler.ts",
+    "spec": "specs/repository/firebase/functions/src/handlers/chat.message-create.handler.ts.md",
+    "success": true
+  },
+  {
+    "original": "firebase/functions/src/handlers/chat.room-member-join.handler.ts",
+    "spec": "specs/repository/firebase/functions/src/handlers/chat.room-member-join.handler.ts.md",
+    "success": true
+  },
+  {
+    "original": "firebase/functions/src/handlers/chat.message-category.handler.ts",
+    "spec": "specs/repository/firebase/functions/src/handlers/chat.message-category.handler.ts.md",
+    "success": true
+  },
+  {
+    "original": "firebase/functions/src/handlers/comment.create.handler.ts",
+    "spec": "specs/repository/firebase/functions/src/handlers/comment.create.handler.ts.md",
+    "success": true
+  },
+  {
+    "original": "firebase/functions/src/handlers/chat.new-message-count.handler.ts",
+    "spec": "specs/repository/firebase/functions/src/handlers/chat.new-message-count.handler.ts.md",
+    "success": true
+  },
+  {
+    "original": "firebase/functions/src/handlers/user-action-counters.handler.ts",
+    "spec": "specs/repository/firebase/functions/src/handlers/user-action-counters.handler.ts.md",
+    "success": true
+  },
+  {
+    "original": "firebase/functions/src/handlers/friend.follow.handler.ts",
+    "spec": "specs/repository/firebase/functions/src/handlers/friend.follow.handler.ts.md",
+    "success": true
+  },
+  {
+    "original": "firebase/functions/src/handlers/chat.room-create.handler.ts",
+    "spec": "specs/repository/firebase/functions/src/handlers/chat.room-create.handler.ts.md",
+    "success": true
+  },
+  {
+    "original": "firebase/functions/src/handlers/stats.comment.handler.ts",
+    "spec": "specs/repository/firebase/functions/src/handlers/stats.comment.handler.ts.md",
+    "success": true
+  },
+  {
+    "original": "firebase/functions/src/handlers/stats.follow.handler.ts",
+    "spec": "specs/repository/firebase/functions/src/handlers/stats.follow.handler.ts.md",
+    "success": true
+  },
+  {
+    "original": "firebase/functions/src/handlers/stats.post.handler.ts",
+    "spec": "specs/repository/firebase/functions/src/handlers/stats.post.handler.ts.md",
+    "success": true
+  },
+  {
+    "original": "firebase/functions/src/handlers/post-ranking.handler.ts",
+    "spec": "specs/repository/firebase/functions/src/handlers/post-ranking.handler.ts.md",
+    "success": true
+  },
+  {
+    "original": "firebase/functions/src/handlers/stats.like.handler.ts",
+    "spec": "specs/repository/firebase/functions/src/handlers/stats.like.handler.ts.md",
+    "success": true
+  },
+  {
+    "original": "firebase/functions/src/handlers/stats.ranking.handler.ts",
+    "spec": "specs/repository/firebase/functions/src/handlers/stats.ranking.handler.ts.md",
+    "success": true
+  },
+  {
+    "original": "firebase/functions/src/handlers/like.handler.ts",
+    "spec": "specs/repository/firebase/functions/src/handlers/like.handler.ts.md",
+    "success": true
+  },
+  {
+    "original": "firebase/functions/src/handlers/chat.room-member-leave.handler.ts",
+    "spec": "specs/repository/firebase/functions/src/handlers/chat.room-member-leave.handler.ts.md",
+    "success": true
+  },
+  {
+    "original": "firebase/functions/src/handlers/chat.password-verification.handler.ts",
+    "spec": "specs/repository/firebase/functions/src/handlers/chat.password-verification.handler.ts.md",
+    "success": true
+  },
+  {
+    "original": "firebase/functions/src/handlers/feed.fanout.handler.ts",
+    "spec": "specs/repository/firebase/functions/src/handlers/feed.fanout.handler.ts.md",
+    "success": true
+  },
+  {
+    "original": "firebase/functions/src/handlers/user.handler.ts",
+    "spec": "specs/repository/firebase/functions/src/handlers/user.handler.ts.md",
+    "success": true
+  },
+  {
+    "original": "firebase/functions/src/handlers/chat.message-sync.handler.ts",
+    "spec": "specs/repository/firebase/functions/src/handlers/chat.message-sync.handler.ts.md",
+    "success": true
+  },
+  {
+    "original": "firebase/functions/src/handlers/chat.room-pin-delete.handler.ts",
+    "spec": "specs/repository/firebase/functions/src/handlers/chat.room-pin-delete.handler.ts.md",
+    "success": true
+  },
+  {
+    "original": "firebase/functions/src/handlers/chat.room-pin-create.handler.ts",
+    "spec": "specs/repository/firebase/functions/src/handlers/chat.room-pin-create.handler.ts.md",
+    "success": true
+  },
+  {
+    "original": "firebase/functions/src/handlers/post.create.handler.ts",
+    "spec": "specs/repository/firebase/functions/src/handlers/post.create.handler.ts.md",
+    "success": true
+  },
+  {
+    "original": "firebase/functions/src/handlers/chat.join-create.handler.ts",
+    "spec": "specs/repository/firebase/functions/src/handlers/chat.join-create.handler.ts.md",
+    "success": true
+  },
+  {
+    "original": "firebase/firebase.json",
+    "spec": "specs/repository/firebase/firebase.json.md",
+    "success": true
+  },
+  {
+    "original": "firebase/database.rules.json",
+    "spec": "specs/repository/firebase/database.rules.json.md",
+    "success": true
+  },
+  {
+    "original": "package-lock.json",
+    "spec": "specs/repository/package-lock.json.md",
+    "success": true
+  },
+  {
+    "original": "package.json",
+    "spec": "specs/repository/package.json.md",
+    "success": true
+  },
+  {
+    "original": "static/firebase-messaging-sw.js",
+    "spec": "specs/repository/static/firebase-messaging-sw.js.md",
+    "success": true
+  },
+  {
+    "original": "components.json",
+    "spec": "specs/repository/components.json.md",
+    "success": true
+  },
+  {
+    "original": "tsconfig.json",
+    "spec": "specs/repository/tsconfig.json.md",
+    "success": true
+  },
+  {
+    "original": "playwright.config.ts",
+    "spec": "specs/repository/playwright.config.ts.md",
+    "success": true
+  },
+  {
+    "original": "eslint.config.js",
+    "spec": "specs/repository/eslint.config.js.md",
+    "success": true
+  },
+  {
+    "original": "vite.config.ts",
+    "spec": "specs/repository/vite.config.ts.md",
+    "success": true
+  },
+  {
+    "original": "e2e/demo.test.ts",
+    "spec": "specs/repository/e2e/demo.test.ts.md",
+    "success": true
+  },
+  {
+    "original": "src/demo.spec.ts",
+    "spec": "specs/repository/src/demo.spec.ts.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/registry.js",
+    "spec": "specs/repository/src/paraglide/registry.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/sidebarbuildversion2.js",
+    "spec": "specs/repository/src/paraglide/messages/sidebarbuildversion2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/admindashboardmenu2.js",
+    "spec": "specs/repository/src/paraglide/messages/admindashboardmenu2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/_index.js",
+    "spec": "specs/repository/src/paraglide/messages/_index.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/pagetitlesignin3.js",
+    "spec": "specs/repository/src/paraglide/messages/pagetitlesignin3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/featuresveltekit51.js",
+    "spec": "specs/repository/src/paraglide/messages/featuresveltekit51.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/myreactionsdescription2.js",
+    "spec": "specs/repository/src/paraglide/messages/myreactionsdescription2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/authloginrequired2.js",
+    "spec": "specs/repository/src/paraglide/messages/authloginrequired2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profilebirthdatemonth2.js",
+    "spec": "specs/repository/src/paraglide/messages/profilebirthdatemonth2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profileinfluencerscore2.js",
+    "spec": "specs/repository/src/paraglide/messages/profileinfluencerscore2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatoverview1.js",
+    "spec": "specs/repository/src/paraglide/messages/chatoverview1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/testusercreatedatonce4.js",
+    "spec": "specs/repository/src/paraglide/messages/testusercreatedatonce4.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/testuserdeleteerror3.js",
+    "spec": "specs/repository/src/paraglide/messages/testuserdeleteerror3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/pagetitlehome2.js",
+    "spec": "specs/repository/src/paraglide/messages/pagetitlehome2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profilepictureuploadguide3.js",
+    "spec": "specs/repository/src/paraglide/messages/profilepictureuploadguide3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/homesidebarstatsdesc3.js",
+    "spec": "specs/repository/src/paraglide/messages/homesidebarstatsdesc3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatinvitetoroom3.js",
+    "spec": "specs/repository/src/paraglide/messages/chatinvitetoroom3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/featuresveltekit5desc2.js",
+    "spec": "specs/repository/src/paraglide/messages/featuresveltekit5desc2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/homesidebarseemore3.js",
+    "spec": "specs/repository/src/paraglide/messages/homesidebarseemore3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/testusercreateunit3.js",
+    "spec": "specs/repository/src/paraglide/messages/testusercreateunit3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatroomlistempty3.js",
+    "spec": "specs/repository/src/paraglide/messages/chatroomlistempty3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/authdescription1.js",
+    "spec": "specs/repository/src/paraglide/messages/authdescription1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/navcontact1.js",
+    "spec": "specs/repository/src/paraglide/messages/navcontact1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/sidebardevhighlightpassword3.js",
+    "spec": "specs/repository/src/paraglide/messages/sidebardevhighlightpassword3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/testusercreatecount3.js",
+    "spec": "specs/repository/src/paraglide/messages/testusercreatecount3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profilememberinfoeditguide4.js",
+    "spec": "specs/repository/src/paraglide/messages/profilememberinfoeditguide4.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/commonuser1.js",
+    "spec": "specs/repository/src/paraglide/messages/commonuser1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/authsignin2.js",
+    "spec": "specs/repository/src/paraglide/messages/authsignin2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/commonerror1.js",
+    "spec": "specs/repository/src/paraglide/messages/commonerror1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatpasswordenterprompt3.js",
+    "spec": "specs/repository/src/paraglide/messages/chatpasswordenterprompt3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/homesidebaropenchatsubtitle4.js",
+    "spec": "specs/repository/src/paraglide/messages/homesidebaropenchatsubtitle4.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatcategoryqna2.js",
+    "spec": "specs/repository/src/paraglide/messages/chatcategoryqna2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/authsigningout2.js",
+    "spec": "specs/repository/src/paraglide/messages/authsigningout2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/homesidebaractivityempty3.js",
+    "spec": "specs/repository/src/paraglide/messages/homesidebaractivityempty3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chattabopenchats3.js",
+    "spec": "specs/repository/src/paraglide/messages/chattabopenchats3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/influencerrankingtitle2.js",
+    "spec": "specs/repository/src/paraglide/messages/influencerrankingtitle2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profileinfo1.js",
+    "spec": "specs/repository/src/paraglide/messages/profileinfo1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/followerslist1.js",
+    "spec": "specs/repository/src/paraglide/messages/followerslist1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatpasswordsetsuccess3.js",
+    "spec": "specs/repository/src/paraglide/messages/chatpasswordsetsuccess3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/homesidebarfollowingdesc3.js",
+    "spec": "specs/repository/src/paraglide/messages/homesidebarfollowingdesc3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/followloginrequired2.js",
+    "spec": "specs/repository/src/paraglide/messages/followloginrequired2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/authsigninrequired3.js",
+    "spec": "specs/repository/src/paraglide/messages/authsigninrequired3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/commonstatus1.js",
+    "spec": "specs/repository/src/paraglide/messages/commonstatus1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/admindashboardguide2.js",
+    "spec": "specs/repository/src/paraglide/messages/admindashboardguide2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/likeuserslist2.js",
+    "spec": "specs/repository/src/paraglide/messages/likeuserslist2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/influencertabdaily2.js",
+    "spec": "specs/repository/src/paraglide/messages/influencertabdaily2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/feedloadmore2.js",
+    "spec": "specs/repository/src/paraglide/messages/feedloadmore2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/boardunderconstruction2.js",
+    "spec": "specs/repository/src/paraglide/messages/boardunderconstruction2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/sidebarnorecentactivity3.js",
+    "spec": "specs/repository/src/paraglide/messages/sidebarnorecentactivity3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/adminuserlist2.js",
+    "spec": "specs/repository/src/paraglide/messages/adminuserlist2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/testusercreatebatchcount4.js",
+    "spec": "specs/repository/src/paraglide/messages/testusercreatebatchcount4.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/popularpoststitle2.js",
+    "spec": "specs/repository/src/paraglide/messages/popularpoststitle2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatcategorynews2.js",
+    "spec": "specs/repository/src/paraglide/messages/chatcategorynews2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatnomessages2.js",
+    "spec": "specs/repository/src/paraglide/messages/chatnomessages2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profiledateofbirth3.js",
+    "spec": "specs/repository/src/paraglide/messages/profiledateofbirth3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/boardwritepost2.js",
+    "spec": "specs/repository/src/paraglide/messages/boardwritepost2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/commongo1.js",
+    "spec": "specs/repository/src/paraglide/messages/commongo1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/testuserguide2.js",
+    "spec": "specs/repository/src/paraglide/messages/testuserguide2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/boardtabmarket2.js",
+    "spec": "specs/repository/src/paraglide/messages/boardtabmarket2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/menumyaccount2.js",
+    "spec": "specs/repository/src/paraglide/messages/menumyaccount2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatroomready2.js",
+    "spec": "specs/repository/src/paraglide/messages/chatroomready2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/commonloading1.js",
+    "spec": "specs/repository/src/paraglide/messages/commonloading1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatpasswordminlengtherror4.js",
+    "spec": "specs/repository/src/paraglide/messages/chatpasswordminlengtherror4.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatunderconstruction2.js",
+    "spec": "specs/repository/src/paraglide/messages/chatunderconstruction2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/testuserprogressindicator3.js",
+    "spec": "specs/repository/src/paraglide/messages/testuserprogressindicator3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatopenroom2.js",
+    "spec": "specs/repository/src/paraglide/messages/chatopenroom2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profilegendernotspecified3.js",
+    "spec": "specs/repository/src/paraglide/messages/profilegendernotspecified3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/about.js",
+    "spec": "specs/repository/src/paraglide/messages/about.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/testusernodelete3.js",
+    "spec": "specs/repository/src/paraglide/messages/testusernodelete3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profilenicknamemaxlength3.js",
+    "spec": "specs/repository/src/paraglide/messages/profilenicknamemaxlength3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profileday1.js",
+    "spec": "specs/repository/src/paraglide/messages/profileday1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatcreateopenchat3.js",
+    "spec": "specs/repository/src/paraglide/messages/chatcreateopenchat3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatpasswordverifyfailure3.js",
+    "spec": "specs/repository/src/paraglide/messages/chatpasswordverifyfailure3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/testusernousersguide4.js",
+    "spec": "specs/repository/src/paraglide/messages/testusernousersguide4.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatnomoremessages3.js",
+    "spec": "specs/repository/src/paraglide/messages/chatnomoremessages3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/influencerrankingdescription2.js",
+    "spec": "specs/repository/src/paraglide/messages/influencerrankingdescription2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/testuserdeleteallerror4.js",
+    "spec": "specs/repository/src/paraglide/messages/testuserdeleteallerror4.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profileagerestriction2.js",
+    "spec": "specs/repository/src/paraglide/messages/profileagerestriction2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatsignintosend4.js",
+    "spec": "specs/repository/src/paraglide/messages/chatsignintosend4.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/sidebarpopularusers2.js",
+    "spec": "specs/repository/src/paraglide/messages/sidebarpopularusers2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/myreactionstitle2.js",
+    "spec": "specs/repository/src/paraglide/messages/myreactionstitle2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/testusercreateddate3.js",
+    "spec": "specs/repository/src/paraglide/messages/testusercreateddate3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/popularpostsmonthly2.js",
+    "spec": "specs/repository/src/paraglide/messages/popularpostsmonthly2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/commondelete1.js",
+    "spec": "specs/repository/src/paraglide/messages/commondelete1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/followsuccess1.js",
+    "spec": "specs/repository/src/paraglide/messages/followsuccess1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/homesectionrecentposts3.js",
+    "spec": "specs/repository/src/paraglide/messages/homesectionrecentposts3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/underconstruction1.js",
+    "spec": "specs/repository/src/paraglide/messages/underconstruction1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/testusercurrentcreated3.js",
+    "spec": "specs/repository/src/paraglide/messages/testusercurrentcreated3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatpasswordsaving2.js",
+    "spec": "specs/repository/src/paraglide/messages/chatpasswordsaving2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/products.js",
+    "spec": "specs/repository/src/paraglide/messages/products.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/pagereturnhome2.js",
+    "spec": "specs/repository/src/paraglide/messages/pagereturnhome2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/testusercreatecomplete3.js",
+    "spec": "specs/repository/src/paraglide/messages/testusercreatecomplete3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/testusercreated2.js",
+    "spec": "specs/repository/src/paraglide/messages/testusercreated2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/testusercreateerror3.js",
+    "spec": "specs/repository/src/paraglide/messages/testusercreateerror3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/testuserdeleteconfirmation3.js",
+    "spec": "specs/repository/src/paraglide/messages/testuserdeleteconfirmation3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/homesidebarreactions2.js",
+    "spec": "specs/repository/src/paraglide/messages/homesidebarreactions2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/testuserdeleteconfirm3.js",
+    "spec": "specs/repository/src/paraglide/messages/testuserdeleteconfirm3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/homesectionrecentopenchatlogin5.js",
+    "spec": "specs/repository/src/paraglide/messages/homesectionrecentopenchatlogin5.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/navchat1.js",
+    "spec": "specs/repository/src/paraglide/messages/navchat1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/testuserstatus2.js",
+    "spec": "specs/repository/src/paraglide/messages/testuserstatus2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chattabsearch2.js",
+    "spec": "specs/repository/src/paraglide/messages/chattabsearch2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/nofollowing1.js",
+    "spec": "specs/repository/src/paraglide/messages/nofollowing1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/testusercreating2.js",
+    "spec": "specs/repository/src/paraglide/messages/testusercreating2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/testuserbirthyear3.js",
+    "spec": "specs/repository/src/paraglide/messages/testuserbirthyear3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/commonrefresh1.js",
+    "spec": "specs/repository/src/paraglide/messages/commonrefresh1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/homesidebarmemberscount3.js",
+    "spec": "specs/repository/src/paraglide/messages/homesidebarmemberscount3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatcategoryrealestate3.js",
+    "spec": "specs/repository/src/paraglide/messages/chatcategoryrealestate3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/authwelcomemessage2.js",
+    "spec": "specs/repository/src/paraglide/messages/authwelcomemessage2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/testuseryeardisplay3.js",
+    "spec": "specs/repository/src/paraglide/messages/testuseryeardisplay3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/userloadfailed2.js",
+    "spec": "specs/repository/src/paraglide/messages/userloadfailed2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profilephotouploadfailed3.js",
+    "spec": "specs/repository/src/paraglide/messages/profilephotouploadfailed3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/composepromptplaceholder2.js",
+    "spec": "specs/repository/src/paraglide/messages/composepromptplaceholder2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatyou1.js",
+    "spec": "specs/repository/src/paraglide/messages/chatyou1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profileyearformat2.js",
+    "spec": "specs/repository/src/paraglide/messages/profileyearformat2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/authintro1.js",
+    "spec": "specs/repository/src/paraglide/messages/authintro1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/homesidebarrecentuserssubtitle4.js",
+    "spec": "specs/repository/src/paraglide/messages/homesidebarrecentuserssubtitle4.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/commoncomplete1.js",
+    "spec": "specs/repository/src/paraglide/messages/commoncomplete1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/testuserinfounrecoverable3.js",
+    "spec": "specs/repository/src/paraglide/messages/testuserinfounrecoverable3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/adminreportlistdesc3.js",
+    "spec": "specs/repository/src/paraglide/messages/adminreportlistdesc3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/sidebarselectlanguage2.js",
+    "spec": "specs/repository/src/paraglide/messages/sidebarselectlanguage2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/commonprogress1.js",
+    "spec": "specs/repository/src/paraglide/messages/commonprogress1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatcategorylabel2.js",
+    "spec": "specs/repository/src/paraglide/messages/chatcategorylabel2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/feedloadingmore2.js",
+    "spec": "specs/repository/src/paraglide/messages/feedloadingmore2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profilemonthformat2.js",
+    "spec": "specs/repository/src/paraglide/messages/profilemonthformat2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/loadinggeneric1.js",
+    "spec": "specs/repository/src/paraglide/messages/loadinggeneric1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatwritemessage2.js",
+    "spec": "specs/repository/src/paraglide/messages/chatwritemessage2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/loading.js",
+    "spec": "specs/repository/src/paraglide/messages/loading.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profileyear1.js",
+    "spec": "specs/repository/src/paraglide/messages/profileyear1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/sidebardevhighlightgendersearch4.js",
+    "spec": "specs/repository/src/paraglide/messages/sidebardevhighlightgendersearch4.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profilebirthdateyear2.js",
+    "spec": "specs/repository/src/paraglide/messages/profilebirthdateyear2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/userunknownerror2.js",
+    "spec": "specs/repository/src/paraglide/messages/userunknownerror2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/board.js",
+    "spec": "specs/repository/src/paraglide/messages/board.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/testuserlistloaderror4.js",
+    "spec": "specs/repository/src/paraglide/messages/testuserlistloaderror4.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatpasswordsavefailure3.js",
+    "spec": "specs/repository/src/paraglide/messages/chatpasswordsavefailure3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profilegendermale2.js",
+    "spec": "specs/repository/src/paraglide/messages/profilegendermale2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/user.js",
+    "spec": "specs/repository/src/paraglide/messages/user.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/userlist1.js",
+    "spec": "specs/repository/src/paraglide/messages/userlist1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profileloadfailed2.js",
+    "spec": "specs/repository/src/paraglide/messages/profileloadfailed2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/constructiontitle1.js",
+    "spec": "specs/repository/src/paraglide/messages/constructiontitle1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/navmenu1.js",
+    "spec": "specs/repository/src/paraglide/messages/navmenu1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/attachmentshowless2.js",
+    "spec": "specs/repository/src/paraglide/messages/attachmentshowless2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profilephotouploadguide3.js",
+    "spec": "specs/repository/src/paraglide/messages/profilephotouploadguide3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/homesidebarreactionsdesc3.js",
+    "spec": "specs/repository/src/paraglide/messages/homesidebarreactionsdesc3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profilepostcount2.js",
+    "spec": "specs/repository/src/paraglide/messages/profilepostcount2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/testusernouserstodelete5.js",
+    "spec": "specs/repository/src/paraglide/messages/testusernouserstodelete5.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/sidebarpopularposts2.js",
+    "spec": "specs/repository/src/paraglide/messages/sidebarpopularposts2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profilesaving1.js",
+    "spec": "specs/repository/src/paraglide/messages/profilesaving1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatpasswordenabletoggle3.js",
+    "spec": "specs/repository/src/paraglide/messages/chatpasswordenabletoggle3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/homesectionrecentusersdesc4.js",
+    "spec": "specs/repository/src/paraglide/messages/homesectionrecentusersdesc4.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatsend1.js",
+    "spec": "specs/repository/src/paraglide/messages/chatsend1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/usernoregistration2.js",
+    "spec": "specs/repository/src/paraglide/messages/usernoregistration2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatsearchusertoinvite4.js",
+    "spec": "specs/repository/src/paraglide/messages/chatsearchusertoinvite4.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/homesidebarrecentusersloading4.js",
+    "spec": "specs/repository/src/paraglide/messages/homesidebarrecentusersloading4.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/homesectionrecentusers3.js",
+    "spec": "specs/repository/src/paraglide/messages/homesectionrecentusers3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/featuretailwindcss2.js",
+    "spec": "specs/repository/src/paraglide/messages/featuretailwindcss2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/influencerunknown1.js",
+    "spec": "specs/repository/src/paraglide/messages/influencerunknown1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/navmyprofile2.js",
+    "spec": "specs/repository/src/paraglide/messages/navmyprofile2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chattabbookmarks2.js",
+    "spec": "specs/repository/src/paraglide/messages/chattabbookmarks2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatpassworddelete2.js",
+    "spec": "specs/repository/src/paraglide/messages/chatpassworddelete2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/homesidebarrecentusersempty4.js",
+    "spec": "specs/repository/src/paraglide/messages/homesidebarrecentusersempty4.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/commonpost1.js",
+    "spec": "specs/repository/src/paraglide/messages/commonpost1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/authwelcomeuser2.js",
+    "spec": "specs/repository/src/paraglide/messages/authwelcomeuser2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/composeall1.js",
+    "spec": "specs/repository/src/paraglide/messages/composeall1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profilepictureremove2.js",
+    "spec": "specs/repository/src/paraglide/messages/profilepictureremove2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/save.js",
+    "spec": "specs/repository/src/paraglide/messages/save.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profilepictureuploadfailed3.js",
+    "spec": "specs/repository/src/paraglide/messages/profilepictureuploadfailed3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/pagetitlemyprofile3.js",
+    "spec": "specs/repository/src/paraglide/messages/pagetitlemyprofile3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/pagetitleuserlist3.js",
+    "spec": "specs/repository/src/paraglide/messages/pagetitleuserlist3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatsigninrequired3.js",
+    "spec": "specs/repository/src/paraglide/messages/chatsigninrequired3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatpasswordverifysuccess3.js",
+    "spec": "specs/repository/src/paraglide/messages/chatpasswordverifysuccess3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/authwelcome1.js",
+    "spec": "specs/repository/src/paraglide/messages/authwelcome1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatlastmessagelabel3.js",
+    "spec": "specs/repository/src/paraglide/messages/chatlastmessagelabel3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/commonconfirm1.js",
+    "spec": "specs/repository/src/paraglide/messages/commonconfirm1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/testusergender2.js",
+    "spec": "specs/repository/src/paraglide/messages/testusergender2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/reportreasonfakenews3.js",
+    "spec": "specs/repository/src/paraglide/messages/reportreasonfakenews3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatroomnotready3.js",
+    "spec": "specs/repository/src/paraglide/messages/chatroomnotready3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/sidebartodochatinvites3.js",
+    "spec": "specs/repository/src/paraglide/messages/sidebartodochatinvites3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/sidebartodochatinvitesdesc4.js",
+    "spec": "specs/repository/src/paraglide/messages/sidebartodochatinvitesdesc4.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/sidebarlanguage1.js",
+    "spec": "specs/repository/src/paraglide/messages/sidebarlanguage1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatcategorytravel2.js",
+    "spec": "specs/repository/src/paraglide/messages/chatcategorytravel2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/commoncomment1.js",
+    "spec": "specs/repository/src/paraglide/messages/commoncomment1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/homesidebarlanguagelabel3.js",
+    "spec": "specs/repository/src/paraglide/messages/homesidebarlanguagelabel3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/testusernoneguide3.js",
+    "spec": "specs/repository/src/paraglide/messages/testusernoneguide3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatpassworddeletesuccess3.js",
+    "spec": "specs/repository/src/paraglide/messages/chatpassworddeletesuccess3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatcategoryfreediscussion3.js",
+    "spec": "specs/repository/src/paraglide/messages/chatcategoryfreediscussion3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/constructionbacktohome3.js",
+    "spec": "specs/repository/src/paraglide/messages/constructionbacktohome3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/testusernotcreated3.js",
+    "spec": "specs/repository/src/paraglide/messages/testusernotcreated3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profilenickname1.js",
+    "spec": "specs/repository/src/paraglide/messages/profilenickname1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/unfollowbutton1.js",
+    "spec": "specs/repository/src/paraglide/messages/unfollowbutton1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/followloading1.js",
+    "spec": "specs/repository/src/paraglide/messages/followloading1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/cancel.js",
+    "spec": "specs/repository/src/paraglide/messages/cancel.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/homesectionrecentopenchatempty5.js",
+    "spec": "specs/repository/src/paraglide/messages/homesectionrecentopenchatempty5.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profilenicknamerequired2.js",
+    "spec": "specs/repository/src/paraglide/messages/profilenicknamerequired2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/authsigninguide3.js",
+    "spec": "specs/repository/src/paraglide/messages/authsigninguide3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/sidebarupcomingtodos2.js",
+    "spec": "specs/repository/src/paraglide/messages/sidebarupcomingtodos2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatconstruction1.js",
+    "spec": "specs/repository/src/paraglide/messages/chatconstruction1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/sidebardevhighlightpayment3.js",
+    "spec": "specs/repository/src/paraglide/messages/sidebardevhighlightpayment3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profilegenderfemale2.js",
+    "spec": "specs/repository/src/paraglide/messages/profilegenderfemale2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/commoninfo1.js",
+    "spec": "specs/repository/src/paraglide/messages/commoninfo1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profilebirthdate1.js",
+    "spec": "specs/repository/src/paraglide/messages/profilebirthdate1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/signin1.js",
+    "spec": "specs/repository/src/paraglide/messages/signin1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/admindashboard1.js",
+    "spec": "specs/repository/src/paraglide/messages/admindashboard1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/usernosignup2.js",
+    "spec": "specs/repository/src/paraglide/messages/usernosignup2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/nofollowers1.js",
+    "spec": "specs/repository/src/paraglide/messages/nofollowers1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/homesidebaractivitytitle3.js",
+    "spec": "specs/repository/src/paraglide/messages/homesidebaractivitytitle3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatroomlistloading3.js",
+    "spec": "specs/repository/src/paraglide/messages/chatroomlistloading3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/testuserdeletingprogress3.js",
+    "spec": "specs/repository/src/paraglide/messages/testuserdeletingprogress3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/testusergenderother3.js",
+    "spec": "specs/repository/src/paraglide/messages/testusergenderother3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profilephoto1.js",
+    "spec": "specs/repository/src/paraglide/messages/profilephoto1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatpasswordinputplaceholder3.js",
+    "spec": "specs/repository/src/paraglide/messages/chatpasswordinputplaceholder3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/commonclose1.js",
+    "spec": "specs/repository/src/paraglide/messages/commonclose1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/testusercreateicon3.js",
+    "spec": "specs/repository/src/paraglide/messages/testusercreateicon3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/admintestusermanagementdesc4.js",
+    "spec": "specs/repository/src/paraglide/messages/admintestusermanagementdesc4.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/reportreasoninappropriate2.js",
+    "spec": "specs/repository/src/paraglide/messages/reportreasoninappropriate2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profilesavefailed2.js",
+    "spec": "specs/repository/src/paraglide/messages/profilesavefailed2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/testuserinfodelete3.js",
+    "spec": "specs/repository/src/paraglide/messages/testuserinfodelete3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/navfindusers2.js",
+    "spec": "specs/repository/src/paraglide/messages/navfindusers2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/influencerempty1.js",
+    "spec": "specs/repository/src/paraglide/messages/influencerempty1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/commonsuccess1.js",
+    "spec": "specs/repository/src/paraglide/messages/commonsuccess1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatloadprofilefailed3.js",
+    "spec": "specs/repository/src/paraglide/messages/chatloadprofilefailed3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profilephotoremove2.js",
+    "spec": "specs/repository/src/paraglide/messages/profilephotoremove2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/sidebartodoboardstats3.js",
+    "spec": "specs/repository/src/paraglide/messages/sidebartodoboardstats3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/signout1.js",
+    "spec": "specs/repository/src/paraglide/messages/signout1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/constructionunderconstruction2.js",
+    "spec": "specs/repository/src/paraglide/messages/constructionunderconstruction2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/popularpostsdaily2.js",
+    "spec": "specs/repository/src/paraglide/messages/popularpostsdaily2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/navlogin1.js",
+    "spec": "specs/repository/src/paraglide/messages/navlogin1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profilegender1.js",
+    "spec": "specs/repository/src/paraglide/messages/profilegender1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/menupublicprofile2.js",
+    "spec": "specs/repository/src/paraglide/messages/menupublicprofile2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/authsigninaction3.js",
+    "spec": "specs/repository/src/paraglide/messages/authsigninaction3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/authsigninfailed3.js",
+    "spec": "specs/repository/src/paraglide/messages/authsigninfailed3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profilephotouploadpreview3.js",
+    "spec": "specs/repository/src/paraglide/messages/profilephotouploadpreview3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/home.js",
+    "spec": "specs/repository/src/paraglide/messages/home.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/error.js",
+    "spec": "specs/repository/src/paraglide/messages/error.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/close.js",
+    "spec": "specs/repository/src/paraglide/messages/close.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/pagetitleboard2.js",
+    "spec": "specs/repository/src/paraglide/messages/pagetitleboard2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatchattingwith2.js",
+    "spec": "specs/repository/src/paraglide/messages/chatchattingwith2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/feednomore2.js",
+    "spec": "specs/repository/src/paraglide/messages/feednomore2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatsendfailed2.js",
+    "spec": "specs/repository/src/paraglide/messages/chatsendfailed2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/adminreportlist2.js",
+    "spec": "specs/repository/src/paraglide/messages/adminreportlist2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/popularpostsempty2.js",
+    "spec": "specs/repository/src/paraglide/messages/popularpostsempty2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatcreategroupchat3.js",
+    "spec": "specs/repository/src/paraglide/messages/chatcreategroupchat3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/sidebardevhighlightposttype4.js",
+    "spec": "specs/repository/src/paraglide/messages/sidebardevhighlightposttype4.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatpasswordrequired2.js",
+    "spec": "specs/repository/src/paraglide/messages/chatpasswordrequired2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/linksveltekitdocs3.js",
+    "spec": "specs/repository/src/paraglide/messages/linksveltekitdocs3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/sidebarrecentactivity2.js",
+    "spec": "specs/repository/src/paraglide/messages/sidebarrecentactivity2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/sidebartodoboardstatsdesc4.js",
+    "spec": "specs/repository/src/paraglide/messages/sidebartodoboardstatsdesc4.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/sidebarmenu1.js",
+    "spec": "specs/repository/src/paraglide/messages/sidebarmenu1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/pagemetasignin3.js",
+    "spec": "specs/repository/src/paraglide/messages/pagemetasignin3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/reportmylist2.js",
+    "spec": "specs/repository/src/paraglide/messages/reportmylist2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profileuserinfo2.js",
+    "spec": "specs/repository/src/paraglide/messages/profileuserinfo2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profilenicknamelength2.js",
+    "spec": "specs/repository/src/paraglide/messages/profilenicknamelength2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/authsigninwithgoogle4.js",
+    "spec": "specs/repository/src/paraglide/messages/authsigninwithgoogle4.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/pagetitlechat2.js",
+    "spec": "specs/repository/src/paraglide/messages/pagetitlechat2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/usernosignedup3.js",
+    "spec": "specs/repository/src/paraglide/messages/usernosignedup3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/homesidebarstats2.js",
+    "spec": "specs/repository/src/paraglide/messages/homesidebarstats2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profilenicknamelengthlimit3.js",
+    "spec": "specs/repository/src/paraglide/messages/profilenicknamelengthlimit3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/admininfopermissionnotimplemented4.js",
+    "spec": "specs/repository/src/paraglide/messages/admininfopermissionnotimplemented4.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/testuserinfodisplay3.js",
+    "spec": "specs/repository/src/paraglide/messages/testuserinfodisplay3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/homesidebaropenchatloading4.js",
+    "spec": "specs/repository/src/paraglide/messages/homesidebaropenchatloading4.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/underconstructionbacktohome4.js",
+    "spec": "specs/repository/src/paraglide/messages/underconstructionbacktohome4.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/linkfirebasedocs2.js",
+    "spec": "specs/repository/src/paraglide/messages/linkfirebasedocs2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatfindfriends2.js",
+    "spec": "specs/repository/src/paraglide/messages/chatfindfriends2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatpasswordsettings2.js",
+    "spec": "specs/repository/src/paraglide/messages/chatpasswordsettings2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profileloading1.js",
+    "spec": "specs/repository/src/paraglide/messages/profileloading1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/info.js",
+    "spec": "specs/repository/src/paraglide/messages/info.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/sidebardevhighlightattachment3.js",
+    "spec": "specs/repository/src/paraglide/messages/sidebardevhighlightattachment3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/homesectionrecentuserscount4.js",
+    "spec": "specs/repository/src/paraglide/messages/homesectionrecentuserscount4.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/homesectionrecentpostsdesc4.js",
+    "spec": "specs/repository/src/paraglide/messages/homesectionrecentpostsdesc4.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/userallloaded2.js",
+    "spec": "specs/repository/src/paraglide/messages/userallloaded2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profilegendernoanswer3.js",
+    "spec": "specs/repository/src/paraglide/messages/profilegendernoanswer3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/testuserdeleteallconfirm4.js",
+    "spec": "specs/repository/src/paraglide/messages/testuserdeleteallconfirm4.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatcategoryselect2.js",
+    "spec": "specs/repository/src/paraglide/messages/chatcategoryselect2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/testuserdeleteallconfirmation4.js",
+    "spec": "specs/repository/src/paraglide/messages/testuserdeleteallconfirmation4.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/featurefirebaseauth2.js",
+    "spec": "specs/repository/src/paraglide/messages/featurefirebaseauth2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatloadingmessages2.js",
+    "spec": "specs/repository/src/paraglide/messages/chatloadingmessages2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatuptodate3.js",
+    "spec": "specs/repository/src/paraglide/messages/chatuptodate3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatcategoryforsale3.js",
+    "spec": "specs/repository/src/paraglide/messages/chatcategoryforsale3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatcategoryfood2.js",
+    "spec": "specs/repository/src/paraglide/messages/chatcategoryfood2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chattabgroupchats3.js",
+    "spec": "specs/repository/src/paraglide/messages/chattabgroupchats3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/authsigningin2.js",
+    "spec": "specs/repository/src/paraglide/messages/authsigningin2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/boardconstruction1.js",
+    "spec": "specs/repository/src/paraglide/messages/boardconstruction1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/homesectionrecentopenchatdesc5.js",
+    "spec": "specs/repository/src/paraglide/messages/homesectionrecentopenchatdesc5.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profilepicture1.js",
+    "spec": "specs/repository/src/paraglide/messages/profilepicture1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/adminuserlistmenu3.js",
+    "spec": "specs/repository/src/paraglide/messages/adminuserlistmenu3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/userloadingmore2.js",
+    "spec": "specs/repository/src/paraglide/messages/userloadingmore2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/featuretailwindcss4.js",
+    "spec": "specs/repository/src/paraglide/messages/featuretailwindcss4.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profilephototypeerror3.js",
+    "spec": "specs/repository/src/paraglide/messages/profilephototypeerror3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/sidebarnewfeatures2.js",
+    "spec": "specs/repository/src/paraglide/messages/sidebarnewfeatures2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/boardtabfree2.js",
+    "spec": "specs/repository/src/paraglide/messages/boardtabfree2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/menuadminpage2.js",
+    "spec": "specs/repository/src/paraglide/messages/menuadminpage2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/homesectionpopularopenroomdesc5.js",
+    "spec": "specs/repository/src/paraglide/messages/homesectionpopularopenroomdesc5.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatpasswordremovesuccess3.js",
+    "spec": "specs/repository/src/paraglide/messages/chatpasswordremovesuccess3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/constructionmessage1.js",
+    "spec": "specs/repository/src/paraglide/messages/constructionmessage1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatcreateroom2.js",
+    "spec": "specs/repository/src/paraglide/messages/chatcreateroom2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profileinfoeditguide3.js",
+    "spec": "specs/repository/src/paraglide/messages/profileinfoeditguide3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/progress.js",
+    "spec": "specs/repository/src/paraglide/messages/progress.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/sidebarmyprofile2.js",
+    "spec": "specs/repository/src/paraglide/messages/sidebarmyprofile2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/mystatstitle2.js",
+    "spec": "specs/repository/src/paraglide/messages/mystatstitle2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/navproducts1.js",
+    "spec": "specs/repository/src/paraglide/messages/navproducts1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/pageunderconstruction2.js",
+    "spec": "specs/repository/src/paraglide/messages/pageunderconstruction2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/commonsave1.js",
+    "spec": "specs/repository/src/paraglide/messages/commonsave1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profilenicknameinput2.js",
+    "spec": "specs/repository/src/paraglide/messages/profilenicknameinput2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profilebirthdatefutureerror3.js",
+    "spec": "specs/repository/src/paraglide/messages/profilebirthdatefutureerror3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatsending1.js",
+    "spec": "specs/repository/src/paraglide/messages/chatsending1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatunknownuser2.js",
+    "spec": "specs/repository/src/paraglide/messages/chatunknownuser2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatinvitationsent2.js",
+    "spec": "specs/repository/src/paraglide/messages/chatinvitationsent2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatsinglechat2.js",
+    "spec": "specs/repository/src/paraglide/messages/chatsinglechat2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatemptyrooms2.js",
+    "spec": "specs/repository/src/paraglide/messages/chatemptyrooms2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/followselfnotallowed3.js",
+    "spec": "specs/repository/src/paraglide/messages/followselfnotallowed3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profilebirthdateday2.js",
+    "spec": "specs/repository/src/paraglide/messages/profilebirthdateday2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatloadingprofile2.js",
+    "spec": "specs/repository/src/paraglide/messages/chatloadingprofile2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/homesidebarprofilelabel3.js",
+    "spec": "specs/repository/src/paraglide/messages/homesidebarprofilelabel3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/reportreasonspam2.js",
+    "spec": "specs/repository/src/paraglide/messages/reportreasonspam2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profilepictureuploadsuccess3.js",
+    "spec": "specs/repository/src/paraglide/messages/profilepictureuploadsuccess3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/sidebartodoposttypedesc4.js",
+    "spec": "specs/repository/src/paraglide/messages/sidebartodoposttypedesc4.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatmyroomstitle3.js",
+    "spec": "specs/repository/src/paraglide/messages/chatmyroomstitle3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatcategoryjobs2.js",
+    "spec": "specs/repository/src/paraglide/messages/chatcategoryjobs2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/influencerscore1.js",
+    "spec": "specs/repository/src/paraglide/messages/influencerscore1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/admintestmenu2.js",
+    "spec": "specs/repository/src/paraglide/messages/admintestmenu2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profilecommentcount2.js",
+    "spec": "specs/repository/src/paraglide/messages/profilecommentcount2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/_delete.js",
+    "spec": "specs/repository/src/paraglide/messages/_delete.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatpasswordverifying2.js",
+    "spec": "specs/repository/src/paraglide/messages/chatpasswordverifying2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/feedloading1.js",
+    "spec": "specs/repository/src/paraglide/messages/feedloading1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/authgetstarted2.js",
+    "spec": "specs/repository/src/paraglide/messages/authgetstarted2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/testuserdeleting2.js",
+    "spec": "specs/repository/src/paraglide/messages/testuserdeleting2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/userjoineddate2.js",
+    "spec": "specs/repository/src/paraglide/messages/userjoineddate2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/underconstructionmessage2.js",
+    "spec": "specs/repository/src/paraglide/messages/underconstructionmessage2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/testuserinfonorecover4.js",
+    "spec": "specs/repository/src/paraglide/messages/testuserinfonorecover4.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/homesidebaractivitynotext4.js",
+    "spec": "specs/repository/src/paraglide/messages/homesidebaractivitynotext4.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/testusercurrentcreatecount4.js",
+    "spec": "specs/repository/src/paraglide/messages/testusercurrentcreatecount4.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/menuguide1.js",
+    "spec": "specs/repository/src/paraglide/messages/menuguide1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/testuserdeleteall3.js",
+    "spec": "specs/repository/src/paraglide/messages/testuserdeleteall3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profileinfoguide2.js",
+    "spec": "specs/repository/src/paraglide/messages/profileinfoguide2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/followingbutton1.js",
+    "spec": "specs/repository/src/paraglide/messages/followingbutton1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/usernotregistered2.js",
+    "spec": "specs/repository/src/paraglide/messages/usernotregistered2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/confirm.js",
+    "spec": "specs/repository/src/paraglide/messages/confirm.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/contact.js",
+    "spec": "specs/repository/src/paraglide/messages/contact.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/status.js",
+    "spec": "specs/repository/src/paraglide/messages/status.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/followerror1.js",
+    "spec": "specs/repository/src/paraglide/messages/followerror1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/pagetitleadminreports3.js",
+    "spec": "specs/repository/src/paraglide/messages/pagetitleadminreports3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profilephotoremovefailed3.js",
+    "spec": "specs/repository/src/paraglide/messages/profilephotoremovefailed3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/testuserdeletinginprogress4.js",
+    "spec": "specs/repository/src/paraglide/messages/testuserdeletinginprogress4.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/testusernotcreatedguide4.js",
+    "spec": "specs/repository/src/paraglide/messages/testusernotcreatedguide4.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/followercount1.js",
+    "spec": "specs/repository/src/paraglide/messages/followercount1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chataccept1.js",
+    "spec": "specs/repository/src/paraglide/messages/chataccept1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/commonretry1.js",
+    "spec": "specs/repository/src/paraglide/messages/commonretry1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profilepicturetypeerror3.js",
+    "spec": "specs/repository/src/paraglide/messages/profilepicturetypeerror3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/navabout1.js",
+    "spec": "specs/repository/src/paraglide/messages/navabout1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/userjoindate2.js",
+    "spec": "specs/repository/src/paraglide/messages/userjoindate2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profilepictureremovefailed3.js",
+    "spec": "specs/repository/src/paraglide/messages/profilepictureremovefailed3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/admintestusermanagement3.js",
+    "spec": "specs/repository/src/paraglide/messages/admintestusermanagement3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/homesectionpopularopenroom4.js",
+    "spec": "specs/repository/src/paraglide/messages/homesectionpopularopenroom4.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatpasswordincorrect2.js",
+    "spec": "specs/repository/src/paraglide/messages/chatpasswordincorrect2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/reportreasonabuse2.js",
+    "spec": "specs/repository/src/paraglide/messages/reportreasonabuse2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/homesidebarfollowing2.js",
+    "spec": "specs/repository/src/paraglide/messages/homesidebarfollowing2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profilememberinfoguide3.js",
+    "spec": "specs/repository/src/paraglide/messages/profilememberinfoguide3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/boardtabqna2.js",
+    "spec": "specs/repository/src/paraglide/messages/boardtabqna2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/userlistguide2.js",
+    "spec": "specs/repository/src/paraglide/messages/userlistguide2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profilepictureremovesuccess3.js",
+    "spec": "specs/repository/src/paraglide/messages/profilepictureremovesuccess3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/feedempty1.js",
+    "spec": "specs/repository/src/paraglide/messages/feedempty1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/authsigninguidestart4.js",
+    "spec": "specs/repository/src/paraglide/messages/authsigninguidestart4.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/featurefirebaseauthdesc3.js",
+    "spec": "specs/repository/src/paraglide/messages/featurefirebaseauthdesc3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profilememberinfo2.js",
+    "spec": "specs/repository/src/paraglide/messages/profilememberinfo2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatadduidorroomid5.js",
+    "spec": "specs/repository/src/paraglide/messages/chatadduidorroomid5.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/navhome1.js",
+    "spec": "specs/repository/src/paraglide/messages/navhome1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profilemonthvalue2.js",
+    "spec": "specs/repository/src/paraglide/messages/profilemonthvalue2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatloadmessagesfailed3.js",
+    "spec": "specs/repository/src/paraglide/messages/chatloadmessagesfailed3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/influencerunknownuser2.js",
+    "spec": "specs/repository/src/paraglide/messages/influencerunknownuser2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/userlastlogin2.js",
+    "spec": "specs/repository/src/paraglide/messages/userlastlogin2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/sidebardevhighlightwrapup4.js",
+    "spec": "specs/repository/src/paraglide/messages/sidebardevhighlightwrapup4.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/testusercount2.js",
+    "spec": "specs/repository/src/paraglide/messages/testusercount2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/popularpostsdescription2.js",
+    "spec": "specs/repository/src/paraglide/messages/popularpostsdescription2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatpasswordmismatcherror3.js",
+    "spec": "specs/repository/src/paraglide/messages/chatpasswordmismatcherror3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profiledateofbirthpasterror5.js",
+    "spec": "specs/repository/src/paraglide/messages/profiledateofbirthpasterror5.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/usernousersregistered3.js",
+    "spec": "specs/repository/src/paraglide/messages/usernousersregistered3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profilephotoremovesuccess3.js",
+    "spec": "specs/repository/src/paraglide/messages/profilephotoremovesuccess3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatpreparingstream2.js",
+    "spec": "specs/repository/src/paraglide/messages/chatpreparingstream2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/sidebarsuggestions1.js",
+    "spec": "specs/repository/src/paraglide/messages/sidebarsuggestions1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/unfollowsuccess1.js",
+    "spec": "specs/repository/src/paraglide/messages/unfollowsuccess1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/testusercreatecompletemessage4.js",
+    "spec": "specs/repository/src/paraglide/messages/testusercreatecompletemessage4.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/menueditprofile2.js",
+    "spec": "specs/repository/src/paraglide/messages/menueditprofile2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/userprofiledetail2.js",
+    "spec": "specs/repository/src/paraglide/messages/userprofiledetail2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/admininfotestflag3.js",
+    "spec": "specs/repository/src/paraglide/messages/admininfotestflag3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/testusernousertodelete5.js",
+    "spec": "specs/repository/src/paraglide/messages/testusernousertodelete5.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/menutitle1.js",
+    "spec": "specs/repository/src/paraglide/messages/menutitle1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/homesidebaropenchatempty4.js",
+    "spec": "specs/repository/src/paraglide/messages/homesidebaropenchatempty4.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profilepicturesizeerror3.js",
+    "spec": "specs/repository/src/paraglide/messages/profilepicturesizeerror3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chat.js",
+    "spec": "specs/repository/src/paraglide/messages/chat.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/success.js",
+    "spec": "specs/repository/src/paraglide/messages/success.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatcategoryhobby2.js",
+    "spec": "specs/repository/src/paraglide/messages/chatcategoryhobby2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/pagemetalogin2.js",
+    "spec": "specs/repository/src/paraglide/messages/pagemetalogin2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/menu.js",
+    "spec": "specs/repository/src/paraglide/messages/menu.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/featuretailwindcssdesc3.js",
+    "spec": "specs/repository/src/paraglide/messages/featuretailwindcssdesc3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/linkshadcnsvelte2.js",
+    "spec": "specs/repository/src/paraglide/messages/linkshadcnsvelte2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/pagetitlemyreports3.js",
+    "spec": "specs/repository/src/paraglide/messages/pagetitlemyreports3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profilesavesuccess2.js",
+    "spec": "specs/repository/src/paraglide/messages/profilesavesuccess2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatdirectchat2.js",
+    "spec": "specs/repository/src/paraglide/messages/chatdirectchat2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/testusercreate2.js",
+    "spec": "specs/repository/src/paraglide/messages/testusercreate2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/reportmylistguide3.js",
+    "spec": "specs/repository/src/paraglide/messages/reportmylistguide3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatunknownerror2.js",
+    "spec": "specs/repository/src/paraglide/messages/chatunknownerror2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/admintestdesc2.js",
+    "spec": "specs/repository/src/paraglide/messages/admintestdesc2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatloadingmore2.js",
+    "spec": "specs/repository/src/paraglide/messages/chatloadingmore2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/feedloginrequired2.js",
+    "spec": "specs/repository/src/paraglide/messages/feedloginrequired2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/retry.js",
+    "spec": "specs/repository/src/paraglide/messages/retry.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/reportcancelconfirm2.js",
+    "spec": "specs/repository/src/paraglide/messages/reportcancelconfirm2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/likeusersempty2.js",
+    "spec": "specs/repository/src/paraglide/messages/likeusersempty2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/pagetitlelogin2.js",
+    "spec": "specs/repository/src/paraglide/messages/pagetitlelogin2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/commoncancel1.js",
+    "spec": "specs/repository/src/paraglide/messages/commoncancel1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/reportreasonother2.js",
+    "spec": "specs/repository/src/paraglide/messages/reportreasonother2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profilephotouploadsuccess3.js",
+    "spec": "specs/repository/src/paraglide/messages/profilephotouploadsuccess3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/testuserlist2.js",
+    "spec": "specs/repository/src/paraglide/messages/testuserlist2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatmyroomsdesc3.js",
+    "spec": "specs/repository/src/paraglide/messages/chatmyroomsdesc3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profilebirthdateagelimit3.js",
+    "spec": "specs/repository/src/paraglide/messages/profilebirthdateagelimit3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/followbutton1.js",
+    "spec": "specs/repository/src/paraglide/messages/followbutton1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatinvitefriend2.js",
+    "spec": "specs/repository/src/paraglide/messages/chatinvitefriend2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/apptitle1.js",
+    "spec": "specs/repository/src/paraglide/messages/apptitle1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/followingcount1.js",
+    "spec": "specs/repository/src/paraglide/messages/followingcount1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/navboard1.js",
+    "spec": "specs/repository/src/paraglide/messages/navboard1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/sidebarnonotifications2.js",
+    "spec": "specs/repository/src/paraglide/messages/sidebarnonotifications2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatroomlist2.js",
+    "spec": "specs/repository/src/paraglide/messages/chatroomlist2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/myprofile1.js",
+    "spec": "specs/repository/src/paraglide/messages/myprofile1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/featuresveltekit52.js",
+    "spec": "specs/repository/src/paraglide/messages/featuresveltekit52.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profilesave1.js",
+    "spec": "specs/repository/src/paraglide/messages/profilesave1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/usernoname2.js",
+    "spec": "specs/repository/src/paraglide/messages/usernoname2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatpartner1.js",
+    "spec": "specs/repository/src/paraglide/messages/chatpartner1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/testusergenderfemale3.js",
+    "spec": "specs/repository/src/paraglide/messages/testusergenderfemale3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatprovideuid2.js",
+    "spec": "specs/repository/src/paraglide/messages/chatprovideuid2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/sidebartodoposttype3.js",
+    "spec": "specs/repository/src/paraglide/messages/sidebartodoposttype3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profileuserinfoguide3.js",
+    "spec": "specs/repository/src/paraglide/messages/profileuserinfoguide3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chattabfriends2.js",
+    "spec": "specs/repository/src/paraglide/messages/chattabfriends2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/mystatsdescription2.js",
+    "spec": "specs/repository/src/paraglide/messages/mystatsdescription2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/testuserprogressdisplay3.js",
+    "spec": "specs/repository/src/paraglide/messages/testuserprogressdisplay3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/navlogout1.js",
+    "spec": "specs/repository/src/paraglide/messages/navlogout1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profiledayformat2.js",
+    "spec": "specs/repository/src/paraglide/messages/profiledayformat2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatcategorystory2.js",
+    "spec": "specs/repository/src/paraglide/messages/chatcategorystory2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/userloading1.js",
+    "spec": "specs/repository/src/paraglide/messages/userloading1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/complete.js",
+    "spec": "specs/repository/src/paraglide/messages/complete.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/homeopenchatnomessage4.js",
+    "spec": "specs/repository/src/paraglide/messages/homeopenchatnomessage4.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profilepicturepreview2.js",
+    "spec": "specs/repository/src/paraglide/messages/profilepicturepreview2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatloadingrooms2.js",
+    "spec": "specs/repository/src/paraglide/messages/chatloadingrooms2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/homesidebarfollowers2.js",
+    "spec": "specs/repository/src/paraglide/messages/homesidebarfollowers2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profilephotosizeerror3.js",
+    "spec": "specs/repository/src/paraglide/messages/profilephotosizeerror3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/helloworld1.js",
+    "spec": "specs/repository/src/paraglide/messages/helloworld1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profileyearvalue2.js",
+    "spec": "specs/repository/src/paraglide/messages/profileyearvalue2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/sidebarnotifications1.js",
+    "spec": "specs/repository/src/paraglide/messages/sidebarnotifications1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/influencerloading1.js",
+    "spec": "specs/repository/src/paraglide/messages/influencerloading1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/testusergendermale3.js",
+    "spec": "specs/repository/src/paraglide/messages/testusergendermale3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatselectconversation2.js",
+    "spec": "specs/repository/src/paraglide/messages/chatselectconversation2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/influencertabyearly2.js",
+    "spec": "specs/repository/src/paraglide/messages/influencertabyearly2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatchatroom2.js",
+    "spec": "specs/repository/src/paraglide/messages/chatchatroom2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/popularpostsweekly2.js",
+    "spec": "specs/repository/src/paraglide/messages/popularpostsweekly2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatpasswordconfirmplaceholder3.js",
+    "spec": "specs/repository/src/paraglide/messages/chatpasswordconfirmplaceholder3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/testusercreateguide3.js",
+    "spec": "specs/repository/src/paraglide/messages/testusercreateguide3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatroom1.js",
+    "spec": "specs/repository/src/paraglide/messages/chatroom1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/go.js",
+    "spec": "specs/repository/src/paraglide/messages/go.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profiledayvalue2.js",
+    "spec": "specs/repository/src/paraglide/messages/profiledayvalue2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/refresh.js",
+    "spec": "specs/repository/src/paraglide/messages/refresh.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/authsigninrequireddesc4.js",
+    "spec": "specs/repository/src/paraglide/messages/authsigninrequireddesc4.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/menudevtest2.js",
+    "spec": "specs/repository/src/paraglide/messages/menudevtest2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/adminuserlistdesc3.js",
+    "spec": "specs/repository/src/paraglide/messages/adminuserlistdesc3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/influencertabmonthly2.js",
+    "spec": "specs/repository/src/paraglide/messages/influencertabmonthly2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/testusercreateatonce4.js",
+    "spec": "specs/repository/src/paraglide/messages/testusercreateatonce4.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/testuseryear2.js",
+    "spec": "specs/repository/src/paraglide/messages/testuseryear2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/pagetitlemenu2.js",
+    "spec": "specs/repository/src/paraglide/messages/pagetitlemenu2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/usernotjoined2.js",
+    "spec": "specs/repository/src/paraglide/messages/usernotjoined2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/admininfodatadelete3.js",
+    "spec": "specs/repository/src/paraglide/messages/admininfodatadelete3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatcategoryinformation2.js",
+    "spec": "specs/repository/src/paraglide/messages/chatcategoryinformation2.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/profilemonth1.js",
+    "spec": "specs/repository/src/paraglide/messages/profilemonth1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/followinglist1.js",
+    "spec": "specs/repository/src/paraglide/messages/followinglist1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/adminreportlistguide3.js",
+    "spec": "specs/repository/src/paraglide/messages/adminreportlistguide3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/homesectionrecentopenchat4.js",
+    "spec": "specs/repository/src/paraglide/messages/homesectionrecentopenchat4.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/findusers1.js",
+    "spec": "specs/repository/src/paraglide/messages/findusers1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/chatreject1.js",
+    "spec": "specs/repository/src/paraglide/messages/chatreject1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/admintest1.js",
+    "spec": "specs/repository/src/paraglide/messages/admintest1.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/homesidebarfollowersdesc3.js",
+    "spec": "specs/repository/src/paraglide/messages/homesidebarfollowersdesc3.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages/authsigninwithapple4.js",
+    "spec": "specs/repository/src/paraglide/messages/authsigninwithapple4.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/runtime.js",
+    "spec": "specs/repository/src/paraglide/runtime.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/server.js",
+    "spec": "specs/repository/src/paraglide/server.js.md",
+    "success": true
+  },
+  {
+    "original": "src/paraglide/messages.js",
+    "spec": "specs/repository/src/paraglide/messages.js.md",
+    "success": true
+  },
+  {
+    "original": "src/app.css",
+    "spec": "specs/repository/src/app.css.md",
+    "success": true
+  },
+  {
+    "original": "src/stories/Page.svelte",
+    "spec": "specs/repository/src/stories/Page.svelte.md",
+    "success": true
+  },
+  {
+    "original": "src/stories/Header.svelte",
+    "spec": "specs/repository/src/stories/Header.svelte.md",
+    "success": true
+  },
+  {
+    "original": "src/stories/Page.stories.svelte",
+    "spec": "specs/repository/src/stories/Page.stories.svelte.md",
+    "success": true
+  },
+  {
+    "original": "src/stories/Button.svelte",
+    "spec": "specs/repository/src/stories/Button.svelte.md",
+    "success": true
+  },
+  {
+    "original": "src/stories/Header.stories.svelte",
+    "spec": "specs/repository/src/stories/Header.stories.svelte.md",
+    "success": true
+  },
+  {
+    "original": "src/stories/page.css",
+    "spec": "specs/repository/src/stories/page.css.md",
+    "success": true
+  },
+  {
+    "original": "src/stories/button.css",
+    "spec": "specs/repository/src/stories/button.css.md",
+    "success": true
+  },
+  {
+    "original": "src/stories/Button.stories.svelte",
+    "spec": "specs/repository/src/stories/Button.stories.svelte.md",
+    "success": true
+  },
+  {
+    "original": "src/stories/header.css",
+    "spec": "specs/repository/src/stories/header.css.md",
+    "success": true
+  },
+  {
+    "original": "src/app.html",
+    "spec": "specs/repository/src/app.html.md",
+    "success": true
+  },
+  {
+    "original": "src/hooks.server.ts",
+    "spec": "specs/repository/src/hooks.server.ts.md",
+    "success": true
+  },
+  {
+    "original": "src/routes/demo/+page.svelte",
+    "spec": "specs/repository/src/routes/demo/+page.svelte.md",
+    "success": true
+  },
+  {
+    "original": "src/routes/demo/paraglide/+page.svelte",
+    "spec": "specs/repository/src/routes/demo/paraglide/+page.svelte.md",
+    "success": true
+  },
+  {
+    "original": "src/routes/fcm-test/+page.svelte",
+    "spec": "specs/repository/src/routes/fcm-test/+page.svelte.md",
+    "success": true
+  },
+  {
+    "original": "src/routes/settings/fcm/permission/+page.svelte",
+    "spec": "specs/repository/src/routes/settings/fcm/permission/+page.svelte.md",
+    "success": true
+  },
+  {
+    "original": "src/routes/friend/followers/+page.svelte",
+    "spec": "specs/repository/src/routes/friend/followers/+page.svelte.md",
+    "success": true
+  },
+  {
+    "original": "src/routes/friend/following/+page.svelte",
+    "spec": "specs/repository/src/routes/friend/following/+page.svelte.md",
+    "success": true
+  },
+  {
+    "original": "src/routes/post/popular/+page.svelte",
+    "spec": "specs/repository/src/routes/post/popular/+page.svelte.md",
+    "success": true
+  },
+  {
+    "original": "src/routes/post/list/+page.svelte",
+    "spec": "specs/repository/src/routes/post/list/+page.svelte.md",
+    "success": true
+  },
+  {
+    "original": "src/routes/+page.svelte",
+    "spec": "specs/repository/src/routes/+page.svelte.md",
+    "success": true
+  },
+  {
+    "original": "src/routes/chat/group-chat-list/+page.svelte",
+    "spec": "specs/repository/src/routes/chat/group-chat-list/+page.svelte.md",
+    "success": true
+  },
+  {
+    "original": "src/routes/chat/room/+page.svelte",
+    "spec": "specs/repository/src/routes/chat/room/+page.svelte.md",
+    "success": true
+  },
+  {
+    "original": "src/routes/chat/room/ChatRoomListItem.svelte",
+    "spec": "specs/repository/src/routes/chat/room/ChatRoomListItem.svelte.md",
+    "success": true
+  },
+  {
+    "original": "src/routes/chat/room/+layout.svelte",
+    "spec": "specs/repository/src/routes/chat/room/+layout.svelte.md",
+    "success": true
+  },
+  {
+    "original": "src/routes/chat/open-chat-list/+page.svelte",
+    "spec": "specs/repository/src/routes/chat/open-chat-list/+page.svelte.md",
+    "success": true
+  },
+  {
+    "original": "src/routes/chat/list/+page.svelte",
+    "spec": "specs/repository/src/routes/chat/list/+page.svelte.md",
+    "success": true
+  },
+  {
+    "original": "src/routes/page.svelte.spec.ts",
+    "spec": "specs/repository/src/routes/page.svelte.spec.ts.md",
+    "success": true
+  },
+  {
+    "original": "src/routes/admin/dashboard/+page.svelte",
+    "spec": "specs/repository/src/routes/admin/dashboard/+page.svelte.md",
+    "success": true
+  },
+  {
+    "original": "src/routes/admin/users/+page.svelte",
+    "spec": "specs/repository/src/routes/admin/users/+page.svelte.md",
+    "success": true
+  },
+  {
+    "original": "src/routes/admin/+layout.svelte",
+    "spec": "specs/repository/src/routes/admin/+layout.svelte.md",
+    "success": true
+  },
+  {
+    "original": "src/routes/admin/reports/+page.svelte",
+    "spec": "specs/repository/src/routes/admin/reports/+page.svelte.md",
+    "success": true
+  },
+  {
+    "original": "src/routes/user/profile/+page.svelte",
+    "spec": "specs/repository/src/routes/user/profile/+page.svelte.md",
+    "success": true
+  },
+  {
+    "original": "src/routes/user/list/+page.svelte",
+    "spec": "specs/repository/src/routes/user/list/+page.svelte.md",
+    "success": true
+  },
+  {
+    "original": "src/routes/user/influencers/+page.svelte",
+    "spec": "specs/repository/src/routes/user/influencers/+page.svelte.md",
+    "success": true
+  },
+  {
+    "original": "src/routes/user/login/+page.svelte",
+    "spec": "specs/repository/src/routes/user/login/+page.svelte.md",
+    "success": true
+  },
+  {
+    "original": "src/routes/menu/+page.svelte",
+    "spec": "specs/repository/src/routes/menu/+page.svelte.md",
+    "success": true
+  },
+  {
+    "original": "src/routes/my/activity/+page.svelte",
+    "spec": "specs/repository/src/routes/my/activity/+page.svelte.md",
+    "success": true
+  },
+  {
+    "original": "src/routes/my/reactions/+page.svelte",
+    "spec": "specs/repository/src/routes/my/reactions/+page.svelte.md",
+    "success": true
+  },
+  {
+    "original": "src/routes/my/profile/+page.svelte",
+    "spec": "specs/repository/src/routes/my/profile/+page.svelte.md",
+    "success": true
+  },
+  {
+    "original": "src/routes/my/+layout.svelte",
+    "spec": "specs/repository/src/routes/my/+layout.svelte.md",
+    "success": true
+  },
+  {
+    "original": "src/routes/my/stats/+page.svelte",
+    "spec": "specs/repository/src/routes/my/stats/+page.svelte.md",
+    "success": true
+  },
+  {
+    "original": "src/routes/my/reports/+page.svelte",
+    "spec": "specs/repository/src/routes/my/reports/+page.svelte.md",
+    "success": true
+  },
+  {
+    "original": "src/routes/dev/plan/+page.svelte",
+    "spec": "specs/repository/src/routes/dev/plan/+page.svelte.md",
+    "success": true
+  },
+  {
+    "original": "src/routes/dev/create-posts/+page.svelte",
+    "spec": "specs/repository/src/routes/dev/create-posts/+page.svelte.md",
+    "success": true
+  },
+  {
+    "original": "src/routes/+layout.svelte",
+    "spec": "specs/repository/src/routes/+layout.svelte.md",
+    "success": true
+  },
+  {
+    "original": "src/routes/stats/+page.svelte",
+    "spec": "specs/repository/src/routes/stats/+page.svelte.md",
+    "success": true
+  }
+]

@@ -1,15 +1,19 @@
 ---
-title: +page.svelte
-type: component
-path: src/routes/user/list/+page.svelte
-status: active
-version: 1.0.0
-last_updated: 2025-11-15
+title: +page.svelte - Svelte 5 컴포넌트
+original_path: src/routes/user/list/+page.svelte
+category: route
+file_type: svelte
+status: current
+last_updated: 2025-11-20
 ---
+
+# +page.svelte
 
 ## 개요
 
-이 파일은 `src/routes/user/list/+page.svelte`의 소스 코드를 포함하는 SED 스펙 문서입니다.
+**원본 경로**: `src/routes/user/list/+page.svelte`
+
+**파일 유형**: Svelte 5 컴포넌트
 
 ## 소스 코드
 
@@ -28,14 +32,17 @@ last_updated: 2025-11-15
   import { Button } from '$lib/components/ui/button/index.js';
   import { formatLongDate } from '$lib/functions/date.functions';
   import { m } from '$lib/paraglide/messages.js';
+  import { goto } from '$app/navigation';
+  import { page } from '$app/stores';
 
   const DEFAULT_PAGE_SIZE = 15;
 
   // 정렬 필드 옵션
-  type SortField = 'createdAt' | 'sort_recentWithPhoto' | 'sort_recentFemaleWithPhoto' | 'sort_recentMaleWithPhoto';
+  type SortField = 'registerOrder' | 'createdAt' | 'sort_recentWithPhoto' | 'sort_recentFemaleWithPhoto' | 'sort_recentMaleWithPhoto';
 
   const sortOptions = [
-    { value: 'createdAt' as SortField, label: '전체 회원' },
+    { value: 'registerOrder' as SortField, label: '최근 가입순' },
+    { value: 'createdAt' as SortField, label: '전체 회원 (가입일순)' },
     { value: 'sort_recentWithPhoto' as SortField, label: '사진있는 회원' },
     { value: 'sort_recentFemaleWithPhoto' as SortField, label: '사진있는 여성' },
     { value: 'sort_recentMaleWithPhoto' as SortField, label: '사진있는 남성' }
@@ -44,15 +51,23 @@ last_updated: 2025-11-15
   let searchDialogOpen = $state(false);
   let dialogKeyword = $state('');
   let activeSearch = $state('');
-  let selectedSortField = $state<SortField>('createdAt');
+  let selectedSortField = $state<SortField>('registerOrder');
 
-  const normalizedSearch = $derived.by(() => activeSearch.trim());
-  const isSearching = $derived.by(() => normalizedSearch.length > 0);
+  const normalizedSearchValue = $derived.by(() => activeSearch.trim());
+  const normalizedLowerSearch = $derived.by(() => normalizedSearchValue.toLowerCase());
+  const isSearching = $derived.by(() => normalizedSearchValue.length > 0);
   const listKey = $derived.by(() =>
-    isSearching ? `users-search-${normalizedSearch}` : `users-${selectedSortField}`
+    isSearching ? `users-search-${normalizedLowerSearch}` : `users-${selectedSortField}`
   );
   const listOrderBy = $derived.by(() => (isSearching ? 'displayNameLowerCase' : selectedSortField));
   const listPageSize = $derived.by(() => (isSearching ? 50 : DEFAULT_PAGE_SIZE));
+  const keywordFromQuery = $derived.by(() => $page.url.searchParams.get('keyword') ?? '');
+
+  $effect(() => {
+    if (keywordFromQuery === activeSearch) return;
+    activeSearch = keywordFromQuery;
+    dialogKeyword = keywordFromQuery;
+  });
 
   function openSearchDialog() {
     dialogKeyword = activeSearch;
@@ -60,9 +75,11 @@ last_updated: 2025-11-15
   }
 
   function handleDialogSearch(event: CustomEvent<{ keyword: string }>) {
-    const { keyword } = event.detail;
+    const keyword = event.detail.keyword.trim();
     activeSearch = keyword;
     dialogKeyword = keyword;
+    const targetUrl = keyword ? `/user/list?keyword=${encodeURIComponent(keyword)}` : '/user/list';
+    void goto(targetUrl, { replaceState: true, noScroll: true });
   }
 
   function handleDialogClear() {
@@ -72,6 +89,7 @@ last_updated: 2025-11-15
   function clearSearch() {
     dialogKeyword = '';
     activeSearch = '';
+    void goto('/user/list', { replaceState: true, noScroll: true });
     searchDialogOpen = false;
   }
 </script>
@@ -99,7 +117,7 @@ last_updated: 2025-11-15
 
       {#if isSearching}
         <div class="search-chip">
-          <span>"{normalizedSearch}" 검색 결과</span>
+          <span>"{normalizedSearchValue}" 검색 결과</span>
           <button type="button" onclick={clearSearch}>초기화</button>
         </div>
       {/if}
@@ -128,8 +146,7 @@ last_updated: 2025-11-15
       pageSize={listPageSize}
       orderBy={listOrderBy}
       threshold={300}
-      reverse={false}
-      equalToValue={isSearching ? normalizedSearch : undefined}
+      equalToValue={isSearching ? normalizedLowerSearch : undefined}
     >
     {#snippet item(itemData: { key: string; data: any })}
       <article class="user-card">
@@ -560,6 +577,4 @@ last_updated: 2025-11-15
     }
   }
 </style>
-
 ```
-

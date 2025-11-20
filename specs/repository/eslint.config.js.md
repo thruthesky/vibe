@@ -1,15 +1,19 @@
 ---
-title: eslint.config.js
-type: javascript
-path: eslint.config.js
-status: active
-version: 1.0.0
-last_updated: 2025-11-15
+title: eslint.config.js - JavaScript 소스 코드
+original_path: eslint.config.js
+category: source
+file_type: js
+status: current
+last_updated: 2025-11-20
 ---
+
+# eslint.config.js
 
 ## 개요
 
-이 파일은 `eslint.config.js`의 소스 코드를 포함하는 SED 스펙 문서입니다.
+**원본 경로**: `eslint.config.js`
+
+**파일 유형**: JavaScript 소스 코드
 
 ## 소스 코드
 
@@ -62,6 +66,4 @@ export default defineConfig(
 		}
 	}
 );
-
 ```
-

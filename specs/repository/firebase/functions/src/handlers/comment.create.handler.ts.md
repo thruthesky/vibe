@@ -1,54 +1,19 @@
 ---
-title: comment.create.handler.ts
-type: typescript
-path: firebase/functions/src/handlers/comment.create.handler.ts
-status: active
-version: 1.0.0
-last_updated: 2025-11-18
+title: comment.create.handler.ts - TypeScript 소스 코드
+original_path: firebase/functions/src/handlers/comment.create.handler.ts
+category: cloud-function
+file_type: ts
+status: current
+last_updated: 2025-11-20
 ---
+
+# comment.create.handler.ts
 
 ## 개요
 
-이 파일은 `firebase/functions/src/handlers/comment.create.handler.ts`의 소스 코드를 포함하는 SED 스펙 문서입니다.
+**원본 경로**: `firebase/functions/src/handlers/comment.create.handler.ts`
 
-## 주요 기능
-
-1. **게시글 및 부모 댓글의 childCount/totalChildCount 자동 증가**: 댓글 생성 시 관련 카운터를 `ServerValue.increment(1)`로 원자적으로 증가시킵니다.
-2. **전체 댓글 통계 증가**: `/stats/counters/comment` 경로의 통계 카운터를 증가시킵니다.
-3. **푸시 알림 전송**: 댓글 작성 시 관련된 모든 사용자(게시글 작성자, 상위 댓글 작성자들)에게 FCM 푸시 알림을 전송합니다.
-
-**참고**: 댓글 경로가 `/comments/{postId}/{commentId}` 형태이므로, 댓글의 postId는 경로에서 직접 추출할 수 있습니다. 좋아요 시스템에서는 targetType을 `"comment-{postId}"` 형식으로 저장하여 postId 정보를 유지합니다.
-
-## 푸시 알림 로직
-
-### 알림 대상자
-
-댓글 생성 시 다음 사용자들에게 푸시 알림을 전송합니다:
-
-1. **게시글 작성자** (`/posts/{postId}/authorUid`)
-2. **부모 댓글 작성자** (대댓글인 경우, `parentId` 참조)
-3. **상위 모든 댓글 작성자** (재귀적으로 최상위 댓글까지 탐색)
-
-단, **댓글 작성자 본인은 알림 대상에서 제외**됩니다.
-
-### 재귀적 댓글 트리 탐색
-
-`getAncestorCommentAuthorUids()` 함수는 댓글의 `parentId` 필드를 재귀적으로 따라가며 상위 모든 댓글 작성자의 UID를 수집합니다:
-
-- **무한 루프 방지**: `visited` Set을 사용하여 이미 방문한 댓글 ID를 추적합니다.
-- **최상위 도달 조건**: `parentId`가 null이거나 undefined인 경우 재귀 종료합니다.
-- **에러 처리**: 댓글을 찾을 수 없거나 조회 실패 시 빈 배열을 반환하며 에러를 로그에 기록합니다.
-
-### 알림 중복 제거
-
-JavaScript `Set`을 사용하여 중복된 UID를 자동으로 제거합니다. 동일한 사용자가 여러 댓글을 작성한 경우에도 한 번만 알림을 받습니다.
-
-### 비차단 알림 전송
-
-푸시 알림 전송은 `sendCommentNotification()` 함수를 `await` 없이 호출하고 `.catch()`로 에러를 처리합니다. 이를 통해:
-
-- 알림 전송 실패가 댓글 생성 프로세스를 차단하지 않습니다.
-- 알림 실패는 비치명적(non-critical) 오류로 간주되어 로그만 남깁니다.
+**파일 유형**: TypeScript 소스 코드
 
 ## 소스 코드
 
@@ -70,38 +35,13 @@ import {
   getFcmTokensByUids,
   sendFcmNotificationBatch,
 } from "../utils/fcm.utils";
+import {incrementActionCounter} from "./user-action-counters.handler";
+import {
+  recordMyAction,
+  recordReceivedReaction,
+} from "../utils/reaction-history.utils";
+import {toNegativeTimestamp} from "../../../../shared/order-value.utils";
 
-/**
- * 전체 댓글 통계 카운터 증가
- *
- * @param postId - 게시글 ID
- * @param commentId - 댓글 ID
- *
- * 수행 작업:
- * - /stats/counters/comment 경로에 ServerValue.increment(1)로 +1 증가
- * - 이 값은 오른쪽 사이드바의 "실시간 통계 - 댓글 수"에 실시간으로 표시됨
- */
-async function incrementCommentCounter(
-  postId: string,
-  commentId: string
-): Promise<void> {
-  try {
-    const commentCounterRef = admin.database().ref("stats/counters/comment");
-    await commentCounterRef.set(admin.database.ServerValue.increment(1));
-
-    logger.info("stats/counters/comment 증가 완료 (전체 댓글 통계)", {
-      postId,
-      commentId,
-    });
-  } catch (error) {
-    logger.error("stats/counters/comment 증가 실패", {
-      postId,
-      commentId,
-      error: error instanceof Error ? error.message : String(error),
-    });
-    // 통계 증가 실패는 치명적이지 않으므로 에러를 throw하지 않고 로그만 남김
-  }
-}
 
 /**
  * 게시글 작성자 UID 조회
@@ -352,14 +292,36 @@ export async function handleCommentCreate(
   commentData: Record<string, unknown>
 ): Promise<void> {
   const parentId = commentData.parentId as string | null;
+  const createdAt = commentData.createdAt as number | undefined;
 
   logger.info("댓글 생성 감지", {
     postId,
     commentId,
     parentId,
+    createdAt,
   });
 
   try {
+    // 0. order 필드 추가 (정렬용)
+    let timestamp = createdAt;
+    if (!timestamp) {
+      timestamp = Date.now();
+    }
+
+    const order = toNegativeTimestamp(timestamp);
+    const commentRef = admin.database().ref(`comments/${postId}/${commentId}`);
+
+    await commentRef.update({
+      createdAt: timestamp,  // 양수 유지
+      order,                 // 새로 추가 (음수)
+    });
+
+    logger.info("댓글 order 필드 생성 완료", {
+      postId,
+      commentId,
+      order,
+    });
+
     // 1. 모든 댓글에 대해 게시글의 totalChildCount 증가 (총 댓글 수)
     const postTotalChildCountRef = admin
       .database()
@@ -405,7 +367,10 @@ export async function handleCommentCreate(
     //    좋아요 데이터의 targetType을 "comment-{postId}" 형식으로 저장하여 postId 정보 유지
 
     // 4. 전체 댓글 통계 증가 (최상위 댓글, 대댓글 모두 포함)
-    await incrementCommentCounter(postId, commentId);
+    const authorUid = commentData.authorUid as string | undefined;
+    if (authorUid) {
+      await incrementActionCounter(authorUid, "comment", 1);
+    }
 
     // 5. 관련 사용자들에게 푸시 알림 전송 (비차단)
     // 푸시 알림 실패는 비치명적이므로 await하지 않고 백그라운드에서 실행
@@ -416,6 +381,54 @@ export async function handleCommentCreate(
         error: error instanceof Error ? error.message : String(error),
       });
     });
+
+    // 6. 리액션 히스토리 기록
+    try {
+      const authorUid = commentData.authorUid as string | undefined;
+      if (authorUid) {
+        // 6-1. 나의 발자취에 댓글 작성 기록
+        await recordMyAction({
+          uid: authorUid,
+          type: "comment",
+          targetType: "comment",
+          targetId: commentId,
+          postId, // 댓글의 경우 postId 추가
+        });
+
+        logger.info("✅ 댓글 작성 리액션 히스토리 기록 완료 (나의 발자취)", {
+          postId,
+          commentId,
+          authorUid,
+        });
+
+        // 6-2. 게시글 작성자에게 받은 반응 기록
+        const postAuthorUid = await getPostAuthorUid(postId);
+        if (postAuthorUid) {
+          await recordReceivedReaction({
+            recipientUid: postAuthorUid,
+            fromUid: authorUid,
+            type: "comment",
+            targetType: "comment",
+            targetId: commentId,
+            postId,
+          });
+
+          logger.info("✅ 댓글 작성 리액션 히스토리 기록 완료 (받은 반응)", {
+            postId,
+            commentId,
+            authorUid,
+            postAuthorUid,
+          });
+        }
+      }
+    } catch (error) {
+      logger.error("❌ 댓글 작성 리액션 히스토리 기록 실패", {
+        postId,
+        commentId,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      // 리액션 히스토리 실패는 비치명적이므로 throw하지 않음
+    }
   } catch (error) {
     logger.error("childCount/totalChildCount 증가 실패", {
       postId,
@@ -426,12 +439,4 @@ export async function handleCommentCreate(
     throw error;
   }
 }
-
 ```
-
-## 관련 문서
-
-- [sonub-data-sync.md](../../../../sonub-data-sync.md) - 채팅 메시지와 게시글 양방향 동기화
-- [fcm.utils.ts.md](../utils/fcm.utils.ts.md) - FCM 유틸리티 함수
-- [database.rules.json.md](../../../database.rules.json.md) - Firebase Database Security Rules
-

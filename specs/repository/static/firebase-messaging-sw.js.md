@@ -1,15 +1,19 @@
 ---
-title: firebase-messaging-sw.js
-type: javascript
-path: static/firebase-messaging-sw.js
-status: active
-version: 1.0.0
-last_updated: 2025-11-15
+title: firebase-messaging-sw.js - JavaScript 소스 코드
+original_path: static/firebase-messaging-sw.js
+category: source
+file_type: js
+status: current
+last_updated: 2025-11-20
 ---
+
+# firebase-messaging-sw.js
 
 ## 개요
 
-이 파일은 `static/firebase-messaging-sw.js`의 소스 코드를 포함하는 SED 스펙 문서입니다.
+**원본 경로**: `static/firebase-messaging-sw.js`
+
+**파일 유형**: JavaScript 소스 코드
 
 ## 소스 코드
 
@@ -98,6 +102,4 @@ self.addEventListener('activate', (event) => {
 	console.log('[firebase-messaging-sw.js] 서비스 워커 활성화됨');
 	event.waitUntil(clients.claim()); // 모든 클라이언트에 즉시 적용
 });
-
 ```
-

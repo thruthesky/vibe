@@ -1,15 +1,19 @@
 ---
-title: testusernoneguide3.js
-type: javascript
-path: src/paraglide/messages/testusernoneguide3.js
-status: active
-version: 1.0.0
-last_updated: 2025-11-15
+title: testusernoneguide3.js - JavaScript 소스 코드
+original_path: src/paraglide/messages/testusernoneguide3.js
+category: source
+file_type: js
+status: current
+last_updated: 2025-11-20
 ---
+
+# testusernoneguide3.js
 
 ## 개요
 
-이 파일은 `src/paraglide/messages/testusernoneguide3.js`의 소스 코드를 포함하는 SED 스펙 문서입니다.
+**원본 경로**: `src/paraglide/messages/testusernoneguide3.js`
+
+**파일 유형**: JavaScript 소스 코드
 
 ## 소스 코드
 
@@ -18,7 +22,7 @@ last_updated: 2025-11-15
 import { getLocale, trackMessageCall, experimentalMiddlewareLocaleSplitting, isServer } from '../runtime.js';
 
 const zh_testusernoneguide3 = /** @type {(inputs: {}) => string} */ () => {
-	return `尚未创建测试用户。您可以使用上面的<strong>创建测试用户</strong>功能来创建100个。`
+	return `尚未创建测试用户。请前往 <strong><a class="text-blue-600" href="/admin/test/create-test-data">测试数据创建</a></strong> 页面生成 100 个测试账户。`
 };
 
 /** @type {(inputs: {}) => string} */
@@ -56,4 +60,3 @@ const testusernoneguide3 = (inputs = {}, options = {}) => {
 };
 export { testusernoneguide3 as "testUserNoneGuide" }
 ```
-

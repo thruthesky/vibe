@@ -1,15 +1,19 @@
 ---
-title: Page.stories.svelte
-type: component
-path: src/stories/Page.stories.svelte
-status: active
-version: 1.0.0
-last_updated: 2025-11-15
+title: Page.stories.svelte - Svelte 5 컴포넌트
+original_path: src/stories/Page.stories.svelte
+category: source
+file_type: svelte
+status: current
+last_updated: 2025-11-20
 ---
+
+# Page.stories.svelte
 
 ## 개요
 
-이 파일은 `src/stories/Page.stories.svelte`의 소스 코드를 포함하는 SED 스펙 문서입니다.
+**원본 경로**: `src/stories/Page.stories.svelte`
+
+**파일 유형**: Svelte 5 컴포넌트
 
 ## 소스 코드
 
@@ -44,6 +48,4 @@ last_updated: 2025-11-15
 />
 
 <Story name="Logged Out" />
-
 ```
-

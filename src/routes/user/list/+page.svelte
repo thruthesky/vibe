@@ -18,10 +18,11 @@
   const DEFAULT_PAGE_SIZE = 15;
 
   // 정렬 필드 옵션
-  type SortField = 'createdAt' | 'sort_recentWithPhoto' | 'sort_recentFemaleWithPhoto' | 'sort_recentMaleWithPhoto';
+  type SortField = 'registerOrder' | 'createdAt' | 'sort_recentWithPhoto' | 'sort_recentFemaleWithPhoto' | 'sort_recentMaleWithPhoto';
 
   const sortOptions = [
-    { value: 'createdAt' as SortField, label: '전체 회원' },
+    { value: 'registerOrder' as SortField, label: '최근 가입순' },
+    { value: 'createdAt' as SortField, label: '전체 회원 (가입일순)' },
     { value: 'sort_recentWithPhoto' as SortField, label: '사진있는 회원' },
     { value: 'sort_recentFemaleWithPhoto' as SortField, label: '사진있는 여성' },
     { value: 'sort_recentMaleWithPhoto' as SortField, label: '사진있는 남성' }
@@ -30,7 +31,7 @@
   let searchDialogOpen = $state(false);
   let dialogKeyword = $state('');
   let activeSearch = $state('');
-  let selectedSortField = $state<SortField>('createdAt');
+  let selectedSortField = $state<SortField>('registerOrder');
 
   const normalizedSearchValue = $derived.by(() => activeSearch.trim());
   const normalizedLowerSearch = $derived.by(() => normalizedSearchValue.toLowerCase());

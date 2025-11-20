@@ -57,7 +57,18 @@
 	import LikedUsersModal from '$lib/components/LikedUsersModal.svelte';
 	import LikedUsersAvatarStack from '$lib/components/LikedUsersAvatarStack.svelte';
 
+	// 채팅방으로 이동하기 직전에 어느 채팅 목록 탭에서 왔는지 추적하기 위한 경로 목록
+	const CHAT_LIST_PATHS = ['/chat/list', '/chat/group-chat-list', '/chat/open-chat-list'];
+	const DEFAULT_CHAT_LIST_PATH = '/chat/list';
+
+	// 네비게이션 state 에 저장된 이전 채팅 목록 탭 경로
+	const navigationFrom = $derived.by(() => {
+		const rawFrom = $page.state?.from;
+		return typeof rawFrom === 'string' ? rawFrom : '';
+	});
+
 	// GET 파라미터 추출
+	const fromParam = $derived.by(() => $page.url.searchParams.get('from') ?? '');
 	const uidParam = $derived.by(() => $page.url.searchParams.get('uid') ?? '');
 	const roomIdParam = $derived.by(() => $page.url.searchParams.get('roomId') ?? '');
 
@@ -158,7 +169,7 @@
 	 */
 	function handlePasswordCancel() {
 		passwordPromptOpen = false;
-		goto('/chat/list');
+		goto(resolveBackPath());
 	}
 
 	const targetProfile = $derived(userProfileStore.getCachedProfile(uidParam));
@@ -635,9 +646,29 @@
 		databaseListView?.scrollToBottom();
 	}
 
+	// 마지막으로 방문한 채팅 목록 탭 또는 기본 목록으로 돌아가는 경로 계산
+	function resolveBackPath(): string {
+		const candidates = [navigationFrom.trim(), fromParam.trim()].filter(Boolean);
+
+		for (const path of candidates) {
+			if (CHAT_LIST_PATHS.includes(path)) {
+				return path;
+			}
+		}
+
+		if (typeof window !== 'undefined') {
+			const storedPath = sessionStorage.getItem('chat:lastChatListPath') ?? '';
+			if (CHAT_LIST_PATHS.includes(storedPath)) {
+				return storedPath;
+			}
+		}
+
+		return DEFAULT_CHAT_LIST_PATH;
+	}
+
 	// 뒤로가기 (채팅 목록으로)
 	function handleGoBack() {
-		void goto('/chat/list');
+		void goto(resolveBackPath());
 	}
 
 	// 즐겨찾기 추가/제거
@@ -681,7 +712,7 @@
 		try {
 			await leaveChatRoom(rtdb, activeRoomId, authStore.user.uid);
 			// console.log('채팅방 탈퇴 완료');
-			void goto('/chat/list');
+			void goto(resolveBackPath());
 		} catch (error) {
 			console.error('채팅방 탈퇴 실패:', error);
 		}

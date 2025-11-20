@@ -1,167 +1,19 @@
 ---
-title: +page.svelte
-type: component
-path: src/routes/user/profile/+page.svelte
-status: active
-version: 3.0.0
-last_updated: 2025-11-18
+title: +page.svelte - Svelte 5 컴포넌트
+original_path: src/routes/user/profile/+page.svelte
+category: route
+file_type: svelte
+status: current
+last_updated: 2025-11-20
 ---
+
+# +page.svelte
 
 ## 개요
 
-이 파일은 `src/routes/user/profile/+page.svelte`의 소스 코드를 포함하는 SED 스펙 문서입니다.
+**원본 경로**: `src/routes/user/profile/+page.svelte`
 
-사용자 프로필 페이지로, URL 파라미터 `uid`로 전달된 사용자의 프로필 정보를 표시합니다.
-
-## 주요 기능
-
-### 1. 프로필 커버 영역
-- 상단에 그라디언트 배경(파란색-보라색-핑크색) 또는 사용자 업로드 커버 이미지 표시
-- 모바일: 높이 192px (h-48)
-- 데스크톱: 높이 224px (h-56)
-- 사용자가 업로드한 커버 이미지가 있으면 우선 표시, 없으면 그라디언트 배경 표시
-
-### 2. 커버 사진 업로드 (v3.0.0 신규 기능)
-- **본인 프로필인 경우에만** 커버 영역 우측 하단에 카메라 아이콘 버튼 표시
-- 버튼 클릭 시 파일 선택 다이얼로그 열림
-- 이미지 파일만 업로드 가능 (image/*)
-- 파일 크기 제한: 5MB 이하
-- 업로드 진행률 표시 (스피너 + 백분율)
-- Firebase Storage에 업로드: `users/{uid}/profile/cover-photo-{timestamp}.{extension}`
-- Firebase Database에 URL 저장: `/users/{uid}/coverPhotoUrl`
-- 업로드 에러 시 에러 메시지 표시
-
-### 3. 프로필 아바타
-- 커버 이미지와 겹치도록 배치 (음수 마진 사용)
-- 크기: 120x120px
-- 흰색 테두리(4px)와 그림자 효과
-- 모바일: -64px 위로 올림
-- 데스크톱: -80px 위로 올림
-
-### 4. 사용자 정보
-- 표시 이름 (displayName)
-- 자기소개 (bio) - 있는 경우만 표시
-- 중앙 정렬
-
-### 5. 액션 버튼
-- 팔로우 버튼 (FollowButton 컴포넌트)
-- 1:1 채팅 버튼 (로그인된 경우)
-- 로그인 요구 버튼 (로그인 안 된 경우)
-
-### 6. 상태 처리
-- UID 없음: 에러 메시지 표시
-- 로딩 중: 로딩 메시지 표시
-- 로드 실패: 에러 메시지 표시
-- 사용자 없음: 미등록 사용자 메시지 표시
-
-## 디자인 개선 사항 (v2.0.0)
-
-### 변경 내용
-1. **상단 여백 제거**: `py-12` 제거하여 콘텐츠를 페이지 최상단에 배치
-2. **커버 영역 추가**: 소셜 미디어 스타일의 프로필 커버 이미지 추가
-3. **아바타 배치 개선**: 커버와 겹치도록 배치하여 현대적인 UI 구현
-4. **그라디언트 배경**: 파란색-보라색-핑크색 그라디언트로 시각적 매력 향상
-5. **반응형 디자인**: 모바일과 데스크톱에서 최적화된 레이아웃
-
-## 커버 사진 업로드 기능 (v3.0.0)
-
-### 개요
-본인 프로필을 볼 때 커버 이미지를 직접 업로드하고 수정할 수 있는 기능입니다.
-
-### 주요 컴포넌트
-
-#### 1. 본인 프로필 감지
-```typescript
-// authStore의 currentUser.uid와 URL 파라미터의 uid를 비교
-const isOwnProfile = $derived.by(() => authStore.currentUser?.uid === uidParam);
-```
-
-#### 2. 커버 사진 URL 관리
-```typescript
-// Firebase Database에서 coverPhotoUrl 필드를 읽어옴
-const coverPhotoUrl = $derived.by(() => profile?.coverPhotoUrl || null);
-```
-- 데이터베이스 경로: `/users/{uid}/coverPhotoUrl`
-- 커버 사진이 있으면 이미지 표시, 없으면 그라디언트 배경 표시
-
-#### 3. 업로드 상태 관리
-```typescript
-let isUploadingCover = $state(false);   // 업로드 진행 중 여부
-let uploadProgress = $state(0);          // 업로드 진행률 (0-100)
-let uploadError = $state<string | null>(null); // 에러 메시지
-```
-
-#### 4. 파일 업로드 처리
-```typescript
-async function handleFileChange(event: Event) {
-  const input = event.target as HTMLInputElement;
-  const file = input.files?.[0];
-
-  // 1. 유효성 검사
-  - 이미지 파일 확인 (file.type.startsWith('image/'))
-  - 파일 크기 확인 (5MB 이하)
-
-  // 2. Firebase Storage 업로드
-  const downloadUrl = await uploadCoverPhoto(file, uidParam, (progress) => {
-    uploadProgress = progress;
-  });
-
-  // 3. Firebase Database에 URL 저장
-  const coverPhotoRef = ref(database, `users/${uidParam}/coverPhotoUrl`);
-  await set(coverPhotoRef, downloadUrl);
-}
-```
-
-### UI 컴포넌트
-
-#### 1. 카메라 버튼
-- **위치**: 커버 영역 우측 하단
-- **표시 조건**: 본인 프로필인 경우에만 (`{#if isOwnProfile}`)
-- **스타일**:
-  - 흰색 반투명 원형 버튼 (bg-white/90)
-  - 크기: 48x48px (h-12 w-12)
-  - 그림자 효과 (shadow-lg)
-  - 호버 시 배경 완전 흰색 + 그림자 강화
-
-#### 2. 업로드 진행 표시
-- **스피너**: 애니메이션 회전하는 SVG 아이콘
-- **진행률**: 백분율 텍스트 표시 (예: "75%")
-- **버튼 비활성화**: 업로드 중에는 클릭 불가
-
-#### 3. 에러 메시지
-- **위치**: 커버 영역 하단 중앙
-- **스타일**: 빨간색 배경 + 흰색 텍스트
-- **표시 조건**: `uploadError`가 있을 때만 표시
-
-### Firebase 연동
-
-#### Storage 경로
-```
-users/{uid}/profile/cover-photo-{timestamp}.{extension}
-```
-
-예시: `users/abc123/profile/cover-photo-1731900000000.jpg`
-
-#### Database 경로
-```
-/users/{uid}/coverPhotoUrl: "https://firebasestorage.googleapis.com/..."
-```
-
-#### 관련 함수
-- `uploadCoverPhoto()` - `src/lib/functions/storage.functions.ts`에 정의
-- 파일 검증, 업로드, 진행률 콜백 제공
-
-### 레이아웃 구조
-```
-┌─────────────────────────────────┐
-│   프로필 커버 (그라디언트)       │  ← 새로 추가
-│                                 │
-│          [아바타]               │  ← 커버와 겹침
-└─────────────────────────────────┘
-      사용자 이름
-      자기소개
-   [팔로우] [채팅]
-```
+**파일 유형**: Svelte 5 컴포넌트
 
 ## 소스 코드
 
@@ -176,14 +28,32 @@ users/{uid}/profile/cover-photo-{timestamp}.{extension}
 	import { userProfileStore } from '$lib/stores/user-profile.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { uploadCoverPhoto } from '$lib/functions/storage.functions';
+	import { getUserActionCounters, getInfluencerScore } from '$lib/functions/user.functions';
 	import { ref, set } from 'firebase/database';
-	import { database } from '$lib/firebase';
+	import { rtdb as database } from '$lib/firebase';
 
 	const uidParam = $derived.by(() => $page.url.searchParams.get('uid') ?? '');
+
+	// 사용자별 게시글 수와 댓글 수 상태
+	let postCount = $state(0);
+	let commentCount = $state(0);
+	// 인플루언서 점수 상태
+	let influencerScore = $state(0);
 
 	$effect(() => {
 		if (uidParam) {
 			userProfileStore.ensureSubscribed(uidParam);
+
+			// 사용자별 action 카운터 (게시글 수, 댓글 수) 가져오기
+			getUserActionCounters(uidParam, ['post', 'comment']).then((counters) => {
+				postCount = counters.post ?? 0;
+				commentCount = counters.comment ?? 0;
+			});
+
+			// 인플루언서 점수 가져오기
+			getInfluencerScore(uidParam).then((score) => {
+				influencerScore = score;
+			});
 		}
 	});
 
@@ -196,7 +66,7 @@ users/{uid}/profile/cover-photo-{timestamp}.{extension}
 	const chatUrl = $derived.by(() => (uidParam ? `/chat/room?uid=${encodeURIComponent(uidParam)}` : '#'));
 
 	// 본인 프로필 여부 확인
-	const isOwnProfile = $derived.by(() => authStore.currentUser?.uid === uidParam);
+	const isOwnProfile = $derived.by(() => authStore.user?.uid === uidParam);
 
 	// 커버 사진 URL (프로필에서 가져오거나 기본값 null)
 	const coverPhotoUrl = $derived.by(() => profile?.coverPhotoUrl || null);
@@ -254,6 +124,9 @@ users/{uid}/profile/cover-photo-{timestamp}.{extension}
 			);
 
 			// Firebase Database에 coverPhotoUrl 저장
+			if (!database) {
+				throw new Error('Firebase Database가 초기화되지 않았습니다.');
+			}
 			const coverPhotoRef = ref(database, `users/${uidParam}/coverPhotoUrl`);
 			await set(coverPhotoRef, downloadUrl);
 
@@ -408,9 +281,25 @@ users/{uid}/profile/cover-photo-{timestamp}.{extension}
 				</div>
 			{/if}
 
-			<!-- 추가 정보 섹션 (향후 확장 가능) -->
+			<!-- 사용자 통계 섹션 -->
 			<div class="profile-stats">
-				<!-- 여기에 게시글 수, 팔로워 수 등 통계 정보 추가 가능 -->
+				<!-- 인플루언서 점수 -->
+				<div class="stat-item stat-influencer">
+					<div class="stat-value stat-influencer-value">{influencerScore.toLocaleString()}</div>
+					<div class="stat-label">{m.profileInfluencerScore()}</div>
+				</div>
+
+				<!-- 게시글 수 -->
+				<div class="stat-item">
+					<div class="stat-value">{postCount}</div>
+					<div class="stat-label">{m.profilePostCount()}</div>
+				</div>
+
+				<!-- 댓글 수 -->
+				<div class="stat-item">
+					<div class="stat-value">{commentCount}</div>
+					<div class="stat-label">{m.profileCommentCount()}</div>
+				</div>
 			</div>
 		</div>
 	{/if}
@@ -523,157 +412,31 @@ users/{uid}/profile/cover-photo-{timestamp}.{extension}
 		@apply w-full transition-all hover:shadow-md sm:w-auto;
 	}
 
-	/* 통계 섹션 (향후 확장용) */
+	/* 통계 섹션 */
 	.profile-stats {
 		@apply mt-8 flex flex-wrap justify-center gap-6;
 	}
+
+	/* 통계 항목 */
+	.stat-item {
+		@apply flex flex-col items-center rounded-lg bg-gray-50 px-6 py-4 shadow-sm;
+	}
+
+	.stat-value {
+		@apply text-3xl font-bold text-gray-900;
+	}
+
+	.stat-label {
+		@apply mt-1 text-sm text-gray-600;
+	}
+
+	/* 인플루언서 점수 강조 스타일 */
+	.stat-influencer {
+		@apply bg-gradient-to-br from-blue-50 to-purple-50 border-2 border-blue-200 shadow-md;
+	}
+
+	.stat-influencer-value {
+		@apply text-4xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent;
+	}
 </style>
 ```
-
-## 기술적 세부사항
-
-### 1. Svelte 5 Runes 사용
-- `$derived`: 반응형 계산 값
-- `$derived.by()`: 복잡한 파생 상태 (본인 프로필 감지, 커버 URL 등)
-- `$effect`: 사이드 이펙트 처리 (프로필 데이터 구독)
-- `$state`: 컴포넌트 상태 관리 (업로드 진행률, 에러 등)
-
-### 2. URL 파라미터 처리
-```typescript
-const uidParam = $derived.by(() => $page.url.searchParams.get('uid') ?? '');
-```
-
-### 3. 프로필 데이터 구독
-```typescript
-$effect(() => {
-	if (uidParam) {
-		userProfileStore.ensureSubscribed(uidParam);
-	}
-});
-```
-
-### 4. 본인 프로필 감지 (v3.0.0)
-```typescript
-const isOwnProfile = $derived.by(() => authStore.currentUser?.uid === uidParam);
-```
-- authStore에서 현재 로그인한 사용자의 uid를 가져옴
-- URL 파라미터의 uid와 비교하여 본인 프로필 여부 판단
-- 본인 프로필인 경우에만 커버 업로드 버튼 표시
-
-### 5. 커버 사진 URL 관리 (v3.0.0)
-```typescript
-const coverPhotoUrl = $derived.by(() => profile?.coverPhotoUrl || null);
-```
-- userProfileStore에서 사용자 프로필 데이터 구독
-- coverPhotoUrl 필드가 있으면 커버 이미지 표시
-- 없으면 그라디언트 배경 표시
-
-### 6. 파일 업로드 상태 관리 (v3.0.0)
-```typescript
-let isUploadingCover = $state(false);   // 업로드 진행 중
-let uploadProgress = $state(0);          // 진행률 (0-100)
-let uploadError = $state<string | null>(null); // 에러 메시지
-```
-
-### 7. Firebase Storage 업로드 (v3.0.0)
-```typescript
-const downloadUrl = await uploadCoverPhoto(
-	file,
-	uidParam,
-	(progress) => { uploadProgress = progress; }
-);
-```
-- `uploadCoverPhoto()` 함수: `src/lib/functions/storage.functions.ts`에 정의
-- 진행률 콜백을 통해 실시간 업로드 상태 업데이트
-- Promise 기반 비동기 처리
-
-### 8. Firebase Database 저장 (v3.0.0)
-```typescript
-const coverPhotoRef = ref(database, `users/${uidParam}/coverPhotoUrl`);
-await set(coverPhotoRef, downloadUrl);
-```
-- Firebase Realtime Database에 커버 사진 URL 저장
-- 경로: `/users/{uid}/coverPhotoUrl`
-- userProfileStore가 실시간으로 변경 사항을 감지하여 UI 자동 업데이트
-
-### 9. 반응형 디자인
-- 모바일 우선 (Mobile First) 접근
-- `sm:` 브레이크포인트를 사용한 데스크톱 최적화
-- 버튼: 모바일에서 전체 너비, 데스크톱에서 자동 너비
-
-### 10. Tailwind CSS 스타일링
-- `@apply` 디렉티브로 유틸리티 클래스 조합
-- 레이아웃: 인라인 클래스
-- 스타일링: `<style>` 블록 내 `@apply`
-
-## 향후 확장 가능성
-
-### 1. 통계 정보 추가
-```svelte
-<div class="profile-stats">
-	<div class="stat-item">
-		<span class="stat-value">123</span>
-		<span class="stat-label">게시글</span>
-	</div>
-	<div class="stat-item">
-		<span class="stat-value">456</span>
-		<span class="stat-label">팔로워</span>
-	</div>
-	<div class="stat-item">
-		<span class="stat-value">789</span>
-		<span class="stat-label">팔로잉</span>
-	</div>
-</div>
-```
-
-### 2. 커버 이미지 추가 기능
-- **커버 삭제 기능**: 업로드한 커버 이미지 제거 후 기본 그라디언트로 복귀
-- **이미지 편집**: 크롭, 필터 등 간단한 편집 기능
-- **사진 갤러리**: 여러 커버 이미지 중 선택
-- **위치 조정**: 드래그하여 커버 이미지 위치 조정
-
-### 3. 프로필 사진 업로드
-- 아바타 이미지도 커버 사진처럼 직접 업로드 가능
-- `uploadProfilePhoto()` 함수 활용 (이미 구현됨)
-- 경로: `users/{uid}/profile/profile-photo-{timestamp}.{extension}`
-- 파일 크기 제한: 2MB
-
-### 4. 탭 네비게이션
-- 게시글 목록
-- 좋아요한 게시글
-- 팔로워/팔로잉 목록
-
-## 관련 컴포넌트
-
-- `Avatar.svelte`: 사용자 아바타 표시
-- `FollowButton.svelte`: 팔로우/언팔로우 버튼
-- `Button`: shadcn-svelte UI 버튼
-
-## 관련 함수 (v3.0.0)
-
-- `uploadCoverPhoto()`: 커버 사진 업로드 함수 (`src/lib/functions/storage.functions.ts`)
-- `uploadProfilePhoto()`: 프로필 사진 업로드 함수 (`src/lib/functions/storage.functions.ts`)
-
-## 관련 스토어
-
-- `authStore`: 인증 상태 관리
-- `userProfileStore`: 사용자 프로필 캐싱 및 구독
-
-## Firebase 데이터 구조 (v3.0.0)
-
-### Database 경로
-```
-/users/{uid}/coverPhotoUrl: "https://firebasestorage.googleapis.com/..."
-```
-
-### Storage 경로
-```
-users/{uid}/profile/cover-photo-{timestamp}.{extension}
-users/{uid}/profile/profile-photo-{timestamp}.{extension}
-```
-
-## 참고 문서
-
-- [Sonub Design Guideline](../../../sonub-design-guideline.md)
-- [Sonub Tailwind CSS Setup](../../../sonub-setup-tailwind.md)
-- [Storage Functions 스펙](./storage.functions.ts.md) (커버 사진 업로드 함수)

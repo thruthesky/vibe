@@ -1,69 +1,28 @@
 ---
-title: database.rules.json
-type: config
-path: firebase/database.rules.json
-status: active
-version: 2.0.0
-last_updated: 2025-11-18
+title: database.rules.json - JSON 설정 파일
+original_path: firebase/database.rules.json
+category: configuration
+file_type: json
+status: current
+last_updated: 2025-11-20
 ---
+
+# database.rules.json
 
 ## 개요
 
-이 파일은 Firebase Realtime Database Security Rules를 정의하는 설정 파일입니다.
+**원본 경로**: `firebase/database.rules.json`
 
-## 🔥🔥🔥 중요 규칙 🔥🔥🔥
-
-Firebase Database Rules는 **JSONC (JSON with Comments)** 형식을 사용하며, **여러 줄 문자열을 완전히 지원**합니다.
-
-### 필수 작성 규칙
-
-1. **여러 줄 문자열 사용 (필수)**
-   - 모든 `.read`, `.write`, `.validate` 조건식은 반드시 여러 줄로 작성합니다
-   - IDE의 JSON 린터가 에러를 표시해도 무시하세요 (Firebase는 정상 작동)
-   - 단일 줄 논리식은 절대 허용되지 않습니다
-
-2. **조건 분리 (필수)**
-   - `&&` 또는 `||` 연산자가 등장하면 각 조건을 새 줄에 작성
-   - 각 조건은 괄호 `()`로 묶어서 우선순위를 명확히 표현
-
-3. **주석 작성 (필수)**
-   - 각 조건 블록 앞에 세부 의도를 설명하는 주석 작성
-   - 주석 없는 규칙은 허용되지 않습니다
-
-### 올바른 예시
-
-```json
-".write": "
-  (
-    // 조건 1: 로그인한 사용자
-    auth != null
-  )
-  &&
-  (
-    // 조건 2: 본인만 수정 가능
-    auth.uid == $uid
-  )
-"
-```
-
-### 잘못된 예시 (절대 금지)
-
-```json
-// ❌ 단일 줄 (금지)
-".write": "auth != null && auth.uid == $uid"
-
-// ❌ 주석 없음 (금지)
-".write": "
-  auth != null
-  &&
-  auth.uid == $uid
-"
-```
+**파일 유형**: JSON 설정 파일
 
 ## 소스 코드
 
 ```json
 {
+  // Firebase Rules for Realtime Database
+  // JSONC 형식으로 작성됨
+  // - 풍부한 주석을 추가하고,
+  // - 조건식을 여러 줄에 걸쳐 작성합니다. (중요: 가독성 향상)
   "rules": {
     "users": {
       // 자신만 읽기 가능. 모든 사용자가 읽기 불가능
@@ -81,7 +40,8 @@ Firebase Database Rules는 **JSONC (JSON with Comments)** 형식을 사용하며
         "displayNameLowerCase",
         "sort_recentWithPhoto",
         "sort_recentFemaleWithPhoto",
-        "sort_recentMaleWithPhoto"
+        "sort_recentMaleWithPhoto",
+        "registerOrder"
       ]
     },
     "system": {
@@ -102,15 +62,295 @@ Firebase Database Rules는 **JSONC (JSON with Comments)** 형식을 사용하며
         ".write": false
       }
     },
+    "user-action-counters": {
+      // 사용자별 action 카운터 (게시글 수, 댓글 수, 좋아요 수, 팔로우 수, 채팅 메시지 수 등)
+      // Cloud Functions가 자동으로 관리
+      // 구조: /user-action-counters/{uid}/{counterType}: number
+      // counterType: like, comment, post, chat, follow
+      "$uid": {
+        // 읽기 권한: 모든 사용자 (통계 정보 조회용)
+        ".read": true,
+
+        // 쓰기 권한: Cloud Functions만 가능 (클라이언트는 직접 쓰기 불가)
+        ".write": false
+      }
+    },
+    "likes": {
+      // ❤️ 사용자별 좋아요 목록
+      // 구조: /likes/{uid}/{targetId}: 'post' | 'comment' | 'message'
+      // targetId: postId, commentId, messageId
+      "$uid": {
+        // 읽기 권한: 본인만 자신의 좋아요 목록 읽기 가능
+        ".read": "
+          (
+            auth != null
+          )
+          &&
+          (
+            auth.uid == $uid
+          )
+        ",
+        "$targetId": {
+          // 쓰기 권한: 본인만 자신의 좋아요 추가/삭제 가능
+          ".write": "
+            (
+              auth != null
+            )
+            &&
+            (
+              auth.uid == $uid
+            )
+          ",
+          // 값 검증: 'post', 'comment', 'message', 'chat-message-{roomId}' 또는 null (삭제)만 허용
+          // 채팅 메시지의 경우 'chat-message-{roomId}' 형식으로 저장됨 (예: 'chat-message-post')
+          ".validate": "
+            (
+              newData.val() === null
+            )
+            ||
+            (
+              newData.isString()
+              &&
+              (
+                (
+                  newData.val() === 'post'
+                )
+                ||
+                (
+                  newData.val() === 'comment'
+                )
+                ||
+                (
+                  newData.val() === 'message'
+                )
+                ||
+                (
+                  newData.val().matches(/^chat-message-.+$/)
+                )
+              )
+            )
+          "
+        }
+      }
+    },
+    "chat-message-likes": {
+      // 메시지별 좋아요한 사용자 목록 (프로필 사진 표시용)
+      // 구조: /chat-message-likes/{messageId}/{uid}: true
+      // Cloud Functions가 자동으로 관리 (클라이언트는 /likes 경로 사용)
+      "$messageId": {
+        // 읽기 권한: 모든 로그인한 사용자 (좋아요한 사용자 목록 조회용)
+        ".read": "auth != null",
+
+        "$uid": {
+          // 쓰기 권한: Cloud Functions만 가능 (클라이언트는 직접 쓰기 불가)
+          ".write": false,
+
+          // 값 검증: true 또는 null (삭제)만 허용
+          ".validate": "newData.isBoolean() && newData.val() === true || newData.val() === null"
+        }
+      }
+    },
+    "chat-comment-likes": {
+      // 댓글별 좋아요한 사용자 목록 (프로필 사진 표시용)
+      // 구조: /chat-comment-likes/{commentId}/{uid}: true
+      // Cloud Functions가 자동으로 관리 (클라이언트는 /likes 경로 사용)
+      "$commentId": {
+        // 읽기 권한: 모든 로그인한 사용자 (좋아요한 사용자 목록 조회용)
+        ".read": "auth != null",
+
+        "$uid": {
+          // 쓰기 권한: Cloud Functions만 가능 (클라이언트는 직접 쓰기 불가)
+          ".write": false,
+
+          // 값 검증: true 또는 null (삭제)만 허용
+          ".validate": "newData.isBoolean() && newData.val() === true || newData.val() === null"
+        }
+      }
+    },
+    "posts": {
+      // 🏷️ 게시글 데이터
+      // 구조: /posts/{postId}
+      // 게시글 노드에 category 필드 저장 (클라이언트가 설정)
+      // category: discussion, qna, news, info, selling, hiring, travel, mukbang, realestate, hobby, story
+
+      // 인덱스 설정: 정렬 필드
+      ".indexOn": [
+        "createdAt",
+        "likeCount",
+        "commentCount",
+        "category",
+        "categoryOrder",
+        "allCategoryOrder"
+      ],
+
+      // 읽기 권한: 모든 사용자 (로그인 불필요, 게시글 목록 조회용)
+      ".read": "true",
+
+      "$postId": {
+        // ✍️ 게시글 쓰기 권한
+        // 조건:
+        //   1. 로그인한 사용자
+        //   2. 새 게시글 생성: 본인이 작성자 (authorUid == auth.uid)
+        //   3. 기존 게시글 수정/삭제: 본인이 작성자이며, 삭제되지 않았고, 90분 이내
+        ".write": "
+          (
+            auth != null
+          )
+          &&
+          (
+            (
+              // 새 게시글 생성
+              !data.exists()
+              &&
+              newData.child('authorUid').val() === auth.uid
+            )
+            ||
+            (
+              // 기존 게시글 수정/삭제
+              data.exists()
+              &&
+              (
+                // a) 본인이 작성한 게시글
+                data.child('authorUid').val() === auth.uid
+              )
+              &&
+              (
+                // b) 삭제되지 않은 게시글
+                data.child('deleted').val() != true
+              )
+              &&
+              (
+                // c) 90분(5,400,000ms) 이내 게시글
+                (now - data.child('createdAt').val()) < 5400000
+              )
+            )
+          )
+        ",
+
+        // 필수 필드 검증
+        ".validate": "
+          (
+            // 새 게시글 생성 시 필수 필드
+            !data.exists()
+            &&
+            newData.hasChild('authorUid')
+            &&
+            newData.hasChild('text')
+            &&
+            newData.hasChild('createdAt')
+            &&
+            newData.hasChild('category')
+          )
+          ||
+          (
+            // 기존 게시글 수정 시 (필수 필드 유지 또는 삭제)
+            data.exists()
+          )
+        "
+      }
+    },
+    "comments": {
+      // 💬 댓글 데이터 (게시글별 분류)
+      // 구조: /comments/{postId}/{commentId}
+      "$postId": {
+        // 인덱스 설정: 댓글 정렬 필드
+        ".indexOn": [
+          "listOrder",
+          "createdAt"
+        ],
+
+        // 읽기 권한: 모든 로그인한 사용자 (댓글 목록 조회용)
+        ".read": "auth != null",
+
+        "$commentId": {
+          // ✍️ 댓글 쓰기 권한
+          // 조건:
+          //   1. 로그인한 사용자
+          //   2. 새 댓글 생성: 본인이 작성자 (authorUid == auth.uid)
+          //   3. 기존 댓글 수정/삭제: 본인이 작성자이며, 삭제되지 않았고, 90분 이내
+          ".write": "
+            (
+              auth != null
+            )
+            &&
+            (
+              (
+                // 새 댓글 생성
+                !data.exists()
+                &&
+                newData.child('authorUid').val() === auth.uid
+              )
+              ||
+              (
+                // 기존 댓글 수정/삭제
+                data.exists()
+                &&
+                (
+                  // a) 본인이 작성한 댓글
+                  data.child('authorUid').val() === auth.uid
+                )
+                &&
+                (
+                  // b) 삭제되지 않은 댓글
+                  data.child('deleted').val() != true
+                )
+                &&
+                (
+                  // c) 90분(5,400,000ms) 이내 댓글
+                  (now - data.child('createdAt').val()) < 5400000
+                )
+              )
+            )
+          "
+        }
+      }
+    },
+    "likes-by": {
+      // ❤️ 좋아요한 사용자 목록 (통합)
+      // 구조: /likes-by/{targetId}/{uid}: true
+      // targetId: postId, commentId, messageId
+      // Cloud Functions가 자동으로 관리 (클라이언트는 /likes 경로 사용)
+      "$targetId": {
+        // 읽기 권한: 모든 로그인한 사용자 (좋아요한 사용자 목록 조회용)
+        ".read": "auth != null",
+
+        "$uid": {
+          // 쓰기 권한: Cloud Functions만 가능 (클라이언트는 직접 쓰기 불가)
+          ".write": false,
+
+          // 값 검증: true 또는 null (삭제)만 허용
+          ".validate": "
+            (
+              newData.isBoolean()
+              &&
+              newData.val() === true
+            )
+            ||
+            (
+              newData.val() === null
+            )
+          "
+        }
+      }
+    },
     "chat-rooms": {
       // 채팅방 메타데이터
       // createdAt과 owner 필드는 Cloud Functions에서만 설정됨
       ".read": true,
       "$roomId": {
+        // 새 채팅방 생성 규칙:
+        // 1. 인증된 사용자
+        // 2. 채팅방이 존재하지 않음 (새 채팅방 생성만 허용)
+        // 3. owner 필드가 있어야 하며, 인증된 사용자의 UID와 일치해야 함
+        // 4. members 필드는 선택적 (그룹/오픈 채팅만), 있으면 본인 UID가 true로 설정되어야 함
+        // 5. Cloud Functions 전용 필드를 포함하지 않음 (createdAt, memberCount, groupListOrder, openListOrder)
+        // 기존 채팅방: 전체 쓰기 불가 (개별 필드만 수정 가능)
+        ".write": "auth != null && !data.exists() && newData.hasChild('owner') && newData.child('owner').val() === auth.uid && (!newData.hasChild('members') || newData.child('members').child(auth.uid).val() === true) && !newData.hasChild('createdAt') && !newData.hasChild('memberCount') && !newData.hasChild('groupListOrder') && !newData.hasChild('openListOrder')",
         "owner": {
-          // 채팅방이 존재하지 않으면 본인 UID로 설정 가능, 존재하면 수정 불가
-          ".write": "!root.child('chat-rooms').child($roomId).exists() &&
-            newData.val() === auth.uid",".validate": "newData.isString()"
+          // 클라이언트가 한 번만 쓸 수 있음 (자신의 UID만 가능)
+          // Cloud Functions도 쓸 수 있음 (event.authId가 undefined일 때 대비)
+          ".write": "!data.exists() && newData.val() === auth.uid",
+          ".validate": "newData.isString()"
         },
         "createdAt": {
           // Cloud Functions에서만 설정 가능 (클라이언트는 쓰기 불가)
@@ -136,20 +376,18 @@ Firebase Database Rules는 **JSONC (JSON with Comments)** 형식을 사용하며
             newData.val() === 'open' ||
             newData.val() === 'single'"
         },
-        "open": {
-          ".write": "!data.exists()",
-          ".validate": "newData.isBoolean()"
-        },
         "password": {
           ".write": "root.child('chat-rooms').child($roomId).child('owner').val() === auth.uid",
           ".validate": "newData.isBoolean()"
         },
         "groupListOrder": {
-          ".write": "!data.exists()",
+          // Cloud Functions에서만 설정 가능 (클라이언트는 쓰기 불가)
+          ".write": false,
           ".validate": "newData.isNumber()"
         },
         "openListOrder": {
-          ".write": "!data.exists()",
+          // Cloud Functions에서만 설정 가능 (클라이언트는 쓰기 불가)
+          ".write": false,
           ".validate": "newData.isNumber()"
         },
         "memberCount": {
@@ -181,7 +419,8 @@ Firebase Database Rules는 **JSONC (JSON with Comments)** 형식을 사용하며
         }
       },
       ".indexOn": [
-        "openListOrder"
+        "openListOrder",
+        "createdAt"
       ]
     },
     "chat-joins": {
@@ -198,22 +437,130 @@ Firebase Database Rules는 **JSONC (JSON with Comments)** 형식을 사용하며
       }
     },
     "chat-messages": {
-      ".read": "auth != null",
+      // 🔒 2단계 구조: /chat-messages/{roomId}/{messageId}
+      // 보안 강화: 룸 레벨에서 먼저 접근 권한을 체크하여 다른 채팅방의 메시지를 볼 수 없도록 함
+      "$roomId": {
+        // 🔍 룸 레벨 읽기 권한 (보안 강화)
+        // 이 레벨에서 먼저 채팅방 접근 권한을 체크합니다
+        // 권한이 없는 사용자는 쿼리 자체를 실행할 수 없습니다
+        ".read": "
+          (
+            auth != null
+          )
+          &&
+          (
+            (
+              // 1:1 채팅: roomId에 본인 UID 포함
+              // 예: 'single-uid1-uid2' 형식
+              $roomId.contains(auth.uid)
+            )
+            ||
+            (
+              // 오픈 채팅방: type이 'open'
+              root.child('chat-rooms').child($roomId).child('type').val() == 'open'
+            )
+            ||
+            (
+              // 그룹 채팅방: members 목록에 본인 UID 존재
+              root.child('chat-rooms').child($roomId).child('members').child(auth.uid).exists()
+            )
+          )
+        ",
+
+        "$messageId": {
+          // 📖 개별 메시지 읽기 권한
+          // 상위 룸 레벨에서 이미 권한을 체크했으므로 로그인 여부만 확인
+          ".read": "
+            (
+              auth != null
+            )
+          ",
+
+          // ✍️ 메시지 쓰기 권한 (생성, 수정, 삭제)
+          ".write": "
+            (
+              auth != null
+            )
+            &&
+            (
+              (
+                // 새 메시지 생성
+                !data.exists()
+                &&
+                (
+                  (
+                    // 1:1 채팅 (roomId에 본인 UID 포함)
+                    $roomId.contains(auth.uid)
+                  )
+                  ||
+                  (
+                    // 그룹 채팅방: members 목록에 본인 UID 존재
+                    root.child('chat-rooms').child($roomId).child('members').child(auth.uid).exists()
+                  )
+                )
+              )
+              ||
+              (
+                // 기존 메시지 수정/삭제
+                data.exists()
+                &&
+                (
+                  // a) 본인이 작성한 메시지
+                  data.child('senderUid').val() === auth.uid
+                )
+                &&
+                (
+                  // b) 삭제되지 않은 메시지
+                  data.child('deleted').val() != true
+                )
+                &&
+                (
+                  // c) 90분(5,400,000ms) 이내 메시지
+                  (now - data.child('createdAt').val()) < 5400000
+                )
+              )
+            )
+          "
+        },
+
+        // 인덱스 설정: 룸 레벨에서 정렬 필드 인덱싱
+        ".indexOn": [
+          "roomOrder",
+          "allCategoryOrder",
+          "categoryOrder"
+        ]
+      }
+    },
+    "chat-message-comments": {
+      // 댓글 읽기: 누구나 가능
+      ".read": true,
       "$messageId": {
-        ".read": "auth != null &&
-          (
-            data.child('roomId').val().contains(auth.uid) ||
-            root.child('chat-rooms').child(data.child('roomId').val()).child('type').val() == 'open' ||
-            root.child('chat-rooms').child(data.child('roomId').val()).child('members').child(auth.uid).exists()
-          )",".write": "auth != null &&
-          (
-            newData.child('roomId').val().contains(auth.uid) ||
-            root.child('chat-rooms').child(newData.child('roomId').val()).child('members').child(auth.uid).exists()
-          )"
-      },
-      ".indexOn": [
-        "roomOrder"
-      ]
+        "$commentId": {
+          // 쓰기 권한: 로그인한 사용자이며, 본인이 작성한 댓글만 생성/수정/삭제 가능
+          ".write": "
+            (
+              auth != null
+            )
+            &&
+            (
+              (
+                !data.exists()
+                &&
+                newData.child('authorUid').val() == auth.uid
+              )
+              ||
+              (
+                data.exists()
+                &&
+                data.child('authorUid').val() == auth.uid
+              )
+            )
+          "
+        },
+        ".indexOn": [
+          "listOrder"
+        ]
+      }
     },
     "chat-invitations": {
       // 채팅 초대 관리
@@ -223,11 +570,25 @@ Firebase Database Rules는 **JSONC (JSON with Comments)** 형식을 사용하며
         ".read": "$uid === auth.uid",
         "$roomId": {
           // 쓰기 규칙: 본인이 삭제하거나, 채팅방 멤버가 초대 생성 가능
-          ".write": "auth != null &&
+          ".write": "
             (
-              ($uid === auth.uid && newData.val() === null) ||
-              (newData.val() !== null && root.child('chat-rooms').child($roomId).child('members').child(auth.uid).exists())
-            )"
+              auth != null
+            )
+            &&
+            (
+              (
+                $uid === auth.uid
+                &&
+                newData.val() === null
+              )
+              ||
+              (
+                newData.val() !== null
+                &&
+                root.child('chat-rooms').child($roomId).child('members').child(auth.uid).exists()
+              )
+            )
+          "
         },
         ".indexOn": [
           "invitationOrder"
@@ -243,14 +604,21 @@ Firebase Database Rules는 **JSONC (JSON with Comments)** 형식을 사용하며
         "$favoriteId": {
           "name": {
             // 폴더 이름: 필수, 1-30자
-            ".validate": "newData.isString() &&
-              newData.val().length > 0 &&
-              newData.val().length <= 30"
+            ".validate": "
+              newData.isString()
+              &&
+              newData.val().length > 0
+              &&
+              newData.val().length <= 30
+            "
           },
           "description": {
             // 폴더 설명: 선택, 최대 100자
-            ".validate": "newData.isString() &&
-              newData.val().length <= 100"
+            ".validate": "
+              newData.isString()
+              &&
+              newData.val().length <= 100
+            "
           },
           "createdAt": {
             // 생성 시간: 필수, 숫자 (timestamp)
@@ -287,10 +655,320 @@ Firebase Database Rules는 **JSONC (JSON with Comments)** 형식을 사용하며
         },
         "try": {
           "$uid": {
-            ".write": "auth != null &&
-              $uid === auth.uid"
+            ".write": "
+              auth != null
+              &&
+              $uid === auth.uid
+            "
           }
         }
+      }
+    },
+    "user-following": {
+      // 팔로잉 관계 관리 (내가 팔로우하는 사람들)
+      // 구조: /user-following/{followerUid}/{followingUid}: true
+      "$uid": {
+        // 읽기 권한: 로그인한 모든 사용자 (공개 정보)
+        ".read": "auth != null",
+        "$targetUid": {
+          // 쓰기 권한: 본인만 자신의 팔로잉 목록 관리 가능
+          // 자기 자신을 팔로우하는 것은 불가능
+          ".write": "
+            auth != null
+            &&
+            $uid === auth.uid
+            &&
+            $uid !== $targetUid
+          ",
+          // 값 검증: true 또는 null (삭제)만 가능
+          ".validate": "
+            newData.isBoolean()
+            &&
+            newData.val() === true
+            ||
+            newData.val() === null
+          "
+        }
+      }
+    },
+    "user-followers": {
+      // 팔로워 관계 관리 (나를 팔로우하는 사람들)
+      // 구조: /user-followers/{followingUid}/{followerUid}: true
+      "$uid": {
+        // 읽기 권한: 로그인한 모든 사용자 (공개 정보)
+        ".read": "auth != null",
+        "$followerUid": {
+          // 쓰기 권한: 팔로워 본인만 쓰기 가능
+          // 자기 자신을 팔로워로 추가하는 것은 불가능
+          ".write": "
+            auth != null
+            &&
+            $followerUid === auth.uid
+            &&
+            $uid !== $followerUid
+          ",
+          // 값 검증: true 또는 null (삭제)만 가능
+          ".validate": "
+            newData.isBoolean()
+            &&
+            newData.val() === true
+            ||
+            newData.val() === null
+          "
+        }
+      }
+    },
+    "user-feed": {
+      // 사용자별 피드 (팔로우한 사람들의 글 목록)
+      // 구조: /user-feed/{uid}/{messageId}: createdAt (timestamp)
+      // Cloud Functions 전용: 클라이언트는 읽기만 가능
+      "$uid": {
+        // 읽기 권한: 본인만 자신의 피드 읽기 가능
+        ".read": "$uid === auth.uid",
+        // 쓰기 권한: 없음 (Cloud Functions만 쓰기 가능)
+        ".write": false,
+        // 인덱스: orderByValue() 쿼리를 위한 .value 인덱스
+        ".indexOn": ".value"
+      }
+    },
+    "user-stats": {
+      // 사용자별 통계 (좋아요, 댓글, 팔로워 등 받은 수 집계)
+      // 구조: /user-stats/{uid}/{period}/{date}/{statType}: number
+      // period: daily, monthly, yearly, total
+      // statType: receivedLikes, receivedComments, receivedFollowers, createdPosts
+      // Cloud Functions 전용: 클라이언트는 읽기만 가능
+      "$uid": {
+        // 읽기 권한: 로그인한 모든 사용자 (공개 통계 정보)
+        ".read": "
+          (
+            auth != null
+          )
+        ",
+
+        // 쓰기 권한: 없음 (Cloud Functions만 쓰기 가능)
+        ".write": false,
+
+        "daily": {
+          // 일별 통계: /user-stats/{uid}/daily/{yyyyMMdd}/{statType}
+          "$date": {
+            // 인덱스: statType 필드들
+            ".indexOn": [
+              "receivedLikes",
+              "receivedComments",
+              "receivedFollowers",
+              "createdPosts"
+            ]
+          }
+        },
+        "monthly": {
+          // 월별 통계: /user-stats/{uid}/monthly/{yyyyMM}/{statType}
+          "$date": {
+            // 인덱스: statType 필드들
+            ".indexOn": [
+              "receivedLikes",
+              "receivedComments",
+              "receivedFollowers",
+              "createdPosts"
+            ]
+          }
+        },
+        "yearly": {
+          // 연도별 통계: /user-stats/{uid}/yearly/{yyyy}/{statType}
+          "$date": {
+            // 인덱스: statType 필드들
+            ".indexOn": [
+              "receivedLikes",
+              "receivedComments",
+              "receivedFollowers",
+              "createdPosts"
+            ]
+          }
+        },
+        "total": {
+          // 전체 통계: /user-stats/{uid}/total/{statType}
+          // 인덱스: statType 필드들
+          ".indexOn": [
+            "receivedLikes",
+            "receivedComments",
+            "receivedFollowers",
+            "createdPosts"
+          ]
+        }
+      }
+    },
+    "influencer-scores": {
+      // 인플루언서 점수
+      // 구조: /influencer-scores/{uid}: number
+      // 계산 공식: (receivedLikes × 1) + (receivedComments × 3) + (receivedFollowers × 5)
+      // Cloud Functions 전용: 클라이언트는 읽기만 가능
+
+      // 읽기 권한: 로그인한 모든 사용자 (공개 정보)
+      ".read": "
+        (
+          auth != null
+        )
+      ",
+
+      // 쓰기 권한: 없음 (Cloud Functions만 쓰기 가능)
+      ".write": false,
+
+      "$uid": {
+        // 값 검증: 숫자 또는 null (삭제)만 가능
+        ".validate": "
+          (
+            newData.isNumber()
+          )
+          ||
+          (
+            newData.val() === null
+          )
+        "
+      }
+    },
+    "influencer-rankings": {
+      // 인플루언서 순위
+      // 구조: /influencer-rankings/{period}/{date}/{uid}: -score (negative for descending order)
+      // period: daily, monthly, yearly, total
+      // date: yyyyMMdd, yyyyMM, yyyy (period에 따라)
+      // score는 음수로 저장되어 orderByValue() + limitToFirst()로 내림차순 정렬
+      // Cloud Functions 전용: 클라이언트는 읽기만 가능
+
+      // 읽기 권한: 로그인한 모든 사용자 (공개 순위 정보)
+      ".read": "
+        (
+          auth != null
+        )
+      ",
+
+      // 쓰기 권한: 없음 (Cloud Functions만 쓰기 가능)
+      ".write": false,
+
+      "daily": {
+        // 일별 순위: /influencer-rankings/daily/{yyyyMMdd}/{uid}
+        "$date": {
+          // 인덱스: orderByValue() 쿼리를 위한 .value 인덱스
+          ".indexOn": ".value"
+        }
+      },
+      "monthly": {
+        // 월별 순위: /influencer-rankings/monthly/{yyyyMM}/{uid}
+        "$date": {
+          // 인덱스: orderByValue() 쿼리를 위한 .value 인덱스
+          ".indexOn": ".value"
+        }
+      },
+      "yearly": {
+        // 연도별 순위: /influencer-rankings/yearly/{yyyy}/{uid}
+        "$date": {
+          // 인덱스: orderByValue() 쿼리를 위한 .value 인덱스
+          ".indexOn": ".value"
+        }
+      },
+      "total": {
+        // 전체 순위: /influencer-rankings/total/{uid}
+        // 인덱스: orderByValue() 쿼리를 위한 .value 인덱스
+        ".indexOn": ".value"
+      }
+    },
+    "post-rankings": {
+      // 🏆 게시글 인기 순위
+      // 구조: /post-rankings/{period}/{date}/{postId}: -score
+      // period: daily (일간), weekly (주간), monthly (월간)
+      // date: yyyyMMdd (일간), yyyyWww (주간, ISO week), yyyyMM (월간)
+      // score: 음수로 저장 (음수 = 내림차순 정렬)
+      // 점수 계산: (좋아요 수 × 1) + (댓글 수 × 2)
+      // Cloud Functions 전용: 클라이언트는 읽기만 가능
+
+      // 읽기 권한: 로그인한 모든 사용자 (공개 순위 정보)
+      ".read": "
+        (
+          auth != null
+        )
+      ",
+
+      // 쓰기 권한: 없음 (Cloud Functions만 쓰기 가능)
+      ".write": false,
+
+      "daily": {
+        // 일별 순위: /post-rankings/daily/{yyyyMMdd}/{postId}
+        // 예: /post-rankings/daily/20251119/post123: -150
+        "$date": {
+          // 인덱스: orderByValue() 쿼리를 위한 .value 인덱스
+          ".indexOn": ".value"
+        }
+      },
+      "weekly": {
+        // 주별 순위: /post-rankings/weekly/{yyyyWww}/{postId}
+        // 예: /post-rankings/weekly/2025W47/post123: -150
+        // yyyyWww 형식: 연도4자리 + W + 주차2자리 (ISO week 기준)
+        "$date": {
+          // 인덱스: orderByValue() 쿼리를 위한 .value 인덱스
+          ".indexOn": ".value"
+        }
+      },
+      "monthly": {
+        // 월별 순위: /post-rankings/monthly/{yyyyMM}/{postId}
+        // 예: /post-rankings/monthly/202511/post123: -150
+        "$date": {
+          // 인덱스: orderByValue() 쿼리를 위한 .value 인덱스
+          ".indexOn": ".value"
+        }
+      }
+    },
+    "my-actions": {
+      // 📝 나의 발자취 - 내가 발생시킨 모든 리액션 기록
+      // 구조: /my-actions/{uid}/{pushKey}: { fromUid, type, targetType, targetId, postId?, createdAt }
+      // type: 'like' | 'post' | 'comment' | 'follow'
+      // targetType: 'post' | 'comment' | 'user'
+      // targetId: postId | commentId | userUid
+      // postId: (선택) 댓글인 경우 게시글 ID
+      // createdAt: Unix timestamp (ms)
+      // Cloud Functions 전용: 클라이언트는 읽기만 가능
+      "$uid": {
+        // 읽기 권한: 본인만 자신의 발자취 읽기 가능
+        ".read": "
+          (
+            auth != null
+          )
+          &&
+          (
+            auth.uid == $uid
+          )
+        ",
+
+        // 쓰기 권한: 없음 (Cloud Functions만 쓰기 가능)
+        ".write": false,
+
+        // 인덱스: createdAt 기준 정렬 (역순)
+        ".indexOn": ["createdAt"]
+      }
+    },
+    "received-reactions": {
+      // 💌 받은 반응 - 다른 사용자로부터 받은 모든 리액션 기록
+      // 구조: /received-reactions/{uid}/{pushKey}: { fromUid, type, targetType, targetId, postId?, createdAt }
+      // type: 'like' | 'comment' | 'follow'
+      // targetType: 'post' | 'comment' | 'user'
+      // targetId: postId | commentId | userUid
+      // postId: (선택) 댓글인 경우 게시글 ID
+      // createdAt: Unix timestamp (ms)
+      // Cloud Functions 전용: 클라이언트는 읽기만 가능
+      "$uid": {
+        // 읽기 권한: 본인만 자신에게 온 반응 읽기 가능
+        ".read": "
+          (
+            auth != null
+          )
+          &&
+          (
+            auth.uid == $uid
+          )
+        ",
+
+        // 쓰기 권한: 없음 (Cloud Functions만 쓰기 가능)
+        ".write": false,
+
+        // 인덱스: createdAt 기준 정렬 (역순)
+        ".indexOn": ["createdAt"]
       }
     },
     "test": {
@@ -310,4 +988,3 @@ Firebase Database Rules는 **JSONC (JSON with Comments)** 형식을 사용하며
   }
 }
 ```
-

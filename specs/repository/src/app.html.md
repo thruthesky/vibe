@@ -1,15 +1,19 @@
 ---
-title: app.html
-type: template
-path: src/app.html
-status: active
-version: 1.0.0
-last_updated: 2025-11-15
+title: app.html - HTML 문서
+original_path: src/app.html
+category: source
+file_type: html
+status: current
+last_updated: 2025-11-20
 ---
+
+# app.html
 
 ## 개요
 
-이 파일은 `src/app.html`의 소스 코드를 포함하는 SED 스펙 문서입니다.
+**원본 경로**: `src/app.html`
+
+**파일 유형**: HTML 문서
 
 ## 소스 코드
 
@@ -26,6 +30,4 @@ last_updated: 2025-11-15
 		<div style="display: contents">%sveltekit.body%</div>
 	</body>
 </html>
-
 ```
-

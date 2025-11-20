@@ -1,395 +1,329 @@
 ---
-title: +page.svelte
-type: component
-path: src/routes/+page.svelte
-status: active
-version: 1.0.0
-last_updated: 2025-11-15
+title: +page.svelte - Svelte 5 컴포넌트
+original_path: src/routes/+page.svelte
+category: route
+file_type: svelte
+status: current
+last_updated: 2025-11-20
 ---
+
+# +page.svelte
 
 ## 개요
 
-이 파일은 `src/routes/+page.svelte`의 소스 코드를 포함하는 SED 스펙 문서입니다.
+**원본 경로**: `src/routes/+page.svelte`
+
+**파일 유형**: Svelte 5 컴포넌트
 
 ## 소스 코드
 
 ```svelte
+<!--
+  홈 페이지
+
+  최근 등록된 게시글을 표시합니다.
+  - 게시글 경로: /posts/{postId}
+  - 최근 글 = createdAt을 역순으로 정렬한 것
+  - 상단에 카테고리 탭 (전체 + 11개 카테고리)
+  - PostListView를 사용한 무한 스크롤
+  - 상단에 글쓰기 유도 폼 표시
+-->
+
 <script lang="ts">
-	/**
-	 * 홈페이지
-	 *
-	 * Sonub 프로젝트의 메인 랜딩 페이지입니다.
-	 */
-
-	import { onMount } from 'svelte';
-	import { Button } from '$lib/components/ui/button/index.js';
-	import * as Card from '$lib/components/ui/card/index.js';
-	import { authStore } from '$lib/stores/auth.svelte';
+	import * as m from '$lib/paraglide/messages.js';
+	import PostCreateDialog from '$lib/components/post/PostCreateDialog.svelte';
+	import PostEditDialog from '$lib/components/post/PostEditDialog.svelte';
+	import CommentCreateDialog from '$lib/components/comment/CommentCreateDialog.svelte';
 	import Avatar from '$lib/components/user/avatar.svelte';
-	import { m } from '$lib/paraglide/messages';
+	import { Camera } from 'lucide-svelte';
+	import { authStore } from '$lib/stores/auth.svelte';
 	import { rtdb } from '$lib/firebase';
-	import { formatShortDate } from '$lib/functions/date.functions';
-import { get, limitToLast, onValue, orderByChild, query, ref, type DatabaseReference } from 'firebase/database';
+	import { ref, update } from 'firebase/database';
+	import FeedList from '$lib/components/friend/feed-list.svelte';
+	import PostListView from '$lib/components/post/PostListView.svelte';
+	import { createRealtimeStore } from '$lib/stores/database.svelte';
+	import { toggleLikeTarget, type LikeTargetType } from '$lib/functions/like.functions';
 
-	type UserPreview = {
-		uid: string;
-		displayName: string;
-		photoUrl: string | null;
-		sortRecentWithPhoto: number;
-	};
+	// 글쓰기 모달 상태
+	let isCreateDialogOpen = $state(false);
 
-	type OpenChatPreview = {
-		roomId: string;
-		roomName: string;
-		lastMessageText: string;
-		lastMessageAt: number;
-		orderValue: number;
-	};
+	// 수정 모달 상태
+	let isEditDialogOpen = $state(false);
+	let editPostId = $state<string>('');
+	let editPostText = $state<string>('');
+	let editPostUrls = $state<Record<number, string>>({});
+	let editRoomId = $state<string>('');
 
-	const dashboardCards = [
-		{
-			id: 'recent-users',
-			title: () => m.homeSectionRecentUsers(),
-			description: () => m.homeSectionRecentUsersDesc()
-		},
-		{
-			id: 'recent-open-chat',
-			title: () => m.homeSectionRecentOpenChat(),
-			description: () => m.homeSectionRecentOpenChatDesc()
-		},
-		{
-			id: 'popular-open-room',
-			title: () => m.homeSectionPopularOpenRoom(),
-			description: () => m.homeSectionPopularOpenRoomDesc()
-		},
-		{
-			id: 'recent-posts',
-			title: () => m.homeSectionRecentPosts(),
-			description: () => m.homeSectionRecentPostsDesc()
+	// 댓글 모달 상태
+	let isCommentDialogOpen = $state(false);
+	let selectedPostId = $state<string>('');
+	let selectedParentId = $state<string | null>(null);
+	let selectedParentText = $state<string | null>(null);
+
+	// 좋아요 상태
+	type UserLikesMap = Record<string, LikeTargetType>;
+	let userLikes = $state<UserLikesMap>({});
+	const pendingLikeTargets = new Set<string>();
+
+	/**
+	 * 현재 사용자 좋아요 목록 구독
+	 */
+	$effect(() => {
+		const uid = authStore.user?.uid;
+
+		if (!uid) {
+			userLikes = {};
+			return;
 		}
-	];
 
-let recentUsers = $state<UserPreview[]>([]);
-let isLoadingRecentUsers = $state(true);
-let recentOpenChats = $state<OpenChatPreview[]>([]);
-let isLoadingRecentOpenChats = $state(true);
+		const store = createRealtimeStore<UserLikesMap>(`likes/${uid}`, {});
+		const unsubscribe = store.subscribe((state) => {
+			userLikes = state.data ?? {};
+		});
 
-onMount(() => {
-	fetchRecentUsers();
-});
+		return () => {
+			unsubscribe();
+			store.unsubscribe();
+		};
+	});
 
-$effect(() => {
-	const uid = authStore.user?.uid ?? null;
+	const isAuthenticated = $derived(Boolean(authStore.user));
+	let composePlaceholder = $state('');
+	$effect(() => {
+		const baseName =
+			authStore.user && authStore.user.displayName
+				? authStore.user.displayName
+				: m.commonUser();
+		composePlaceholder = m.composePromptPlaceholder({ name: baseName });
+	});
 
-	if (!uid || !rtdb) {
-		recentOpenChats = [];
-		isLoadingRecentOpenChats = false;
+/**
+ * 좋아요 토글
+ */
+async function handleToggleLike(event: MouseEvent, targetId: string, targetType: LikeTargetType) {
+	event.stopPropagation();
+
+	if (!authStore.user) {
+		alert('로그인이 필요합니다.');
 		return;
 	}
 
-	isLoadingRecentOpenChats = true;
+	if (pendingLikeTargets.has(targetId)) {
+		return;
+	}
 
-	const joinsRef = ref(rtdb, `chat-joins/${uid}`);
-	const openQuery = query(joinsRef, orderByChild('openChatListOrder'), limitToLast(5));
+	pendingLikeTargets.add(targetId);
+	const result = await toggleLikeTarget({
+		uid: authStore.user.uid,
+		targetId,
+		targetType
+	});
+	pendingLikeTargets.delete(targetId);
 
-	return onValue(
-		openQuery,
-		(snapshot) => {
-			const items: OpenChatPreview[] = [];
+	if (!result.success && result.error) {
+		alert(result.error);
+	}
+}
 
-			snapshot.forEach((child) => {
-				const value = child.val() ?? {};
+	/**
+	 * 댓글 작성 모달 열기
+	 */
+	function handleOpenCommentDialog(
+		postId: string,
+		parentId: string | null = null,
+		parentText: string | null = null
+	) {
+		selectedPostId = postId;
+		selectedParentId = parentId;
+		selectedParentText = parentText;
+		isCommentDialogOpen = true;
+	}
 
-				if (value?.roomType !== 'open') {
-					return;
-				}
+	/**
+	 * 게시글 수정 함수
+	 */
+	function handleEdit(
+		postId: string,
+		text: string,
+		urls: Record<number, string>,
+		roomId: string
+	) {
+		editPostId = postId;
+		editPostText = text;
+		editPostUrls = urls;
+		editRoomId = roomId;
+		isEditDialogOpen = true;
+	}
 
-				const orderValue = resolveOrderValue(value?.openChatListOrder);
-				const roomId = child.key ?? '';
-
-				items.push({
-					roomId,
-					roomName: (value?.roomName as string) || roomId || 'Open Chat',
-					lastMessageText: (value?.lastMessageText as string) || '',
-					lastMessageAt: Number(value?.lastMessageAt) || 0,
-					orderValue
-				});
-			});
-
-			items.sort((a, b) => b.orderValue - a.orderValue);
-
-			recentOpenChats = items.slice(0, 5);
-			isLoadingRecentOpenChats = false;
-		},
-		(error) => {
-			console.error('[Home] 최근 오픈 채팅 메시지 실시간 구독 실패:', error);
-			recentOpenChats = [];
-			isLoadingRecentOpenChats = false;
+	/**
+	 * 게시글 삭제 함수
+	 */
+	async function handleDeletePost(postId: string) {
+		if (!confirm('게시글을 삭제하시겠습니까?')) {
+			return;
 		}
-	);
-});
 
-	async function fetchRecentUsers() {
 		if (!rtdb) {
-			isLoadingRecentUsers = false;
+			alert('Firebase 연결이 없습니다.');
 			return;
 		}
 
 		try {
-			const usersRef: DatabaseReference = ref(rtdb, 'users');
-			const recentQuery = query(usersRef, orderByChild('sort_recentWithPhoto'), limitToLast(5));
-			const snapshot = await get(recentQuery);
-
-			const users: UserPreview[] = [];
-
-			snapshot.forEach((child) => {
-				const value = child.val();
-				users.push({
-					uid: child.key ?? '',
-					displayName: value?.displayName ?? '',
-					photoUrl: value?.photoUrl ?? null,
-					sortRecentWithPhoto: value?.sort_recentWithPhoto ?? 0
-				});
+			const postRef = ref(rtdb, `posts/${postId}`);
+			await update(postRef, {
+				text: null,
+				urls: null,
+				deleted: true,
+				deletedAt: Date.now()
 			});
-
-			users.sort((a, b) => (b.sortRecentWithPhoto ?? 0) - (a.sortRecentWithPhoto ?? 0));
-			recentUsers = users.filter((user) => Boolean(user.photoUrl));
 		} catch (error) {
-			console.error('[Home] 최근 사용자 로드 실패:', error);
-			recentUsers = [];
-		} finally {
-			isLoadingRecentUsers = false;
+			console.error('게시글 삭제 실패:', error);
+			alert('게시글 삭제에 실패했습니다.');
 		}
-	}
-
-function resolveOrderValue(value: unknown): number {
-		if (typeof value === 'number') {
-			return value;
-		}
-
-		if (typeof value === 'string') {
-			let boost = 0;
-			let normalized = value;
-
-			if (value.startsWith('500')) {
-				boost = 2;
-				normalized = value.slice(3);
-			} else if (value.startsWith('200')) {
-				boost = 1;
-				normalized = value.slice(3);
-			}
-
-			const base = Number.parseInt(normalized, 10);
-			return boost * 1e15 + (Number.isFinite(base) ? base : 0);
-		}
-
-		return 0;
 	}
 </script>
 
 <svelte:head>
-	<title>{m.pageTitleHome()}</title>
+	<title>Sonub - 홈</title>
 </svelte:head>
 
-<div class="mx-auto max-w-7xl space-y-8">
-	<!-- 메인 타이틀 -->
-	<div class="space-y-4 text-center">
-		<h1 class="text-4xl font-bold text-gray-900 md:text-6xl">{m.authWelcomeMessage()}</h1>
-		<p class="text-lg text-gray-600 md:text-xl">
-			{m.authIntro()}
-		</p>
-	</div>
-
-	<!-- 사용자 환영 메시지 또는 로그인 유도 -->
-	{#if authStore.loading}
-		<Card.Root class="mx-auto max-w-md">
-			<Card.Content class="pt-6">
-				<p class="text-center text-gray-600">{m.commonLoading()}</p>
-			</Card.Content>
-		</Card.Root>
-	{:else if authStore.isAuthenticated}
-		<Card.Root class="mx-auto max-w-md">
-			<Card.Header>
-				<Card.Title>{m.authWelcome()}</Card.Title>
-				<Card.Description>
-					{m.authWelcomeUser({ name: authStore.user?.displayName || authStore.user?.email || m.commonUser() })}
-				</Card.Description>
-			</Card.Header>
-			<Card.Content>
-				<div class="flex items-center justify-center gap-4">
-					{#if authStore.user?.uid}
-						<Avatar uid={authStore.user.uid} size={64} class="shadow-sm" />
+	<div class="post-list-container">
+		<!-- 글쓰기 유도 폼 (가짜 입력 폼) - 최상단으로 이동 -->
+		<div class="compose-wrapper">
+			<div
+				class="compose-prompt"
+				onclick={() => (isCreateDialogOpen = true)}
+				role="button"
+				tabindex="0"
+				onkeydown={(e) => {
+					if (e.key === 'Enter' || e.key === ' ') {
+						isCreateDialogOpen = true;
+					}
+				}}
+			>
+				<div class="compose-avatar-wrapper" aria-hidden="true">
+					{#if isAuthenticated && authStore.user?.uid}
+						<Avatar uid={authStore.user.uid} size={42} />
 					{:else}
-						<div class="h-16 w-16 rounded-full bg-gray-200" aria-hidden="true"></div>
-					{/if}
-				</div>
-			</Card.Content>
-		</Card.Root>
-	{:else}
-		<Card.Root class="mx-auto max-w-md">
-			<Card.Header>
-				<Card.Title>{m.authGetStarted()}</Card.Title>
-				<Card.Description>{m.authSignInGuideStart()}</Card.Description>
-			</Card.Header>
-			<Card.Content>
-				<Button class="w-full" href="/user/login">{m.authSignInAction()}</Button>
-			</Card.Content>
-		</Card.Root>
-	{/if}
-	<!-- 대시보드 카드 플레이스홀더 -->
-	<section class="grid gap-4 md:grid-cols-2">
-		{#each dashboardCards as card}
-			<Card.Root class="home-card">
-				<Card.Header>
-					<Card.Title class="text-lg font-semibold text-gray-900">{card.title()}</Card.Title>
-					<Card.Description class="text-sm text-gray-600">
-						{card.description()}
-					</Card.Description>
-				</Card.Header>
-				<Card.Content>
-					{#if card.id === 'recent-users'}
-						{#if isLoadingRecentUsers}
-							<div class="placeholder-panel">
-								<p class="placeholder-text">{m.commonLoading()}</p>
-							</div>
-						{:else if recentUsers.length === 0}
-							<div class="placeholder-panel">
-								<p class="placeholder-text">{m.homeSectionRecentUsersDesc()}</p>
-							</div>
-						{:else}
-							<div class="stacked-wrapper">
-								<div class="stacked-avatars" aria-label={m.homeSectionRecentUsers()}>
-									{#each recentUsers as user, index (user.uid)}
-										<img
-											src={user.photoUrl ?? ''}
-											alt={user.displayName || 'recent user'}
-											class="stacked-avatar"
-											style={`z-index: ${recentUsers.length - index};`}
-											loading="lazy"
-										/>
-									{/each}
-								</div>
-								<p class="stacked-caption">
-									{m.homeSectionRecentUsersCount({ count: recentUsers.length })}
-								</p>
-							</div>
-						{/if}
-					{:else if card.id === 'recent-open-chat'}
-						{#if !authStore.isAuthenticated}
-							<div class="placeholder-panel">
-								<p class="placeholder-text">{m.homeSectionRecentOpenChatLogin()}</p>
-							</div>
-						{:else if isLoadingRecentOpenChats}
-							<div class="placeholder-panel">
-								<p class="placeholder-text">{m.commonLoading()}</p>
-							</div>
-						{:else if recentOpenChats.length === 0}
-							<div class="placeholder-panel">
-								<p class="placeholder-text">{m.homeSectionRecentOpenChatEmpty()}</p>
-							</div>
-						{:else}
-							<ul class="open-chat-list">
-								{#each recentOpenChats as chat}
-									<li class="open-chat-item">
-										<div class="open-chat-head">
-											<span class="open-chat-room">{chat.roomName}</span>
-											{#if chat.lastMessageAt}
-												<span class="open-chat-time">{formatShortDate(chat.lastMessageAt)}</span>
-											{/if}
-										</div>
-										<p class="open-chat-body">
-											{chat.lastMessageText || m.homeOpenChatNoMessage()}
-										</p>
-									</li>
-								{/each}
-							</ul>
-						{/if}
-					{:else}
-						<div class="placeholder-panel">
-							<div class="placeholder-indicators">
-								<span class="indicator-dot" aria-hidden="true"></span>
-								<span class="indicator-dot" aria-hidden="true"></span>
-								<span class="indicator-dot" aria-hidden="true"></span>
-							</div>
-							<p class="placeholder-text">
-								Coming soon
-							</p>
+						<div class="default-avatar">
+							<svg class="h-10 w-10 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+								<path
+									d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+								/>
+							</svg>
 						</div>
 					{/if}
-				</Card.Content>
-			</Card.Root>
-		{/each}
-	</section>
+				</div>
+
+				<div class="compose-input-area">
+					<div class="compose-input-fake">
+						{composePlaceholder}
+					</div>
+				</div>
+
+				<button class="compose-icon-circle" type="button" aria-label="사진 첨부">
+					<Camera class="compose-icon" />
+				</button>
+			</div>
+
+		</div>
+
+	<!-- 피드 또는 글 목록 표시 -->
+	<div class="post-list-content">
+		<FeedList
+			pageSize={20}
+			{userLikes}
+			onToggleLike={handleToggleLike}
+			onOpenCommentDialog={handleOpenCommentDialog}
+			onEdit={handleEdit}
+			onDelete={handleDeletePost}
+		>
+			{#snippet fallback()}
+				<!-- 로그인하지 않았거나 피드가 없을 때 글 목록 표시 -->
+				<PostListView
+					path="posts"
+					pageSize={20}
+					{userLikes}
+					onToggleLike={handleToggleLike}
+					onOpenCommentDialog={handleOpenCommentDialog}
+					onEdit={handleEdit}
+					onDelete={handleDeletePost}
+					editMode="dialog"
+				/>
+			{/snippet}
+		</FeedList>
+	</div>
 </div>
+
+<!-- 글쓰기 모달 -->
+<PostCreateDialog
+	bind:open={isCreateDialogOpen}
+/>
+
+<!-- 게시글 수정 모달 -->
+<PostEditDialog
+	bind:open={isEditDialogOpen}
+	postId={editPostId}
+	initialText={editPostText}
+	initialUrls={editPostUrls}
+	roomId={editRoomId}
+	onClose={() => (isEditDialogOpen = false)}
+/>
+
+<!-- 댓글 작성 모달 -->
+<CommentCreateDialog
+	bind:open={isCommentDialogOpen}
+	messageId={selectedPostId}
+	parentId={selectedParentId}
+	parentText={selectedParentText}
+/>
 
 <style>
 	@import 'tailwindcss' reference;
 
-	.home-card {
-		@apply h-full border border-gray-100 shadow-sm;
+	.post-list-container {
+		@apply mx-auto max-w-4xl md:p-4;
 	}
 
-	.placeholder-panel {
-		@apply flex min-h-[140px] flex-col items-center justify-center rounded-lg border border-dashed border-gray-300 bg-gray-50/60 text-center;
+	.compose-wrapper {
+		@apply mb-6;
 	}
 
-	.placeholder-indicators {
-		@apply mb-3 flex items-center gap-2;
+	/* 글쓰기 유도 폼 (가짜 입력 폼) */
+	.compose-prompt {
+		@apply flex w-full items-center gap-3 rounded-full bg-transparent px-2 py-1;
+		@apply cursor-pointer transition-all hover:bg-gray-50;
 	}
 
-	.indicator-dot {
-		@apply h-2 w-2 animate-pulse rounded-full bg-gray-400;
+	.compose-avatar-wrapper {
+		@apply shrink-0;
 	}
 
-	.placeholder-text {
-		@apply text-sm font-medium text-gray-500;
+	.compose-input-area {
+		@apply flex-1;
 	}
 
-	.stacked-wrapper {
-		@apply flex flex-col items-start gap-3;
+	.compose-input-fake {
+		@apply rounded-full bg-gray-100 px-4 py-2 text-sm text-gray-600;
+		@apply transition-colors hover:bg-gray-200;
 	}
 
-	.stacked-avatars {
-		@apply flex items-center;
+	.compose-icon-circle {
+		@apply flex h-10 w-10 items-center justify-center rounded-full bg-white text-gray-500 shadow;
+		@apply transition-all hover:bg-gray-100 focus:outline-none;
 	}
 
-	.stacked-avatar {
-		@apply h-12 w-12 rounded-full border-2 border-white object-cover shadow ring-1 ring-gray-200;
-		margin-left: -0.75rem;
+	.compose-icon {
+		@apply h-5 w-5 text-gray-600;
 	}
 
-	.stacked-avatar:first-child {
-		margin-left: 0;
+	/* 기본 아바타 (비로그인 사용자용) */
+	.default-avatar {
+		@apply flex h-10 w-10 items-center justify-center rounded-full bg-gray-200;
 	}
 
-	.stacked-caption {
-		@apply text-sm font-medium text-gray-800;
-	}
-
-	.open-chat-list {
-		@apply space-y-3;
-	}
-
-	.open-chat-item {
-		@apply rounded-lg border border-blue-100 bg-blue-50/80 p-3 shadow-sm;
-	}
-
-	.open-chat-head {
-		@apply flex items-center justify-between gap-2;
-	}
-
-	.open-chat-room {
-		@apply text-sm font-semibold text-blue-900;
-	}
-
-	.open-chat-time {
-		@apply text-xs text-gray-500;
-	}
-
-	.open-chat-body {
-		@apply mt-1 text-sm text-gray-700;
+	.post-list-content {
+		@apply space-y-4;
 	}
 </style>
-
 ```
-

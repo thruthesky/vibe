@@ -1,15 +1,19 @@
 ---
-title: date.pure-functions.ts
-type: typescript
-path: shared/date.pure-functions.ts
-status: active
-version: 1.0.0
-last_updated: 2025-11-15
+title: date.pure-functions.ts - TypeScript 소스 코드
+original_path: shared/date.pure-functions.ts
+category: source
+file_type: ts
+status: current
+last_updated: 2025-11-20
 ---
+
+# date.pure-functions.ts
 
 ## 개요
 
-이 파일은 `shared/date.pure-functions.ts`의 소스 코드를 포함하는 SED 스펙 문서입니다.
+**원본 경로**: `shared/date.pure-functions.ts`
+
+**파일 유형**: TypeScript 소스 코드
 
 ## 소스 코드
 
@@ -75,5 +79,58 @@ export function formatShortDate(value?: number | null, locale: string = 'en-US')
 	return `${year}/${month}/${day}`;
 }
 
-```
+/**
+ * 채팅 메시지용 날짜/시간 문자열.
+ *
+ * - 오늘 날짜이면: "시:분 ap" (예: "3:45 PM", "오후 3:45")
+ * - 오늘이 아니지만 올해이면: "월/일 시:분 ap" (예: "11/14 3:45 PM", "11월 14일 오후 3:45")
+ * - 올해가 아니면: "x년 x월 x일 시:분 ap" (예: "2024년 11월 14일 오후 3:45")
+ *
+ * @param value - Unix 타임스탬프 (밀리초)
+ * @param locale - 언어 코드 (예: 'ko-KR', 'en-US', 'ja-JP', 'zh-CN')
+ * @returns 채팅 메시지용 날짜/시간 문자열
+ */
+export function formatChatMessageDate(value?: number | null, locale: string = 'en-US'): string {
+	if (!value) return '';
 
+	const target = new Date(value);
+	const now = new Date();
+
+	// 오늘 날짜인지 확인
+	const isToday =
+		target.getFullYear() === now.getFullYear() &&
+		target.getMonth() === now.getMonth() &&
+		target.getDate() === now.getDate();
+
+	// 같은 해인지 확인
+	const isSameYear = target.getFullYear() === now.getFullYear();
+
+	if (isToday) {
+		// 오늘 날짜: "시:분 ap"
+		return target.toLocaleTimeString(locale, {
+			hour: 'numeric',
+			minute: '2-digit',
+			hour12: true
+		});
+	} else if (isSameYear) {
+		// 올해: "월/일 시:분 ap"
+		return target.toLocaleString(locale, {
+			month: 'numeric',
+			day: 'numeric',
+			hour: 'numeric',
+			minute: '2-digit',
+			hour12: true
+		});
+	} else {
+		// 올해가 아님: "x년 x월 x일 시:분 ap"
+		return target.toLocaleString(locale, {
+			year: 'numeric',
+			month: 'numeric',
+			day: 'numeric',
+			hour: 'numeric',
+			minute: '2-digit',
+			hour12: true
+		});
+	}
+}
+```

@@ -1,15 +1,19 @@
 ---
-title: +page.svelte
-type: component
-path: src/routes/dev/plan/+page.svelte
-status: active
-version: 1.0.0
-last_updated: 2025-11-15
+title: +page.svelte - Svelte 5 컴포넌트
+original_path: src/routes/dev/plan/+page.svelte
+category: route
+file_type: svelte
+status: current
+last_updated: 2025-11-20
 ---
+
+# +page.svelte
 
 ## 개요
 
-이 파일은 `src/routes/dev/plan/+page.svelte`의 소스 코드를 포함하는 SED 스펙 문서입니다.
+**원본 경로**: `src/routes/dev/plan/+page.svelte`
+
+**파일 유형**: Svelte 5 컴포넌트
 
 ## 소스 코드
 
@@ -271,16 +275,19 @@ last_updated: 2025-11-15
 					<span class="todo-number">11</span>
 					<div class="flex flex-col gap-1">
 						<Card.Title class="text-xl">그룹 채팅 비밀번호 기능</Card.Title>
-						<span class="todo-badge todo-badge--pending">📋 예정</span>
+						<span class="todo-badge todo-badge--done">✅ 완료</span>
 					</div>
 				</div>
 			</Card.Header>
 			<Card.Content>
 				<ul class="todo-list">
-					<li>오픈 채팅에 비밀번호 설정 옵션</li>
-					<li>입장 시 비밀번호 입력 모달</li>
-					<li><code>/open-chats/{'{roomId}'}/password</code> (해시 저장)</li>
-					<li>Cloud Functions에서 비밀번호 검증 수행</li>
+					<li>오픈/그룹 채팅에 비밀번호 설정 옵션 (owner만 설정 가능)</li>
+					<li>입장 시 비밀번호 입력 모달 + 검증 상태 안내/카운트다운</li>
+					<li><code>/chat-rooms/{'{roomId}'}/password</code>: true/false 플래그 저장</li>
+					<li><code>/chat-room-passwords/{'{roomId}'}/password</code>: 실제 비밀번호 저장</li>
+					<li><code>/chat-room-passwords/{'{roomId}'}/try/{'{uid}'}</code>에 입력값을 기록</li>
+					<li>Cloud Functions가 try 경로를 감시하여 비밀번호 검증 후 members에 추가</li>
+					<li>Security Rules로 password/members 경로 접근 제어 및 owner 권한 검증</li>
 				</ul>
 			</Card.Content>
 		</Card.Root>
@@ -292,7 +299,7 @@ last_updated: 2025-11-15
 					<span class="todo-number">12</span>
 					<div class="flex flex-col gap-1">
 						<Card.Title class="text-xl">채팅 마무리 기능</Card.Title>
-						<span class="todo-badge todo-badge--pending">📋 예정</span>
+						<span class="todo-badge todo-badge--done">✅ 완료</span>
 					</div>
 				</div>
 			</Card.Header>
@@ -311,7 +318,7 @@ last_updated: 2025-11-15
 					<span class="todo-number">13</span>
 					<div class="flex flex-col gap-1">
 						<Card.Title class="text-xl">채팅 메시지 "Post" 타입 선택</Card.Title>
-						<span class="todo-badge todo-badge--pending">📋 예정</span>
+						<span class="todo-badge todo-badge--done">✅ 완료</span>
 					</div>
 				</div>
 			</Card.Header>
@@ -374,7 +381,7 @@ last_updated: 2025-11-15
 					<span class="todo-number">14</span>
 					<div class="flex flex-col gap-1">
 						<Card.Title class="text-xl">게시판 글이 채팅방 메시지 목록에 표시</Card.Title>
-						<span class="todo-badge todo-badge--pending">📋 예정</span>
+						<span class="todo-badge todo-badge--done">✅ 완료</span>
 					</div>
 				</div>
 			</Card.Header>
@@ -518,12 +525,10 @@ last_updated: 2025-11-15
 			</Card.Header>
 			<Card.Content>
 				<ul class="todo-list">
-					<li>특정 메시지에 답장(quote) 기능 추가하여 원문 일부를 함께 표시</li>
 					<li>메시지에 좋아요(리액션) 기능으로 간단한 피드백 제공</li>
 					<li>@멘션 기능으로 특정 사용자를 호출하고 알림 트리거</li>
-					<li>상대방 읽음 여부(1:1 및 그룹) 표시: 마지막 읽음 타임스탬프 기반 배지</li>
-					<li>채팅 알림음 설정 페이지에서 사용자별 기본 알림음 on/off 제어</li>
 					<li>채팅방별 알림음 토글 및 중요 채팅방 강조음 선택 기능 제공</li>
+					<li>sonub.com을 Cloudflare Pages + Functions 환경으로 이전하여 SvelteKit 배포</li>
 				</ul>
 			</Card.Content>
 		</Card.Root>
@@ -542,7 +547,17 @@ last_updated: 2025-11-15
 			<Card.Content>
 				<div class="space-y-4">
 					<div>
-						<h4 class="todo-subtitle">18-1. 서브 채팅방 (Sub Chat Room)</h4>
+						<h4 class="todo-subtitle">18-1. 17번에서 이동한 기능</h4>
+						<ul class="todo-list">
+							<li>특정 메시지에 답장(quote) 기능 추가하여 원문 일부를 함께 표시</li>
+							<li>상대방 읽음 여부(1:1 및 그룹) 표시: 마지막 읽음 타임스탬프 기반 배지</li>
+							<li>채팅 알림음 설정 페이지에서 사용자별 기본 알림음 on/off 제어</li>
+							<li>로그인을 하지 않으면 홈 화면 실시간 통계 외의 정보가 보이지 않도록 보호</li>
+							<li>게시판 SEO 강화를 위해 게시글을 Cloudflare D1에 미러링하고 목록/상세를 D1 기반으로 노출</li>
+						</ul>
+					</div>
+					<div>
+						<h4 class="todo-subtitle">18-2. 서브 채팅방 (Sub Chat Room)</h4>
 						<ul class="todo-list">
 							<li>
 								<strong>용도:</strong> 내가 운영 중인 여러 개의 채팅방을 하나로 묶어서 하나의
@@ -568,9 +583,9 @@ last_updated: 2025-11-15
 							<li>부모 채팅방 UI에서 서브 채팅방 목록 및 빠른 전환 기능 제공</li>
 						</ul>
 					</div>
-					<div>
-						<h4 class="todo-subtitle">18-2. 관리자 페이지 (Dashboard) 및 관리자 기능</h4>
-						<ul class="todo-list">
+				<div>
+					<h4 class="todo-subtitle">18-3. 관리자 페이지 (Dashboard) 및 관리자 기능</h4>
+					<ul class="todo-list">
 							<li>관리자 권한 시스템 구현 (<code>/users/{'{uid}'}/isAdmin: boolean</code>)</li>
 							<li>
 								<strong>대시보드 기능:</strong>
@@ -615,6 +630,15 @@ last_updated: 2025-11-15
 									<li>에러 로그 및 모니터링</li>
 								</ul>
 							</li>
+						</ul>
+					</div>
+					<div>
+						<h4 class="todo-subtitle">18-4. 팔로잉/팔로워 기반 피드</h4>
+						<ul class="todo-list">
+							<li><code>/user-following/{'{uid}'}/{'{targetUid}'}: true</code>, <code>/user-followers/{'{uid}'}/{'{followerUid}'}: true</code> 구조로 친구 관계 저장</li>
+							<li>친구(팔로잉) 관계를 표시하는 UI (프로필 및 친구 목록)</li>
+							<li>팔로잉하는 사용자의 포스트/메시지를 홈 피드에서 우선 노출</li>
+							<li>팔로우/언팔로우 기능과 알림 처리</li>
 						</ul>
 					</div>
 				</div>
@@ -685,6 +709,4 @@ last_updated: 2025-11-15
 		@apply bg-gray-100 text-gray-700;
 	}
 </style>
-
 ```
-

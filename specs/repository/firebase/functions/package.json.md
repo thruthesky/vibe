@@ -1,15 +1,19 @@
 ---
-title: package.json
-type: config
-path: firebase/functions/package.json
-status: active
-version: 1.0.0
-last_updated: 2025-11-15
+title: package.json - JSON 설정 파일
+original_path: firebase/functions/package.json
+category: configuration
+file_type: json
+status: current
+last_updated: 2025-11-20
 ---
+
+# package.json
 
 ## 개요
 
-이 파일은 `firebase/functions/package.json`의 소스 코드를 포함하는 SED 스펙 문서입니다.
+**원본 경로**: `firebase/functions/package.json`
+
+**파일 유형**: JSON 설정 파일
 
 ## 소스 코드
 
@@ -31,7 +35,11 @@ last_updated: 2025-11-15
     "test": "mocha --require ts-node/register 'test/**/*.test.ts' --timeout 10000",
     "test:unit": "mocha --require ts-node/register 'test/unit/**/*.test.ts' --timeout 5000",
     "test:integration": "mocha --require ts-node/register 'test/integration/**/*.test.ts' --timeout 10000",
-    "test:watch": "mocha --require ts-node/register 'test/**/*.test.ts' --watch --watch-extensions ts"
+    "test:watch": "mocha --require ts-node/register 'test/**/*.test.ts' --watch --watch-extensions ts",
+    "test:vitest": "vitest run",
+    "test:vitest:watch": "vitest watch",
+    "test:vitest:ui": "vitest --ui",
+    "test:influencer": "vitest run tests/influencer-score-integration.test.ts"
   },
   "engines": {
     "node": "22"
@@ -47,6 +55,7 @@ last_updated: 2025-11-15
     "@types/sinon": "^17.0.4",
     "@typescript-eslint/eslint-plugin": "^8.46.4",
     "@typescript-eslint/parser": "^8.46.4",
+    "@vitest/ui": "^4.0.10",
     "chai": "^6.2.0",
     "eslint": "^8.9.0",
     "eslint-config-google": "^0.14.0",
@@ -56,10 +65,9 @@ last_updated: 2025-11-15
     "sinon": "^21.0.0",
     "ts-node": "^10.9.2",
     "tsc-alias": "^1.8.16",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.10"
   },
   "private": true
 }
-
 ```
-

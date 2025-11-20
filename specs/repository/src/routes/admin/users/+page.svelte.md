@@ -1,15 +1,19 @@
 ---
-title: +page.svelte
-type: component
-path: src/routes/admin/users/+page.svelte
-status: active
-version: 1.0.0
-last_updated: 2025-11-15
+title: +page.svelte - Svelte 5 컴포넌트
+original_path: src/routes/admin/users/+page.svelte
+category: route
+file_type: svelte
+status: current
+last_updated: 2025-11-20
 ---
+
+# +page.svelte
 
 ## 개요
 
-이 파일은 `src/routes/admin/users/+page.svelte`의 소스 코드를 포함하는 SED 스펙 문서입니다.
+**원본 경로**: `src/routes/admin/users/+page.svelte`
+
+**파일 유형**: Svelte 5 컴포넌트
 
 ## 소스 코드
 
@@ -31,7 +35,7 @@ last_updated: 2025-11-15
 		deleteAllTemporaryUsers,
 		getTemporaryUserCount
 	} from '$lib/utils/admin-service';
-	import type { TestUser } from '$lib/utils/test-user-generator';
+	import type { TestUser } from '../../../../firebase/test/src/test-user-generator';
 	import { m } from '$lib/paraglide/messages';
 
 	// 상태 관리
@@ -315,6 +319,4 @@ last_updated: 2025-11-15
 <style>
 	/* 추가 스타일이 필요한 경우 작성 */
 </style>
-
 ```
-

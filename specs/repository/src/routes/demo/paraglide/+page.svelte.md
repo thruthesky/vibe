@@ -1,15 +1,19 @@
 ---
-title: +page.svelte
-type: component
-path: src/routes/demo/paraglide/+page.svelte
-status: active
-version: 1.0.0
-last_updated: 2025-11-15
+title: +page.svelte - Svelte 5 컴포넌트
+original_path: src/routes/demo/paraglide/+page.svelte
+category: route
+file_type: svelte
+status: current
+last_updated: 2025-11-20
 ---
+
+# +page.svelte
 
 ## 개요
 
-이 파일은 `src/routes/demo/paraglide/+page.svelte`의 소스 코드를 포함하는 SED 스펙 문서입니다.
+**원본 경로**: `src/routes/demo/paraglide/+page.svelte`
+
+**파일 유형**: Svelte 5 컴포넌트
 
 ## 소스 코드
 
@@ -34,6 +38,4 @@ last_updated: 2025-11-15
 		target="_blank">Sherlock i18n extension</a
 	> for a better i18n experience.
 </p>
-
 ```
-

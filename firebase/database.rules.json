@@ -20,7 +20,8 @@
         "displayNameLowerCase",
         "sort_recentWithPhoto",
         "sort_recentFemaleWithPhoto",
-        "sort_recentMaleWithPhoto"
+        "sort_recentMaleWithPhoto",
+        "registerOrder"
       ]
     },
     "system": {

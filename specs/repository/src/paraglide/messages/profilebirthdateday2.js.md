@@ -1,15 +1,19 @@
 ---
-title: profilebirthdateday2.js
-type: javascript
-path: src/paraglide/messages/profilebirthdateday2.js
-status: active
-version: 1.0.0
-last_updated: 2025-11-15
+title: profilebirthdateday2.js - JavaScript 소스 코드
+original_path: src/paraglide/messages/profilebirthdateday2.js
+category: source
+file_type: js
+status: current
+last_updated: 2025-11-20
 ---
+
+# profilebirthdateday2.js
 
 ## 개요
 
-이 파일은 `src/paraglide/messages/profilebirthdateday2.js`의 소스 코드를 포함하는 SED 스펙 문서입니다.
+**원본 경로**: `src/paraglide/messages/profilebirthdateday2.js`
+
+**파일 유형**: JavaScript 소스 코드
 
 ## 소스 코드
 
@@ -56,4 +60,3 @@ const profilebirthdateday2 = (inputs = {}, options = {}) => {
 };
 export { profilebirthdateday2 as "profileBirthdateDay" }
 ```
-

@@ -5,7 +5,10 @@ declare global {
 		// interface Error {}
 		// interface Locals {}
 		// interface PageData {}
-		// interface PageState {}
+		// 뒤로가기 시 직전 채팅 목록 탭 경로를 보존하기 위한 상태 필드
+		interface PageState {
+			from?: string;
+		}
 		// interface Platform {}
 	}
 }

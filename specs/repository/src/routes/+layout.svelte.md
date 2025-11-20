@@ -1,15 +1,19 @@
 ---
-title: +layout.svelte
-type: component
-path: src/routes/+layout.svelte
-status: active
-version: 1.0.0
-last_updated: 2025-11-15
+title: +layout.svelte - Svelte 5 컴포넌트
+original_path: src/routes/+layout.svelte
+category: route
+file_type: svelte
+status: current
+last_updated: 2025-11-20
 ---
+
+# +layout.svelte
 
 ## 개요
 
-이 파일은 `src/routes/+layout.svelte`의 소스 코드를 포함하는 SED 스펙 문서입니다.
+**원본 경로**: `src/routes/+layout.svelte`
+
+**파일 유형**: Svelte 5 컴포넌트
 
 ## 소스 코드
 
@@ -261,7 +265,7 @@ last_updated: 2025-11-15
 	</div>
 
 	<div class="pt-20 md:pt-16" class:pt-0={isChatRoom} class:md:pt-0={isChatRoom}>
-		<div class="container mx-auto px-4 py-8" class:p-0={isChatRoom}>
+		<div class="container mx-auto md:px-4 py-8" class:p-0={isChatRoom}>
 			<div class="flex gap-6" class:gap-0={isChatRoom}>
 				<!-- 좌측 사이드바 (데스크톱만, 채팅방에서는 숨김) -->
 				{#if !isChatRoom}
@@ -292,6 +296,4 @@ last_updated: 2025-11-15
 
 <!-- FCM 푸시 알림 권한 요청 가드 -->
 <FcmPermissionGate />
-
 ```
-

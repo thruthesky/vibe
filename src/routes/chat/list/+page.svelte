@@ -17,12 +17,14 @@
 	import ChatListMenu from '$lib/components/chat/ChatListMenu.svelte';
 	import ChatFavoritesDialog from '$lib/components/chat/ChatFavoritesDialog.svelte';
 	import { rtdb } from '$lib/firebase';
+	import { onMount } from 'svelte';
 
 	type ChatJoinData = Record<string, unknown>;
 	type UserData = Record<string, unknown>;
 
 	const PAGE_SIZE = 20;
 	const JOIN_ORDER_FIELD = 'singleChatListOrder';
+	const CHAT_LIST_PATH = '/chat/list';
 
 	// UserSearchDialog 상태
 	let userSearchOpen = $state(false);
@@ -34,6 +36,17 @@
 	// ChatCreateDialog 상태
 	let groupChatDialogOpen = $state(false);
 	let openChatDialogOpen = $state(false);
+
+	// 마지막으로 방문한 채팅 목록 탭 경로를 세션에 저장
+	onMount(() => {
+		if (typeof window === 'undefined') return;
+		sessionStorage.setItem('chat:lastChatListPath', CHAT_LIST_PATH);
+	});
+
+	// 채팅방으로 이동하면서 이전 탭 정보를 state 에 포함
+	function navigateToRoom(path: string) {
+		void goto(path, { state: { from: CHAT_LIST_PATH } });
+	}
 
 	/**
 	 * 방생성 버튼 클릭 핸들러
@@ -59,7 +72,7 @@
 		const { uid } = event.detail;
 		// console.log('선택된 사용자:', event.detail);
 		// 1:1 채팅방으로 이동
-		void goto(`/chat/room?uid=${uid}`);
+		navigateToRoom(`/chat/room?uid=${uid}`);
 	}
 
 	/**
@@ -100,7 +113,7 @@
 	 */
 	function handleRoomSelected(event: CustomEvent<{ roomId: string }>) {
 		const { roomId } = event.detail;
-		void goto(`/chat/room?roomId=${roomId}`);
+		navigateToRoom(`/chat/room?roomId=${roomId}`);
 	}
 
 	/**
@@ -110,7 +123,7 @@
 	function handleRoomCreated(event: CustomEvent<{ roomId: string }>) {
 		const { roomId } = event.detail;
 		// console.log('✅ 채팅방 생성 완료, 이동:', roomId);
-		void goto(`/chat/room?roomId=${roomId}`);
+		navigateToRoom(`/chat/room?roomId=${roomId}`);
 	}
 
 	/**
@@ -166,12 +179,12 @@
 			: undefined;
 
 		if (normalizedType.includes('single') && partnerUid) {
-			void goto(`/chat/room?uid=${partnerUid}`);
+			navigateToRoom(`/chat/room?uid=${partnerUid}`);
 			return;
 		}
 
 		if (roomId) {
-			void goto(`/chat/room?roomId=${roomId}`);
+			navigateToRoom(`/chat/room?roomId=${roomId}`);
 		}
 	}
 </script>

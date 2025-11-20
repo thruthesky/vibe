@@ -12,16 +12,17 @@
 	import { goto } from '$app/navigation';
 	import { m } from '$lib/paraglide/messages';
 	import { formatLongDate } from '$lib/functions/date.functions';
-	import { resolveRoomTypeLabel, togglePinChatRoom } from '$lib/functions/chat.functions';
+	import { resolveRoomTypeLabel } from '$lib/functions/chat.functions';
 	import ChatListMenu from '$lib/components/chat/ChatListMenu.svelte';
 	import ChatFavoritesDialog from '$lib/components/chat/ChatFavoritesDialog.svelte';
-	import { rtdb } from '$lib/firebase';
+	import { onMount } from 'svelte';
 
 	type ChatRoomData = Record<string, unknown>;
 
 	const PAGE_SIZE = 20;
 	const CHAT_ROOMS_PATH = 'chat-rooms';
 	const ORDER_FIELD = 'openListOrder';
+	const OPEN_CHAT_LIST_PATH = '/chat/open-chat-list';
 
 	// ChatCreateDialog 상태
 	let createDialogOpen = $state(false); // 오픈 채팅방 생성
@@ -29,6 +30,17 @@
 
 	// ChatFavoritesDialog 상태
 	let favoritesDialogOpen = $state(false);
+
+	// 마지막으로 방문한 채팅 목록 탭 경로를 세션에 저장
+	onMount(() => {
+		if (typeof window === 'undefined') return;
+		sessionStorage.setItem('chat:lastChatListPath', OPEN_CHAT_LIST_PATH);
+	});
+
+	// 채팅방으로 이동하면서 이전 탭 정보를 state 에 포함
+	function navigateToRoom(path: string) {
+		void goto(path, { state: { from: OPEN_CHAT_LIST_PATH } });
+	}
 
 	/**
 	 * 방생성 버튼 클릭 핸들러
@@ -45,7 +57,7 @@
 	function handleRoomCreated(event: CustomEvent<{ roomId: string }>) {
 		const { roomId } = event.detail;
 		// console.log('✅ 채팅방 생성 완료, 이동:', roomId);
-		void goto(`/chat/room?roomId=${roomId}`);
+		navigateToRoom(`/chat/room?roomId=${roomId}`);
 	}
 
 	/**
@@ -94,41 +106,7 @@
 	 */
 	function handleRoomSelected(event: CustomEvent<{ roomId: string }>) {
 		const { roomId } = event.detail;
-		void goto(`/chat/room?roomId=${roomId}`);
-	}
-
-	/**
-	 * 채팅방 핀 토글 핸들러
-	 *
-	 * 참고: 오픈 채팅 목록 페이지에서는 chat-rooms 데이터를 읽고 있어서
-	 * 핀 상태를 직접 확인할 수 없습니다. 핀 기능은 사용자가 참여한 채팅방에서만 작동합니다.
-	 */
-	async function handleTogglePin(
-		event: MouseEvent,
-		roomId: string,
-		roomType: string
-	): Promise<void> {
-		event.stopPropagation(); // 버튼 클릭 이벤트 전파 방지
-
-		const uid = authStore.user?.uid;
-		if (!uid) {
-			console.error('사용자 인증 정보가 없습니다');
-			alert('로그인이 필요합니다');
-			return;
-		}
-
-		if (!rtdb) {
-			console.error('Database가 초기화되지 않았습니다');
-			return;
-		}
-
-		try {
-			const isPinned = await togglePinChatRoom(rtdb, roomId, uid, roomType);
-			// console.log(`✅ 채팅방 핀 ${isPinned ? '설정' : '해제'} 완료:`, roomId);
-		} catch (error) {
-			console.error('채팅방 핀 토글 실패:', error);
-			alert('이 기능은 참여한 채팅방에서만 사용할 수 있습니다');
-		}
+		navigateToRoom(`/chat/room?roomId=${roomId}`);
 	}
 
 	/**
@@ -165,7 +143,7 @@
 	 */
 	function openConversation(roomId: string) {
 		if (roomId) {
-			void goto(`/chat/room?roomId=${roomId}`);
+			navigateToRoom(`/chat/room?roomId=${roomId}`);
 		}
 	}
 </script>
@@ -303,19 +281,6 @@
 								{/if}
 							</div>
 						</button>
-
-						<div class="flex flex-col items-center gap-2 p-4">
-							<!-- 핀 버튼 (오픈 채팅 목록에서는 참여 후 사용 가능) -->
-							<button
-								type="button"
-								onclick={(e) => handleTogglePin(e, roomId, roomType)}
-								class="rounded-full p-1.5 transition hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-								title="핀 설정 (참여 후 사용 가능)"
-							>
-								<span class="text-xl">📍</span>
-							</button>
-							<span class="text-sm font-medium text-blue-600">{m.chatOpenRoom()}</span>
-						</div>
 					</div>
 				{/snippet}
 

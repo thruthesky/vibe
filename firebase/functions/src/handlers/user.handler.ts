@@ -44,6 +44,13 @@ export async function handleUserCreate(
     logger.info("createdAt 저장 예정", {uid, createdAt});
   }
 
+  // registerOrder 필드 자동 생성 (최신순 정렬용)
+  // registerOrder = Number.MAX_SAFE_INTEGER - createdAt
+  // 최신 사용자일수록 작은 값을 가져서 오름차순 정렬 시 먼저 표시됨
+  const registerOrder = Number.MAX_SAFE_INTEGER - createdAt;
+  updates[`users/${uid}/registerOrder`] = registerOrder;
+  logger.info("registerOrder 저장 예정", {uid, registerOrder, createdAt});
+
   if (Object.keys(updates).length > 0) {
     await admin.database().ref().update(updates);
     logger.info("사용자 생성 관련 업데이트 완료", {

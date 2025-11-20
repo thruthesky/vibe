@@ -1,15 +1,19 @@
 ---
-title: pagetitlechat2.js
-type: javascript
-path: src/paraglide/messages/pagetitlechat2.js
-status: active
-version: 1.0.0
-last_updated: 2025-11-15
+title: pagetitlechat2.js - JavaScript 소스 코드
+original_path: src/paraglide/messages/pagetitlechat2.js
+category: source
+file_type: js
+status: current
+last_updated: 2025-11-20
 ---
+
+# pagetitlechat2.js
 
 ## 개요
 
-이 파일은 `src/paraglide/messages/pagetitlechat2.js`의 소스 코드를 포함하는 SED 스펙 문서입니다.
+**원본 경로**: `src/paraglide/messages/pagetitlechat2.js`
+
+**파일 유형**: JavaScript 소스 코드
 
 ## 소스 코드
 
@@ -59,4 +63,3 @@ const pagetitlechat2 = (inputs = {}, options = {}) => {
 };
 export { pagetitlechat2 as "pageTitleChat" }
 ```
-

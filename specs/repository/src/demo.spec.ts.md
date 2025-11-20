@@ -1,15 +1,19 @@
 ---
-title: demo.spec.ts
-type: typescript
-path: src/demo.spec.ts
-status: active
-version: 1.0.0
-last_updated: 2025-11-15
+title: demo.spec.ts - TypeScript 소스 코드
+original_path: src/demo.spec.ts
+category: source
+file_type: ts
+status: current
+last_updated: 2025-11-20
 ---
+
+# demo.spec.ts
 
 ## 개요
 
-이 파일은 `src/demo.spec.ts`의 소스 코드를 포함하는 SED 스펙 문서입니다.
+**원본 경로**: `src/demo.spec.ts`
+
+**파일 유형**: TypeScript 소스 코드
 
 ## 소스 코드
 
@@ -21,6 +25,4 @@ describe('sum test', () => {
 		expect(1 + 2).toBe(3);
 	});
 });
-
 ```
-

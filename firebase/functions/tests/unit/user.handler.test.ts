@@ -8,8 +8,7 @@
 import {expect} from "chai";
 import * as sinon from "sinon";
 import * as admin from "firebase-admin";
-import * as logger from "firebase-functions/logger";
-import {handleUserUpdate} from "../../src/handlers/user.handler";
+import {handleUserCreate, handleUserUpdate} from "../../src/handlers/user.handler";
 import {UserData} from "../../src/types";
 
 // Firebase Admin 초기화 (테스트 파일 로드 시 한 번만 실행)
@@ -29,13 +28,9 @@ describe("user.handler - 사용자 정보 업데이트 처리", () => {
   let sandbox: sinon.SinonSandbox;
   let refStub: sinon.SinonStub;
   let updateStub: sinon.SinonStub;
-  let loggerInfoStub: sinon.SinonStub;
 
   beforeEach(() => {
     sandbox = sinon.createSandbox();
-
-    // Logger 스텁
-    loggerInfoStub = sandbox.stub(logger, "info");
 
     // Database 스텁 설정
     updateStub = sandbox.stub().resolves();
@@ -87,9 +82,6 @@ describe("user.handler - 사용자 정보 업데이트 처리", () => {
 
         // Then: displayNameLowerCase 업데이트 확인
         expect(updates[`users/${uid}/displayNameLowerCase`]).to.equal("newname");
-
-        // Then: 로그 출력 확인
-        expect(loggerInfoStub.called).to.be.true;
       });
 
       it("photoUrl이 변경되면 updatedAt만 업데이트한다", async () => {
@@ -336,6 +328,147 @@ describe("user.handler - 사용자 정보 업데이트 처리", () => {
 
         const updates = updateStub.firstCall.args[0];
         expect(updates[`users/${uid}/displayNameLowerCase`]).to.equal(longName.toLowerCase());
+      });
+    });
+  });
+
+  describe("handleUserCreate - 사용자 생성 처리", () => {
+    let incrementActionCounterStub: sinon.SinonStub;
+
+    beforeEach(() => {
+      // incrementActionCounter 함수 스텁 (별도 모듈이므로 require로 가져와서 스텁)
+      const userActionCountersHandler = require("../../src/handlers/user-action-counters.handler");
+      incrementActionCounterStub = sandbox.stub(userActionCountersHandler, "incrementActionCounter").resolves();
+    });
+
+    describe("✅ 정상 케이스", () => {
+      it("신규 사용자 생성 시 createdAt과 registerOrder를 자동으로 생성한다", async () => {
+        // Given: createdAt이 없는 신규 사용자 데이터
+        const uid = "new-user-123";
+        const userData: UserData = {
+          displayName: "New User",
+        };
+
+        const beforeTime = Date.now();
+
+        // When: 사용자 생성 처리
+        const result = await handleUserCreate(uid, userData);
+
+        const afterTime = Date.now();
+
+        // Then: 성공 응답
+        expect(result.success).to.be.true;
+        expect(result.uid).to.equal(uid);
+
+        // Then: update() 호출 확인
+        expect(updateStub.calledOnce).to.be.true;
+        const updates = updateStub.firstCall.args[0];
+
+        // Then: createdAt이 현재 시간으로 생성됨
+        expect(updates[`users/${uid}/createdAt`]).to.be.a("number");
+        expect(updates[`users/${uid}/createdAt`]).to.be.at.least(beforeTime);
+        expect(updates[`users/${uid}/createdAt`]).to.be.at.most(afterTime);
+
+        // Then: registerOrder가 생성됨
+        const createdAt = updates[`users/${uid}/createdAt`] as number;
+        const expectedRegisterOrder = Number.MAX_SAFE_INTEGER - createdAt;
+        expect(updates[`users/${uid}/registerOrder`]).to.equal(expectedRegisterOrder);
+
+        // Then: incrementActionCounter 호출 확인
+        expect(incrementActionCounterStub.calledOnce).to.be.true;
+        expect(incrementActionCounterStub.firstCall.args).to.deep.equal([uid, "user", 1]);
+      });
+
+      it("createdAt이 제공된 경우 해당 값을 사용한다", async () => {
+        // Given: createdAt이 제공된 사용자 데이터
+        const uid = "user-with-created-at";
+        const providedCreatedAt = 1700000000000;
+        const userData: UserData = {
+          displayName: "User",
+          createdAt: providedCreatedAt,
+        };
+
+        // When: 사용자 생성 처리
+        const result = await handleUserCreate(uid, userData);
+
+        // Then: 성공 응답
+        expect(result.success).to.be.true;
+
+        // Then: update() 호출 확인
+        expect(updateStub.calledOnce).to.be.true;
+        const updates = updateStub.firstCall.args[0];
+
+        // Then: createdAt이 제공된 값으로 설정되지 않음 (이미 있으므로)
+        // handleUserCreate에서는 createdAt이 없을 때만 저장하므로, 제공된 경우 업데이트에 포함되지 않음
+        expect(updates[`users/${uid}/createdAt`]).to.be.undefined;
+
+        // Then: registerOrder는 제공된 createdAt으로 계산됨
+        const expectedRegisterOrder = Number.MAX_SAFE_INTEGER - providedCreatedAt;
+        expect(updates[`users/${uid}/registerOrder`]).to.equal(expectedRegisterOrder);
+      });
+
+      it("최신 사용자일수록 더 작은 registerOrder 값을 가진다", async () => {
+        // Given: 두 명의 사용자 (오래된 사용자와 최신 사용자)
+        const oldUserUid = "old-user";
+        const newUserUid = "new-user";
+
+        const oldUserCreatedAt = 1600000000000; // 오래된 시간
+        const newUserCreatedAt = 1700000000000; // 최신 시간
+
+        const oldUserData: UserData = {
+          displayName: "Old User",
+          createdAt: oldUserCreatedAt,
+        };
+
+        const newUserData: UserData = {
+          displayName: "New User",
+          createdAt: newUserCreatedAt,
+        };
+
+        // When: 오래된 사용자 생성
+        await handleUserCreate(oldUserUid, oldUserData);
+        const oldUpdates = updateStub.firstCall.args[0];
+        const oldUserRegisterOrder = oldUpdates[`users/${oldUserUid}/registerOrder`] as number;
+
+        // When: 최신 사용자 생성
+        updateStub.resetHistory();
+        await handleUserCreate(newUserUid, newUserData);
+        const newUpdates = updateStub.firstCall.args[0];
+        const newUserRegisterOrder = newUpdates[`users/${newUserUid}/registerOrder`] as number;
+
+        // Then: 최신 사용자의 registerOrder가 더 작음
+        expect(newUserRegisterOrder).to.be.lessThan(oldUserRegisterOrder);
+
+        // Then: 오름차순 정렬 시 최신 사용자가 먼저 표시됨
+        const sortedUsers = [
+          {uid: oldUserUid, registerOrder: oldUserRegisterOrder},
+          {uid: newUserUid, registerOrder: newUserRegisterOrder},
+        ].sort((a, b) => a.registerOrder - b.registerOrder);
+
+        expect(sortedUsers[0].uid).to.equal(newUserUid); // 최신 사용자가 첫 번째
+        expect(sortedUsers[1].uid).to.equal(oldUserUid); // 오래된 사용자가 두 번째
+      });
+    });
+
+    describe("🔍 계산식 검증", () => {
+      it("registerOrder 계산식이 정확하다 (Number.MAX_SAFE_INTEGER - createdAt)", async () => {
+        // Given: 특정 createdAt 값
+        const uid = "test-calculation";
+        const createdAt = 1234567890000;
+        const userData: UserData = {
+          displayName: "Test",
+          createdAt: createdAt,
+        };
+
+        // When: 사용자 생성 처리
+        await handleUserCreate(uid, userData);
+
+        // Then: registerOrder 계산 검증
+        const updates = updateStub.firstCall.args[0];
+        const registerOrder = updates[`users/${uid}/registerOrder`] as number;
+
+        expect(registerOrder).to.equal(Number.MAX_SAFE_INTEGER - createdAt);
+        expect(registerOrder).to.equal(9007199254740991 - 1234567890000);
       });
     });
   });

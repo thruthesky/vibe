@@ -17,11 +17,13 @@
 	import ChatListMenu from '$lib/components/chat/ChatListMenu.svelte';
 	import ChatFavoritesDialog from '$lib/components/chat/ChatFavoritesDialog.svelte';
 	import { rtdb } from '$lib/firebase';
+	import { onMount } from 'svelte';
 
 	type ChatJoinData = Record<string, unknown>;
 
 	const PAGE_SIZE = 20;
 	const JOIN_ORDER_FIELD = 'openAndGroupChatListOrder';
+	const GROUP_CHAT_LIST_PATH = '/chat/group-chat-list';
 
 	// ChatCreateDialog 상태
 	let createDialogOpen = $state(false); // 그룹 채팅방 생성
@@ -29,6 +31,17 @@
 
 	// ChatFavoritesDialog 상태
 	let favoritesDialogOpen = $state(false);
+
+	// 마지막으로 방문한 채팅 목록 탭 경로를 세션에 저장
+	onMount(() => {
+		if (typeof window === 'undefined') return;
+		sessionStorage.setItem('chat:lastChatListPath', GROUP_CHAT_LIST_PATH);
+	});
+
+	// 채팅방으로 이동하면서 이전 탭 정보를 state 에 포함
+	function navigateToRoom(path: string) {
+		void goto(path, { state: { from: GROUP_CHAT_LIST_PATH } });
+	}
 
 	/**
 	 * 방생성 버튼 클릭 핸들러
@@ -45,7 +58,7 @@
 	function handleRoomCreated(event: CustomEvent<{ roomId: string }>) {
 		const { roomId } = event.detail;
 		// console.log('✅ 채팅방 생성 완료, 이동:', roomId);
-		void goto(`/chat/room?roomId=${roomId}`);
+		navigateToRoom(`/chat/room?roomId=${roomId}`);
 	}
 
 	/**
@@ -94,7 +107,7 @@
 	 */
 	function handleRoomSelected(event: CustomEvent<{ roomId: string }>) {
 		const { roomId } = event.detail;
-		void goto(`/chat/room?roomId=${roomId}`);
+		navigateToRoom(`/chat/room?roomId=${roomId}`);
 	}
 
 	/**
@@ -153,7 +166,7 @@
 	 */
 	function openConversation(join: ChatJoinData, roomId: string) {
 		if (roomId) {
-			void goto(`/chat/room?roomId=${roomId}`);
+			navigateToRoom(`/chat/room?roomId=${roomId}`);
 		}
 	}
 </script>

@@ -1,126 +1,22 @@
 ---
 name: sonub
-version: 1.0.1
-description: Firebase Realtime Database 구조 가이드 문서의 SED 사양
+version: 1.1.0
+description: Firebase Realtime Database 구조 가이드 문서의 SED 사양 (소스 코드 기반 업데이트)
 author: JaeHo Song
 email: thruthesky@gmail.com
 homepage: https://github.com/thruthesky/
 funding: ""
 license: GPL-3.0
 dependencies: []
-updated: 2025-11-17
-changelog:
-  - date: 2025-01-16
-    version: 1.0.1
-    changes:
-      - "채팅방 생성 시 클라이언트 책임 범위 업데이트: owner와 members 필드 직접 저장"
-      - "Cloud Functions 역할 명확화: 이미 저장된 필드는 재저장하지 않음"
+updated: 2025-11-20
 ---
-
-- [Firebase Realtime Database 구조 가이드](#firebase-realtime-database-구조-가이드)
-  - [워크플로우](#워크플로우)
-    - [📋 문서의 범위](#-문서의-범위)
-    - [🔀 클라이언트와 백엔드의 데이터 책임 구분](#-클라이언트와-백엔드의-데이터-책임-구분)
-    - [클라이언트와 백엔드의 역할 분리](#클라이언트와-백엔드의-역할-분리)
-  - [개요](#개요)
-  - [데이터베이스 전체 구조](#데이터베이스-전체-구조)
-  - [통계 (stats/counters)](#통계-statscounters)
-    - [사용자 수 통계 구조](#사용자-수-통계-구조)
-    - [동작 방식](#동작-방식)
-    - [활용 예시](#활용-예시)
-  - [사용자 정보 (users)](#사용자-정보-users)
-    - [사용자 Realtime Database 데이터 구조](#사용자-realtime-database-데이터-구조)
-    - [필드 설명](#필드-설명)
-    - [클라이언트/서버 역할 분리](#클라이언트서버-역할-분리)
-    - [⚠️ 중요: Firebase Auth vs RTDB 필드](#️-중요-firebase-auth-vs-rtdb-필드)
-    - [관련 가이드](#관련-가이드)
-  - [사용자 속성 분리 (user-props)](#사용자-속성-분리-user-props)
-    - [데이터 구조](#데이터-구조)
-    - [클라이언트/서버 역할 분리](#클라이언트서버-역할-분리-1)
-    - [관련 가이드](#관련-가이드-1)
-  - [친구 관계 (friends, followers, following)](#친구-관계-friends-followers-following)
-    - [데이터 구조](#데이터-구조-1)
-    - [설명](#설명)
-    - [클라이언트/서버 역할 분리](#클라이언트서버-역할-분리-2)
-    - [관련 가이드](#관련-가이드-2)
-  - [채팅방 (chat-rooms)](#채팅방-chat-rooms)
-    - [데이터 구조](#데이터-구조-2)
-    - [필드 설명](#필드-설명-1)
-    - [클라이언트/서버 역할 분리](#클라이언트서버-역할-분리-3)
-      - [채팅방 생성 시](#채팅방-생성-시)
-      - [채팅방 입장/퇴장 시](#채팅방-입장퇴장-시)
-  - [채팅 메시지 (chat-messages)](#채팅-메시지-chat-messages)
-    - [데이터 구조](#데이터-구조-3)
-    - [필드 설명](#필드-설명-2)
-    - [roomId 형식](#roomid-형식)
-    - [클라이언트/서버 역할 분리](#클라이언트서버-역할-분리-4)
-    - [관련 가이드](#관련-가이드-3)
-  - [채팅 북마크 (chat-favorites)](#채팅-북마크-chat-favorites)
-    - [데이터 구조](#데이터-구조-4)
-    - [필드 설명](#필드-설명-3)
-    - [folderOrder 필드](#folderorder-필드)
-    - [클라이언트/서버 역할 분리](#클라이언트서버-역할-분리-5)
-    - [사용 예시](#사용-예시)
-    - [관련 가이드](#관련-가이드-4)
-  - [채팅방 참여 (chat-joins)](#채팅방-참여-chat-joins)
-    - [데이터 구조](#데이터-구조-5)
-    - [필드 설명](#필드-설명-4)
-    - [🔥 정렬 필드 상세 설명](#-정렬-필드-상세-설명)
-      - [정렬 필드 개요](#정렬-필드-개요)
-      - [왜 정렬 필드가 필요한가?](#왜-정렬-필드가-필요한가)
-      - [정렬 필드 계산 방식 (Cloud Functions)](#정렬-필드-계산-방식-cloud-functions)
-      - [prefix 규칙](#prefix-규칙)
-      - [정렬 원리](#정렬-원리)
-      - [읽음 처리 (정렬 필드 업데이트)](#읽음-처리-정렬-필드-업데이트)
-      - [핀 처리 (채팅방 고정 기능)](#핀-처리-채팅방-고정-기능)
-      - [클라이언트에서 사용 예시](#클라이언트에서-사용-예시)
-      - [주의사항](#주의사항)
-    - [클라이언트/서버 역할 분리](#클라이언트서버-역할-분리-6)
-    - [관련 가이드](#관련-가이드-5)
-  - [FCM 토큰 (fcm-tokens)](#fcm-토큰-fcm-tokens)
-    - [데이터 구조](#데이터-구조-6)
-    - [필드 설명](#필드-설명-5)
-    - [클라이언트/서버 역할 분리](#클라이언트서버-역할-분리-7)
-    - [저장 목적 및 운영 시나리오](#저장-목적-및-운영-시나리오)
-  - [게시글 (posts)](#게시글-posts)
-    - [데이터 구조](#데이터-구조-7)
-    - [필드 설명](#필드-설명-6)
-    - [정렬 필드 상세 설명](#정렬-필드-상세-설명-1)
-    - [클라이언트/서버 역할 분리](#클라이언트서버-역할-분리-8)
-    - [관련 가이드](#관련-가이드-6)
-  - [주요 설계 원칙](#주요-설계-원칙)
-    - [1. Flat Style 구조](#1-flat-style-구조)
-    - [2. 속성 분리](#2-속성-분리)
-    - [3. Cloud Functions 활용](#3-cloud-functions-활용)
-    - [4. 보안 규칙](#4-보안-규칙)
-  - [주의사항](#주의사항-1)
-    - [Firebase Auth vs RTDB 필드명 차이](#firebase-auth-vs-rtdb-필드명-차이)
-  - [관련 가이드 문서](#관련-가이드-문서)
-  - [참고 자료](#참고-자료)
-
-
-## Overview
-- 이 문서는 "Firebase Realtime Database 구조 가이드"에 대한 세부 사양을 정리하며, 기존 내용을 그대로 유지한 채 SED 구조에 맞춰 제공합니다.
-
-## Requirements
-- 문서 전반에 걸쳐 소개되는 지침과 참고 사항을 모두 숙지해야 하며, 별도의 추가 선행 조건은 원문 각 절에서 제시되는 내용을 따릅니다.
-
-## Workflow
-1. 아래 `## Detail Items` 절에 포함된 원문 목차를 검토합니다.
-2. 필요한 경우 원문의 각 절을 순서대로 읽으며 프로젝트 작업 흐름에 반영합니다.
-3. 문서에 명시된 모든 지침을 확인한 뒤 실제 개발 단계에 적용합니다.
-
-## Detail Items
-- 이하에는 기존 문서의 모든 내용을 원형 그대로 포함하여 참조할 수 있도록 구성했습니다.
 
 # Firebase Realtime Database 구조 가이드
 
 본 문서는 SNS 웹 애플리케이션의 Firebase Realtime Database 스키마 정의를 제공합니다.
-각 기능의 상세한 구현 방법은 해당 가이드 문서를 참고하세요.
+**이 문서는 실제 소스 코드를 기반으로 작성되었으며, 모든 데이터베이스 구조의 중앙 참조 문서입니다.**
 
-## 워크플로우
-
-### 📋 문서의 범위
+## 📋 문서의 범위
 
 본 문서는 **데이터베이스 구조(스키마)와 구조에 대한 설명만** 포함합니다.
 
@@ -135,251 +31,107 @@ changelog:
   - 케이스별 상세 설명 및 사용 예시
   - API 함수 사용법
 
-**구현 예제와 상세 설명**은 다음 개별 가이드 문서를 참고하세요:
-- [Firebase Cloud Functions 개발 가이드](./sns-firebase-cloud-functions.md) - Cloud Functions 구현 예제
+**구현 예제와 상세 설명**은 개별 기능 가이드 문서를 참고하세요.
 
 ---
 
-### 🔥 **RTDB 비용 최적화: 최소 데이터 읽기 원칙 (매우 중요)**
+## 🔥 RTDB 비용 최적화: 최소 데이터 읽기 원칙 (매우 중요)
 
 **⚠️ Firebase Realtime Database는 읽기/쓰기 비용이 발생합니다. 따라서 클라이언트에서 RTDB 데이터를 읽을 때 반드시 최소한의 데이터만 읽어야 합니다.**
 
-#### **절대 원칙**
+### 절대 원칙
 
 1. **❌ 전체 노드 읽기 금지**
    ```typescript
-   // ❌ 잘못된 예: 전체 사용자 노드 읽기 (비용 낭비)
-   const userRef = ref(rtdb, `users/${uid}`);
-   const snapshot = await get(userRef);
-   const user = snapshot.val();
-   const displayName = user.displayName; // 다른 모든 필드도 함께 읽음
+   // ❌ 비효율적: 전체 사용자 노드 읽기
+   const userRef = ref(database, `users/${uid}`);
+   const snapshot = await get(userRef);  // 모든 필드 읽음 - 비용 낭비!
    ```
 
-2. **✅ 특정 필드만 선택적으로 읽기**
+2. **✅ 필요한 필드만 읽기 (필수)**
    ```typescript
-   // ✅ 올바른 예: 필요한 필드만 읽기 (비용 절감)
-   const displayNameRef = ref(rtdb, `users/${uid}/displayName`);
+   // ✅ 효율적: 필요한 필드만 개별 읽기
+   import { getUserFields } from '$lib/functions/user.functions';
+
+   const userData = await getUserFields(uid, ['displayName', 'photoUrl']);
+   // 또는 직접 읽기
+   const displayNameRef = ref(database, `users/${uid}/displayName`);
    const snapshot = await get(displayNameRef);
-   const displayName = snapshot.val(); // displayName 필드만 읽음
    ```
 
-3. **✅ 여러 필드가 필요한 경우 병렬로 읽기**
+3. **✅ 여러 필드를 병렬로 읽기**
    ```typescript
-   // ✅ 올바른 예: 필요한 필드만 병렬로 읽기
-   const [displayName, photoUrl] = await Promise.all([
-     get(ref(rtdb, `users/${uid}/displayName`)).then(s => s.val()),
-     get(ref(rtdb, `users/${uid}/photoUrl`)).then(s => s.val())
+   // ✅ 여러 필드를 효율적으로 읽기
+   const results = await Promise.all([
+     get(ref(database, `users/${uid}/displayName`)),
+     get(ref(database, `users/${uid}/photoUrl`))
    ]);
    ```
 
-#### **실제 적용 예시**
-
-**사용자 정보 읽기:**
-- ❌ 잘못된 방법: `/users/{uid}` 전체 노드 읽기
-- ✅ 올바른 방법: `/users/{uid}/displayName`, `/users/{uid}/photoUrl` 필드만 읽기
-
-**게시글 목록에서 작성자 정보 표시:**
-- ❌ 잘못된 방법: 각 게시글마다 `/users/{senderUid}` 전체 읽기
-- ✅ 올바른 방법: 각 게시글마다 `/users/{senderUid}/displayName`, `/users/{senderUid}/photoUrl`만 읽기
-
-#### **비용 절감 효과**
-
-전체 사용자 노드가 다음과 같다고 가정:
-```json
-{
-  "displayName": "홍길동",
-  "photoUrl": "https://...",
-  "gender": "M",
-  "birthYear": 1990,
-  "birthMonth": 1,
-  "birthDay": 15,
-  "birthYearMonthDay": "1990-01-15",
-  "birthMonthDay": "01-15",
-  "bio": "자기소개...",
-  "createdAt": 1698473000000,
-  "updatedAt": 1698474000000
-}
-```
-
-- **전체 노드 읽기**: 11개 필드 모두 읽음 (100% 비용)
-- **필요한 필드만 읽기**: `displayName`, `photoUrl` 2개만 읽음 (약 18% 비용)
-- **비용 절감**: 약 **82% 절감**
-
-#### **개발 시 필수 준수 사항**
-
-- 🚫 **절대로** 전체 사용자 노드 `/users/{uid}`를 읽지 않습니다
-- ✅ **반드시** 필요한 필드만 `/users/{uid}/{field}` 경로로 읽습니다
-- ✅ 여러 필드가 필요하면 각 필드를 병렬로 읽습니다 (`Promise.all` 사용)
-- ✅ 모든 RTDB 읽기 작업에서 이 원칙을 적용합니다
-- 📝 코드 리뷰 시 RTDB 읽기 작업을 특히 주의 깊게 확인합니다
-
-**이 원칙을 위반하는 코드는 즉시 수정해야 합니다.**
-
 ---
 
-### 🔀 클라이언트와 백엔드의 데이터 책임 구분
+## 🔀 클라이언트와 백엔드의 데이터 책임 구분
 
-**매우 중요**: DB 구조의 각 필드는 **클라이언트가 저장**하거나 **백엔드가 업데이트**하도록 명확히 구분되어 있습니다.
+Firebase Realtime Database에서는 클라이언트와 백엔드(Cloud Functions)가 각각 다른 필드를 관리합니다.
 
-| 필드 유형 | 책임 주체 | 예시 필드 |
-|----------|---------|----------|
-| **사용자 입력 데이터** | 클라이언트만 저장 | `title`, `content`, `uid`, `createdAt` |
-| **카운터 필드** | 백엔드만 업데이트 | `likeCount`, `commentCount`, `postCount` |
-| **통계 및 집계** | 백엔드만 업데이트 | `/stats/counters/*`, `/categories/{category}/postCount` |
-| **속성 분리 데이터** | 백엔드만 동기화 | `/user-props/displayName/{uid}` |
+### 클라이언트 책임
+- 사용자가 직접 입력하는 데이터 (displayName, photoUrl, gender 등)
+- 즉시 반영되어야 하는 데이터
 
-⚠️ **개발 시 필수 준수 사항**:
-- 클라이언트는 **절대로** 카운터 필드를 직접 증가/감소시키지 않습니다
-- 클라이언트는 **절대로** 통계 데이터를 직접 계산하여 저장하지 않습니다
-- 백엔드(Cloud Functions)만이 카운터, 통계, 속성 분리 작업을 수행합니다
-
-**⚠️ 중요 원칙**: 웹/앱 클라이언트에서는 **최소한의 정보만 RTDB에 기록**하고, **추가적인 정보 업데이트는 Firebase Cloud Functions 백엔드에서 처리**합니다.
-
-### 클라이언트와 백엔드의 역할 분리
-
-**클라이언트의 역할 (최소한의 데이터만 저장):**
-- ✅ 사용자가 직접 입력한 데이터만 RTDB에 저장합니다 (예: 게시글 제목, 내용, 댓글 내용)
-- ✅ 기본적인 메타데이터만 포함합니다 (예: uid, createdAt, category)
-- ❌ 카운터 증가/감소를 직접 처리하지 않습니다 (예: likeCount, commentCount)
-- ❌ 데이터 집계 및 통계를 직접 계산하지 않습니다 (예: stats/counters, categories)
-- ❌ 속성 분리 작업을 직접 하지 않습니다 (예: user-props/)
-
-**백엔드(Cloud Functions)의 역할 (자동 데이터 처리):**
-- ✅ 클라이언트가 저장한 데이터를 감지하여 추가 데이터를 자동으로 업데이트합니다
-- ✅ 카운터 자동 증가/감소 (예: likeCount, commentCount, postCount)
-- ✅ 전체 통계 자동 집계 (예: stats/counters/like, stats/counters/post)
-- ✅ 사용자 속성 분리 자동 동기화 (예: /users/{uid} → /user-props/displayName/{uid})
-- ✅ 데이터 무결성 보장 (예: 게시글 삭제 시 관련 댓글/좋아요 정리)
-
-**구체적인 예시**는 다음 가이드 문서를 참고하세요:
-- [Firebase Cloud Functions 개발 가이드](./sns-firebase-cloud-functions.md)
-
-이러한 역할 분리를 통해 다음과 같은 이점을 얻을 수 있습니다:
-- 🔒 **데이터 무결성**: 백엔드에서 일관되게 처리하여 중복 증가/감소 방지
-- ⚡ **성능 최적화**: 클라이언트는 단순 작업만 수행하여 빠른 응답
-- 🔧 **유지보수성**: 비즈니스 로직이 백엔드에 집중되어 관리 용이
-- 🌐 **플랫폼 독립성**: 웹/앱 모두 동일한 백엔드 로직 공유
-
-
----
-
-## 개요
-
-- Firebase Realtime Database(RTDB)는 실시간 데이터 동기화가 필요한 SNS 웹 애플리케이션에 적합합니다.
-- 데이터는 **flat style** 구조로 저장되어 쿼리 효율성을 극대화합니다.
-- 애플리케이션에서는 필요한 최소한의 데이터만 저장하고, Firebase Cloud Functions를 사용하여 복잡한 데이터 처리 및 집계를 수행합니다.
+### Cloud Functions 책임
+- 자동 계산되는 필드 (createdAt, updatedAt, registerOrder 등)
+- 검색/정렬을 위한 인덱스 필드 (displayNameLowerCase, sort_* 등)
+- 통계 데이터 (likeCount, commentCount 등)
+- 역참조 관계 (likes-by, user-followers 등)
 
 ---
 
 ## 데이터베이스 전체 구조
 
 ```
-Firebase Realtime Database (루트)
-├── users/                    # 사용자 프로필
-│   └── <uid>/
-│       └── counters/         # 사용자별 활동 통계 (Cloud Functions에서만 증가)
-│           ├── user          # 사용자 생성 (항상 1)
-│           ├── like          # 사용자가 누른 좋아요 수
-│           ├── comment       # 사용자가 작성한 댓글 수
-│           ├── follow        # 사용자가 팔로우한 수
-│           └── chat          # 사용자가 보낸 채팅 메시지 수
-├── user-props/               # 사용자 속성 (대량 쿼리 최적화)
-├── friends/                  # 친구 관계
-├── followers/                # 팔로워 (나를 팔로우하는 사용자)
-├── following/                # 팔로잉 (내가 팔로우하는 사용자)
-├── chat-messages/            # 채팅 메시지 (게시글 + 댓글 역할 통합)
-├── chat-joins/               # 채팅방 참여 정보 (채팅방 목록용)
-├── likes/                    # 사용자별 좋아요 상태 (uid -> targetId)
-├── fcm-tokens/               # FCM 권한 획득 후 장치 토큰 저장
-└── stats/                    # 전역 통계
-    └── counters/
-        ├── user              # 전체 사용자 수 (Cloud Functions에서만 증가)
-        ├── like              # 전체 좋아요 수
-        ├── comment           # 전체 댓글 수
-        ├── follow            # 전체 팔로우 수
-        └── message           # 전체 채팅 메시지 수
+/
+├── users/                          # 사용자 프로필
+├── user-action-counters/           # 사용자별 활동 통계 (좋아요, 댓글, 팔로우 등)
+├── user-following/                 # 내가 팔로우한 사용자
+├── user-followers/                 # 나를 팔로우한 사용자
+├── user-feed/                      # 사용자 피드 (팔로우한 사람들의 메시지)
+├── posts/                          # 게시글
+├── comments/                       # 댓글
+├── post-rankings/                  # 게시글 순위 (인기글)
+├── likes/                          # 사용자별 좋아요 목록
+├── likes-by/                       # 좋아요한 사용자 목록 (역참조)
+├── chat-rooms/                     # 채팅방 정보
+├── chat-messages/                  # 채팅 메시지
+├── chat-joins/                     # 사용자별 채팅방 참여 정보
+├── chat-invitations/               # 채팅 초대
+├── chat-favorites/                 # 채팅 북마크
+├── fcm-tokens/                     # FCM 푸시 알림 토큰
+└── stats/                          # 전역 통계
+    └── counters/                   # 전체 통계 카운터
 ```
 
 ---
 
 ## 통계 (stats/counters)
 
-전체 통계 값은 `/stats/counters/` 경로에서 관리하며, **백엔드(Cloud Functions)만** 쓰기가 가능합니다.
+전역 통계 정보를 저장합니다.
 
-### 전역 통계 구조
+### 데이터 구조
 
 ```
 /stats/
-  /counters/
-    ├── user: number      // 전체 가입 사용자 수
-    ├── like: number      // 전체 좋아요 수
-    ├── comment: number   // 전체 댓글 수
-    ├── follow: number    // 전체 팔로우 수
-    └── message: number   // 전체 채팅 메시지 수
+└── counters/
+    ├── user: 1234         # 전체 사용자 수
+    ├── post: 567          # 전체 게시글 수
+    ├── comment: 890       # 전체 댓글 수
+    ├── like: 2345         # 전체 좋아요 수
+    ├── chat: 4567         # 전체 채팅 메시지 수
+    └── follow: 123        # 전체 팔로우 수
 ```
-
-### 사용자별 통계 구조
-
-각 사용자의 활동 통계는 `/user-action-counters/{uid}` 경로에서 관리하며, **백엔드(Cloud Functions)만** 쓰기가 가능합니다.
-
-**중요**: `/users/{uid}`는 검색/목록에 많이 사용되므로 최소한의 정보만 포함해야 합니다. 사용자별 상세 통계는 별도 경로인 `/user-action-counters/{uid}`에 저장됩니다.
-
-```
-/user-action-counters/
-  /<uid>/
-    ├── user: number      // 사용자 생성 (항상 1)
-    ├── like: number      // 사용자가 누른 좋아요 수
-    ├── comment: number   // 사용자가 작성한 댓글 수
-    ├── follow: number    // 사용자가 팔로우한 수
-    └── chat: number      // 사용자가 보낸 채팅 메시지 수
-```
-
-### 동작 방식
-
-#### 전역 통계 업데이트
-
-- **사용자 생성 시**: `firebase/functions/src/handlers/user.handler.ts`의 `handleUserCreate()`가 `/stats/counters/user`를 `ServerValue.increment(1)`로 증가시킵니다.
-- **좋아요 시**: `firebase/functions/src/handlers/like.handler.ts`의 `handleLikeCreate()`가 `/stats/counters/like`를 증가시킵니다.
-- **댓글 작성 시**: `firebase/functions/src/handlers/comment.create.handler.ts`의 `handleCommentCreate()`가 `/stats/counters/comment`를 증가시킵니다.
-- **팔로우 시**: `firebase/functions/src/handlers/friend.follow.handler.ts`의 `handleFollowingCreate()`가 `/stats/counters/follow`를 증가시킵니다.
-- **채팅 메시지 전송 시**: `firebase/functions/src/handlers/chat.message-create.handler.ts`의 `handleChatMessageCreate()`가 `/stats/counters/message`를 증가시킵니다.
-
-#### 사용자별 통계 업데이트
-
-각 Cloud Functions 핸들러는 전역 통계와 함께 사용자별 통계도 자동으로 업데이트합니다.
-모든 사용자별 통계는 공통 핸들러 `firebase/functions/src/handlers/user-action-counters.handler.ts`의 `incrementActionCounter()` 함수를 통해 관리됩니다:
-
-- **사용자 생성 시**: `/user-action-counters/{uid}/user`를 1로 설정합니다.
-- **좋아요 시**: 좋아요를 누른 사용자의 `/user-action-counters/{uid}/like`를 증가시킵니다.
-- **댓글 작성 시**: 댓글 작성자의 `/user-action-counters/{authorUid}/comment`를 증가시킵니다.
-- **팔로우 시**: 팔로우하는 사용자의 `/user-action-counters/{followerUid}/follow`를 증가시킵니다.
-- **채팅 메시지 전송 시**: 발신자의 `/user-action-counters/{senderUid}/chat`를 증가시킵니다.
-
-모든 카운터는 `ServerValue.increment()`를 사용하여 동시성 문제 없이 원자적으로 업데이트됩니다.
 
 ### 클라이언트/서버 역할 분리
-
-- **클라이언트는** 통계 값을 읽기만 할 수 있습니다:
-  - 전역 통계: `/stats/counters/*` 읽기 (홈페이지 통계 카드 표시용)
-  - 사용자별 통계: `/user-action-counters/{uid}/*` 읽기 (프로필 페이지 통계 표시용)
-- **서버(Cloud Functions)는** 통계 값을 자동으로 증감합니다:
-  - Multi-path updates를 사용하여 전역 통계와 사용자별 통계를 동시에 원자적으로 업데이트
-  - `incrementActionCounter()` 공통 함수를 통해 모든 action 카운터를 일관되게 관리
-  - 클라이언트의 직접 쓰기는 보안 규칙으로 차단됨
-
-### 활용 예시
-
-#### 전역 통계 활용
-- 홈페이지 우측 사이드바의 통계 카드 (전체 사용자 수, 전체 좋아요 수 등)
-- `/stats` 페이지에서 제공하는 전체 통계 대시보드
-
-#### 사용자별 통계 활용
-- 사용자 프로필 페이지 (`/user/profile`, `/my/profile`)
-  - 사용자가 누른 좋아요 수
-  - 사용자가 작성한 댓글 수
-  - 사용자가 팔로우한 수
-  - 사용자가 보낸 채팅 메시지 수
-- 사용자 활동 분석 및 랭킹 시스템
+- ✅ **Cloud Functions만 업데이트**: ServerValue.increment 사용
+- ❌ 클라이언트는 읽기 전용
 
 ---
 
@@ -387,80 +139,104 @@ Firebase Realtime Database (루트)
 
 사용자 프로필 정보는 `/users/<uid>/` 경로에 저장됩니다.
 
-### 사용자 Realtime Database 데이터 구조
-
-
-사용자 프로필 데이터의 저장 구조는 다음과 같습니다:
+### 데이터 구조
 
 ```
 /users/
-├── <uid1>/
-│   ├── displayName: "사용자1"
-│   ├── photoUrl: "https://firebasestorage.googleapis.com/..."
-│   ├── gender: "M"
-│   ├── birthYear: 1990
-│   ├── birthMonth: 1
-│   ├── birthDay: 15
-│   ├── birthYearMonthDay: "1990-01-15"
-│   ├── birthMonthDay: "01-15"
-│   ├── bio: "자기소개"
-│   ├── createdAt: 1698473000000
-│   ├── updatedAt: 1698474000000
-│   └── counters:
-│       ├── user: 1           // 사용자 생성 (항상 1)
-│       ├── like: 10          // 사용자가 누른 좋아요 수
-│       ├── comment: 5        // 사용자가 작성한 댓글 수
-│       ├── follow: 3         // 사용자가 팔로우한 수
-│       └── chat: 20          // 사용자가 보낸 채팅 메시지 수
-└── <uid2>/
-    ├── displayName: "사용자2"
-    ├── photoUrl: null
-    ├── gender: "F"
-    ├── createdAt: 1698473100000
-    ├── updatedAt: 1698474100000
-    └── counters:
-        ├── user: 1
-        ├── like: 0
-        ├── comment: 0
-        ├── follow: 0
-        └── chat: 0
+└── <uid>/
+    ├── displayName: "홍길동"                    # 닉네임 (클라이언트)
+    ├── displayNameLowerCase: "홍길동"            # 검색용 (Cloud Functions)
+    ├── photoUrl: "https://..."                   # 프로필 사진 URL (클라이언트)
+    ├── gender: "M"                               # 성별: M(남자) | F(여자) (클라이언트)
+    ├── birthYearMonthDay: "1990-01-15"           # 생년월일 YYYY-MM-DD (클라이언트)
+    ├── birthYear: 1990                           # 생년 (Cloud Functions)
+    ├── birthMonth: 1                             # 생월 (Cloud Functions)
+    ├── birthDay: 15                              # 생일 (Cloud Functions)
+    ├── birthMonthDay: "01-15"                    # 생월일 MM-DD (Cloud Functions)
+    ├── createdAt: 1698473000000                  # 가입 시간 (Cloud Functions)
+    ├── updatedAt: 1698474000000                  # 수정 시간 (Cloud Functions)
+    ├── registerOrder: 9007199254740991           # 등록 순서 (최신순 정렬용, Cloud Functions)
+    ├── sort_recentWithPhoto: -1698473000000      # 사진 있는 회원 정렬 (Cloud Functions)
+    ├── sort_recentFemaleWithPhoto: -1698473000000 # 여성 회원 정렬 (Cloud Functions)
+    └── sort_recentMaleWithPhoto: -1698473000000   # 남성 회원 정렬 (Cloud Functions)
 ```
 
 ### 필드 설명
 
-| 필드 | 타입 | 필수 | 설명 |
-|------|------|------|------|
-| `displayName` | string | ✅ | 사용자 닉네임 |
-| `photoUrl` | string | ❌ | 프로필 사진 URL |
-| `gender` | (M|F) | ❌ | 성별 |
-| `birthYear` | number | ❌ | 생년 |
-| `birthMonth` | number | ❌ | 생월 |
-| `birthDay` | number | ❌ | 생일 |
-| `birthYearMonthDay` | string | ❌ | 생년월일 (YYYY-MM-DD) |
-| `birthMonthDay` | string | ❌ | 생월일 (MM-DD)
-| `bio` | string | ❌ | 자기소개 |
-| `createdAt` | number | ✅ | 계정 생성 시간 |
-| `updatedAt` | number | ✅ | 프로필 수정 시간 |
-| `counters` | object | ✅ | 사용자별 활동 통계 (Cloud Functions에서만 업데이트) |
-| `counters/user` | number | ✅ | 사용자 생성 카운터 (항상 1) |
-| `counters/like` | number | ✅ | 사용자가 누른 좋아요 수 |
-| `counters/comment` | number | ✅ | 사용자가 작성한 댓글 수 |
-| `counters/follow` | number | ✅ | 사용자가 팔로우한 수 |
-| `counters/chat` | number | ✅ | 사용자가 보낸 채팅 메시지 수 |
+| 필드 | 타입 | 필수 | 저장 주체 | 설명 |
+|------|------|------|----------|------|
+| `displayName` | string | ✅ | 클라이언트 | 사용자 닉네임 |
+| `displayNameLowerCase` | string | ✅ | Cloud Functions | 검색용 (소문자 변환) |
+| `photoUrl` | string | ❌ | 클라이언트 | 프로필 사진 URL |
+| `gender` | "M" \| "F" | ❌ | 클라이언트 | 성별 (M: 남자, F: 여자) |
+| `birthYearMonthDay` | string | ❌ | 클라이언트 | 생년월일 (YYYY-MM-DD) |
+| `birthYear` | number | ❌ | Cloud Functions | 생년 (birthYearMonthDay에서 파싱) |
+| `birthMonth` | number | ❌ | Cloud Functions | 생월 (birthYearMonthDay에서 파싱) |
+| `birthDay` | number | ❌ | Cloud Functions | 생일 (birthYearMonthDay에서 파싱) |
+| `birthMonthDay` | string | ❌ | Cloud Functions | 생월일 (MM-DD) |
+| `createdAt` | number | ✅ | Cloud Functions | 계정 생성 시간 (타임스탬프) |
+| `updatedAt` | number | ✅ | Cloud Functions | 프로필 수정 시간 (타임스탬프) |
+| `registerOrder` | number | ✅ | Cloud Functions | 등록 순서 (Number.MAX_SAFE_INTEGER - createdAt) |
+| `sort_recentWithPhoto` | number | ❌ | Cloud Functions | 사진 있는 회원 정렬 (-createdAt, photoUrl 있을 때만) |
+| `sort_recentFemaleWithPhoto` | number | ❌ | Cloud Functions | 여성 회원 정렬 (-createdAt, gender="F" && photoUrl 있을 때) |
+| `sort_recentMaleWithPhoto` | number | ❌ | Cloud Functions | 남성 회원 정렬 (-createdAt, gender="M" && photoUrl 있을 때) |
+
+### registerOrder 필드 상세 설명
+
+`registerOrder`는 최신 사용자를 오름차순으로 정렬하기 위한 필드입니다.
+
+**계산 공식:**
+```typescript
+registerOrder = Number.MAX_SAFE_INTEGER - createdAt
+```
+
+**특징:**
+- 최신 사용자일수록 **작은 값**을 가집니다
+- 오름차순 정렬 시 최신 사용자가 먼저 표시됩니다
+- 내림차순으로 정렬할 필요 없이 `orderByChild('registerOrder')`만으로 최신순 정렬 가능
+
+**사용 예시:**
+```typescript
+// 최근 가입한 사용자 15명 조회
+const query = ref(database, 'users');
+const sorted = query(
+  ref(database, 'users'),
+  orderByChild('registerOrder'),
+  limitToFirst(15)
+);
+```
+
+### 정렬 필드 (`sort_*`) 상세 설명
+
+정렬 필드는 조건부로 생성되며, 특정 조건을 만족하는 사용자만 해당 필드를 가집니다.
+
+| 필드 | 생성 조건 | 값 | 용도 |
+|------|-----------|-----|------|
+| `sort_recentWithPhoto` | photoUrl이 있을 때 | `-createdAt` | 사진 있는 전체 회원 정렬 |
+| `sort_recentFemaleWithPhoto` | gender="F" && photoUrl 있을 때 | `-createdAt` | 사진 있는 여성 회원 정렬 |
+| `sort_recentMaleWithPhoto` | gender="M" && photoUrl 있을 때 | `-createdAt` | 사진 있는 남성 회원 정렬 |
+
+**음수 타임스탬프를 사용하는 이유:**
+- Firebase RTDB는 오름차순 정렬이 기본
+- 음수 값으로 저장하면 오름차순 정렬 시 최신 데이터가 먼저 표시됨
 
 ### 클라이언트/서버 역할 분리
 
-사용자 정보의 경우:
-- **클라이언트는** `displayName`, `photoUrl`, `gender`, `birthYear`, `birthMonth`, `birthDay`, `bio` 를 저장할 수 있고,
-- **서버(Cloud Functions)는** 다음 필드를 자동으로 저장/업데이트합니다:
-  - `createdAt`: 사용자 생성 시간
-  - `updatedAt`: 프로필 수정 시간
-  - `counters/*`: 사용자별 활동 통계 (좋아요, 댓글, 팔로우, 채팅 메시지)
-    - `counters/user`: 사용자 생성 시 1로 설정 (항상 1)
-    - `counters/like`: 좋아요 추가/삭제 시 자동 증감
-    - `counters/comment`: 댓글 작성/삭제 시 자동 증감
-    - `counters/follow`: 팔로우/언팔로우 시 자동 증감
-    - `counters/chat`: 채팅 메시지 전송 시 자동 증가
+**클라이언트 저장:**
+- `displayName`
+- `photoUrl`
+- `gender`
+- `birthYearMonthDay`
+
+**Cloud Functions 자동 저장/업데이트:**
+- `createdAt` (사용자 생성 시)
+- `registerOrder` (사용자 생성 시)
+- `displayNameLowerCase` (displayName 변경 시)
+- `birthYear`, `birthMonth`, `birthDay`, `birthMonthDay` (birthYearMonthDay 변경 시)
+- `sort_recentWithPhoto` (photoUrl 변경 시)
+- `sort_recentFemaleWithPhoto` (gender 또는 photoUrl 변경 시)
+- `sort_recentMaleWithPhoto` (gender 또는 photoUrl 변경 시)
+- `updatedAt` (displayName, photoUrl, birthYearMonthDay 중 하나라도 변경 시)
 
 ### ⚠️ 중요: Firebase Auth vs RTDB 필드
 
@@ -471,1011 +247,488 @@ Firebase Authentication의 다음 필드들은 `/users/<uid>` 노드에 **저장
 - ❌ `email` - Firebase Auth에서만 관리
 - ❌ `photoURL` (대문자 URL) - Firebase Auth에서만 관리
 
-이들 정보는 `login` 인스턴스를 통해 접근할 수 있습니다. 자세한 사용법은 [코딩 가이드라인 - Firebase 로그인 사용자 관리](./sns-web-coding-guideline.md#firebase-로그인-사용자-관리-login)를 참고하세요.
-
 **단, `photoUrl`(camelCase)은 예외입니다:**
-
 - ✅ **`photoUrl`** (camelCase) - 사용자가 직접 업로드한 프로필 사진 URL을 RTDB에 저장
-- 이는 Firebase Auth의 `photoURL`(대문자)과 **다른 필드**입니다
-- 사용자가 Firebase Storage에 사진을 업로드하면, 다운로드 URL을 `/users/<uid>/photoUrl`에 저장합니다
-
-**필드명 차이 요약:**
-
-| 필드 | 위치 | 설명 |
-|------|------|------|
-| `phoneNumber` | Firebase Auth | 전화번호 (login.phoneNumber로 접근) |
-| `email` | Firebase Auth | 이메일 (login.email로 접근) |
-| `photoURL` (대문자) | Firebase Auth | Firebase Auth 프로필 사진 |
-| `photoUrl` (camelCase) | RTDB | 사용자 업로드 프로필 사진 (login.data.photoUrl로 접근) |
-
-자세한 내용은 [사용자 관리 개발 가이드](./sns-web-user.md)와 [코딩 가이드라인](./sns-web-coding-guideline.md#firebase-로그인-사용자-관리-login)을 참고하세요.
 
 ### 관련 가이드
 
-- **📖 구현 가이드**: [사용자 관리 개발 가이드](./sns-web-user.md) - 프로필 관리, 프로필 사진 업로드, 사용자 정보 조회
-- **📖 파일 업로드**: [파일 및 사진 업로드 가이드](./sns-web-storage.md) - 프로필 사진 Firebase Storage 업로드
-- **📖 보안**: [Firebase 보안 규칙 개발 가이드](./sns-web-security.md) - 사용자 프로필 접근 제어
+다른 spec 파일에서 사용자 데이터베이스 구조가 필요한 경우, 이 문서를 참조하세요:
+- **참조 방법**: `[데이터베이스 구조](./sonub-firebase-database-structure.md#사용자-정보-users)`
 
 ---
 
-## 사용자 속성 분리 (user-props)
+## 사용자별 활동 통계 (user-action-counters)
 
-특정 속성에 대한 대량 조회를 효율적으로 수행하기 위해 사용자 속성을 별도로 관리합니다.
+사용자별 활동 통계를 저장합니다.
 
 ### 데이터 구조
 
 ```
-/user-props/
-  /displayName/
-    ├── <uid1>: "사용자1"
-    ├── <uid2>: "사용자2"
-    └── <uid3>: "사용자3"
-  /photoUrl/
-    ├── <uid1>: "https://..."
-    ├── <uid2>: null
-    └── <uid3>: "https://..."
-  /createdAt/
-    ├── <uid1>: 1698473000000
-    ├── <uid2>: 1698473100000
-    └── <uid3>: 1698473200000
-  /updatedAt/
-    ├── <uid1>: 1698474000000
-    ├── <uid2>: 1698474100000
-    └── <uid3>: 1698474200000
+/user-action-counters/
+└── <uid>/
+    ├── user: 1         # 사용자 생성 (항상 1)
+    ├── like: 10        # 사용자가 누른 좋아요 수
+    ├── comment: 5      # 사용자가 작성한 댓글 수
+    ├── post: 3         # 사용자가 작성한 게시글 수
+    ├── chat: 20        # 사용자가 보낸 채팅 메시지 수
+    └── follow: 2       # 사용자가 팔로우한 수
 ```
 
 ### 클라이언트/서버 역할 분리
-
-사용자 속성 분리의 경우:
-- **클라이언트는** 직접 저장하지 않으며, `/users/<uid>` 노드의 필드를 수정합니다.
-- **서버는** `/users/<uid>` 노드의 변경을 감지하여 `/user-props/displayName/<uid>`, `/user-props/photoUrl/<uid>` 등의 필드를 자동으로 동기화합니다. (Cloud Functions)
+- ✅ **Cloud Functions만 관리**: ServerValue.increment 사용
+- ❌ 클라이언트는 읽기 전용
 
 ### 관련 가이드
-
-- **📖 구현 가이드**: [사용자 관리 개발 가이드 - 사용자 속성 분리](./sns-web-user.md#사용자-속성-분리-user-props) - 속성 분리 전략, 효율적인 대량 조회 방법
-
----
-
-## 친구 관계 (friends, followers, following)
-
-사용자 간의 관계를 관리합니다.
-
-### 데이터 구조
-
-```
-/friends/
-  <uid>/
-    ├── <other-uid1>: 1698473000000
-    ├── <other-uid2>: 1698473100000
-    └── ...
-
-/followers/
-  <uid>/
-    ├── <follower-uid1>: 1698473000000
-    └── ...
-
-/following/
-  <uid>/
-    ├── <following-uid1>: 1698473000000
-    └── ...
-```
-
-### 설명
-
-- **friends**: 상호 친구 관계 (양방향)
-- **followers**: 나를 팔로우하는 사용자 (단방향 수신)
-- **following**: 내가 팔로우하는 사용자 (단방향 발신)
-- 각 값은 관계 형성 시간 (Unix timestamp, 밀리초)
-
-### 클라이언트/서버 역할 분리
-
-친구 관계의 경우:
-- **클라이언트는** `/friends/<uid>/<other-uid>`, `/followers/<uid>/<follower-uid>`, `/following/<uid>/<following-uid>` 노드를 추가/삭제하여 친구 관계를 요청할 수 있고,
-- **서버는** 친구 추가/삭제 시 양방향 관계 동기화를 자동으로 처리합니다. (Cloud Functions)
-  - 예: A가 B를 팔로우하면 `/following/<A-uid>/<B-uid>`와 `/followers/<B-uid>/<A-uid>`가 모두 업데이트됨
-
-### 관련 가이드
-
-- **📖 구현 가이드**: [친구 관계 관리 개발 가이드](./sns-web-friends.md) - 친구 추가, 팔로우, 언팔로우, 친구 목록 조회
-- **📖 사용자 정보**: [사용자 관리 개발 가이드](./sns-web-user.md) - 사용자 프로필 조회, 기본 정보
-- **📖 보안 규칙**: [Firebase 보안 규칙 개발 가이드](./sns-web-security.md) - 친구 관계 접근 제어
-
----
-
-## 채팅방 (chat-rooms)
-
-채팅방 메타데이터는 `/chat-rooms/<roomId>/` 경로에 저장됩니다. 클라이언트는 방 이름, 설명, 채팅방 타입(`type`) 등 기본 정보와 함께 `owner` 필드를 설정하며, 보안 규칙이 `owner`가 `auth.uid`와 일치하는지 검증합니다. Cloud Functions는 `createdAt`, `members` (owner 자동 추가), `memberCount` 필드를 자동으로 생성하고, `members` 필드 변경 시 `memberCount`를 자동으로 동기화합니다. 클라이언트는 자기 자신의 uid를 `members`에 추가/수정하여 채팅방 입장/퇴장 및 메시지 알림 설정을 관리합니다.
-
-### 데이터 구조
-
-```
-/chat-rooms/
-├── group-team123/
-│   ├── name: "팀 채팅방"
-│   ├── description: "Sprint 24 진행 채널"
-│   ├── type: "group"
-│   ├── owner: "uid_creator"              // 클라이언트가 설정 (보안 규칙으로 검증)
-│   ├── createdAt: 1698473000000          // Cloud Functions에서 자동 설정
-│   ├── updatedAt: 1698473000000
-│   ├── groupListOrder: "-1698473000000"
-│   ├── members:
-│   │   ├── uid_creator: true             // Cloud Functions에서 owner 자동 추가, 클라이언트는 자기 자신만 추가/수정 가능
-│   │   └── uid_teammate: true            // 클라이언트가 입장 시 추가 (true=메시지 알림 받기, false=알림 안 받기)
-│   ├── memberCount: 2                    // Cloud Functions에서 members 기반으로 자동 계산 (모든 uid 개수, true/false 구분 없이)
-│   └── stats:
-│       └── messageCount: 120
-└── open-general/
-    ├── name: "오픈 커뮤니티"
-    ├── type: "open"
-    ├── owner: "uid_creator"              // 클라이언트가 설정 (보안 규칙으로 검증)
-    ├── createdAt: 1698474000000          // Cloud Functions에서 자동 설정
-    ├── openListOrder: "-1698474000000"
-    ├── members:
-    │   ├── uid_creator: true             // 메시지 알림 받음
-    │   ├── uid_user2: true               // 메시지 알림 받음
-    │   └── uid_user3: false              // 메시지 알림 안 받음 (채팅방에는 참여 중)
-    ├── memberCount: 3                    // Cloud Functions에서 members 기반으로 자동 계산 (모든 uid 개수, true/false 구분 없이)
-    └── ...
-```
-
-### 필드 설명
-
-| 필드 | 타입 | 필수 | 설명 |
-|------|------|------|------|
-| `name` | string | ✅ | 채팅방 이름, 최대 50자 |
-| `description` | string | ❌ | 소개 문구, 최대 200자 |
-| `type` | string | ✅ | 채팅방 유형 (`group`, `open`, `single`). `open` 타입이 곧 공개 채팅방을 의미 |
-| `owner` | string | ✅ | 방 생성자 UID. **클라이언트가 설정** (보안 규칙으로 `auth.uid`와 일치 검증) |
-| `createdAt` | number | ✅ | 생성 시간 (Unix timestamp ms). **Cloud Functions에서만 설정** |
-| `updatedAt` | number | ✅ | 수정 시간 (Unix timestamp ms) |
-| `groupListOrder` | string/number | ❌ | 그룹 챗 정렬용 order. 클라이언트가 `-Date.now()` 형식으로 설정 |
-| `openListOrder` | string/number | ❌ | 오픈 챗 정렬용 order. `type === 'open'`일 때만 생성 |
-| `members` | object | ✅ | 참여자 및 알림 설정 객체 (`{uid: boolean}`). **Cloud Functions에서 owner 자동 추가**, **클라이언트는 자기 자신만 추가/수정/삭제 가능**. `true`=메시지 알림 받음, `false`=알림 안 받음, `삭제됨`=채팅방에서 완전히 나감 |
-| `memberCount` | number | ✅ | 전체 참여자 수. **Cloud Functions에서 자동 계산** (`members` 객체의 모든 uid 개수, true/false 구분 없이) |
-| `stats` | object | ❌ | 메시지 수 등 확장 가능한 통계 필드 |
-
-### 클라이언트/서버 역할 분리
-
-#### 채팅방 생성 시
-
-- **클라이언트 (2025-01-16 업데이트)**
-  - `/chat-rooms/{roomId}`에 다음 필드를 저장:
-    - `name`: 채팅방 이름 (필수)
-    - `description`: 채팅방 설명 (선택)
-    - `type`: 채팅방 타입 (필수, `group` | `open`)
-    - `owner`: 채팅방 소유자 UID (필수, `auth.uid`로 설정, 보안 규칙으로 검증)
-    - `members`: 참여자 목록 (선택, 그룹/오픈 채팅만, `{ [auth.uid]: true }` 형태)
-  - `createdAt`, `memberCount`, `groupListOrder`, `openListOrder` 필드는 **작성하지 않음** (Cloud Functions 전용)
-  - 보안 규칙:
-    - `owner`는 `auth.uid`와 일치해야 함
-    - `members`가 있으면 본인 UID(`auth.uid`)만 `true`로 설정 가능
-    - Cloud Functions 전용 필드를 포함하면 쓰기 거부됨
-
-- **Cloud Functions (2025-01-16 업데이트)**
-  - `onValueCreated("/chat-rooms/{roomId}")` 트리거 실행
-  - **owner 필드**: 클라이언트가 이미 저장했으면 패스, 없으면 `event.authId`로 설정 (fallback)
-  - **members 필드**: 클라이언트가 이미 저장했으면 패스, 없으면 `{owner: true}` 추가 (그룹/오픈 채팅만)
-  - **createdAt 필드**: 현재 타임스탬프로 설정
-  - **memberCount 필드**: `members` 객체의 모든 uid 개수로 설정 (true/false 구분 없이)
-  - **groupListOrder/openListOrder 필드**: type에 따라 `-timestamp` 값으로 설정 (최신순 정렬)
-
-- **변경 이유 (2025-01-16)**
-  - Firebase Realtime Database Cloud Functions v2에서 `event.authId`가 항상 보장되지 않는 문제 발견
-  - 클라이언트가 `owner`와 `members`를 직접 저장하도록 변경하여 안정성 향상
-  - 보안 규칙으로 엄격히 제한하여 보안 수준 유지
-  - Cloud Functions는 fallback 및 나머지 필드 자동 설정만 담당
-
-#### 채팅방 입장/퇴장 시
-
-- **클라이언트**
-  - 채팅방 입장: `/chat-rooms/{roomId}/members/{uid}`를 `true`로 설정
-    - `joinChatRoom(db, roomId, uid)` 함수 사용 (chat.functions.ts)
-    - 메시지 알림을 받도록 설정
-    - 보안 규칙: 자기 자신의 uid만 쓰기 가능
-  - 채팅방 퇴장: `/chat-rooms/{roomId}/members/{uid}`를 `false`로 설정
-    - `leaveChatRoom(db, roomId, uid)` 함수 사용 (chat.functions.ts)
-    - 메시지 알림을 받지 않도록 설정
-- **Cloud Functions**
-  - `onValueWritten("/chat-rooms/{roomId}/members/{uid}")` 트리거 실행
-  - `/chat-rooms/{roomId}/members` 아래의 모든 uid 읽기
-  - `value === true`인 uid의 개수를 세어 `memberCount` 업데이트
-  - 자동으로 활성 참여자 수를 동기화
-
-> 🔐 **보안 규칙 연계**:
-> - `/chat-rooms/{roomId}/owner`는 방이 존재하지 않을 때만 쓰기 가능하며, `newData.val() === auth.uid` 조건으로 제한
-> - `/chat-rooms/{roomId}/createdAt`와 `/chat-rooms/{roomId}/memberCount`는 `.write: false`로 클라이언트 쓰기 금지
-> - `/chat-rooms/{roomId}/members/{uid}`는 `$uid === auth.uid` 조건으로 자기 자신만 쓰기 가능
-> - 따라서 사양상 owner 위조가 불가능하며, Cloud Functions만이 신뢰할 수 있는 값을 설정할 수 있습니다.
-
-> 💡 **메시지 알림 관리**:
-> - `members` 필드는 참여자 목록과 메시지 알림 수신 여부를 함께 관리합니다
-> - `true`: 사용자가 채팅방에 참여 중이며 메시지 알림을 받음
-> - `false`: 사용자가 채팅방에서 나갔거나 알림을 받지 않음
-> - `memberCount`는 항상 `members` 필드에서 `true`인 uid의 개수와 동일하게 유지됩니다
-
----
-
-## 채팅 메시지 (chat-messages)
-
-채팅 메시지는 `/chat-messages/<messageId>/` 경로에 저장됩니다.
-게시글과 댓글 기능을 통합하여 하나의 메시지 구조로 관리합니다.
-
-### 데이터 구조
-
-```
-/chat-messages/
-├── <messageId1>/
-│   ├── roomId: "single-uid1-uid2"
-│   ├── text: "안녕하세요!"
-│   ├── senderUid: "uid1"
-│   ├── createdAt: 1698473000000
-│   └── protocol: null
-└── <messageId2>/
-    ├── roomId: "group-roomid"
-    ├── text: ""
-    ├── imageUrl: "https://..."
-    ├── senderUid: "uid2"
-    ├── createdAt: 1698473100000
-    └── protocol: null
-```
-
-### 필드 설명
-
-| 필드 | 타입 | 필수 | 설명 |
-|------|------|------|------|
-| `roomId` | string | ✅ | 채팅방 ID (1:1, 그룹, 오픈 채팅) |
-| `type` | string | ❌ | 게시글 타입 표시 필드. **오직 Cloud Functions에서만 저장**되며, `category` 필드가 있는 메시지에만 자동으로 "post" 값이 설정됩니다. 클라이언트에서 직접 저장하지 않습니다. |
-| `senderUid` | string | ✅ | 발신자 UID |
-| `createdAt` | number | ✅ | 메시지 생성 시간 (Unix timestamp, 밀리초) |
-| `protocol` | string | ❌ | 프로토콜 메시지 유형 (join, leave 등 시스템 메시지) |
-| `imageUrl` | string | ❌ | 이미지 메시지의 경우 이미지 URL |
-| `fileUrl` | string | ❌ | 파일 메시지의 경우 파일 다운로드 URL |
-| `category` | string | ❌ | 게시판 카테고리 (discussion, qna, news, info, selling, hiring, travel, mukbang, realestate, hobby, story) |
-| `categoryOrder` | string | ❌ | 카테고리별 정렬 필드 (형식: `{category}-{timestamp}`, Cloud Functions 자동 생성) |
-| `allCategoryOrder` | number | ❌ | 모든 카테고리 글 통합 정렬 필드 (timestamp, Cloud Functions 자동 생성) |
-
-### roomId 형식
-
-채팅방 유형에 따라 roomId 형식이 다릅니다:
-
-- **1:1 채팅**: `single-{uid1}-{uid2}` (알파벳 순 정렬)
-  - 예: `single-abc123-xyz789`
-  - 두 사용자의 UID를 알파벳 순으로 정렬하여 고정된 roomId 생성
-- **그룹 채팅**: `group-{roomId}`
-  - 예: `group-team123`
-- **오픈 채팅**: `open-{roomId}`
-  - 예: `open-general`
-
-### 클라이언트/서버 역할 분리
-
-채팅 메시지의 경우:
-- **클라이언트는** `roomId`, `type`, `text`, `senderUid`, `createdAt`, `category` 등 메시지 기본 정보를 저장합니다.
-  - **메시지 타입**: 일반 채팅 메시지의 경우 `type`을 직접 저장 (예: "text", "image", "file")
-  - **게시판 카테고리**: 사용자가 카테고리를 선택하면 `category` 필드에 저장 (예: "qna", "discussion")
-  - 카테고리 목록: discussion(자유토론), qna(질문), news(뉴스), info(정보), selling(판매), hiring(구인구직), travel(여행), mukbang(먹방), realestate(부동산), hobby(취미), story(나의 이야기)
-- **서버는** 메시지 생성을 감지하여 다음 작업을 자동으로 수행합니다:
-  - 1:1 채팅의 경우 양쪽 사용자의 `chat-joins` 자동 생성/업데이트 (Cloud Functions)
-  - 그룹/오픈 채팅의 경우 참여자 목록 기반 `chat-joins` 업데이트 (추후 구현)
-  - 읽지 않은 메시지 카운터 업데이트 (추후 구현)
-  - **카테고리 필드 파생**:
-    - `category` 필드가 생성/수정되면 다음 필드들을 자동 생성:
-      - `categoryOrder`: `{category}-{timestamp}` 형식 (예: "qna-1234567890")
-      - `allCategoryOrder`: `timestamp` 값 (모든 카테고리 통합 정렬용)
-      - `type`: "post" (게시글 타입 표시)
-    - 이를 통해 카테고리별 메시지 목록을 효율적으로 쿼리 가능 (`orderByChild('categoryOrder').startAt('qna-').endAt('qna-\uf8ff')`)
-    - `category` 필드가 삭제되면 `categoryOrder`, `allCategoryOrder`, `type` 필드도 함께 삭제됨
-
-### 관련 가이드
-
-- **📖 구현 가이드**: [채팅 기능 개발 가이드](./sonub-chat-room.md) - 채팅방 생성, 메시지 전송, 실시간 메시지 수신
-- **📖 Cloud Functions**: [Firebase Cloud Functions 개발 가이드](./sonub-firebase-functions.md) - 채팅 메시지 처리 로직
-- **📖 파일 업로드**: [파일 및 사진 업로드 가이드](./sns-web-storage.md) - 이미지/파일 메시지 업로드
-
----
-
-## 좋아요 (likes)
-
-- **경로**: `/likes/{uid}/{targetId}`
-- **필드**: 값으로 `"post"`(게시글) 또는 `"comment"`(댓글) 문자열만 저장
-- **설명**:
-  - 클라이언트는 해당 경로의 값을 생성하거나 삭제하여 좋아요 상태를 토글합니다.
-  - Cloud Functions는 이벤트를 감지해 `/posts/{postId}/likeCount` 또는 `/comments/{postId}/{commentId}/likeCount`를 `ServerValue.increment()`로 증감합니다.
-  - `/stats/counters/like` 역시 Cloud Functions가 함께 관리합니다.
-
----
-
-## 채팅 북마크 (chat-favorites)
-
-채팅방 북마크(즐겨찾기) 정보는 `/chat-favorites/<uid>/<favoriteId>/` 경로에 저장됩니다.
-사용자가 자주 사용하는 채팅방을 폴더별로 분류하여 관리할 수 있습니다.
-
-### 데이터 구조
-
-```
-/chat-favorites/
-├── <uid1>/
-│   ├── <favoriteId1>/
-│   │   ├── name: "업무 관련"
-│   │   ├── description: "팀 채팅을 모아둔 폴더"
-│   │   ├── createdAt: 1698473000000
-│   │   ├── folderOrder: "5001698473000000"
-│   │   └── roomList:
-│   │       ├── "group-team123": true
-│   │       └── "open-community": true
-│   └── <favoriteId2>/
-│       ├── name: "친구들"
-│       ├── description: "친한 친구들과의 채팅"
-│       ├── createdAt: 1698473100000
-│       ├── folderOrder: "5001698473100000"
-│       └── roomList:
-│           ├── "single-uid1-uid2": true
-│           └── "single-uid1-uid3": true
-└── <uid2>/
-    └── <favoriteId1>/
-        ├── name: "중요"
-        ├── description: ""
-        ├── createdAt: 1698474000000
-        ├── folderOrder: "5001698474000000"
-        └── roomList:
-            └── "group-project": true
-```
-
-### 필드 설명
-
-| 필드 | 타입 | 필수 | 설명 |
-|------|------|------|------|
-| `name` | string | ✅ | 북마크 폴더 이름 (최대 30자) |
-| `description` | string | ❌ | 폴더 설명 (최대 100자) |
-| `createdAt` | number | ✅ | 폴더 생성 시간 (Unix timestamp, 밀리초) |
-| `folderOrder` | string | ✅ | 폴더 정렬 순서 (prefix + timestamp) |
-| `roomList` | object | ✅ | 북마크된 채팅방 ID 목록 (`{roomId: boolean}`) |
-
-### folderOrder 필드
-
-북마크 폴더의 정렬 순서를 관리하는 필드입니다.
-
-**형식:**
-```typescript
-folderOrder: "500{timestamp}"
-```
-
-**특징:**
-- **500 prefix**: 폴더를 상단에 고정하기 위한 prefix
-- **timestamp**: 폴더 생성 시간 또는 수동 정렬 시간
-- 사용자가 폴더 순서를 변경하면 새로운 timestamp로 업데이트
-
-**정렬 방식:**
-```
-내림차순 정렬 결과 (최신순):
-"5001698474000000"  (가장 최근 또는 상단 고정)  ← 최상위
-"5001698473100000"  (중간)
-"5001698473000000"  (가장 오래됨)              ← 맨 아래
-```
-
-### 클라이언트/서버 역할 분리
-
-북마크 폴더의 경우:
-- **클라이언트는** 다음 작업을 수행합니다:
-  - 북마크 폴더 생성: `/chat-favorites/{uid}/{favoriteId}` 노드 생성
-    - `name`, `description`, `createdAt` 저장
-    - `folderOrder`: `500${Date.now()}` 형식으로 생성
-    - `roomList`: 빈 객체 `{}` 또는 초기 채팅방 포함
-  - 폴더 이름/설명 수정
-  - 폴더 삭제
-  - 채팅방 추가/제거: `roomList/{roomId}` 값을 `true` 또는 `false`로 설정
-  - 폴더 순서 변경: `folderOrder`를 새로운 `500${Date.now()}`로 업데이트
-
-- **서버는** 북마크 관련 자동 처리가 필요 없습니다:
-  - 모든 작업이 클라이언트에서 직접 수행됨
-  - 단, Security Rules로 본인만 수정 가능하도록 제한
-
-### 사용 예시
-
-**폴더 구조 예시:**
-```
-📁 업무 관련
-  ├── 개발팀 채팅 (group-team123)
-  └── 긴급 공지 (open-community)
-
-📁 친구들
-  ├── 철수와의 대화 (single-uid1-uid2)
-  └── 영희와의 대화 (single-uid1-uid3)
-
-📁 중요
-  └── 프로젝트 A (group-project)
-```
-
-### 관련 가이드
-
-- **📖 구현 가이드**: [채팅 기능 개발 가이드](./sonub-chat-room.md) - 북마크 기능 구현
-- **📖 보안 규칙**: [Firebase 보안 규칙 개발 가이드](./sns-web-security.md) - 북마크 접근 제어
-
----
-
-## 채팅방 참여 (chat-joins)
-
-채팅방 참여 정보는 `/chat-joins/<uid>/<roomId>/` 경로에 저장됩니다.
-각 사용자가 참여한 채팅방 목록을 관리하며, 채팅방 목록 화면에서 사용됩니다.
-
-### 데이터 구조
-
-```
-/chat-joins/
-├── <uid1>/
-│   ├── single-uid1-uid2/
-│   │   ├── roomId: "single-uid1-uid2"
-│   │   ├── roomType: "single"
-│   │   ├── partnerUid: "uid2"
-│   │   ├── lastMessageText: "안녕하세요!"
-│   │   ├── lastMessageAt: 1698473000000
-│   │   ├── joinedAt: 1698472000000
-│   │   ├── updatedAt: 1698473000000
-│   │   ├── newMessageCount: 0
-│   │   ├── listOrder: "1698473000000"  // (사용 중단 예정, 후방 호환성용)
-│   │   ├── singleChatListOrder: "1698473000000"  // 읽지 않은 메시지 없음
-│   │   └── allChatListOrder: 1698473000000  // 전체 채팅방 목록용
-│   ├── group-team123/
-│   │   ├── roomId: "group-team123"
-│   │   ├── roomType: "group"
-│   │   ├── roomName: "팀 회의방"
-│   │   ├── lastMessageText: "회의 시작합니다"
-│   │   ├── lastMessageAt: 1698474000000
-│   │   ├── joinedAt: 1698472500000
-│   │   ├── updatedAt: 1698474000000
-│   │   ├── newMessageCount: 3
-│   │   ├── listOrder: "2001698474000000"  // (사용 중단 예정, 후방 호환성용)
-│   │   ├── groupChatListOrder: "2001698474000000"  // 읽지 않은 메시지 3개
-│   │   ├── openAndGroupChatListOrder: 1698474000000  // 그룹+오픈 통합 목록용
-│   │   └── allChatListOrder: 1698474000000  // 전체 채팅방 목록용
-│   └── open-discussion/
-│       ├── roomId: "open-discussion"
-│       ├── roomType: "open"
-│       ├── roomName: "자유 토론방"
-│       ├── lastMessageText: "누구나 환영합니다"
-│       ├── lastMessageAt: 1698475000000
-│       ├── joinedAt: 1698473000000
-│       ├── updatedAt: 1698475000000
-│       ├── newMessageCount: 0
-│       ├── listOrder: "1698475000000"  // (사용 중단 예정, 후방 호환성용)
-│       ├── openChatListOrder: "1698475000000"  // 읽지 않은 메시지 없음
-│       ├── openAndGroupChatListOrder: 1698475000000  // 그룹+오픈 통합 목록용
-│       └── allChatListOrder: 1698475000000  // 전체 채팅방 목록용
-└── <uid2>/
-    └── single-uid1-uid2/
-        ├── roomId: "single-uid1-uid2"
-        ├── roomType: "single"
-        ├── partnerUid: "uid1"
-        ├── lastMessageText: "안녕하세요!"
-        ├── lastMessageAt: 1698473000000
-        ├── joinedAt: 1698472000000
-        ├── updatedAt: 1698473000000
-        ├── newMessageCount: 1
-        ├── listOrder: "2001698473000000"  // (사용 중단 예정, 후방 호환성용)
-        ├── singleChatListOrder: "2001698473000000"  // 읽지 않은 메시지 1개
-        └── allChatListOrder: 1698473000000  // 전체 채팅방 목록용
-```
-
-### 필드 설명
-
-| 필드 | 타입 | 필수 | 설명 |
-|------|------|------|------|
-| `roomId` | string | ✅ | 채팅방 ID |
-| `roomType` | string | ✅ | 채팅방 유형 (single, group, open) |
-| `roomName` | string | ❌ | 채팅방 이름 (그룹/오픈 채팅방의 경우) |
-| `partnerUid` | string | ❌ | 1:1 채팅의 상대방 UID (1:1 채팅만 해당) |
-| `lastMessageText` | string | ❌ | 마지막 메시지 내용 (미리보기용) |
-| `lastMessageAt` | number | ✅ | 마지막 메시지 시간 (Unix timestamp, 밀리초) |
-| `joinedAt` | number | ✅ | 채팅방 참여 시간 (Unix timestamp, 밀리초) |
-| `updatedAt` | number | ✅ | 마지막 업데이트 시간 (Unix timestamp, 밀리초) |
-| `newMessageCount` | number | ✅ | 읽지 않은 메시지 개수 (Cloud Functions가 자동 증감) |
-| `pin` | boolean | ❌ | **채팅방 핀 상태** (true: 핀됨, 생략: 핀 안됨). 클라이언트가 설정하면 Cloud Functions가 자동으로 모든 order 필드에 "500" prefix 적용 |
-| `listOrder` | string | ❌ | **정렬 필드** (후방 호환성용, 사용 중단 예정) |
-| `singleChatListOrder` | string | ❌ | **1:1 채팅 정렬 필드** (prefix + timestamp) |
-| `groupChatListOrder` | string/number | ❌ | **그룹 채팅 정렬 필드** (prefix + timestamp) |
-| `openChatListOrder` | string/number | ❌ | **오픈 채팅 정렬 필드** (prefix + timestamp) |
-| `openAndGroupChatListOrder` | number | ❌ | **그룹+오픈 통합 정렬 필드** (prefix + timestamp) |
-| `allChatListOrder` | number | ❌ | **전체 채팅방 통합 정렬 필드** (timestamp, 모든 타입) |
-
-### 🔥 정렬 필드 상세 설명
-
-채팅방 목록을 다양한 방식으로 정렬하기 위해 여러 정렬 필드가 제공됩니다.
-
-#### 정렬 필드 개요
-
-| 필드 | 용도 | 타입 | Cloud Functions 설정 |
-|------|------|------|---------------------|
-| `singleChatListOrder` | 1:1 채팅만 정렬 | string (prefix + timestamp) | ✅ 자동 |
-| `groupChatListOrder` | 그룹 채팅만 정렬 | string (prefix + timestamp) | ✅ 자동 |
-| `openChatListOrder` | 오픈 채팅만 정렬 | string (prefix + timestamp) | ✅ 자동 |
-| `openAndGroupChatListOrder` | 그룹+오픈 통합 정렬 | number (timestamp) | ✅ 자동 |
-| `allChatListOrder` | 모든 채팅방 통합 정렬 | number (timestamp) | ✅ 자동 |
-| `listOrder` | (후방 호환성용) | string | ⚠️ 사용 중단 |
-
-#### 왜 정렬 필드가 필요한가?
-
-Firebase Realtime Database에서 채팅방 목록을 정렬할 때 다음 요구사항을 만족해야 합니다:
-
-1. ❌ **단순 timestamp 정렬**: `orderByChild('lastMessageAt')` 사용 시
-   - 문제점: 클라이언트에서 reverse() 필요 (성능 저하)
-   - 문제점: 읽지 않은 메시지가 있는 채팅방을 맨 위에 표시할 수 없음
-   - 문제점: PIN(고정) 기능 구현 불가
-
-2. ✅ **prefix + timestamp 사용**: 타입별 정렬 필드 사용
-   - 장점: Firebase 쿼리만으로 내림차순 정렬 가능
-   - 장점: 읽지 않은 메시지가 있는 채팅방을 맨 위에 자동 배치
-   - 장점: PIN 기능을 prefix로 쉽게 구현 가능
-   - 장점: 서버에서 자동으로 관리되어 데이터 일관성 보장
-
-#### 정렬 필드 계산 방식 (Cloud Functions)
-
-```typescript
-// Cloud Functions에서 자동으로 계산
-const timestamp = messageData.createdAt || Date.now();
-
-// === 1:1 채팅 ===
-// 발신자: 읽음 상태 (prefix 없음)
-const senderSingleListOrder = `${timestamp}`;  // "1698473000000"
-// 수신자: 읽지 않은 상태 (200 prefix)
-const partnerSingleListOrder = `200${timestamp}`;  // "2001698473000000"
-
-// === 그룹 채팅 ===
-// 발신자: 읽음 상태
-const senderGroupListOrder = `${timestamp}`;
-// 수신자들: 읽지 않은 상태 (200 prefix)
-const memberGroupListOrder = `200${timestamp}`;
-
-// === 오픈 채팅 ===
-// 발신자: 읽음 상태
-const senderOpenListOrder = `${timestamp}`;
-// 수신자들: 읽지 않은 상태 (200 prefix)
-const memberOpenListOrder = `200${timestamp}`;
-
-// === 통합 정렬 필드 ===
-// 모든 사용자에게 동일한 timestamp (읽음/읽지않음 구분 없음)
-const allChatListOrder = timestamp;  // 1698473000000
-const openAndGroupChatListOrder = timestamp;  // 그룹+오픈만
-```
-
-#### prefix 규칙
-
-| Prefix | 상태 | 설명 | 예시 값 |
-|--------|------|------|---------|
-| 없음 | 읽음 상태 | 메시지를 읽은 채팅방 (일반 정렬) | `1698473000000` |
-| `200` | 읽지 않음 | 읽지 않은 메시지가 있는 채팅방 (맨 위 정렬) | `2001698473000000` |
-| `500` | PIN 고정 | 사용자가 고정한 채팅방 (최상위 정렬) | `5001698473000000` |
-
-#### 정렬 원리
-
-Firebase는 문자열을 **사전순(lexicographical order)**으로 정렬하고, `reverse()`로 내림차순 정렬합니다:
-
-```
-내림차순 정렬 결과 (최신순):
-"5001698474000000"  (PIN 고정 채팅방)          ← 최상위
-"2001698473000000"  (읽지 않은 메시지 있음)    ← 맨 위
-"2001698472000000"  (읽지 않은 메시지 있음)
-"1698471000000"     (읽음 상태, 최신 메시지)
-"1698470000000"     (읽음 상태, 오래된 메시지)  ← 맨 아래
-```
-
-- **500 prefix**: PIN 고정 채팅방은 항상 최상위
-- **200 prefix**: 읽지 않은 메시지가 있는 채팅방은 읽음 채팅방보다 위
-- **prefix 없음**: 읽음 상태 채팅방은 일반 timestamp 정렬
-
-#### 읽음 처리 (정렬 필드 업데이트)
-
-사용자가 채팅방에 입장하면 클라이언트에서 200 prefix를 제거합니다:
-
-```typescript
-// 사용자가 채팅방 입장 시
-const currentListOrder = "2001698473000000";  // 읽지 않은 상태
-
-// 200 prefix 제거 (읽음 처리)
-if (currentListOrder.startsWith("200")) {
-  const newListOrder = currentListOrder.substring(3);  // "1698473000000"
-
-  // 채팅방 타입에 따라 적절한 필드 업데이트
-  if (roomType === 'single') {
-    await database.ref(`chat-joins/${uid}/${roomId}/singleChatListOrder`).set(newListOrder);
-  } else if (roomType === 'group') {
-    await database.ref(`chat-joins/${uid}/${roomId}/groupChatListOrder`).set(newListOrder);
-  } else if (roomType === 'open') {
-    await database.ref(`chat-joins/${uid}/${roomId}/openChatListOrder`).set(newListOrder);
-  }
-
-  // 읽지 않은 메시지 카운터도 0으로 초기화
-  await database.ref(`chat-joins/${uid}/${roomId}/newMessageCount`).set(0);
-}
-```
-
-#### 핀 처리 (채팅방 고정 기능)
-
-사용자가 채팅방을 핀하거나 핀 해제하는 기능입니다. 핀된 채팅방은 목록의 최상위에 표시됩니다.
-
-**클라이언트 동작:**
-```typescript
-// 핀 설정: pin 필드를 true로 설정
-await database.ref(`chat-joins/${uid}/${roomId}/pin`).set(true);
-
-// 핀 해제: pin 필드를 삭제
-await database.ref(`chat-joins/${uid}/${roomId}/pin`).set(null);
-```
-
-**Cloud Functions 자동 처리:**
-
-`chat-joins/{uid}/{roomId}/pin` 필드가 생성되거나 삭제되면 Cloud Functions가 자동으로 모든 order 필드를 업데이트합니다:
-
-```typescript
-// onChatRoomPinCreate Cloud Function (onValueCreated 트리거)
-// pin 필드가 생성될 때 (set(true)):
-//    - 모든 xxxListOrder 필드에 "500" prefix 추가
-//    예: "1698473000000" → "5001698473000000"
-//    예: "2001698473000000" → "5001698473000000"
-
-// onChatRoomPinDelete Cloud Function (onValueDeleted 트리거)
-// pin 필드가 삭제될 때 (set(null)):
-//    - newMessageCount > 0이면 "200" prefix 추가
-//    예: "5001698473000000" → "2001698473000000"
-//    - newMessageCount === 0이면 prefix 제거
-//    예: "5001698473000000" → "1698473000000"
-```
-
-**트리거 분리 이유:**
-- `onValueUpdated`는 값이 변경될 때만 트리거되며, 생성/삭제 시에는 트리거되지 않음
-- `onValueCreated`는 필드가 처음 생성될 때 트리거됨 (pin: true 설정 시)
-- `onValueDeleted`는 필드가 삭제될 때 트리거됨 (pin: null 설정 시)
-
-**자동 업데이트되는 필드:**
-- `singleChatListOrder` (1:1 채팅)
-- `groupChatListOrder` (그룹 채팅)
-- `openChatListOrder` (오픈 채팅)
-- `openAndGroupChatListOrder` (그룹+오픈 통합)
-- `allChatListOrder` (전체 채팅방 통합)
-
-**장점:**
-- 클라이언트는 단순히 `pin` 필드만 설정
-- Cloud Functions가 모든 정렬 필드를 일관되게 업데이트
-- 채팅방 타입에 관계없이 동일한 방식으로 동작
-- 핀 상태와 읽음/읽지않음 상태를 독립적으로 관리
-
-#### 클라이언트에서 사용 예시
-
-```typescript
-// 예시 1: 1:1 채팅만 조회
-const query = database.ref(`chat-joins/${uid}`)
-  .orderByChild('singleChatListOrder')
-  .limitToLast(20);
-
-// 예시 2: 그룹 채팅만 조회
-const query = database.ref(`chat-joins/${uid}`)
-  .orderByChild('groupChatListOrder')
-  .limitToLast(20);
-
-// 예시 3: 그룹+오픈 채팅 통합 조회
-const query = database.ref(`chat-joins/${uid}`)
-  .orderByChild('openAndGroupChatListOrder')
-  .limitToLast(20);
-
-// 예시 4: 모든 채팅방 통합 조회
-const query = database.ref(`chat-joins/${uid}`)
-  .orderByChild('allChatListOrder')
-  .limitToLast(20);
-
-// 결과 처리 (공통)
-query.on('value', (snapshot) => {
-  const chatRooms = [];
-  snapshot.forEach((child) => {
-    chatRooms.push(child.val());
-  });
-  chatRooms.reverse(); // 최신순 정렬
-  console.log(chatRooms);
-});
-```
-
-#### 주의사항
-
-- ⚠️ **발신자의 정렬 필드**: prefix 없이 timestamp만 저장 (읽음 상태)
-- ⚠️ **수신자의 정렬 필드**: 200 prefix + timestamp 저장 (읽지 않은 상태)
-- ✅ **Cloud Functions가 메시지 생성 시 자동으로 모든 정렬 필드를 업데이트**합니다
-- ✅ **클라이언트는 읽음 처리/PIN 기능만 직접 수정**합니다
-- ⚠️ 타입별 정렬 필드(single/group/open)는 문자열 타입이지만 사전순으로 정렬됩니다
-- ⚠️ 통합 정렬 필드(all/openAndGroup)는 숫자 타입입니다
-- ⚠️ `newMessageCount`와 함께 사용하여 읽지 않은 메시지 개수를 표시합니다
-
-### 클라이언트/서버 역할 분리
-
-채팅방 참여 정보의 경우:
-- **클라이언트는** 다음 작업을 수행합니다:
-  - **채팅방 입장 시** `chat-joins/{uid}/{roomId}` 노드 생성 (모든 채팅방 타입: 1:1, 그룹, 오픈)
-  - 채팅방 입장 시 각 정렬 필드의 200 prefix 제거 (읽음 처리)
-    - 예: `singleChatListOrder`의 "200{timestamp}"를 "{timestamp}"로 변경
-  - 채팅방 입장 시 `newMessageCount`를 0으로 초기화
-  - 채팅방 PIN 고정/해제 시 각 정렬 필드의 500 prefix 추가/제거
-    - 예: `singleChatListOrder`의 "{timestamp}"를 "500{timestamp}"로 변경
-
-- **서버는** 채팅 메시지 생성을 감지하여 다음 작업을 자동으로 수행합니다 (Cloud Functions):
-
-  **1:1 채팅의 경우:**
-  - 양쪽 사용자의 `chat-joins/{uid}/{roomId}` 자동 생성/업데이트
-  - `lastMessageText`, `lastMessageAt` 자동 업데이트
-  - **정렬 필드 자동 계산 및 업데이트**:
-    - 발신자:
-      - `singleChatListOrder`: `${timestamp}` (prefix 없음, 읽음 상태)
-      - `allChatListOrder`: `timestamp` (숫자 타입)
-    - 수신자:
-      - `singleChatListOrder`: `200${timestamp}` (200 prefix, 읽지 않은 상태)
-      - `allChatListOrder`: `timestamp` (숫자 타입)
-  - **`newMessageCount` 자동 증가**: 수신자만 increment(1)
-  - `joinedAt`는 최초 생성 시에만 설정 (기존 값이 있으면 유지)
-  - `partnerUid` 설정 (1:1 채팅 상대방 UID)
-
-  **그룹/오픈 채팅의 경우:**
-  - `chat-rooms/{roomId}`에서 `members` 목록 조회
-  - 모든 멤버의 `chat-joins/{memberUid}/{roomId}` 자동 업데이트
-  - 각 멤버에 대해 다음 필드 자동 설정:
-    - `roomName`: 채팅방 이름 (chat-rooms에서 가져옴)
-    - `lastMessageText`: 마지막 메시지 내용
-    - `lastMessageAt`: 마지막 메시지 시간
-    - `allChatListOrder`: timestamp (숫자 타입)
-    - `openAndGroupChatListOrder`: timestamp (숫자 타입)
-    - **타입별 정렬 필드**:
-      - 그룹 채팅인 경우:
-        - 발신자: `groupChatListOrder`: `${timestamp}`
-        - 다른 멤버들: `groupChatListOrder`: `200${timestamp}`
-      - 오픈 채팅인 경우:
-        - 발신자: `openChatListOrder`: `${timestamp}`
-        - 다른 멤버들: `openChatListOrder`: `200${timestamp}`
-  - **`newMessageCount` 자동 증가**: 발신자를 제외한 모든 멤버에 대해 increment(1)
-  - `joinedAt`는 최초 생성 시에만 설정 (기존 값이 있으면 유지)
-
-### 관련 가이드
-
-- **📖 구현 가이드**: [채팅 기능 개발 가이드](./sonub-chat-room.md) - 채팅방 목록 조회, 정렬, 필터링
-- **📖 Cloud Functions**: [Firebase Cloud Functions 개발 가이드](./sonub-firebase-functions.md) - chat-joins 자동 생성 로직
-- **📖 보안 규칙**: [Firebase 보안 규칙 개발 가이드](./sns-web-security.md) - 채팅방 참여 정보 접근 제어
-
----
-
-## FCM 토큰 (fcm-tokens)
-
-`/fcm-tokens` 경로는 웹·안드로이드·iOS 클라이언트가 **사용자로부터 FCM 권한을 획득**하고 토큰을 발급받은 직후 저장하는 공간입니다. 토큰 문자열 자체를 키로 사용하여 중복 저장을 방지하고, `device`/`uid` 메타데이터만 값을로 두어 간결하게 관리합니다.
-
-### 데이터 구조
-
-```
-/fcm-tokens/
-├── cY8...YzA/                   // tokenId = 실제 FCM registration token
-│   ├── device: "web"
-│   └── uid: "uid_user_1"
-└── dpQ...X9b/
-    ├── device: "android"
-    └── uid: "uid_user_2"
-```
-
-### 필드 설명
-
-| 필드 | 타입 | 필수 | 작성 주체 | 설명 |
-|------|------|------|-----------|------|
-| `tokenId` (키) | string | ✅ | 클라이언트 | FCM SDK가 반환한 토큰 문자열. 경로 키로 사용되어 같은 토큰이 다시 발급되더라도 동일 노드를 덮어써 중복을 막습니다. |
-| `device` | `'web' \| 'android' \| 'ios'` | ✅ | 클라이언트 | 토큰이 생성된 플랫폼 유형. 웹 클라이언트는 반드시 `'web'`을 저장합니다. |
-| `uid` | string | ✅ | 클라이언트 | 토큰을 소유한 로그인 사용자 UID. 인증된 세션에서만 기록해야 합니다. |
-
-### 클라이언트/서버 역할 분리
-
-- **클라이언트**
-  - 사용자에게 FCM 권한을 요청하고, SDK가 반환한 `tokenId`를 그대로 `/fcm-tokens/{tokenId}` 경로의 키로 사용합니다.
-  - `device` 필드를 현재 실행 중인 플랫폼에 맞춰 `'web'`, `'android'`, `'ios'` 중 하나로 설정합니다.
-  - 로그인한 사용자의 UID를 `uid` 필드에 기록하여 서버가 토큰과 사용자를 매칭할 수 있게 합니다.
-  - 동일 디바이스에서 토큰이 새로 고침되면 같은 키에 덮어써 최신 토큰만 유지합니다.
-- **서버 / Cloud Functions**
-  - `/fcm-tokens` 노드를 읽어 사용자별 유효한 토큰 목록을 구성하고 FCM 발송 시 대상 토큰을 선택합니다.
-  - 보안 규칙으로 `auth != null`인 경우에만 토큰을 작성할 수 있게 제한하며, 서버 측은 읽기 권한만 사용합니다.
-
-### 저장 목적 및 운영 시나리오
-
-- **중복 방지**: 토큰 문자열을 키로 사용하므로 같은 토큰이 여러 번 저장되지 않고 항상 동일 경로를 업데이트합니다.
-- **멀티 디바이스 지원**: 한 사용자가 여러 디바이스를 사용할 경우 각 토큰이 서로 다른 키로 저장되어 디바이스별로 개별 푸시가 가능합니다.
-- **권한 획득 흐름**: 클라이언트 앱이 권한을 획득 → FCM 토큰 발급 → `/fcm-tokens/{tokenId}`에 `{ device, uid }` 저장 → 서버가 이 목록을 이용해 대상 디바이스로 메시지를 발송합니다.
-- **웹 케이스 명시**: 웹 환경에서는 `device` 값이 항상 `'web'`으로 고정되며, 브라우저 토큰 회전이 발생하면 동일 경로가 새 값으로 교체됩니다.
+다른 spec 파일에서 이 구조가 필요한 경우, 이 문서를 참조하세요:
+- **참조 방법**: `[데이터베이스 구조](./sonub-firebase-database-structure.md#사용자별-활동-통계-user-action-counters)`
 
 ---
 
 ## 게시글 (posts)
 
-게시글은 사용자가 작성한 포스트를 저장합니다. 카테고리별 정렬과 전체 게시글 정렬을 위한 자동 생성 필드를 포함합니다.
+게시글 정보는 `/posts/<postId>/` 경로에 저장됩니다.
 
 ### 데이터 구조
 
 ```
-posts/
-  └── {postId}
-      ├── authorUid: "user_uid_123"
-      ├── displayName: "홍길동"
-      ├── photoUrl: "https://..."
-      ├── text: "게시글 내용입니다."
-      ├── category: "qna"
-      ├── createdAt: 1700000000000
-      ├── updatedAt: 1700000001000
-      ├── urls:
-      │   ├── 0: "https://storage.../image1.jpg"
-      │   └── 1: "https://storage.../image2.jpg"
-      ├── likeCount: 5
-      ├── commentCount: 3
-      ├── categoryOrder: "qna-1700000000000"
-      └── allCategoryOrder: 1700000000000
+/posts/
+└── <postId>/
+    ├── uid: "author-uid"                      # 작성자 UID (클라이언트)
+    ├── author: "홍길동"                       # 작성자 닉네임 (클라이언트)
+    ├── title: "게시글 제목"                   # 제목 (클라이언트)
+    ├── content: "게시글 내용"                 # 내용 (클라이언트)
+    ├── category: "discussion"                 # 카테고리 (클라이언트)
+    ├── createdAt: 1698473000000               # 작성 시간 (클라이언트)
+    ├── updatedAt: 1698474000000               # 수정 시간 (클라이언트)
+    ├── order: -1698473000000                  # 기본 정렬 (Cloud Functions)
+    ├── categoryOrder: "discussion--1698473000000"  # 카테고리별 정렬 (Cloud Functions)
+    ├── allCategoryOrder: -1698473000000       # 전체 카테고리 정렬 (Cloud Functions)
+    ├── likeCount: 10                          # 좋아요 개수 (Cloud Functions)
+    ├── commentCount: 5                        # 첫 레벨 댓글 수 (Cloud Functions)
+    └── totalChildCount: 15                    # 모든 댓글 수 (Cloud Functions)
 ```
 
 ### 필드 설명
 
-| 필드 | 타입 | 필수 | 작성 주체 | 설명 |
-|------|------|------|-----------|------|
-| `postId` (키) | string | ✅ | 클라이언트 | Firebase의 `push()` 메서드로 생성한 고유 ID |
-| `authorUid` | string | ✅ | 클라이언트 | 작성자의 Firebase Auth UID |
-| `displayName` | string | ✅ | 클라이언트 | 작성자의 표시 이름 (스냅샷용) |
-| `photoUrl` | string | ❌ | 클라이언트 | 작성자의 프로필 사진 URL (스냅샷용) |
-| `text` | string | ✅ | 클라이언트 | 게시글 본문 내용 |
-| `category` | string | ✅ | 클라이언트 | 게시글 카테고리 (예: "qna", "free", "notice" 등) |
-| `createdAt` | number | ✅ | 클라이언트 | 작성 시각 (밀리초 타임스탬프) |
-| `updatedAt` | number | ❌ | 클라이언트 | 수정 시각 (밀리초 타임스탬프) |
-| `urls` | object | ❌ | 클라이언트 | 첨부 이미지 URL 맵 (`{ 0: url1, 1: url2, ... }`) |
-| `likeCount` | number | ❌ | Cloud Functions | 좋아요 수 (자동 계산) |
-| `commentCount` | number | ❌ | Cloud Functions | 댓글 수 (자동 계산) |
-| `categoryOrder` | string | ✅ | Cloud Functions | 카테고리별 정렬 필드 (`"{category}-{createdAt}"` 형식) |
-| `allCategoryOrder` | number | ✅ | Cloud Functions | 전체 게시글 정렬 필드 (`createdAt`과 동일) |
-| `deleted` | boolean | ❌ | 클라이언트 | 삭제 여부 (true일 경우 삭제된 게시글) |
-| `deletedAt` | number | ❌ | 클라이언트 | 삭제 시각 (밀리초 타임스탬프) |
+| 필드 | 타입 | 필수 | 저장 주체 | 설명 |
+|------|------|------|----------|------|
+| `uid` | string | ✅ | 클라이언트 | 작성자 UID |
+| `author` | string | ✅ | 클라이언트 | 작성자 닉네임 |
+| `title` | string | ✅ | 클라이언트 | 게시글 제목 |
+| `content` | string | ❌ | 클라이언트 | 게시글 내용 |
+| `category` | string | ✅ | 클라이언트 | 카테고리 |
+| `createdAt` | number | ✅ | 클라이언트 | 작성 시간 |
+| `updatedAt` | number | ❌ | 클라이언트 | 수정 시간 |
+| `order` | number | ✅ | Cloud Functions | 기본 정렬 (-createdAt) |
+| `categoryOrder` | string | ✅ | Cloud Functions | 카테고리별 정렬 ("{category}--{-createdAt}") |
+| `allCategoryOrder` | number | ✅ | Cloud Functions | 전체 카테고리 정렬 (-createdAt) |
+| `likeCount` | number | ✅ | Cloud Functions | 좋아요 개수 (기본값: 0) |
+| `commentCount` | number | ✅ | Cloud Functions | 첫 레벨 댓글 수 |
+| `totalChildCount` | number | ✅ | Cloud Functions | 모든 댓글 수 (대댓글 포함) |
 
 ### 정렬 필드 상세 설명
 
-게시글 목록을 효율적으로 정렬하고 페이지네이션하기 위해 Cloud Functions에서 자동으로 생성하는 정렬 필드입니다.
+| 필드 | 값 | 용도 |
+|------|-----|------|
+| `order` | `-createdAt` | 기본 정렬 (최신순) |
+| `categoryOrder` | `"{category}--{-createdAt}"` | 카테고리별 정렬 |
+| `allCategoryOrder` | `-createdAt` | 전체 카테고리 통합 정렬 |
 
-#### 왜 정렬 필드가 필요한가?
+### 관련 가이드
+다른 spec 파일에서 이 구조가 필요한 경우, 이 문서를 참조하세요:
+- **참조 방법**: `[데이터베이스 구조](./sonub-firebase-database-structure.md#게시글-posts)`
 
-Firebase Realtime Database의 쿼리 제약으로 인해:
-- `orderByChild()`는 한 번에 하나의 필드만 정렬 가능
-- 카테고리 필터링과 시간 정렬을 동시에 수행하려면 복합 필드가 필요
-- 클라이언트에서 `reverse()` 사용 시 페이지네이션 커서 로직이 깨짐
+---
 
-#### 정렬 필드 종류
+## 댓글 (comments)
 
-1. **categoryOrder** (`string`)
-   - 형식: `"{category}-{createdAt}"`
-   - 예시: `"qna-1700000000000"`
-   - 용도: 특정 카테고리 내에서 최신순 정렬
-   - 쿼리 방법: `orderByChild("categoryOrder")` + `orderPrefix="{category}-"`
+댓글 정보는 `/comments/<postId>/<commentId>/` 경로에 저장됩니다.
 
-2. **allCategoryOrder** (`number`)
-   - 형식: `createdAt` 타임스탬프
-   - 예시: `1700000000000`
-   - 용도: 전체 카테고리에서 최신순 정렬
-   - 쿼리 방법: `orderByChild("allCategoryOrder")`
+### 데이터 구조
 
-#### 클라이언트 사용 예시
-
-**전체 게시글 목록 (최신순)**
-```typescript
-// PostListView에서 category가 없을 때
-orderBy = "allCategoryOrder"
-orderPrefix = ""
-reverse = true  // 클라이언트 측에서 명시적 정렬
+```
+/comments/
+└── <postId>/
+    └── <commentId>/
+        ├── postId: "post-123"                 # 소속 게시글 ID (클라이언트)
+        ├── uid: "author-uid"                  # 작성자 UID (클라이언트)
+        ├── content: "댓글 내용"               # 내용 (클라이언트)
+        ├── parentId: null                     # 부모 댓글 ID (클라이언트, 최상위는 null)
+        ├── depth: 1                           # 댓글 깊이 (클라이언트, 1~12)
+        ├── createdAt: 1698473000000           # 작성 시간 (클라이언트)
+        ├── updatedAt: 1698474000000           # 수정 시간 (클라이언트)
+        ├── order: "post-123--1698473000000"   # 정렬 필드 (Cloud Functions)
+        ├── likeCount: 5                       # 좋아요 개수 (Cloud Functions)
+        ├── commentCount: 2                    # 대댓글 수 (Cloud Functions)
+        ├── totalChildCount: 5                 # 모든 대댓글 수 (Cloud Functions)
+        └── childCount: 2                      # 직접 자식 댓글 수 (Cloud Functions)
 ```
 
-**카테고리별 게시글 목록 (최신순)**
-```typescript
-// PostListView에서 category가 "qna"일 때
-orderBy = "categoryOrder"
-orderPrefix = "qna-"
-reverse = true  // 클라이언트 측에서 명시적 정렬
+### 필드 설명
+
+| 필드 | 타입 | 필수 | 저장 주체 | 설명 |
+|------|------|------|----------|------|
+| `postId` | string | ✅ | 클라이언트 | 소속 게시글 ID |
+| `uid` | string | ✅ | 클라이언트 | 작성자 UID |
+| `content` | string | ✅ | 클라이언트 | 댓글 내용 |
+| `parentId` | string \| null | ✅ | 클라이언트 | 부모 댓글 ID (최상위는 null) |
+| `depth` | number | ✅ | 클라이언트 | 댓글 깊이 (1~12) |
+| `createdAt` | number | ✅ | 클라이언트 | 작성 시간 |
+| `updatedAt` | number | ❌ | 클라이언트 | 수정 시간 |
+| `order` | string | ✅ | Cloud Functions | 정렬 필드 ("{postId}--{-createdAt}") |
+| `likeCount` | number | ✅ | Cloud Functions | 좋아요 개수 |
+| `commentCount` | number | ✅ | Cloud Functions | 대댓글 수 (totalChildCount와 동일) |
+| `totalChildCount` | number | ✅ | Cloud Functions | 모든 대댓글 수 |
+| `childCount` | number | ✅ | Cloud Functions | 직접 자식 댓글 수 (첫 레벨만) |
+
+### 관련 가이드
+다른 spec 파일에서 이 구조가 필요한 경우, 이 문서를 참조하세요:
+- **참조 방법**: `[데이터베이스 구조](./sonub-firebase-database-structure.md#댓글-comments)`
+
+---
+
+## 채팅 메시지 (chat-messages)
+
+채팅 메시지는 `/chat-messages/<roomId>/<messageId>/` 경로에 저장됩니다.
+
+### 데이터 구조
+
+```
+/chat-messages/
+└── <roomId>/
+    └── <messageId>/
+        ├── roomId: "single-uid1-uid2"         # 채팅방 ID (클라이언트)
+        ├── type: "message"                    # 타입: "message" | "post" (클라이언트)
+        ├── text: "안녕하세요"                  # 메시지 내용 (클라이언트)
+        ├── urls: ["https://..."]              # 첨부 URL 배열 (클라이언트)
+        ├── senderUid: "sender-uid"            # 발신자 UID (클라이언트)
+        ├── createdAt: 1698473000000           # 생성 시간 (클라이언트)
+        ├── editedAt: null                     # 수정 시간 (클라이언트)
+        ├── deletedAt: null                    # 삭제 시간 (클라이언트)
+        ├── protocol: null                     # 프로토콜 메시지 (클라이언트, join/leave 등)
+        ├── roomOrder: "-single-uid1-uid2-1698473000000"  # 채팅방별 정렬 (Cloud Functions)
+        ├── rootOrder: null                    # 루트 정렬 (Cloud Functions, 서브 채팅방용)
+        ├── openOrder: -1698473000000          # 오픈 채팅 전역 정렬 (Cloud Functions)
+        ├── categoryOrder: null                # 카테고리별 정렬 (Cloud Functions, type="post"만)
+        └── likeCount: 3                       # 좋아요 개수 (Cloud Functions)
 ```
 
-**DatabaseListView 내부 정렬 로직**
-```typescript
-// Firebase에서 받은 데이터를 orderBy 필드 기준으로 정렬
-loadedItems.sort((a, b) => {
-  const aValue = a.data[orderBy] ?? 0;
-  const bValue = b.data[orderBy] ?? 0;
+### type: "post"인 경우 추가 필드
 
-  if (reverse) {
-    return bValue - aValue; // 내림차순 (최신 글 먼저)
-  } else {
-    return aValue - bValue; // 오름차순
-  }
-});
+```
+├── category: "discussion"                     # 게시판 카테고리 (클라이언트)
+├── title: "게시글 제목"                       # 제목 (클라이언트)
+└── categoryOrder: "discussion--1698473000000" # 카테고리별 정렬 (Cloud Functions)
+```
+
+### 관련 가이드
+다른 spec 파일에서 이 구조가 필요한 경우, 이 문서를 참조하세요:
+- **참조 방법**: `[데이터베이스 구조](./sonub-firebase-database-structure.md#채팅-메시지-chat-messages)`
+
+---
+
+## 채팅방 (chat-rooms)
+
+채팅방 정보는 `/chat-rooms/<roomId>/` 경로에 저장됩니다.
+
+### 데이터 구조
+
+```
+/chat-rooms/
+└── <roomId>/
+    ├── type: "single"                         # 타입: "single" | "group" | "open" (클라이언트)
+    ├── name: "채팅방 이름"                     # 이름 (클라이언트)
+    ├── description: "설명"                    # 설명 (클라이언트)
+    ├── owner: "owner-uid"                     # 소유자 UID (클라이언트, 보안 규칙 제한)
+    ├── members: {                             # 참여자 목록 (클라이언트)
+    │   "uid1": true,                          # true: 알림 수신, false: 알림 미수신
+    │   "uid2": false
+    │ }
+    ├── createdAt: 1698473000000               # 생성 시간 (Cloud Functions)
+    ├── memberCount: 2                         # 참여자 수 (Cloud Functions)
+    ├── groupListOrder: "-1698473000000"       # 그룹 채팅방 정렬 (Cloud Functions)
+    └── openListOrder: "-1698473000000"        # 오픈 채팅방 정렬 (Cloud Functions)
 ```
 
 ### 클라이언트/서버 역할 분리
 
-- **클라이언트**
-  - 사용자 입력 데이터 저장: `text`, `category`, `createdAt`, `urls`
-  - 작성자 정보 스냅샷: `uid`, `displayName`, `photoUrl`
-  - 게시글 수정 시: `text`, `urls`, `updatedAt` 업데이트
-  - 게시글 삭제 시: `deleted=true`, `deletedAt` 설정 (실제 삭제는 하지 않음)
-  - ❌ **절대 하지 말아야 할 작업:**
-    - `categoryOrder`, `allCategoryOrder` 필드를 직접 작성
-    - `likeCount`, `commentCount`를 직접 증가/감소
-
-- **Cloud Functions**
-  - 게시글 생성 시 (`onPostCreate` 핸들러):
-    - `categoryOrder = "{category}-{createdAt}"` 자동 생성
-    - `allCategoryOrder = createdAt` 자동 생성
-  - 좋아요/댓글 생성/삭제 시:
-    - `likeCount`, `commentCount` 자동 업데이트
+**채팅방 생성 시:**
+- 클라이언트: `type`, `name`, `description`, `owner`, `members`
+- Cloud Functions: `createdAt`, `memberCount`, `groupListOrder`, `openListOrder`
 
 ### 관련 가이드
+다른 spec 파일에서 이 구조가 필요한 경우, 이 문서를 참조하세요:
+- **참조 방법**: `[데이터베이스 구조](./sonub-firebase-database-structure.md#채팅방-chat-rooms)`
 
-- **[게시글 기능 가이드](./sonub-forum-post.md)** - 게시글 작성, 수정, 삭제, 정렬 상세 가이드
-- **[Firebase Cloud Functions 가이드](./sns-firebase-cloud-functions.md)** - 자동 필드 생성 로직
+---
+
+## 채팅방 참여 (chat-joins)
+
+사용자별 채팅방 참여 정보는 `/chat-joins/<uid>/<roomId>/` 경로에 저장됩니다.
+
+### 데이터 구조
+
+```
+/chat-joins/
+└── <uid>/
+    └── <roomId>/
+        ├── roomId: "single-uid1-uid2"         # 채팅방 ID (클라이언트)
+        ├── roomType: "single"                 # 채팅방 타입 (클라이언트)
+        ├── roomName: "채팅방 이름"            # 채팅방 이름 (클라이언트)
+        ├── partnerUid: "uid2"                 # 1:1 채팅의 상대방 UID (클라이언트)
+        ├── joinedAt: 1698473000000            # 참여 시간 (클라이언트)
+        ├── lastMessageText: "안녕하세요"       # 마지막 메시지 (Cloud Functions)
+        ├── lastMessageAt: 1698474000000       # 마지막 메시지 시간 (Cloud Functions)
+        ├── updatedAt: 1698474000000           # 업데이트 시간 (Cloud Functions)
+        ├── newMessageCount: 5                 # 읽지 않은 메시지 수 (Cloud Functions)
+        ├── singleChatListOrder: "-1698474000000"                # 1:1 채팅 정렬 (Cloud Functions)
+        ├── groupChatListOrder: "-1698474000000"                 # 그룹 채팅 정렬 (Cloud Functions)
+        ├── openChatListOrder: -1698474000000                    # 오픈 채팅 정렬 (Cloud Functions)
+        ├── openAndGroupChatListOrder: -1698474000000            # 그룹+오픈 통합 정렬 (Cloud Functions)
+        └── allChatListOrder: -1698474000000                     # 모든 채팅방 통합 정렬 (Cloud Functions)
+```
+
+### 정렬 필드 상세 설명
+
+**읽음/읽지 않음 상태 구분:**
+- 읽음 상태: `-timestamp`
+- 읽지 않음 상태: `-timestamp - UNREAD_OFFSET` (UNREAD_OFFSET = 200)
+
+**정렬 필드 종류:**
+| 필드 | 타입 | 용도 |
+|------|------|------|
+| `singleChatListOrder` | string | 1:1 채팅 목록 정렬 |
+| `groupChatListOrder` | string \| number | 그룹 채팅 목록 정렬 |
+| `openChatListOrder` | string \| number | 오픈 채팅 목록 정렬 |
+| `openAndGroupChatListOrder` | number | 그룹+오픈 통합 목록 정렬 |
+| `allChatListOrder` | number | 모든 채팅방 통합 목록 정렬 |
+
+### 관련 가이드
+다른 spec 파일에서 이 구조가 필요한 경우, 이 문서를 참조하세요:
+- **참조 방법**: `[데이터베이스 구조](./sonub-firebase-database-structure.md#채팅방-참여-chat-joins)`
+
+---
+
+## 좋아요 (likes / likes-by)
+
+좋아요 정보는 두 경로에 저장됩니다.
+
+### 데이터 구조
+
+```
+/likes/
+└── <uid>/                                    # 사용자별 좋아요 목록
+    └── <targetId>: "post"                    # 좋아요 대상 타입
+
+/likes-by/
+└── <targetId>/                               # 좋아요 대상별 사용자 목록 (역참조)
+    └── <uid>: true                           # Cloud Functions만 관리
+```
+
+### targetType 값
+
+- `"post"`: 게시글
+- `"comment"`: 댓글
+- `"chat-message-{roomId}"`: 채팅 메시지 (예: "chat-message-single-uid1-uid2")
+
+### 클라이언트/서버 역할 분리
+
+**`/likes/{uid}/{targetId}`:**
+- 클라이언트: 생성/삭제
+- Cloud Functions: targetType 값 저장
+
+**`/likes-by/{targetId}/{uid}`:**
+- Cloud Functions만 관리 (역참조)
+
+### 관련 가이드
+다른 spec 파일에서 이 구조가 필요한 경우, 이 문서를 참조하세요:
+- **참조 방법**: `[데이터베이스 구조](./sonub-firebase-database-structure.md#좋아요-likes--likes-by)`
+
+---
+
+## 팔로우 관계 (user-following / user-followers)
+
+팔로우 관계는 두 경로에 저장됩니다.
+
+### 데이터 구조
+
+```
+/user-following/
+└── <uid>/                                    # 내가 팔로우한 사람
+    └── <targetUid>: true                     # 클라이언트가 생성/삭제
+
+/user-followers/
+└── <uid>/                                    # 나를 팔로우한 사람 (역참조)
+    └── <followerUid>: true                   # Cloud Functions만 관리
+```
+
+### 클라이언트/서버 역할 분리
+
+**`/user-following/{uid}/{targetUid}`:**
+- 클라이언트: 생성/삭제
+
+**`/user-followers/{uid}/{followerUid}`:**
+- Cloud Functions만 관리 (역참조)
+
+### 관련 가이드
+다른 spec 파일에서 이 구조가 필요한 경우, 이 문서를 참조하세요:
+- **참조 방법**: `[데이터베이스 구조](./sonub-firebase-database-structure.md#팔로우-관계-user-following--user-followers)`
+
+---
+
+## 사용자 피드 (user-feed)
+
+팔로우한 사용자들의 메시지 피드를 저장합니다 (fan-out 방식).
+
+### 데이터 구조
+
+```
+/user-feed/
+└── <uid>/
+    └── <messageId>: 1698473000000            # 메시지 생성 시간
+```
+
+### 클라이언트/서버 역할 분리
+- ✅ **Cloud Functions만 관리**: 메시지 생성 시 팔로워들에게 자동 전파
+
+### 관련 가이드
+다른 spec 파일에서 이 구조가 필요한 경우, 이 문서를 참조하세요:
+- **참조 방법**: `[데이터베이스 구조](./sonub-firebase-database-structure.md#사용자-피드-user-feed)`
+
+---
+
+## 게시글 순위 (post-rankings)
+
+인기 게시글 순위를 저장합니다.
+
+### 데이터 구조
+
+```
+/post-rankings/
+├── daily/
+│   └── <yyyyMMdd>/
+│       └── <postId>: -score                  # 점수 (음수)
+├── weekly/
+│   └── <yyyyWww>/
+│       └── <postId>: -score
+└── monthly/
+    └── <yyyyMM>/
+        └── <postId>: -score
+```
+
+### 점수 계산
+
+```typescript
+score = (likeCount × 1) + (commentCount × 2)
+저장값 = -score  // 음수로 저장하여 내림차순 정렬
+```
+
+### 클라이언트/서버 역할 분리
+- ✅ **Cloud Functions만 관리**: 좋아요/댓글 변경 시 자동 업데이트
+
+### 관련 가이드
+다른 spec 파일에서 이 구조가 필요한 경우, 이 문서를 참조하세요:
+- **참조 방법**: `[데이터베이스 구조](./sonub-firebase-database-structure.md#게시글-순위-post-rankings)`
+
+---
+
+## 채팅 초대 (chat-invitations)
+
+채팅방 초대 정보는 `/chat-invitations/<uid>/<roomId>/` 경로에 저장됩니다.
+
+### 데이터 구조
+
+```
+/chat-invitations/
+└── <uid>/                                    # 초대받은 사용자
+    └── <roomId>/
+        ├── roomId: "group-abc123"            # 채팅방 ID (클라이언트)
+        ├── roomType: "group"                 # 타입: "group" | "open" (클라이언트)
+        ├── inviterUid: "inviter-uid"         # 초대한 사람 UID (클라이언트)
+        ├── createdAt: 1698473000000          # 생성 시간 (클라이언트)
+        ├── roomName: "채팅방 이름"           # 채팅방 이름 (Cloud Functions)
+        ├── inviterName: "홍길동"             # 초대한 사람 이름 (Cloud Functions)
+        ├── message: "초대 메시지"            # 초대 메시지 (Cloud Functions)
+        └── invitationOrder: "-1698473000000" # 정렬 필드 (Cloud Functions)
+```
+
+### 관련 가이드
+다른 spec 파일에서 이 구조가 필요한 경우, 이 문서를 참조하세요:
+- **참조 방법**: `[데이터베이스 구조](./sonub-firebase-database-structure.md#채팅-초대-chat-invitations)`
+
+---
+
+## 채팅 북마크 (chat-favorites)
+
+채팅방 북마크는 `/chat-favorites/<uid>/<roomId>/` 경로에 저장됩니다.
+
+### 데이터 구조
+
+```
+/chat-favorites/
+└── <uid>/
+    └── <roomId>: true                        # 클라이언트가 생성/삭제
+```
+
+### 관련 가이드
+다른 spec 파일에서 이 구조가 필요한 경우, 이 문서를 참조하세요:
+- **참조 방법**: `[데이터베이스 구조](./sonub-firebase-database-structure.md#채팅-북마크-chat-favorites)`
+
+---
+
+## FCM 토큰 (fcm-tokens)
+
+FCM 푸시 알림 토큰은 `/fcm-tokens/<uid>/<token>/` 경로에 저장됩니다.
+
+### 데이터 구조
+
+```
+/fcm-tokens/
+└── <uid>/
+    └── <token>: {
+        platform: "web",                       # 플랫폼: "web" | "ios" | "android"
+        createdAt: 1698473000000,              # 생성 시간
+        updatedAt: 1698474000000               # 업데이트 시간
+    }
+```
+
+### 클라이언트/서버 역할 분리
+- 클라이언트: 토큰 등록/삭제
+- Cloud Functions: 푸시 알림 발송 시 사용
+
+### 관련 가이드
+다른 spec 파일에서 이 구조가 필요한 경우, 이 문서를 참조하세요:
+- **참조 방법**: `[데이터베이스 구조](./sonub-firebase-database-structure.md#fcm-토큰-fcm-tokens)`
 
 ---
 
 ## 주요 설계 원칙
 
 ### 1. Flat Style 구조
+- 깊은 중첩 구조를 피하고 플랫하게 구성
+- 각 데이터는 독립적인 경로에 저장
 
-- 데이터를 단순하고 평탄한 구조로 저장
-- 복잡한 다단계 노드 구조 회피
-- 쿼리 효율성과 성능 극대화
-
-### 2. 속성 분리
-
-- 특정 속성에 대한 대량 조회가 필요한 경우 별도 경로에서 관리
-- 예: `user-props/displayName`
-- 네트워크 최적화 및 쿼리 성능 향상
+### 2. 역정규화 (Denormalization)
+- 조회 성능 향상을 위해 데이터 중복 저장
+- 예: chat-joins에 lastMessageText 중복 저장
 
 ### 3. Cloud Functions 활용
-
-클라이언트와 백엔드의 역할을 명확히 분리하여 데이터 무결성과 성능을 보장합니다.
-
-**원칙:**
-- ✅ **클라이언트는 최소한의 데이터만 RTDB에 기록**
-  - 사용자가 직접 입력한 데이터 (게시글, 댓글 내용 등)
-  - 기본 메타데이터 (uid, createdAt, category)
-- ✅ **백엔드(Cloud Functions)는 추가 데이터 자동 처리**
-  - 카운터 자동 증가/감소 (likeCount, commentCount, postCount)
-  - 전체 통계 자동 집계 (stats/counters)
-  - 사용자 속성 분리 자동 동기화 (user-props)
-  - 데이터 무결성 보장
-
-**클라이언트에서 하지 말아야 할 작업:**
-- ❌ 카운터 직접 증가/감소 (`increment()` 사용 금지)
-- ❌ 데이터 집계 및 통계 직접 계산
-- ❌ 속성 분리 작업 직접 수행
-- ❌ 복잡한 비즈니스 로직 처리
-
-**구체적인 예시와 구현 방법은 각 기능별 개발 가이드 문서를 참고하세요:**
-- [Firebase Cloud Functions 개발 가이드](./sns-firebase-cloud-functions.md) - 백엔드 로직 구현 상세 가이드
+- 자동 계산 필드는 Cloud Functions에서 관리
+- ServerValue.increment로 동시성 안전성 확보
 
 ### 4. 보안 규칙
-
-- Firebase Security Rules로 접근 권한 제어
-- 각 데이터 섹션별로 읽기/쓰기 권한 정의
-- 데이터 검증 규칙 포함
-
----
-
-## 주의사항
-
-### Firebase Auth vs RTDB 필드명 차이
-
-**프로필 사진 필드명이 다릅니다:**
-- **Firebase Auth**: `photoURL` (대문자 URL)
-- **RTDB**: `photoUrl` (camelCase url)
-
-자세한 내용과 구현 예제는 [사용자 관리 개발 가이드](./sns-web-user.md) 및 [코딩 가이드라인 - Firebase Auth vs RTDB 필드명 차이](../CLAUDE.md#firebase-auth-vs-rtdb-필드명-차이-매우-중요)를 참고하세요.
-
----
-
-## 관련 가이드 문서
-
-전체 데이터베이스 구조와 관련된 상세한 개발 가이드:
-
-- **[사용자 관리](./sns-web-user.md)** - 사용자 프로필, 속성 분리, Cloud Functions
-- **[친구 관계](./sns-web-friends.md)** - 친구, 팔로우, 팔로워 관리
-- **[Firebase 보안](./sns-web-security.md)** - 보안 규칙 설정
+- 클라이언트는 자신의 데이터만 수정 가능
+- Cloud Functions는 모든 데이터 수정 가능
 
 ---
 
 ## 참고 자료
 
 - [Firebase Realtime Database 공식 문서](https://firebase.google.com/docs/database)
-- [Firebase Security Rules 공식 문서](https://firebase.google.com/docs/rules)
-- [Firebase Cloud Functions 공식 문서](https://firebase.google.com/docs/functions)
+- [Firebase Admin SDK 문서](https://firebase.google.com/docs/admin/setup)
+- [Sonub Cloud Functions 핸들러 코드](../firebase/functions/src/handlers/)
+- [Sonub 타입 정의](../firebase/functions/src/types/index.ts)
+
+---
+
+**이 문서는 실제 소스 코드를 기반으로 작성되었으며, 모든 기능별 spec 문서에서 참조하는 중앙 데이터베이스 구조 문서입니다.**

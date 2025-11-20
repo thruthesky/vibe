@@ -1,15 +1,19 @@
 ---
-title: vite.config.ts
-type: typescript
-path: vite.config.ts
-status: active
-version: 1.0.0
-last_updated: 2025-11-15
+title: vite.config.ts - TypeScript 소스 코드
+original_path: vite.config.ts
+category: source
+file_type: ts
+status: current
+last_updated: 2025-11-20
 ---
+
+# vite.config.ts
 
 ## 개요
 
-이 파일은 `vite.config.ts`의 소스 코드를 포함하는 SED 스펙 문서입니다.
+**원본 경로**: `vite.config.ts`
+
+**파일 유형**: TypeScript 소스 코드
 
 ## 소스 코드
 
@@ -35,7 +39,7 @@ export default defineConfig({
 	server: {
 		fs: {
 			// shared 폴더를 Vite가 서빙할 수 있도록 허용
-			allow: ['..']
+			allow: ['../..']
 		}
 	},
 	test: {
@@ -66,6 +70,4 @@ export default defineConfig({
 		]
 	}
 });
-
 ```
-

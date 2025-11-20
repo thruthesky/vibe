@@ -1,15 +1,19 @@
 ---
-title: components.json
-type: config
-path: components.json
-status: active
-version: 1.0.0
-last_updated: 2025-11-15
+title: components.json - JSON 설정 파일
+original_path: components.json
+category: configuration
+file_type: json
+status: current
+last_updated: 2025-11-20
 ---
+
+# components.json
 
 ## 개요
 
-이 파일은 `components.json`의 소스 코드를 포함하는 SED 스펙 문서입니다.
+**원본 경로**: `components.json`
+
+**파일 유형**: JSON 설정 파일
 
 ## 소스 코드
 
@@ -27,6 +31,4 @@ last_updated: 2025-11-15
 		"utils": "$lib/utils"
 	}
 }
-
 ```
-

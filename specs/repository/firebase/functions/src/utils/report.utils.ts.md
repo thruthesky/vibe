@@ -1,15 +1,19 @@
 ---
-title: report.utils.ts
-type: typescript
-path: firebase/functions/src/utils/report.utils.ts
-status: active
-version: 1.0.0
-last_updated: 2025-11-15
+title: report.utils.ts - TypeScript 소스 코드
+original_path: firebase/functions/src/utils/report.utils.ts
+category: cloud-function
+file_type: ts
+status: current
+last_updated: 2025-11-20
 ---
+
+# report.utils.ts
 
 ## 개요
 
-이 파일은 `firebase/functions/src/utils/report.utils.ts`의 소스 코드를 포함하는 SED 스펙 문서입니다.
+**원본 경로**: `firebase/functions/src/utils/report.utils.ts`
+
+**파일 유형**: TypeScript 소스 코드
 
 ## 소스 코드
 
@@ -93,6 +97,4 @@ export function parseReportId(reportId: string): ParsedReportId | null {
     uid,
   };
 }
-
 ```
-

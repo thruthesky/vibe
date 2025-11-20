@@ -1,15 +1,19 @@
 ---
-title: ChatRoomListItem.svelte
-type: component
-path: src/routes/chat/room/ChatRoomListItem.svelte
-status: active
-version: 1.0.0
-last_updated: 2025-11-15
+title: ChatRoomListItem.svelte - Svelte 5 컴포넌트
+original_path: src/routes/chat/room/ChatRoomListItem.svelte
+category: route
+file_type: svelte
+status: current
+last_updated: 2025-11-20
 ---
+
+# ChatRoomListItem.svelte
 
 ## 개요
 
-이 파일은 `src/routes/chat/room/ChatRoomListItem.svelte`의 소스 코드를 포함하는 SED 스펙 문서입니다.
+**원본 경로**: `src/routes/chat/room/ChatRoomListItem.svelte`
+
+**파일 유형**: Svelte 5 컴포넌트
 
 ## 소스 코드
 
@@ -106,7 +110,9 @@ last_updated: 2025-11-15
 
 		<!-- 채팅방 정보 -->
 		<div class="room-info">
-			<div class="room-name">{roomData.name || roomData.roomId || roomId}</div>
+			<div class="room-name">
+				{roomData.roomName || roomData.name || roomId}
+			</div>
 			{#if roomData.lastMessage}
 				<div class="room-last-message">{roomData.lastMessage}</div>
 			{/if}
@@ -171,6 +177,4 @@ last_updated: 2025-11-15
 		@apply shrink-0;
 	}
 </style>
-
 ```
-

@@ -1,15 +1,19 @@
 ---
-title: cancel.js
-type: javascript
-path: src/paraglide/messages/cancel.js
-status: active
-version: 1.0.0
-last_updated: 2025-11-15
+title: cancel.js - JavaScript 소스 코드
+original_path: src/paraglide/messages/cancel.js
+category: source
+file_type: js
+status: current
+last_updated: 2025-11-20
 ---
+
+# cancel.js
 
 ## 개요
 
-이 파일은 `src/paraglide/messages/cancel.js`의 소스 코드를 포함하는 SED 스펙 문서입니다.
+**원본 경로**: `src/paraglide/messages/cancel.js`
+
+**파일 유형**: JavaScript 소스 코드
 
 ## 소스 코드
 
@@ -55,4 +59,3 @@ export const cancel = (inputs = {}, options = {}) => {
 	return zh_cancel(inputs)
 };
 ```
-

@@ -1,15 +1,19 @@
 ---
-title: testusercreateatonce4.js
-type: javascript
-path: src/paraglide/messages/testusercreateatonce4.js
-status: active
-version: 1.0.0
-last_updated: 2025-11-15
+title: testusercreateatonce4.js - JavaScript 소스 코드
+original_path: src/paraglide/messages/testusercreateatonce4.js
+category: source
+file_type: js
+status: current
+last_updated: 2025-11-20
 ---
+
+# testusercreateatonce4.js
 
 ## 개요
 
-이 파일은 `src/paraglide/messages/testusercreateatonce4.js`의 소스 코드를 포함하는 SED 스펙 문서입니다.
+**원본 경로**: `src/paraglide/messages/testusercreateatonce4.js`
+
+**파일 유형**: JavaScript 소스 코드
 
 ## 소스 코드
 
@@ -29,8 +33,9 @@ const ja_testusercreateatonce4 = /** @type {(inputs: {}) => string} */ () => {
 	return `一度に作成される数`
 };
 
-/** @type {(inputs: {}) => string} */
-const zh_testusercreateatonce4 = en_testusercreateatonce4;
+const zh_testusercreateatonce4 = /** @type {(inputs: {}) => string} */ () => {
+	return `一次创建的数量`
+};
 
 /**
 * This function has been compiled by [Paraglide JS](https://inlang.com/m/gerre34r).
@@ -58,4 +63,3 @@ const testusercreateatonce4 = (inputs = {}, options = {}) => {
 };
 export { testusercreateatonce4 as "testUserCreateAtOnce" }
 ```
-

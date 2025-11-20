@@ -1,15 +1,19 @@
 ---
-title: +page.svelte
-type: component
-path: src/routes/chat/room/+page.svelte
-status: active
-version: 1.0.0
-last_updated: 2025-11-15
+title: +page.svelte - Svelte 5 컴포넌트
+original_path: src/routes/chat/room/+page.svelte
+category: route
+file_type: svelte
+status: current
+last_updated: 2025-11-20
 ---
+
+# +page.svelte
 
 ## 개요
 
-이 파일은 `src/routes/chat/room/+page.svelte`의 소스 코드를 포함하는 SED 스펙 문서입니다.
+**원본 경로**: `src/routes/chat/room/+page.svelte`
+
+**파일 유형**: Svelte 5 컴포넌트
 
 ## 소스 코드
 
@@ -28,7 +32,7 @@ last_updated: 2025-11-15
 	import Avatar from '$lib/components/user/avatar.svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { userProfileStore } from '$lib/stores/user-profile.svelte';
-	import { pushData } from '$lib/stores/database.svelte';
+	import { pushData, createRealtimeStore } from '$lib/stores/database.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import {
 		buildSingleRoomId,
@@ -38,7 +42,7 @@ last_updated: 2025-11-15
 		togglePinChatRoom,
 		inviteUserToChatRoom
 	} from '$lib/functions/chat.functions';
-	import { formatLongDate } from '$lib/functions/date.functions';
+	import { formatChatMessageDate } from '$lib/functions/date.functions';
 	import {
 		uploadChatFile,
 		deleteChatFile,
@@ -49,6 +53,12 @@ last_updated: 2025-11-15
 		getFileExtension,
 		getExtensionFromFilename
 	} from '$lib/functions/storage.functions';
+	import {
+		toggleLikeTarget,
+		fetchLikedByUsers,
+		type LikeTargetType
+	} from '$lib/functions/like.functions';
+	import { getUserField } from '$lib/functions/user.functions';
 	import type { FileUploadStatus } from '$lib/types/chat.types';
 	import { tick, onDestroy } from 'svelte';
 	import { rtdb } from '$lib/firebase';
@@ -56,17 +66,29 @@ last_updated: 2025-11-15
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { Button } from '$lib/components/ui/button';
 	import ChatFavoritesDialog from '$lib/components/chat/ChatFavoritesDialog.svelte';
+	import * as Tooltip from '$lib/components/ui/tooltip';
 	import UserSearchDialog from '$lib/components/user/UserSearchDialog.svelte';
 	import RoomPasswordSetting from '$lib/components/chat/room-password-setting.svelte';
 	import RoomPasswordPrompt from '$lib/components/chat/room-password-prompt.svelte';
-	import {
-		Dialog,
-		DialogContent,
-		DialogHeader,
-		DialogTitle
-	} from '$lib/components/ui/dialog';
+	import ChatMessageEditModal from '$lib/components/chat/ChatMessageEditModal.svelte';
+	import { Dialog, DialogContent, DialogHeader, DialogTitle } from '$lib/components/ui/dialog';
+	import { FORUM_CATEGORIES, type ForumCategory } from '$shared/categories';
+	import UserProfile from '$lib/components/UserProfile.svelte';
+	import LikedUsersModal from '$lib/components/LikedUsersModal.svelte';
+	import LikedUsersAvatarStack from '$lib/components/LikedUsersAvatarStack.svelte';
+
+	// 채팅방으로 이동하기 직전에 어느 채팅 목록 탭에서 왔는지 추적하기 위한 경로 목록
+	const CHAT_LIST_PATHS = ['/chat/list', '/chat/group-chat-list', '/chat/open-chat-list'];
+	const DEFAULT_CHAT_LIST_PATH = '/chat/list';
+
+	// 네비게이션 state 에 저장된 이전 채팅 목록 탭 경로
+	const navigationFrom = $derived.by(() => {
+		const rawFrom = $page.state?.from;
+		return typeof rawFrom === 'string' ? rawFrom : '';
+	});
 
 	// GET 파라미터 추출
+	const fromParam = $derived.by(() => $page.url.searchParams.get('from') ?? '');
 	const uidParam = $derived.by(() => $page.url.searchParams.get('uid') ?? '');
 	const roomIdParam = $derived.by(() => $page.url.searchParams.get('roomId') ?? '');
 
@@ -81,8 +103,10 @@ last_updated: 2025-11-15
 		return '';
 	});
 
-	// DatabaseListView 설정 (Flat 구조 기준)
-	const messagePath = 'chat-messages';
+	// DatabaseListView 설정 (2단계 구조: chat-messages/{roomId}/{messageId})
+	const messagePath = $derived.by(() =>
+		activeRoomId ? `chat-messages/${activeRoomId}` : 'chat-messages'
+	);
 	const roomOrderField = 'roomOrder';
 	const roomOrderPrefix = $derived.by(() => (activeRoomId ? `-${activeRoomId}-` : ''));
 	const canRenderMessages = $derived.by(() => Boolean(activeRoomId && roomOrderPrefix));
@@ -102,6 +126,10 @@ last_updated: 2025-11-15
 	 * - 비밀번호 필요 여부 확인 (roomPasswordEnabled && !isRoomMember && !isRoomOwner)
 	 * - 비밀번호 필요: passwordPromptOpen = true
 	 * - 비밀번호 불필요: joinChatRoom 호출
+	 *
+	 * 중요: 깜빡임 방지를 위해 roomDataLoaded가 true일 때만 비밀번호 체크를 실행합니다.
+	 * Firebase 구독이 최소한 한 번 데이터를 받아온 후에만 비밀번호 프롬프트를 열어야
+	 * isRoomMember가 일시적으로 false인 상태에서 프롬프트가 열렸다 닫히는 것을 방지합니다.
 	 */
 	$effect(() => {
 		if (!activeRoomId || !authStore.user?.uid || !rtdb) return;
@@ -112,18 +140,30 @@ last_updated: 2025-11-15
 			enterSingleChatRoom(rtdb, activeRoomId, authStore.user.uid);
 		} else {
 			// 그룹/오픈 채팅: 비밀번호 확인 후 입장
-			// 채팅방 정보 로드 완료 확인 (roomOwner가 null이 아니면 로드 완료)
-			if (roomOwner !== null) {
+			// 중요: roomDataLoaded가 true일 때만 비밀번호 체크 실행 (깜빡임 방지)
+			// Firebase 구독이 데이터를 한 번 이상 받아온 후에만 실행됩니다.
+			if (roomOwner !== null && roomDataLoaded) {
 				const needsPassword = roomPasswordEnabled && !isRoomMember && !isRoomOwner;
 
-				if (needsPassword) {
-					// 비밀번호 필요: 모달 표시
+				console.log(
+					'--> needsPassword: roomPasswordEnabled: ',
+					roomPasswordEnabled,
+					isRoomMember,
+					isRoomOwner,
+					'roomDataLoaded:',
+					roomDataLoaded
+				);
+
+				if (needsPassword && !passwordPromptOpen) {
+					// 비밀번호 필요하고 프롬프트가 아직 열리지 않았을 때만 모달 표시
 					passwordPromptOpen = true;
 				} else if (isRoomMember || isRoomOwner) {
-					// 이미 members이거나 owner인 경우: 입장 (chat-joins 업데이트)
+					// 이미 members이거나 owner인 경우
+					// 프롬프트가 열려있으면 닫고 입장 (chat-joins 업데이트)
+					passwordPromptOpen = false;
 					joinChatRoom(rtdb, activeRoomId, authStore.user.uid);
-				} else {
-					// 비밀번호 불필요하지만 members도 아닌 경우: 자동으로 members에 추가
+				} else if (!roomPasswordEnabled) {
+					// 비밀번호가 설정되지 않은 경우: 자동으로 members에 추가
 					joinChatRoom(rtdb, activeRoomId, authStore.user.uid);
 				}
 			}
@@ -149,7 +189,7 @@ last_updated: 2025-11-15
 	 */
 	function handlePasswordCancel() {
 		passwordPromptOpen = false;
-		goto('/chat/list');
+		goto(resolveBackPath());
 	}
 
 	const targetProfile = $derived(userProfileStore.getCachedProfile(uidParam));
@@ -165,8 +205,30 @@ last_updated: 2025-11-15
 
 	// 작성 중인 메시지
 	let composerText = $state('');
+	let composerRows = $state(1); // textarea 줄 수 (최대 4줄까지 높이 증가, 이후 스크롤)
 	let isSending = $state(false);
 	let sendError = $state<string | null>(null);
+
+	// 카테고리 선택 상태
+	let selectedCategory = $state<ForumCategory | null>(null);
+
+	// 카테고리 이름을 i18n 메시지 함수로 변환
+	const getCategoryMessage = (category: ForumCategory) => {
+		const categoryMap: Record<ForumCategory, () => string> = {
+			discussion: m.chatCategoryFreeDiscussion,
+			qna: m.chatCategoryQna,
+			news: m.chatCategoryNews,
+			info: m.chatCategoryInformation,
+			selling: m.chatCategoryForSale,
+			hiring: m.chatCategoryJobs,
+			travel: m.chatCategoryTravel,
+			mukbang: m.chatCategoryFood,
+			realestate: m.chatCategoryRealEstate,
+			hobby: m.chatCategoryHobby,
+			story: m.chatCategoryStory
+		};
+		return categoryMap[category]();
+	};
 
 	// 파일 업로드 상태
 	let fileInputRef: HTMLInputElement | null = $state(null);
@@ -192,11 +254,39 @@ last_updated: 2025-11-15
 	// 비밀번호 입력 Prompt 모달 상태
 	let passwordPromptOpen = $state(false);
 
+	// 메시지 수정 모달 상태
+	let editModalOpen = $state(false);
+	let selectedMessageId = $state<string>('');
+	let selectedMessageText = $state<string>('');
+	let selectedMessageUrls = $state<Record<number, string>>({});
+	let selectedMessageCreatedAt = $state<number>(0);
+
 	// 채팅방 정보 구독 (owner, password 등)
 	let roomOwner = $state<string | null>(null);
 	let roomPasswordEnabled = $state(false);
 	let roomPasswordValue = $state<string>('');
 	let isRoomMember = $state(false); // 현재 사용자가 members인지 여부
+	let roomName = $state<string>('');
+	let roomDataLoaded = $state(false); // Firebase 구독이 데이터를 한 번 이상 받아왔는지 여부 (깜빡임 방지용)
+
+	// 좋아요 상태 관리
+	type UserLikesMap = Record<string, LikeTargetType>;
+	let userLikes = $state<UserLikesMap>({});
+	const pendingLikeTargets = new Set<string>();
+
+	// 좋아요 툴팁 상태
+	let likedByUsers = $state<Record<string, string[]>>({});
+	let tooltipContent = $state<Record<string, string>>({});
+
+	// 좋아요 아바타 스택용: 메시지별 좋아요 사용자 uid 목록
+	let messageLikedUserUids = $state<Record<string, string[]>>({});
+
+	// 롱프레스 상태
+	let longPressTimer: NodeJS.Timeout | null = null;
+
+	// 좋아요 사용자 모달 상태
+	let likesModalOpen = $state(false);
+	let likesModalTargetId = $state<string>('');
 
 	/**
 	 * 채팅방 정보 구독 (그룹/오픈 채팅방만)
@@ -213,8 +303,16 @@ last_updated: 2025-11-15
 			roomPasswordEnabled = false;
 			roomPasswordValue = '';
 			isRoomMember = false;
+			roomName = '';
+			roomDataLoaded = false; // 데이터 로딩 상태 초기화
 			return;
 		}
+
+		// 채팅방 이름 구독
+		const nameRef = ref(rtdb, `chat-rooms/${activeRoomId}/name`);
+		const unsubscribeName = onValue(nameRef, (snapshot) => {
+			roomName = snapshot.val() ?? '';
+		});
 
 		// 채팅방 owner 구독
 		const ownerRef = ref(rtdb, `chat-rooms/${activeRoomId}/owner`);
@@ -237,6 +335,7 @@ last_updated: 2025-11-15
 		const memberRef = ref(rtdb, `chat-rooms/${activeRoomId}/members/${authStore.user.uid}`);
 		const unsubscribeMember = onValue(memberRef, (snapshot) => {
 			isRoomMember = snapshot.exists(); // 필드 존재 여부만 확인 (true/false 모두 멤버임)
+			roomDataLoaded = true; // 멤버 데이터 로딩 완료 (깜빡임 방지: Firebase에서 최소한 한 번은 데이터를 받아옴)
 		});
 
 		// 실제 비밀번호 구독 (owner만 읽기 가능)
@@ -246,6 +345,7 @@ last_updated: 2025-11-15
 		});
 
 		return () => {
+			unsubscribeName();
 			unsubscribeOwner();
 			unsubscribePasswordFlag();
 			unsubscribeMember();
@@ -292,6 +392,31 @@ last_updated: 2025-11-15
 
 		return () => {
 			unsubscribe();
+		};
+	});
+
+	/**
+	 * 현재 사용자의 좋아요 목록 구독
+	 *
+	 * /likes/{uid}/{messageId} 경로를 구독하여
+	 * 사용자가 좋아요한 메시지 목록을 실시간으로 가져옵니다.
+	 */
+	$effect(() => {
+		const uid = authStore.user?.uid;
+
+		if (!uid) {
+			userLikes = {};
+			return;
+		}
+
+		const store = createRealtimeStore<UserLikesMap>(`likes/${uid}`, {});
+		const unsubscribe = store.subscribe((state) => {
+			userLikes = state.data ?? {};
+		});
+
+		return () => {
+			unsubscribe();
+			store.unsubscribe();
 		};
 	});
 
@@ -357,8 +482,47 @@ last_updated: 2025-11-15
 		};
 	});
 
-	// 채팅 입력 창(input) 직접 참조
-	let composerInputRef: HTMLInputElement | null = $state(null);
+	// 채팅 입력 창(textarea) 직접 참조
+	let composerInputRef: HTMLTextAreaElement | null = $state(null);
+
+	/**
+	 * textarea 입력 핸들러: 줄 수를 자동 계산하여 최대 4줄까지 높이 증가
+	 */
+	function handleComposerInput() {
+		if (!composerInputRef) return;
+
+		// 줄바꿈 개수 계산
+		const lines = composerText.split('\n');
+		const lineCount = lines.length;
+
+		// 최대 4줄까지 높이 증가, 이후 스크롤바로 처리
+		composerRows = Math.min(lineCount, 4);
+	}
+
+	/**
+	 * textarea 키보드 이벤트 핸들러
+	 * - Enter: 메시지 전송
+	 * - Shift+Enter: 줄바꿈 (무제한, 단 높이는 최대 4줄)
+	 */
+	function handleComposerKeyDown(event: KeyboardEvent) {
+		// Shift+Enter: 줄바꿈 허용 (무제한)
+		if (event.key === 'Enter' && event.shiftKey) {
+			// 줄바꿈 제한 없이 기본 동작 허용
+			// 4줄 이상일 경우 스크롤바로 처리
+			return;
+		}
+
+		// Enter만 누르면 메시지 전송
+		if (event.key === 'Enter' && !event.shiftKey) {
+			event.preventDefault();
+			// 폼 submit 이벤트 트리거
+			const target = event.currentTarget as HTMLElement;
+			const form = target?.closest('form');
+			if (form) {
+				form.requestSubmit();
+			}
+		}
+	}
 
 	// 메시지 전송 처리
 	async function handleSendMessage(event: SubmitEvent) {
@@ -414,7 +578,7 @@ last_updated: 2025-11-15
 			const trimmed = composerText.trim();
 			const timestamp = Date.now();
 
-			const payload = {
+			const payload: Record<string, any> = {
 				roomId: activeRoomId,
 				type: 'message',
 				text: trimmed,
@@ -427,6 +591,11 @@ last_updated: 2025-11-15
 				rootOrder: `-${activeRoomId}-${timestamp}`
 			};
 
+			// 카테고리가 선택되었으면 payload에 추가
+			if (selectedCategory) {
+				payload.category = selectedCategory;
+			}
+
 			const result = await pushData(messagePath, payload);
 
 			if (!result.success) {
@@ -435,11 +604,15 @@ last_updated: 2025-11-15
 			} else {
 				// 메시지 전송 성공 시
 				composerText = '';
+				composerRows = 1; // textarea 줄 수 초기화
 				sendError = null;
 				isSending = false;
 
 				// 업로드된 파일 목록 초기화 (이미 Storage에 업로드되어 있음)
 				uploadingFiles = [];
+
+				// 선택된 카테고리 초기화
+				selectedCategory = null;
 
 				// 전송 소리 재생
 				try {
@@ -493,9 +666,29 @@ last_updated: 2025-11-15
 		databaseListView?.scrollToBottom();
 	}
 
+	// 마지막으로 방문한 채팅 목록 탭 또는 기본 목록으로 돌아가는 경로 계산
+	function resolveBackPath(): string {
+		const candidates = [navigationFrom.trim(), fromParam.trim()].filter(Boolean);
+
+		for (const path of candidates) {
+			if (CHAT_LIST_PATHS.includes(path)) {
+				return path;
+			}
+		}
+
+		if (typeof window !== 'undefined') {
+			const storedPath = sessionStorage.getItem('chat:lastChatListPath') ?? '';
+			if (CHAT_LIST_PATHS.includes(storedPath)) {
+				return storedPath;
+			}
+		}
+
+		return DEFAULT_CHAT_LIST_PATH;
+	}
+
 	// 뒤로가기 (채팅 목록으로)
 	function handleGoBack() {
-		void goto('/chat/list');
+		void goto(resolveBackPath());
 	}
 
 	// 즐겨찾기 추가/제거
@@ -539,7 +732,7 @@ last_updated: 2025-11-15
 		try {
 			await leaveChatRoom(rtdb, activeRoomId, authStore.user.uid);
 			// console.log('채팅방 탈퇴 완료');
-			void goto('/chat/list');
+			void goto(resolveBackPath());
 		} catch (error) {
 			console.error('채팅방 탈퇴 실패:', error);
 		}
@@ -733,6 +926,264 @@ last_updated: 2025-11-15
 	}
 
 	/**
+	 * 메시지 수정 버튼 클릭 핸들러
+	 *
+	 * @param messageId - 메시지 ID
+	 * @param text - 메시지 텍스트
+	 * @param urls - 첨부파일 URL 목록
+	 * @param createdAt - 메시지 생성 시각
+	 */
+	function handleEditMessage(
+		messageId: string,
+		text: string,
+		urls: Record<number, string>,
+		createdAt: number
+	) {
+		selectedMessageId = messageId;
+		selectedMessageText = text ?? '';
+		selectedMessageUrls = urls ?? {};
+		selectedMessageCreatedAt = createdAt;
+		editModalOpen = true;
+	}
+
+	/**
+	 * 메시지 삭제 버튼 클릭 핸들러
+	 *
+	 * @param messageId - 메시지 ID
+	 * @param urls - 첨부파일 URL 목록
+	 */
+	async function handleDeleteMessage(messageId: string, urls: Record<number, string>) {
+		const confirmed = confirm('메시지를 삭제하시겠습니까?');
+		if (!confirmed) return;
+
+		if (!rtdb) {
+			alert('Firebase 연결이 없습니다.');
+			return;
+		}
+
+		try {
+			// 1. 첨부파일 삭제 (Storage)
+			if (urls && Object.keys(urls).length > 0) {
+				for (const url of Object.values(urls)) {
+					try {
+						await deleteChatFile(url);
+					} catch (err) {
+						console.error('첨부파일 삭제 실패:', err);
+						// 첨부파일 삭제 실패해도 계속 진행
+					}
+				}
+			}
+
+			// 2. 메시지 Soft Delete (deleted: true, urls/text 필드 제거)
+			const messageRef = ref(rtdb, `chat-messages/${messageId}`);
+			await update(messageRef, {
+				deleted: true,
+				deletedAt: Date.now(),
+				text: '',
+				urls: null
+			});
+
+			// console.log('메시지 삭제 완료:', messageId);
+		} catch (err) {
+			console.error('메시지 삭제 실패:', err);
+			alert('메시지 삭제에 실패했습니다. 다시 시도해주세요.');
+		}
+	}
+
+	/**
+	 * 메시지 수정 가능 여부 확인
+	 *
+	 * 90분(5400초) 이내 메시지만 수정/삭제 가능
+	 *
+	 * @param createdAt - 메시지 생성 시각 (밀리초)
+	 * @returns 수정 가능 여부
+	 */
+	function canEditMessage(createdAt: number): boolean {
+		if (!createdAt) return false;
+
+		const now = Date.now();
+		const elapsed = now - createdAt;
+		const ninetyMinutesInMs = 90 * 60 * 1000; // 90분 = 5,400,000ms
+
+		return elapsed < ninetyMinutesInMs;
+	}
+
+	/**
+	 * 메시지 수정 모달 닫기 핸들러
+	 */
+	function handleEditModalClose() {
+		editModalOpen = false;
+	}
+
+	/**
+	 * 메시지 수정 저장 완료 핸들러
+	 */
+	function handleEditModalSaved() {
+		// console.log('메시지 수정 완료');
+		// 모달은 자동으로 닫힘 (MessageEditModal에서 onClose 호출)
+	}
+
+	/**
+	 * 좋아요 토글 핸들러
+	 *
+	 * @param event - 마우스 클릭 이벤트
+	 * @param messageId - 메시지 ID
+	 */
+	async function handleToggleLike(event: MouseEvent, messageId: string) {
+		event.stopPropagation();
+
+		console.log('💖 [handleToggleLike] 시작', {
+			messageId,
+			activeRoomId,
+			userUid: authStore.user?.uid
+		});
+
+		if (!authStore.user) {
+			alert('로그인이 필요합니다.');
+			return;
+		}
+
+		// 이미 처리 중인 요청인지 확인 (중복 방지)
+		if (pendingLikeTargets.has(messageId)) {
+			console.log('⏭️ [handleToggleLike] 이미 처리 중인 요청, 건너뜀', { messageId });
+			return;
+		}
+
+		pendingLikeTargets.add(messageId);
+
+		try {
+			console.log('📤 [handleToggleLike] toggleLikeTarget 호출', {
+				uid: authStore.user.uid,
+				targetId: messageId,
+				targetType: 'message',
+				roomId: activeRoomId
+			});
+
+			const result = await toggleLikeTarget({
+				uid: authStore.user.uid,
+				targetId: messageId,
+				targetType: 'message',
+				roomId: activeRoomId
+			});
+
+			console.log('📥 [handleToggleLike] toggleLikeTarget 결과:', result);
+
+			if (!result.success && result.error) {
+				alert(result.error);
+			}
+		} finally {
+			pendingLikeTargets.delete(messageId);
+			console.log('✅ [handleToggleLike] 완료', { messageId });
+		}
+	}
+
+	/**
+	 * 좋아요한 사용자 이름 목록 가져오기 (최대 3명, 툴팁용)
+	 *
+	 * @param messageId - 메시지 ID
+	 * @returns 좋아요한 사용자의 displayName 배열
+	 */
+	async function fetchLikedByUsersNames(messageId: string): Promise<string[]> {
+		console.log('👥 [fetchLikedByUsersNames] 시작', { messageId });
+
+		// 캐시된 데이터가 있으면 반환
+		if (likedByUsers[messageId]) {
+			console.log('💾 [fetchLikedByUsersNames] 캐시 반환', {
+				messageId,
+				cachedNames: likedByUsers[messageId]
+			});
+			return likedByUsers[messageId];
+		}
+
+		if (!rtdb) {
+			console.error('❌ [fetchLikedByUsersNames] RTDB 초기화 안됨');
+			return [];
+		}
+
+		try {
+			// fetchLikedByUsers 함수 사용 (통합 경로: /likes-by/{messageId})
+			console.log('📤 [fetchLikedByUsersNames] fetchLikedByUsers 호출', { messageId });
+			const uids = await fetchLikedByUsers(messageId, 'message');
+			console.log('📥 [fetchLikedByUsersNames] fetchLikedByUsers 결과:', {
+				messageId,
+				uidsCount: uids.length,
+				uids
+			});
+
+			// 최대 3명만
+			const limitedUids = uids.slice(0, 3);
+
+			// 병렬로 사용자 이름 가져오기
+			console.log('🔍 [fetchLikedByUsersNames] 사용자 이름 가져오기 시작', {
+				limitedUids
+			});
+			const names = await Promise.all(
+				limitedUids.map(async (uid) => {
+					const displayName = await getUserField(uid, 'displayName');
+					return displayName || '익명';
+				})
+			);
+
+			console.log('✅ [fetchLikedByUsersNames] 완료', { messageId, names });
+
+			// 캐시에 저장
+			likedByUsers[messageId] = names;
+			return names;
+		} catch (error) {
+			console.error('❌ [fetchLikedByUsersNames] 좋아요 사용자 목록 가져오기 실패:', {
+				messageId,
+				error: error instanceof Error ? error.message : error,
+				errorStack: error instanceof Error ? error.stack : undefined
+			});
+			return [];
+		}
+	}
+
+	/**
+	 * 메시지별 좋아요 사용자 uid 목록 로드 (아바타 스택용)
+	 *
+	 * @param messageId - 메시지 ID
+	 */
+	async function loadMessageLikedUserUids(messageId: string) {
+		// 이미 로드된 경우 다시 로드하지 않음
+		if (messageLikedUserUids[messageId]) {
+			return;
+		}
+
+		try {
+			// $lib/functions/like.functions의 fetchLikedByUsers 사용
+			const uids = await fetchLikedByUsers(messageId, 'message');
+			messageLikedUserUids[messageId] = uids;
+		} catch (error) {
+			console.error('메시지 좋아요 사용자 uid 로드 실패:', error);
+			messageLikedUserUids[messageId] = [];
+		}
+	}
+
+	/**
+	 * 롱프레스 시작 핸들러
+	 *
+	 * @param messageId - 메시지 ID
+	 */
+	function handleLongPressStart(messageId: string) {
+		// 800ms 후 모달 열기
+		longPressTimer = setTimeout(() => {
+			likesModalTargetId = messageId;
+			likesModalOpen = true;
+		}, 800);
+	}
+
+	/**
+	 * 롱프레스 종료 핸들러
+	 */
+	function handleLongPressEnd() {
+		if (longPressTimer) {
+			clearTimeout(longPressTimer);
+			longPressTimer = null;
+		}
+	}
+
+	/**
 	 * 파일 선택 버튼 클릭 핸들러
 	 */
 	function handleFileButtonClick() {
@@ -860,6 +1311,14 @@ last_updated: 2025-11-15
 	}
 
 	/**
+	 * 메시지 리스트 등 비드랍 영역에서 기본 드롭 동작만 차단
+	 */
+	function preventDrop(event: DragEvent) {
+		event.preventDefault();
+		event.stopPropagation();
+	}
+
+	/**
 	 * 파일 처리 공통 함수
 	 * - 파일 선택 및 드래그 앤 드롭에서 공통으로 사용
 	 */
@@ -924,8 +1383,9 @@ last_updated: 2025-11-15
 	<title>{m.pageTitleChat()}</title>
 </svelte:head>
 
-<!-- 채팅방 전체 컨테이너: Flexbox로 화면 높이 최대 활용 -->
-<div class="chat-room-container">
+<Tooltip.Provider>
+	<!-- 채팅방 전체 컨테이너: Flexbox로 화면 높이 최대 활용 -->
+	<div class="chat-room-container">
 	<!-- 채팅방 상단 헤더 -->
 	<header class="chat-room-header">
 		<!-- 뒤로가기 버튼 -->
@@ -946,12 +1406,11 @@ last_updated: 2025-11-15
 						<p class="text-xs text-red-500">프로필 로드 실패</p>
 					{/if}
 				</div>
-			{:else if roomIdParam}
+			{:else if activeRoomId}
 				<!-- 그룹/오픈 채팅: 방 이름 -->
 				<div class="flex-1 overflow-hidden">
 					<h1 class="truncate text-lg font-semibold text-gray-900">
-						{m.chatRoom()}
-						{roomIdParam}
+						{roomName?.trim() ? roomName : activeRoomId}
 					</h1>
 					<p class="text-xs text-gray-500">{m.chatChatRoom()}</p>
 				</div>
@@ -1078,10 +1537,8 @@ last_updated: 2025-11-15
 			class="message-list-section"
 			role="region"
 			aria-label="채팅 메시지 영역"
-			ondragenter={handleDragEnter}
-			ondragover={handleDragOver}
-			ondragleave={handleDragLeave}
-			ondrop={handleDrop}
+			ondragover={preventDrop}
+			ondrop={preventDrop}
 		>
 			{#if canRenderMessages}
 				{#key roomOrderPrefix}
@@ -1092,7 +1549,6 @@ last_updated: 2025-11-15
 						orderBy={roomOrderField}
 						orderPrefix={roomOrderPrefix}
 						threshold={300}
-						reverse={false}
 						scrollTrigger="top"
 						autoScrollToEnd={true}
 						autoScrollOnNewData={true}
@@ -1101,6 +1557,8 @@ last_updated: 2025-11-15
 						{#snippet item(itemData: { key: string; data: any })}
 							{@const message = itemData.data ?? {}}
 							{@const mine = message.senderUid === authStore.user?.uid}
+							{@const messageId = itemData.key}
+							{@const isEditable = mine && canEditMessage(message.createdAt) && !message.deleted}
 							<article class={`message-row ${mine ? 'message-row--mine' : 'message-row--theirs'}`}>
 								{#if !mine}
 									<Avatar uid={message.senderUid} size={36} class="message-avatar" />
@@ -1110,66 +1568,161 @@ last_updated: 2025-11-15
 										<span class="message-sender-label">{resolveSenderLabel(message.senderUid)}</span
 										>
 									{/if}
-									<div class={`message-bubble ${mine ? 'bubble-mine' : 'bubble-theirs'}`}>
-										<!-- 텍스트 -->
-										{#if message.text}
-											<p class="message-text m-0">{message.text}</p>
+
+									{#if message.deleted}
+										<!-- 삭제된 메시지 표시 -->
+										<div
+											class={`message-bubble ${mine ? 'bubble-mine' : 'bubble-theirs'} deleted-message`}
+										>
+											<p class="message-text m-0 text-gray-400 italic">삭제된 메시지입니다</p>
+										</div>
+									{:else}
+										<!-- 일반 메시지 표시 -->
+										<div class={`message-bubble ${mine ? 'bubble-mine' : 'bubble-theirs'}`}>
+											<!-- 텍스트 -->
+											{#if message.text}
+												<p class="message-text m-0">{message.text}</p>
+											{/if}
+
+											<!-- 첨부파일 목록 -->
+											{#if message.urls && Object.keys(message.urls).length > 0}
+												<div class="message-attachments">
+													{#each Object.entries(message.urls as Record<string, string>) as [index, url]}
+														<a
+															href={url}
+															target="_blank"
+															rel="noopener noreferrer"
+															class="attachment-item"
+														>
+															{#if isImageUrl(url)}
+																<!-- 이미지 첨부파일 -->
+																<img src={url} alt="첨부 이미지" class="attachment-image" />
+															{:else if isVideoUrl(url)}
+																<!-- 동영상 첨부파일 -->
+																<video
+																	src={url}
+																	class="attachment-video"
+																	controls
+																	aria-hidden="true"
+																	tabindex="-1"
+																/>
+															{:else}
+																<!-- 일반 파일 첨부파일 -->
+																<div class="attachment-file">
+																	<div class="attachment-file-icon">
+																		<span class="attachment-file-extension"
+																			>{getFileExtension(url).replace('.', '').toUpperCase()}</span
+																		>
+																	</div>
+																	<div class="file-details">
+																		<p class="file-name">{getFilenameFromUrl(url)}</p>
+																	</div>
+																	<svg
+																		class="download-icon"
+																		fill="none"
+																		stroke="currentColor"
+																		viewBox="0 0 24 24"
+																		stroke-width="2"
+																	>
+																		<path
+																			stroke-linecap="round"
+																			stroke-linejoin="round"
+																			d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+																		/>
+																	</svg>
+																</div>
+															{/if}
+														</a>
+													{/each}
+												</div>
+											{/if}
+										</div>
+									{/if}
+
+									<!-- 타임스탬프 및 설정 아이콘 -->
+									<div class="message-footer">
+										<span class="message-timestamp">{formatChatMessageDate(message.createdAt)}</span
+										>
+
+										<!-- 좋아요 버튼 (롱프레스 지원) -->
+										<button
+												class="inline-flex {userLikes[messageId] === 'message'
+													? 'like-button liked'
+													: 'like-button'}"
+												disabled={!authStore.user}
+												onclick={(e) => handleToggleLike(e, messageId)}
+												onmousedown={() => handleLongPressStart(messageId)}
+												onmouseup={handleLongPressEnd}
+												onmouseleave={handleLongPressEnd}
+												ontouchstart={() => handleLongPressStart(messageId)}
+												ontouchend={handleLongPressEnd}
+												aria-label="좋아요"
+											>
+												<svg
+													class="like-icon"
+													fill={userLikes[messageId] === 'message' ? 'currentColor' : 'none'}
+													stroke="currentColor"
+													viewBox="0 0 24 24"
+													stroke-width="2"
+												>
+													<path
+														stroke-linecap="round"
+														stroke-linejoin="round"
+														d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+													/>
+												</svg>
+												{#if message.likeCount && message.likeCount > 0}
+													<span class="like-count">{message.likeCount}</span>
+												{/if}
+											</button>
+
+										<!-- 좋아요 사용자 아바타 스택 -->
+										{#if message.likeCount && message.likeCount > 0}
+											{@const _ = loadMessageLikedUserUids(messageId)}
+											{#if messageLikedUserUids[messageId] && messageLikedUserUids[messageId].length > 0}
+												<LikedUsersAvatarStack
+													likedByUids={messageLikedUserUids[messageId]}
+													onClick={() => {
+														likesModalTargetId = messageId;
+														likesModalOpen = true;
+													}}
+												/>
+											{/if}
 										{/if}
 
-										<!-- 첨부파일 목록 -->
-										{#if message.urls && Object.keys(message.urls).length > 0}
-											<div class="message-attachments">
-												{#each Object.entries(message.urls as Record<string, string>) as [index, url]}
-													<a
-														href={url}
-														target="_blank"
-														rel="noopener noreferrer"
-														class="attachment-item"
+										{#if isEditable}
+											<!-- 설정 드롭다운 (90분 이내 메시지만) -->
+											<DropdownMenu.Root>
+												<DropdownMenu.Trigger>
+													<button class="message-settings-button" aria-label="메시지 설정">
+														⚙
+													</button>
+												</DropdownMenu.Trigger>
+												<DropdownMenu.Content align="end" class="w-32">
+													<DropdownMenu.Item
+														onclick={() =>
+															handleEditMessage(
+																messageId,
+																message.text ?? '',
+																message.urls ?? {},
+																message.createdAt
+															)}
+														class="hover:bg-blue-50"
 													>
-														{#if isImageUrl(url)}
-															<!-- 이미지 첨부파일 -->
-															<img src={url} alt="첨부 이미지" class="attachment-image" />
-														{:else if isVideoUrl(url)}
-															<!-- 동영상 첨부파일 -->
-														<video
-															src={url}
-															class="attachment-video"
-															controls
-															aria-hidden="true"
-															tabindex="-1"
-														/>
-														{:else}
-															<!-- 일반 파일 첨부파일 -->
-															<div class="attachment-file">
-																<div class="attachment-file-icon">
-																	<span class="attachment-file-extension"
-																		>{getFileExtension(url).replace('.', '').toUpperCase()}</span
-																	>
-																</div>
-																<div class="file-details">
-																	<p class="file-name">{getFilenameFromUrl(url)}</p>
-																</div>
-																<svg
-																	class="download-icon"
-																	fill="none"
-																	stroke="currentColor"
-																	viewBox="0 0 24 24"
-																	stroke-width="2"
-																>
-																	<path
-																		stroke-linecap="round"
-																		stroke-linejoin="round"
-																		d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-																	/>
-																</svg>
-															</div>
-														{/if}
-													</a>
-												{/each}
-											</div>
+														<span class="mr-2">✏️</span>
+														수정
+													</DropdownMenu.Item>
+													<DropdownMenu.Item
+														onclick={() => handleDeleteMessage(messageId, message.urls ?? {})}
+														class="text-red-600 hover:bg-red-50"
+													>
+														<span class="mr-2">🗑️</span>
+														삭제
+													</DropdownMenu.Item>
+												</DropdownMenu.Content>
+											</DropdownMenu.Root>
 										{/if}
 									</div>
-									<span class="message-timestamp">{formatLongDate(message.createdAt)}</span>
 								</div>
 							</article>
 						{/snippet}
@@ -1223,26 +1776,6 @@ last_updated: 2025-11-15
 					</button>
 				</div>
 			{/if}
-
-			<!-- v1.2.0: 드래그 앤 드롭 오버레이 -->
-			{#if isDragging}
-				<div class="drag-drop-overlay" role="region" aria-label="파일 드래그 앤 드롭 안내">
-					<div class="drag-drop-content">
-						<!-- 파일 아이콘 애니메이션 -->
-						<svg class="drag-drop-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-							/>
-						</svg>
-						<!-- 안내 텍스트 -->
-						<p class="drag-drop-title">파일을 여기에 놓으세요</p>
-						<p class="drag-drop-subtitle">이미지, 동영상, 문서 등 다양한 파일을 업로드할 수 있습니다</p>
-					</div>
-				</div>
-			{/if}
 		</div>
 
 		<!-- 파일 미리보기 Grid -->
@@ -1277,13 +1810,7 @@ last_updated: 2025-11-15
 											<!-- SVG 원형 프로그레스바 -->
 											<svg class="progress-ring" width="80" height="80">
 												<!-- 배경 원 -->
-												<circle
-													class="progress-ring-bg"
-													cx="40"
-													cy="40"
-													r="32"
-													stroke-width="6"
-												/>
+												<circle class="progress-ring-bg" cx="40" cy="40" r="32" stroke-width="6" />
 												<!-- 진행률 원 -->
 												<circle
 													class="progress-ring-circle"
@@ -1305,7 +1832,9 @@ last_updated: 2025-11-15
 								<div class="file-icon">
 									<!-- v1.1.4: 파일명에서 직접 확장자 추출 (getExtensionFromFilename 사용) -->
 									<span class="file-extension"
-										>{getExtensionFromFilename(fileStatus.file.name).replace('.', '').toUpperCase()}</span
+										>{getExtensionFromFilename(fileStatus.file.name)
+											.replace('.', '')
+											.toUpperCase()}</span
 									>
 
 									<!-- v1.2.0: 원형 프로그레스바와 퍼센티지 표시 (일반 파일) -->
@@ -1314,13 +1843,7 @@ last_updated: 2025-11-15
 											<!-- SVG 원형 프로그레스바 -->
 											<svg class="progress-ring" width="80" height="80">
 												<!-- 배경 원 -->
-												<circle
-													class="progress-ring-bg"
-													cx="40"
-													cy="40"
-													r="32"
-													stroke-width="6"
-												/>
+												<circle class="progress-ring-bg" cx="40" cy="40" r="32" stroke-width="6" />
 												<!-- 진행률 원 -->
 												<circle
 													class="progress-ring-circle"
@@ -1361,7 +1884,14 @@ last_updated: 2025-11-15
 		{/if}
 
 		<!-- 입력창 폼 -->
-		<form class="composer-form" onsubmit={handleSendMessage}>
+		<form
+			class="composer-form"
+			onsubmit={handleSendMessage}
+			ondragenter={handleDragEnter}
+			ondragover={handleDragOver}
+			ondragleave={handleDragLeave}
+			ondrop={handleDrop}
+		>
 			<!-- 파일 업로드 버튼 (카메라 아이콘) -->
 			<button
 				type="button"
@@ -1377,7 +1907,11 @@ last_updated: 2025-11-15
 						stroke-linejoin="round"
 						d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
 					/>
-					<path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+					/>
 				</svg>
 			</button>
 
@@ -1391,29 +1925,27 @@ last_updated: 2025-11-15
 				style="display: none;"
 			/>
 
-			<input
+			<textarea
 				bind:this={composerInputRef}
-				type="text"
 				name="composer"
 				class="composer-input"
 				placeholder={m.chatWriteMessage()}
 				bind:value={composerText}
 				disabled={composerDisabled || isSending}
-			/>
+				rows={composerRows}
+				oninput={handleComposerInput}
+				onkeydown={handleComposerKeyDown}
+			></textarea>
 			<button
 				type="submit"
 				class="composer-button cursor-pointer"
-				disabled={composerDisabled || isSending || (!composerText.trim() && uploadingFiles.length === 0)}
+				disabled={composerDisabled ||
+					isSending ||
+					(!composerText.trim() && uploadingFiles.length === 0)}
 				aria-label={isSending ? m.chatSending() : m.chatSend()}
 			>
 				<!-- 전송 아이콘 (종이비행기) -->
-				<svg
-					class="w-6 h-6"
-					fill="none"
-					stroke="currentColor"
-					viewBox="0 0 24 24"
-					stroke-width="2"
-				>
+				<svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
 					<path
 						stroke-linecap="round"
 						stroke-linejoin="round"
@@ -1421,7 +1953,65 @@ last_updated: 2025-11-15
 					/>
 				</svg>
 			</button>
+
+			{#if isDragging}
+				<div class="drag-drop-overlay" role="region" aria-label="파일 드래그 앤 드롭 안내">
+					<div class="drag-drop-content">
+						<!-- 파일 아이콘 애니메이션 -->
+						<svg class="drag-drop-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+							/>
+						</svg>
+						<!-- 안내 텍스트 -->
+						<p class="drag-drop-title">파일을 여기에 놓으세요</p>
+						<p class="drag-drop-subtitle">
+							이미지, 동영상, 문서 등 다양한 파일을 업로드할 수 있습니다
+						</p>
+					</div>
+				</div>
+			{/if}
 		</form>
+
+		<!-- 카테고리 드롭다운 -->
+		<div class="mt-2">
+			<DropdownMenu.Root>
+				<DropdownMenu.Trigger
+					class="flex items-center justify-start text-sm text-muted-foreground hover:text-foreground px-1 py-0"
+				>
+					{#if selectedCategory}
+						<span class="text-primary font-medium">
+							{getCategoryMessage(selectedCategory)}
+						</span>
+					{:else}
+						{m.chatCategorySelect()}
+					{/if}
+				</DropdownMenu.Trigger>
+				<DropdownMenu.Content class="w-56">
+					<DropdownMenu.Group>
+						<DropdownMenu.Label>{m.chatCategoryLabel()}</DropdownMenu.Label>
+						<DropdownMenu.Separator />
+						{#each FORUM_CATEGORIES as category}
+							<DropdownMenu.Item onclick={() => (selectedCategory = category)}>
+								{getCategoryMessage(category)}
+								{#if selectedCategory === category}
+									<span class="ml-auto">✓</span>
+								{/if}
+							</DropdownMenu.Item>
+						{/each}
+						{#if selectedCategory}
+							<DropdownMenu.Separator />
+							<DropdownMenu.Item onclick={() => (selectedCategory = null)}>
+								{m.chatCategorySelect()} (선택 해제)
+							</DropdownMenu.Item>
+						{/if}
+					</DropdownMenu.Group>
+				</DropdownMenu.Content>
+			</DropdownMenu.Root>
+		</div>
 
 		{#if sendError}
 			<p class="composer-error">{sendError}</p>
@@ -1471,6 +2061,21 @@ last_updated: 2025-11-15
 		onCancel={handlePasswordCancel}
 	/>
 {/if}
+
+<!-- 메시지 수정 모달 -->
+<ChatMessageEditModal
+	bind:open={editModalOpen}
+	messageId={selectedMessageId}
+	initialText={selectedMessageText}
+	initialUrls={selectedMessageUrls}
+	roomId={activeRoomId}
+	onClose={handleEditModalClose}
+	onSaved={handleEditModalSaved}
+/>
+
+<!-- 좋아요 사용자 목록 모달 -->
+<LikedUsersModal bind:open={likesModalOpen} targetId={likesModalTargetId} targetType="message" />
+</Tooltip.Provider>
 
 <style>
 	@import 'tailwindcss' reference;
@@ -1584,6 +2189,61 @@ last_updated: 2025-11-15
 		@apply text-[11px] text-gray-400;
 	}
 
+	/* 메시지 하단 영역 (타임스탬프 + 설정 아이콘) */
+	.message-footer {
+		@apply flex items-center gap-2;
+	}
+
+	/* 메시지 설정 버튼 */
+	.message-settings-button {
+		@apply text-sm text-gray-400 transition-colors hover:text-gray-600;
+		@apply cursor-pointer border-0 bg-transparent p-0;
+	}
+
+	/* 좋아요 버튼 */
+	.like-button {
+		@apply flex items-center gap-1;
+		@apply cursor-pointer border-0 bg-transparent p-0;
+		@apply text-gray-400 transition-colors;
+		@apply hover:text-gray-600;
+	}
+
+	.like-button.liked {
+		@apply text-red-500;
+	}
+
+	.like-button:disabled {
+		@apply cursor-not-allowed opacity-50;
+	}
+
+	.like-icon {
+		@apply h-4 w-4;
+	}
+
+	.like-count {
+		@apply text-[11px];
+	}
+
+	/* 하트 bounce 애니메이션 */
+	@keyframes heartBounce {
+		0%,
+		100% {
+			transform: scale(1);
+		}
+		50% {
+			transform: scale(1.3);
+		}
+	}
+
+	.like-button.liked .like-icon {
+		animation: heartBounce 0.4s ease-in-out;
+	}
+
+	/* 삭제된 메시지 스타일 */
+	.deleted-message {
+		@apply opacity-60;
+	}
+
 	/* 메시지 플레이스홀더 스타일 */
 	.message-placeholder {
 		@apply text-center text-gray-500;
@@ -1599,10 +2259,10 @@ last_updated: 2025-11-15
 
 	/**
 	 * 입력창 폼 스타일
-	 * 고정 높이, shrink-0으로 축소 방지
+	 * shrink-0으로 축소 방지, items-end로 하단 정렬 (textarea가 여러 줄일 때 버튼들이 하단에 정렬)
 	 */
 	.composer-form {
-		@apply flex items-center gap-2 md:gap-3;
+		@apply relative flex items-end gap-2 md:gap-3;
 		/* 축소 방지 */
 		@apply shrink-0;
 	}
@@ -1617,7 +2277,7 @@ last_updated: 2025-11-15
 	}
 
 	.file-preview-item {
-		@apply relative rounded-lg border-2 overflow-hidden shadow-sm;
+		@apply relative overflow-hidden rounded-lg border-2 shadow-sm;
 		@apply transition-all hover:shadow-md;
 	}
 
@@ -1640,7 +2300,7 @@ last_updated: 2025-11-15
 	}
 
 	.file-extension {
-		@apply text-4xl md:text-5xl font-bold uppercase text-gray-600;
+		@apply text-4xl font-bold text-gray-600 uppercase md:text-5xl;
 	}
 
 	/* v1.2.0: 업로드 진행률 오버레이 - 원형 프로그레스바 */
@@ -1669,7 +2329,7 @@ last_updated: 2025-11-15
 
 	/* 퍼센티지 숫자 (원형 프로그레스바 중앙) */
 	.upload-percentage {
-		@apply absolute text-2xl md:text-3xl font-bold text-white;
+		@apply absolute text-2xl font-bold text-white md:text-3xl;
 		@apply drop-shadow-lg;
 		z-index: 10;
 	}
@@ -1677,19 +2337,19 @@ last_updated: 2025-11-15
 	/* 에러 오버레이 */
 	.upload-error-overlay {
 		@apply absolute inset-0 flex items-center justify-center;
-		@apply bg-red-500/80 backdrop-blur-sm p-2;
+		@apply bg-red-500/80 p-2 backdrop-blur-sm;
 	}
 
 	.upload-error {
-		@apply text-xs text-center text-white font-semibold;
+		@apply text-center text-xs font-semibold text-white;
 	}
 
 	/* 삭제 버튼 (우측 상단 고정) */
 	.remove-file-button {
-		@apply absolute right-2 top-2 z-10;
+		@apply absolute top-2 right-2 z-10;
 		@apply flex h-8 w-8 items-center justify-center;
 		@apply rounded-full bg-red-500 text-sm font-bold text-white shadow-lg;
-		@apply transition-all hover:bg-red-600 hover:scale-110 active:scale-95;
+		@apply transition-all hover:scale-110 hover:bg-red-600 active:scale-95;
 	}
 
 	/* 파일 업로드 버튼 (카메라 아이콘) */
@@ -1706,11 +2366,19 @@ last_updated: 2025-11-15
 		@apply hover:bg-transparent;
 	}
 
-	/* 메시지 입력 스타일 */
+	/* 메시지 입력 스타일 (textarea) */
 	.composer-input {
 		@apply flex-1;
-		@apply rounded-full border border-gray-300 bg-white text-base;
+		@apply rounded-2xl border border-gray-300 bg-white text-base;
 		@apply px-3 py-2.5 md:px-4 md:py-3.5;
+		/* textarea 전용 스타일 */
+		@apply resize-none; /* 사용자가 수동으로 크기 조정하지 못하게 */
+		@apply leading-relaxed; /* 줄 간격 */
+		@apply align-middle; /* 수직 정렬 */
+		/* 최소/최대 높이 설정: 1줄~4줄 */
+		min-height: 2.5rem; /* 약 1줄 */
+		max-height: 10rem; /* 약 4줄 */
+		overflow-y: auto; /* 4줄 초과 시 스크롤 */
 	}
 
 	.composer-input:disabled {
@@ -1765,7 +2433,7 @@ last_updated: 2025-11-15
 	}
 
 	.attachment-file-extension {
-		@apply text-xl font-bold uppercase text-gray-600;
+		@apply text-xl font-bold text-gray-600 uppercase;
 	}
 
 	.attachment-file .file-icon {
@@ -1855,6 +2523,4 @@ last_updated: 2025-11-15
 		}
 	}
 </style>
-
 ```
-

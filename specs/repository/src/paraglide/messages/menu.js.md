@@ -1,15 +1,19 @@
 ---
-title: menu.js
-type: javascript
-path: src/paraglide/messages/menu.js
-status: active
-version: 1.0.0
-last_updated: 2025-11-15
+title: menu.js - JavaScript 소스 코드
+original_path: src/paraglide/messages/menu.js
+category: source
+file_type: js
+status: current
+last_updated: 2025-11-20
 ---
+
+# menu.js
 
 ## 개요
 
-이 파일은 `src/paraglide/messages/menu.js`의 소스 코드를 포함하는 SED 스펙 문서입니다.
+**원본 경로**: `src/paraglide/messages/menu.js`
+
+**파일 유형**: JavaScript 소스 코드
 
 ## 소스 코드
 
@@ -55,4 +59,3 @@ export const menu = (inputs = {}, options = {}) => {
 	return zh_menu(inputs)
 };
 ```
-

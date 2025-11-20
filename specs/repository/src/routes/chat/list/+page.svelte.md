@@ -1,15 +1,19 @@
 ---
-title: +page.svelte
-type: component
-path: src/routes/chat/list/+page.svelte
-status: active
-version: 1.0.0
-last_updated: 2025-11-15
+title: +page.svelte - Svelte 5 컴포넌트
+original_path: src/routes/chat/list/+page.svelte
+category: route
+file_type: svelte
+status: current
+last_updated: 2025-11-20
 ---
+
+# +page.svelte
 
 ## 개요
 
-이 파일은 `src/routes/chat/list/+page.svelte`의 소스 코드를 포함하는 SED 스펙 문서입니다.
+**원본 경로**: `src/routes/chat/list/+page.svelte`
+
+**파일 유형**: Svelte 5 컴포넌트
 
 ## 소스 코드
 
@@ -33,12 +37,14 @@ last_updated: 2025-11-15
 	import ChatListMenu from '$lib/components/chat/ChatListMenu.svelte';
 	import ChatFavoritesDialog from '$lib/components/chat/ChatFavoritesDialog.svelte';
 	import { rtdb } from '$lib/firebase';
+	import { onMount } from 'svelte';
 
 	type ChatJoinData = Record<string, unknown>;
 	type UserData = Record<string, unknown>;
 
 	const PAGE_SIZE = 20;
 	const JOIN_ORDER_FIELD = 'singleChatListOrder';
+	const CHAT_LIST_PATH = '/chat/list';
 
 	// UserSearchDialog 상태
 	let userSearchOpen = $state(false);
@@ -50,6 +56,17 @@ last_updated: 2025-11-15
 	// ChatCreateDialog 상태
 	let groupChatDialogOpen = $state(false);
 	let openChatDialogOpen = $state(false);
+
+	// 마지막으로 방문한 채팅 목록 탭 경로를 세션에 저장
+	onMount(() => {
+		if (typeof window === 'undefined') return;
+		sessionStorage.setItem('chat:lastChatListPath', CHAT_LIST_PATH);
+	});
+
+	// 채팅방으로 이동하면서 이전 탭 정보를 state 에 포함
+	function navigateToRoom(path: string) {
+		void goto(path, { state: { from: CHAT_LIST_PATH } });
+	}
 
 	/**
 	 * 방생성 버튼 클릭 핸들러
@@ -75,7 +92,7 @@ last_updated: 2025-11-15
 		const { uid } = event.detail;
 		// console.log('선택된 사용자:', event.detail);
 		// 1:1 채팅방으로 이동
-		void goto(`/chat/room?uid=${uid}`);
+		navigateToRoom(`/chat/room?uid=${uid}`);
 	}
 
 	/**
@@ -116,7 +133,7 @@ last_updated: 2025-11-15
 	 */
 	function handleRoomSelected(event: CustomEvent<{ roomId: string }>) {
 		const { roomId } = event.detail;
-		void goto(`/chat/room?roomId=${roomId}`);
+		navigateToRoom(`/chat/room?roomId=${roomId}`);
 	}
 
 	/**
@@ -126,7 +143,7 @@ last_updated: 2025-11-15
 	function handleRoomCreated(event: CustomEvent<{ roomId: string }>) {
 		const { roomId } = event.detail;
 		// console.log('✅ 채팅방 생성 완료, 이동:', roomId);
-		void goto(`/chat/room?roomId=${roomId}`);
+		navigateToRoom(`/chat/room?roomId=${roomId}`);
 	}
 
 	/**
@@ -182,12 +199,12 @@ last_updated: 2025-11-15
 			: undefined;
 
 		if (normalizedType.includes('single') && partnerUid) {
-			void goto(`/chat/room?uid=${partnerUid}`);
+			navigateToRoom(`/chat/room?uid=${partnerUid}`);
 			return;
 		}
 
 		if (roomId) {
-			void goto(`/chat/room?roomId=${roomId}`);
+			navigateToRoom(`/chat/room?roomId=${roomId}`);
 		}
 	}
 </script>
@@ -196,8 +213,8 @@ last_updated: 2025-11-15
 	<title>{m.pageTitleChat()}</title>
 </svelte:head>
 
-<div class="space-y-6">
-	<section class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+<div class="space-y-4 sm:space-y-6">
+	<section class="rounded-none border-none bg-transparent p-0 shadow-none md:rounded-2xl md:border md:border-gray-200 md:bg-white md:p-6 md:shadow-sm">
 		<div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
 			<div>
 				<h1 class="text-2xl font-semibold text-gray-900">{m.chatMyRoomsTitle()}</h1>
@@ -237,10 +254,8 @@ last_updated: 2025-11-15
 			<p class="text-sm text-gray-500">{m.chatSelectConversation()}</p>
 		</section>
 	{:else}
-		<!-- 채팅 초대 목록 -->
-		<section class="rounded-2xl border border-blue-200 bg-white shadow-sm">
-			<ChatInvitationList />
-		</section>
+		<!-- 채팅 초대 목록 (초대가 있을 때만 자동으로 표시됨) -->
+		<ChatInvitationList />
 
 		<section class="rounded-2xl border border-gray-200 bg-white p-0 shadow-sm">
 			{#key chatJoinPath}
@@ -261,7 +276,6 @@ last_updated: 2025-11-15
 					pageSize={PAGE_SIZE}
 					orderBy={JOIN_ORDER_FIELD}
 					threshold={320}
-					reverse={true}
 				>
 					{#snippet item(itemData, index)}
 						{@const join = (itemData.data ?? {}) as ChatJoinData}
@@ -318,6 +332,4 @@ last_updated: 2025-11-15
 
 <!-- 즐겨찾기 다이얼로그 -->
 <ChatFavoritesDialog bind:open={favoritesDialogOpen} on:roomSelected={handleRoomSelected} />
-
 ```
-

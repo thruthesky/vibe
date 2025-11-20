@@ -1,15 +1,19 @@
 ---
-title: user.handler.ts
-type: typescript
-path: firebase/functions/src/handlers/user.handler.ts
-status: active
-version: 1.0.0
-last_updated: 2025-11-15
+title: user.handler.ts - TypeScript 소스 코드
+original_path: firebase/functions/src/handlers/user.handler.ts
+category: cloud-function
+file_type: ts
+status: current
+last_updated: 2025-11-20
 ---
+
+# user.handler.ts
 
 ## 개요
 
-이 파일은 `firebase/functions/src/handlers/user.handler.ts`의 소스 코드를 포함하는 SED 스펙 문서입니다.
+**원본 경로**: `firebase/functions/src/handlers/user.handler.ts`
+
+**파일 유형**: TypeScript 소스 코드
 
 ## 소스 코드
 
@@ -21,6 +25,7 @@ last_updated: 2025-11-15
 import * as admin from "firebase-admin";
 import * as logger from "firebase-functions/logger";
 import {UserData} from "../types";
+import {incrementActionCounter} from "./user-action-counters.handler";
 
 /**
  * 사용자 등록 시 user-props 노드에 주요 필드를 분리 저장하고 createdAt을 설정합니다.
@@ -59,8 +64,12 @@ export async function handleUserCreate(
     logger.info("createdAt 저장 예정", {uid, createdAt});
   }
 
-  // 📊 전체 사용자 통계 업데이트: /stats/counters/user +1
-  updates["stats/counters/user"] = admin.database.ServerValue.increment(1);
+  // registerOrder 필드 자동 생성 (최신순 정렬용)
+  // registerOrder = Number.MAX_SAFE_INTEGER - createdAt
+  // 최신 사용자일수록 작은 값을 가져서 오름차순 정렬 시 먼저 표시됨
+  const registerOrder = Number.MAX_SAFE_INTEGER - createdAt;
+  updates[`users/${uid}/registerOrder`] = registerOrder;
+  logger.info("registerOrder 저장 예정", {uid, registerOrder, createdAt});
 
   if (Object.keys(updates).length > 0) {
     await admin.database().ref().update(updates);
@@ -69,6 +78,9 @@ export async function handleUserCreate(
       updatesCount: Object.keys(updates).length,
     });
   }
+
+  // 📊 전체 사용자 통계 및 사용자별 통계 업데이트
+  await incrementActionCounter(uid, "user", 1);
 
   return {
     success: true,
@@ -621,6 +633,4 @@ export async function handleUserGenderUpdate(
 
   return {success: true, uid};
 }
-
 ```
-

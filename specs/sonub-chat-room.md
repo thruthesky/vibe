@@ -1,11 +1,32 @@
 ---
 name: sonub-chat-room
-version: 1.1.0
+version: 1.2.3
 description: 채팅방 UI 및 RTDB 연동 사양
 dependencies:
   - sonub-firebase-database-structure.md
-updated: 2025-01-16
+updated: 2025-01-20
 changelog:
+  - date: 2025-11-20
+    version: 1.2.3
+    changes:
+      - "채팅방 뒤로가기 state를 위한 PageState.from 타입을 정의하여 타입 오류를 제거"
+  - date: 2025-11-20
+    version: 1.2.2
+    changes:
+      - "오픈 채팅 목록에서 핀 버튼을 제거하여 불필요한 동작을 차단"
+  - date: 2025-11-20
+    version: 1.2.1
+    changes:
+      - "채팅방 뒤로가기 시 마지막으로 방문한 채팅 목록 탭 경로를 우선 사용하도록 이동 로직 개선"
+      - "친구/그룹/오픈 채팅 목록 페이지에서 최근 방문 경로를 네비게이션 state·세션에 저장"
+  - date: 2025-01-20
+    version: 1.2.0
+    changes:
+      - "채팅방 핀 기능 버그 수정: 문자열 연결 → 숫자 연산으로 변경"
+      - "정렬 필드 타입 보장: xxxListOrder 필드가 항상 숫자 타입으로 저장되도록 수정"
+      - "Firebase Functions 핸들러 수정: chat.room-pin-create.handler.ts, chat.room-pin-delete.handler.ts"
+      - "유닛 테스트 9개 작성 및 통과: 핀 설정/해제, 정렬 순서, 타입 검증"
+      - "채팅방 정렬 상세 사양 추가: 핀/읽지않음/읽음 상태별 정렬 로직"
   - date: 2025-01-16
     version: 1.1.0
     changes:
@@ -25,6 +46,15 @@ Sonub 애플리케이션의 1:1 채팅방 및 그룹 채팅방 기능에 대한 
 
 - **페이지**: [src/routes/chat/room/+page.svelte](../src/routes/chat/room/+page.svelte)
 - **다국어**: [messages/*.json](../messages/)
+
+## 네비게이션 규칙
+
+- 채팅방 헤더의 뒤로가기 버튼은 사용자가 직전에 방문한 채팅 목록 탭(친구 `/chat/list`, 그룹 `/chat/group-chat-list`, 오픈 `/chat/open-chat-list`)으로 이동합니다.
+- 이전 방문 정보가 없는 경우 기본적으로 `/chat/list` 로 이동합니다.
+
+## 오픈 채팅 목록 핀 제한
+
+- `/chat/open-chat-list` 경로에서는 핀 버튼을 표시하지 않습니다. 오픈 채팅은 목록에서 바로 핀 설정을 지원하지 않습니다.
 
 ## 채팅방 유형
 
@@ -328,6 +358,488 @@ function handleRoomClick(roomId: string, type: string) {
 - 호버 효과로 클릭 가능성 표시
 - 활성 채팅방은 파란색으로 강조
 - 읽지 않은 메시지는 빨간 배지로 명확히 표시
+
+---
+
+## 0.1. 채팅방 목록 정렬 메커니즘 (Chat List Ordering System)
+
+### 개요
+
+채팅방 목록은 **핀 상태**, **읽지 않은 메시지 유무**, **최근 메시지 시간**을 기준으로 정렬됩니다. Firebase Realtime Database는 ascending(오름차순) 정렬만 지원하므로, **음수 타임스탬프**와 **오프셋 값**을 사용하여 최신 메시지가 위에 표시되도록 구현했습니다.
+
+### 정렬 우선순위
+
+채팅방은 다음 순서로 정렬됩니다:
+
+1. **핀된 채팅방 (Pinned)** - 최상위 표시
+2. **읽지 않은 메시지가 있는 채팅방 (Unread)** - 중간 우선순위
+3. **읽은 채팅방 (Read)** - 일반 우선순위
+
+각 그룹 내에서는 **최근 메시지 시간 순**으로 정렬됩니다.
+
+### 정렬 필드 구조
+
+#### 1. xxxListOrder 필드
+
+채팅방 참여 정보(`chat-joins/{uid}/{roomId}`)에는 여러 정렬 필드가 있습니다:
+
+- **allChatListOrder**: 전체 채팅방 목록 정렬
+- **singleChatListOrder**: 1:1 채팅방 목록 정렬
+- **groupChatListOrder**: 그룹 채팅방 목록 정렬
+- **openChatListOrder**: 오픈 채팅방 목록 정렬
+
+**중요**: 모든 xxxListOrder 필드는 **반드시 숫자(number) 타입**으로 저장되어야 합니다. 문자열로 저장하면 정렬이 올바르게 작동하지 않습니다.
+
+#### 2. 필드 값의 구조
+
+```typescript
+// 음수 타임스탬프 기반 정렬 값
+type ChatListOrder = number;  // 예: -501710000000000
+
+// 상태별 오프셋
+const PINNED_OFFSET = 500_000_000_000_000;  // 500조 (핀된 채팅방)
+const UNREAD_OFFSET = 200_000_000_000_000;  // 200조 (읽지 않은 메시지)
+```
+
+**값 계산 공식**:
+- **핀됨 (Pinned)**: `-timestamp - PINNED_OFFSET` = `-501710000000000`
+- **읽지않음 (Unread)**: `-timestamp - UNREAD_OFFSET` = `-201710000000000`
+- **읽음 (Read)**: `-timestamp` = `-1710000000000`
+
+**정렬 순서** (Firebase ascending 정렬):
+```
+-501710000000000 (핀됨)
+  < -201710000000000 (읽지않음)
+    < -1710000000000 (읽음)
+```
+
+음수이므로 절대값이 큰 값이 먼저 정렬되어, 핀된 채팅방이 최상위에 표시됩니다.
+
+### 음수 타임스탬프를 사용하는 이유
+
+Firebase Realtime Database는 `orderByChild()`를 사용할 때 **ascending(오름차순) 정렬만 지원**합니다. 최신 메시지를 위에 표시하려면 다음 방법을 사용합니다:
+
+```typescript
+// 일반 타임스탬프 (오름차순 정렬)
+1710000000000  <  1710000001000  <  1710000002000
+// 결과: 오래된 메시지가 먼저 표시됨 (❌ 원하는 결과 아님)
+
+// 음수 타임스탬프 (오름차순 정렬)
+-1710000002000  <  -1710000001000  <  -1710000000000
+// 결과: 최신 메시지가 먼저 표시됨 (✅ 원하는 결과)
+```
+
+### 유틸리티 함수
+
+모든 정렬 값 계산은 `shared/order-value.utils.ts`의 유틸리티 함수를 사용합니다.
+
+#### 1. toChatListOrder()
+
+타임스탬프와 상태를 받아서 정렬 값을 계산합니다.
+
+```typescript
+export function toChatListOrder(
+  timestamp: number,
+  status: 'read' | 'unread' | 'pinned' = 'read'
+): number {
+  const negativeTimestamp = toNegativeTimestamp(timestamp);
+
+  switch (status) {
+    case 'pinned':
+      return negativeTimestamp - PINNED_OFFSET;  // -501710000000000
+    case 'unread':
+      return negativeTimestamp - UNREAD_OFFSET;  // -201710000000000
+    case 'read':
+    default:
+      return negativeTimestamp;  // -1710000000000
+  }
+}
+```
+
+**사용 예시**:
+```typescript
+const timestamp = 1710000000000;  // 2024-03-10 00:00:00
+
+toChatListOrder(timestamp, 'pinned');  // -501710000000000
+toChatListOrder(timestamp, 'unread');  // -201710000000000
+toChatListOrder(timestamp, 'read');    // -1710000000000
+```
+
+#### 2. extractTimestampFromChatOrder()
+
+정렬 값에서 원본 타임스탬프를 추출합니다.
+
+```typescript
+export function extractTimestampFromChatOrder(orderValue: number): number {
+  const absValue = Math.abs(orderValue);
+  const status = extractChatStatus(orderValue);
+
+  switch (status) {
+    case 'pinned':
+      return absValue - PINNED_OFFSET;  // 500조 제거
+    case 'unread':
+      return absValue - UNREAD_OFFSET;  // 200조 제거
+    case 'read':
+    default:
+      return absValue;  // 음수만 제거
+  }
+}
+```
+
+**사용 예시**:
+```typescript
+extractTimestampFromChatOrder(-501710000000000);  // 1710000000000
+extractTimestampFromChatOrder(-201710000000000);  // 1710000000000
+extractTimestampFromChatOrder(-1710000000000);    // 1710000000000
+```
+
+#### 3. extractChatStatus()
+
+정렬 값에서 현재 상태를 추출합니다.
+
+```typescript
+export function extractChatStatus(orderValue: number): 'read' | 'unread' | 'pinned' {
+  const absValue = Math.abs(orderValue);
+
+  if (absValue > PINNED_OFFSET) {
+    return 'pinned';
+  } else if (absValue > UNREAD_OFFSET) {
+    return 'unread';
+  } else {
+    return 'read';
+  }
+}
+```
+
+**사용 예시**:
+```typescript
+extractChatStatus(-501710000000000);  // 'pinned'
+extractChatStatus(-201710000000000);  // 'unread'
+extractChatStatus(-1710000000000);    // 'read'
+```
+
+### 채팅방 핀 기능 구현
+
+#### 클라이언트 측: togglePinChatRoom()
+
+사용자가 채팅방을 핀하거나 핀 해제할 때 호출됩니다.
+
+**파일**: [src/lib/functions/chat.functions.ts](../src/lib/functions/chat.functions.ts)
+
+```typescript
+export async function togglePinChatRoom(
+  roomId: string,
+  currentPinState: boolean
+): Promise<void> {
+  const uid = authStore.user?.uid;
+  if (!uid) throw new Error('User not authenticated');
+
+  const pinRef = ref(database, `chat-joins/${uid}/${roomId}/pin`);
+
+  if (currentPinState) {
+    // 핀 해제: pin 필드 삭제
+    await remove(pinRef);
+  } else {
+    // 핀 설정: pin 필드에 true 저장
+    await set(pinRef, true);
+  }
+}
+```
+
+**동작 흐름**:
+1. 사용자가 UI에서 핀 토글 버튼 클릭
+2. `togglePinChatRoom(roomId, currentPinState)` 호출
+3. Firebase에서 `chat-joins/{uid}/{roomId}/pin` 필드 생성/삭제
+4. Firebase Functions 트리거 자동 실행 (onChatRoomPinCreate / onChatRoomPinDelete)
+5. xxxListOrder 필드가 자동으로 업데이트됨
+6. UI에서 채팅방 위치가 자동으로 변경됨 (실시간 반영)
+
+#### 서버 측: Firebase Functions 핸들러
+
+##### onChatRoomPinCreate (핀 설정 시)
+
+**파일**: [firebase/functions/src/handlers/chat.room-pin-create.handler.ts](../firebase/functions/src/handlers/chat.room-pin-create.handler.ts)
+
+**트리거**: `chat-joins/{uid}/{roomId}/pin` 필드가 **생성**될 때
+
+**처리 로직**:
+1. `chat-joins/{uid}/{roomId}`의 모든 데이터 읽기
+2. `xxxListOrder` 또는 `xxxChatListOrder`로 끝나는 모든 필드 찾기
+3. 각 필드의 현재 상태 확인 (이미 핀 상태이면 건너뜀)
+4. 원본 타임스탬프 추출: `extractTimestampFromChatOrder(currentValue)`
+5. 핀 상태로 변경: `toChatListOrder(timestamp, 'pinned')`
+6. 변경된 값들을 일괄 업데이트
+
+**핵심 코드**:
+```typescript
+export async function handleChatRoomPinCreate(
+  uid: string,
+  roomId: string
+): Promise<void> {
+  const chatJoinRef = admin.database().ref(`chat-joins/${uid}/${roomId}`);
+  const snapshot = await chatJoinRef.once('value');
+  const data = snapshot.val();
+
+  const updates: Record<string, number> = {};  // ✅ 숫자 타입
+
+  for (const key of Object.keys(data)) {
+    // order 필드만 처리
+    if (!key.endsWith('ListOrder') && !key.endsWith('ChatListOrder')) {
+      continue;
+    }
+
+    const currentValue = Number(data[key]);  // ✅ 숫자로 변환
+
+    // 이미 핀 상태인지 확인
+    const currentStatus = extractChatStatus(currentValue);
+    if (currentStatus === 'pinned') {
+      continue;
+    }
+
+    // 원본 타임스탬프 추출
+    const timestamp = extractTimestampFromChatOrder(currentValue);
+
+    // 핀 설정: PINNED_OFFSET 적용
+    const newValue = toChatListOrder(timestamp, 'pinned');  // ✅ 숫자 반환
+
+    if (newValue !== currentValue) {
+      updates[key] = newValue;  // ✅ 숫자 저장
+    }
+  }
+
+  // 업데이트할 필드가 있는 경우에만 실행
+  if (Object.keys(updates).length > 0) {
+    await chatJoinRef.update(updates);
+  }
+}
+```
+
+##### onChatRoomPinDelete (핀 해제 시)
+
+**파일**: [firebase/functions/src/handlers/chat.room-pin-delete.handler.ts](../firebase/functions/src/handlers/chat.room-pin-delete.handler.ts)
+
+**트리거**: `chat-joins/{uid}/{roomId}/pin` 필드가 **삭제**될 때
+
+**처리 로직**:
+1. `chat-joins/{uid}/{roomId}`의 모든 데이터 읽기
+2. `newMessageCount` 값 확인
+3. `xxxListOrder` 필드들을 다음과 같이 업데이트:
+   - `newMessageCount > 0`이면 → `'unread'` 상태로 변경
+   - `newMessageCount === 0`이면 → `'read'` 상태로 변경
+
+**핵심 코드**:
+```typescript
+export async function handleChatRoomPinDelete(
+  uid: string,
+  roomId: string
+): Promise<void> {
+  const chatJoinRef = admin.database().ref(`chat-joins/${uid}/${roomId}`);
+  const snapshot = await chatJoinRef.once('value');
+  const data = snapshot.val();
+
+  const newMessageCount = Number(data.newMessageCount ?? 0);
+  const updates: Record<string, number> = {};  // ✅ 숫자 타입
+
+  for (const key of Object.keys(data)) {
+    if (!key.endsWith('ListOrder') && !key.endsWith('ChatListOrder')) {
+      continue;
+    }
+
+    const currentValue = Number(data[key]);  // ✅ 숫자로 변환
+
+    // 원본 타임스탬프 추출
+    const timestamp = extractTimestampFromChatOrder(currentValue);
+
+    // 핀 해제: newMessageCount에 따라 상태 결정
+    const newStatus = newMessageCount > 0 ? 'unread' : 'read';
+    const newValue = toChatListOrder(timestamp, newStatus);  // ✅ 숫자 반환
+
+    if (newValue !== currentValue) {
+      updates[key] = newValue;  // ✅ 숫자 저장
+    }
+  }
+
+  if (Object.keys(updates).length > 0) {
+    await chatJoinRef.update(updates);
+  }
+}
+```
+
+### 🔥 중요: 수정된 버그 내역
+
+#### 문제점 (v1.1.0 이전)
+
+초기 구현에서는 **문자열 연결**을 사용하여 정렬 값을 생성했습니다:
+
+```typescript
+// ❌ 잘못된 구현 (v1.1.0 이전)
+const updates: Record<string, string> = {};  // ❌ 문자열 타입
+
+const currentValue = String(data[key]);  // ❌ 문자열로 변환
+
+let baseTimestamp: string;
+if (currentValue.startsWith('500')) {
+  baseTimestamp = currentValue.slice(3);
+} else if (currentValue.startsWith('200')) {
+  baseTimestamp = currentValue.slice(3);
+} else {
+  baseTimestamp = currentValue;
+}
+
+const newValue = `500${baseTimestamp}`;  // ❌ 문자열 연결!
+// 결과: "500-1710000000000" (문자열)
+```
+
+**문제점**:
+- 정렬 값이 **문자열**로 저장됨: `"500-1710000000000"`
+- Firebase에서 **문자열 정렬**이 적용되어 올바른 순서로 정렬되지 않음
+- 예상 값: `-501710000000000` (숫자)
+- 실제 값: `"500-1710000000000"` (문자열)
+
+#### 해결 방법 (v1.2.0)
+
+유틸리티 함수를 사용하여 **숫자 연산**으로 변경했습니다:
+
+```typescript
+// ✅ 올바른 구현 (v1.2.0)
+import {
+  toChatListOrder,
+  extractTimestampFromChatOrder,
+  extractChatStatus,
+} from '../../../../shared/order-value.utils';
+
+const updates: Record<string, number> = {};  // ✅ 숫자 타입
+
+const currentValue = Number(data[key]);  // ✅ 숫자로 변환
+
+// 원본 타임스탬프 추출
+const timestamp = extractTimestampFromChatOrder(currentValue);
+
+// 핀 설정: PINNED_OFFSET 적용
+const newValue = toChatListOrder(timestamp, 'pinned');  // ✅ 숫자 반환
+// 결과: -501710000000000 (숫자)
+
+updates[key] = newValue;  // ✅ 숫자 저장
+```
+
+**개선 사항**:
+- 정렬 값이 **숫자**로 저장됨: `-501710000000000`
+- Firebase에서 **숫자 정렬**이 적용되어 올바른 순서로 정렬됨
+- 타입 안정성 확보: TypeScript `number` 타입 명시
+
+#### 검증: 유닛 테스트
+
+수정 사항을 검증하기 위해 9개의 유닛 테스트를 작성했습니다.
+
+**테스트 파일**: [firebase/functions/tests/chat-room-pin.test.ts](../firebase/functions/tests/chat-room-pin.test.ts)
+
+**테스트 케이스**:
+1. ✅ 읽음 상태 → 핀 설정: 숫자 값으로 올바르게 업데이트
+2. ✅ 읽지 않음 상태 → 핀 설정: UNREAD_OFFSET → PINNED_OFFSET
+3. ✅ 이미 핀 설정된 경우: 업데이트하지 않음
+4. ✅ 핀 설정 → 읽음 상태: PINNED_OFFSET 제거
+5. ✅ 핀 설정 + 읽지 않음 → 핀 해제: PINNED_OFFSET → UNREAD_OFFSET
+6. ✅ 핀 > 읽지 않음 > 읽음 순서로 정렬됨
+7. ✅ 타임스탬프 추출 후 복원 가능
+8. ✅ toChatListOrder() 함수는 항상 숫자를 반환
+9. ✅ Offset 상수들은 숫자 타입
+
+**테스트 실행 결과**:
+```bash
+✓ 읽음 상태 → 핀 설정: 숫자 값으로 올바르게 업데이트
+✓ 읽지 않음 상태 → 핀 설정: UNREAD_OFFSET → PINNED_OFFSET
+✓ 이미 핀 설정된 경우: 업데이트하지 않음
+✓ 핀 설정 → 읽음 상태: PINNED_OFFSET 제거
+✓ 핀 설정 + 읽지 않음 → 핀 해제: PINNED_OFFSET → UNREAD_OFFSET
+✓ 핀 > 읽지 않음 > 읽음 순서로 정렬됨
+✓ 타임스탬프 추출 후 복원 가능
+✓ toChatListOrder() 함수는 항상 숫자를 반환
+✓ Offset 상수들은 숫자 타입
+
+Test Files  1 passed (1)
+     Tests  9 passed (9)
+```
+
+### 실전 예시
+
+#### 데이터베이스 구조
+
+```json
+{
+  "chat-joins": {
+    "user-abc123": {
+      "single-abc123-xyz789": {
+        "roomId": "single-abc123-xyz789",
+        "roomType": "single",
+        "lastMessage": "안녕하세요!",
+        "newMessageCount": 3,
+        "allChatListOrder": -201710000000000,      // 읽지 않음
+        "singleChatListOrder": -201710000000000,   // 읽지 않음
+        "pin": true,                                // 핀 설정됨
+        "joinedAt": 1710000000000
+      },
+      "group-general": {
+        "roomId": "group-general",
+        "roomType": "group",
+        "name": "일반 채팅방",
+        "lastMessage": "회의는 3시에 시작합니다.",
+        "newMessageCount": 0,
+        "allChatListOrder": -1709900000000,        // 읽음
+        "groupChatListOrder": -1709900000000,      // 읽음
+        "joinedAt": 1709900000000
+      }
+    }
+  }
+}
+```
+
+#### 핀 설정 후 변경되는 값
+
+사용자가 `single-abc123-xyz789` 채팅방을 핀하면:
+
+**Before** (핀 설정 전):
+```json
+{
+  "allChatListOrder": -201710000000000,     // 읽지 않음 상태
+  "singleChatListOrder": -201710000000000,  // 읽지 않음 상태
+  "pin": false  // 또는 필드 없음
+}
+```
+
+**After** (핀 설정 후):
+```json
+{
+  "allChatListOrder": -501710000000000,     // 핀 상태 (PINNED_OFFSET 적용)
+  "singleChatListOrder": -501710000000000,  // 핀 상태 (PINNED_OFFSET 적용)
+  "pin": true
+}
+```
+
+#### 정렬 결과
+
+Firebase에서 `allChatListOrder` 기준으로 **ascending 정렬** 시:
+
+```
+1. single-abc123-xyz789  (-501710000000000)  // 핀됨 + 읽지않음
+2. group-general         (-1709900000000)    // 읽음
+```
+
+결과: **핀된 채팅방이 최상위에 표시됨** ✅
+
+### 요약
+
+| 항목 | 설명 |
+|------|------|
+| **정렬 필드 타입** | **반드시 `number`** (문자열 금지) |
+| **정렬 값 계산** | `toChatListOrder(timestamp, status)` 사용 |
+| **핀 설정** | `-timestamp - PINNED_OFFSET` |
+| **읽지않음** | `-timestamp - UNREAD_OFFSET` |
+| **읽음** | `-timestamp` |
+| **정렬 순서** | 핀 > 읽지않음 > 읽음 (각 그룹 내 최신 메시지 우선) |
+| **클라이언트 함수** | `togglePinChatRoom()` |
+| **서버 핸들러** | `onChatRoomPinCreate`, `onChatRoomPinDelete` |
+| **버그 수정** | 문자열 연결 → 숫자 연산 (v1.2.0) |
+| **테스트** | 9개 유닛 테스트 통과 ✅ |
 
 ---
 
@@ -1162,4 +1674,3 @@ const isMember = snapshot.exists();
 - [src/lib/stores/user-profile.svelte](../src/lib/stores/user-profile.svelte) - 사용자 프로필 스토어
 - [src/lib/stores/database.svelte](../src/lib/stores/database.svelte) - Firebase 데이터베이스 유틸리티
 - [messages/*.json](../messages/) - 다국어 메시지 파일
-

@@ -1,15 +1,19 @@
 ---
-title: testusernotcreatedguide4.js
-type: javascript
-path: src/paraglide/messages/testusernotcreatedguide4.js
-status: active
-version: 1.0.0
-last_updated: 2025-11-15
+title: testusernotcreatedguide4.js - JavaScript 소스 코드
+original_path: src/paraglide/messages/testusernotcreatedguide4.js
+category: source
+file_type: js
+status: current
+last_updated: 2025-11-20
 ---
+
+# testusernotcreatedguide4.js
 
 ## 개요
 
-이 파일은 `src/paraglide/messages/testusernotcreatedguide4.js`의 소스 코드를 포함하는 SED 스펙 문서입니다.
+**원본 경로**: `src/paraglide/messages/testusernotcreatedguide4.js`
+
+**파일 유형**: JavaScript 소스 코드
 
 ## 소스 코드
 
@@ -18,19 +22,20 @@ last_updated: 2025-11-15
 import { getLocale, trackMessageCall, experimentalMiddlewareLocaleSplitting, isServer } from '../runtime.js';
 
 const en_testusernotcreatedguide4 = /** @type {(inputs: {}) => string} */ () => {
-	return `No test users have been created. You can use the <strong>Create Test Users</strong> feature above to create 100.`
+	return `No test users have been created. Use the <strong><a class="text-blue-600" href="/admin/test/create-test-data">Create Test Data</a></strong> page to generate 100 test accounts.`
 };
 
 const ko_testusernotcreatedguide4 = /** @type {(inputs: {}) => string} */ () => {
-	return `생성된 테스트 사용자가 없습니다. 위의 <strong>테스트 사용자 생성</strong> 기능을 사용해 100명을 생성할 수 있습니다.`
+	return `생성된 테스트 사용자가 없습니다. <strong><a class="text-blue-600" href="/admin/test/create-test-data">테스트 데이터 생성</a></strong> 페이지에서 테스트 사용자 100명을 만들 수 있습니다.`
 };
 
 const ja_testusernotcreatedguide4 = /** @type {(inputs: {}) => string} */ () => {
-	return `作成されたテストユーザーがいません。上記の<strong>テストユーザー作成</strong>機能を使用して100人を作成できます。`
+	return `テストユーザーはまだありません。<strong><a class="text-blue-600" href="/admin/test/create-test-data">テストデータ作成</a></strong>ページで100人のテストユーザーを作成してください。`
 };
 
-/** @type {(inputs: {}) => string} */
-const zh_testusernotcreatedguide4 = en_testusernotcreatedguide4;
+const zh_testusernotcreatedguide4 = /** @type {(inputs: {}) => string} */ () => {
+	return `尚未创建测试用户。请前往 <strong><a class="text-blue-600" href="/admin/test/create-test-data">测试数据创建</a></strong> 页面生成 100 个测试账户。`
+};
 
 /**
 * This function has been compiled by [Paraglide JS](https://inlang.com/m/gerre34r).
@@ -58,4 +63,3 @@ const testusernotcreatedguide4 = (inputs = {}, options = {}) => {
 };
 export { testusernotcreatedguide4 as "testUserNotCreatedGuide" }
 ```
-

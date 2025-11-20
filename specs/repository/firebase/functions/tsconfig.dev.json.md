@@ -1,15 +1,19 @@
 ---
-title: tsconfig.dev.json
-type: config
-path: firebase/functions/tsconfig.dev.json
-status: active
-version: 1.0.0
-last_updated: 2025-11-15
+title: tsconfig.dev.json - JSON 설정 파일
+original_path: firebase/functions/tsconfig.dev.json
+category: configuration
+file_type: json
+status: current
+last_updated: 2025-11-20
 ---
+
+# tsconfig.dev.json
 
 ## 개요
 
-이 파일은 `firebase/functions/tsconfig.dev.json`의 소스 코드를 포함하는 SED 스펙 문서입니다.
+**원본 경로**: `firebase/functions/tsconfig.dev.json`
+
+**파일 유형**: JSON 설정 파일
 
 ## 소스 코드
 
@@ -19,6 +23,4 @@ last_updated: 2025-11-15
     ".eslintrc.js"
   ]
 }
-
 ```
-
