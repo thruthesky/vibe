@@ -59,7 +59,6 @@
 					path="chat-joins/{authStore.user.uid}"
 					orderBy="allChatListOrder"
 					pageSize={20}
-					reverse={true}
 					scrollTrigger="bottom"
 				>
 					{#snippet item(itemData: { key: string; data: any })}

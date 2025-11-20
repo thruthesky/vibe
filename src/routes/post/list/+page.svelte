@@ -217,7 +217,6 @@ async function handleToggleLike(event: MouseEvent, targetId: string, targetType:
 			path="posts"
 			pageSize={20}
 			orderBy="createdAt"
-			reverse={true}
 			threshold={300}
 			category={selectedCategory}
 			{userLikes}

@@ -18,6 +18,10 @@ import {
   isChatSubscribed,
 } from "../utils/fcm.utils";
 import {incrementActionCounter} from "./user-action-counters.handler";
+import {
+  toChatListOrder,
+  extractChatStatus,
+} from "../../../../shared/order-value.utils";
 
 
 /**
@@ -93,11 +97,11 @@ export async function handleChatMessageCreate(
       return;
     }
 
-    // singleChatListOrder 계산
-    // - 발신자: 읽음 상태이므로 그냥 timestamp
-    // - 수신자(상대방): 읽지 않은 상태이므로 200 prefix 추가
-    const senderSingleListOrder = `${timestamp}`;
-    const partnerSingleListOrder = `200${timestamp}`;
+    // singleChatListOrder 계산 (음수 + Offset 방식)
+    // - 발신자: 읽음 상태 (-timestamp)
+    // - 수신자(상대방): 읽지 않은 상태 (-timestamp - UNREAD_OFFSET)
+    const senderSingleListOrder = toChatListOrder(timestamp, "read");
+    const partnerSingleListOrder = toChatListOrder(timestamp, "unread");
 
     const updates: {[key: string]: unknown} = {};
 
@@ -207,11 +211,11 @@ export async function handleChatMessageCreate(
       updates[`${basePath}/lastMessageAt`] = timestamp;
       updates[`${basePath}/updatedAt`] = timestamp;
 
-      // allChatListOrder 계산
-      // - 기존 필드가 있고, "500"으로 시작하면 유지 (핀 설정된 채팅방)
-      // - 기존 필드가 있고, 발신자인 경우: timestamp (읽음)
-      // - 기존 필드가 있고, 수신자인 경우: 200 + timestamp (읽지 않음)
-      // - 기존 필드가 없는 경우: timestamp (새로 생성)
+      // allChatListOrder 계산 (음수 + Offset 방식)
+      // - 기존 필드가 있고, pinned 상태면 유지 (핀 설정된 채팅방)
+      // - 기존 필드가 있고, 발신자인 경우: -timestamp (읽음)
+      // - 기존 필드가 있고, 수신자인 경우: -timestamp - UNREAD_OFFSET (읽지 않음)
+      // - 기존 필드가 없는 경우: -timestamp (새로 생성)
       const existingAllChatListOrder = existingData?.allChatListOrder as
         | string
         | number
@@ -219,18 +223,22 @@ export async function handleChatMessageCreate(
 
       if (
         existingAllChatListOrder !== undefined &&
-        String(existingAllChatListOrder).startsWith("500")
+        extractChatStatus(Number(existingAllChatListOrder)) === "pinned"
       ) {
         // 핀 설정된 채팅방: 기존 값 유지
         updates[`${basePath}/allChatListOrder`] = existingAllChatListOrder;
       } else if (existingAllChatListOrder !== undefined) {
         // 기존 필드가 있는 경우
-        updates[`${basePath}/allChatListOrder`] = isSender ?
-          `${timestamp}` :
-          `200${timestamp}`;
+        updates[`${basePath}/allChatListOrder`] = toChatListOrder(
+          timestamp,
+          isSender ? "read" : "unread"
+        );
       } else {
-        // 기존 필드가 없는 경우: 새로 생성 (timestamp만)
-        updates[`${basePath}/allChatListOrder`] = `${timestamp}`;
+        // 기존 필드가 없는 경우: 새로 생성 (읽음 상태로 초기화)
+        updates[`${basePath}/allChatListOrder`] = toChatListOrder(
+          timestamp,
+          "read"
+        );
       }
 
       // 채팅방 타입에 따른 정렬 필드
@@ -243,17 +251,22 @@ export async function handleChatMessageCreate(
 
         if (
           existingGroupListOrder !== undefined &&
-          String(existingGroupListOrder).startsWith("500")
+          extractChatStatus(Number(existingGroupListOrder)) === "pinned"
         ) {
           // 핀 설정된 채팅방: 기존 값 유지
           updates[`${basePath}/groupChatListOrder`] = existingGroupListOrder;
         } else if (existingGroupListOrder !== undefined) {
           // 기존 필드가 있는 경우
-          const groupListOrder = isSender ? `${timestamp}` : `200${timestamp}`;
-          updates[`${basePath}/groupChatListOrder`] = groupListOrder;
+          updates[`${basePath}/groupChatListOrder`] = toChatListOrder(
+            timestamp,
+            isSender ? "read" : "unread"
+          );
         } else {
-          // 기존 필드가 없는 경우: 새로 생성
-          updates[`${basePath}/groupChatListOrder`] = `${timestamp}`;
+          // 기존 필드가 없는 경우: 새로 생성 (읽음 상태로 초기화)
+          updates[`${basePath}/groupChatListOrder`] = toChatListOrder(
+            timestamp,
+            "read"
+          );
         }
       } else if (roomType === "open") {
         // 오픈 채팅인 경우
@@ -264,17 +277,22 @@ export async function handleChatMessageCreate(
 
         if (
           existingOpenListOrder !== undefined &&
-          String(existingOpenListOrder).startsWith("500")
+          extractChatStatus(Number(existingOpenListOrder)) === "pinned"
         ) {
           // 핀 설정된 채팅방: 기존 값 유지
           updates[`${basePath}/openChatListOrder`] = existingOpenListOrder;
         } else if (existingOpenListOrder !== undefined) {
           // 기존 필드가 있는 경우
-          const openListOrder = isSender ? `${timestamp}` : `200${timestamp}`;
-          updates[`${basePath}/openChatListOrder`] = openListOrder;
+          updates[`${basePath}/openChatListOrder`] = toChatListOrder(
+            timestamp,
+            isSender ? "read" : "unread"
+          );
         } else {
-          // 기존 필드가 없는 경우: 새로 생성
-          updates[`${basePath}/openChatListOrder`] = `${timestamp}`;
+          // 기존 필드가 없는 경우: 새로 생성 (읽음 상태로 초기화)
+          updates[`${basePath}/openChatListOrder`] = toChatListOrder(
+            timestamp,
+            "read"
+          );
         }
       }
 
@@ -287,19 +305,23 @@ export async function handleChatMessageCreate(
 
       if (
         existingOpenAndGroupListOrder !== undefined &&
-        String(existingOpenAndGroupListOrder).startsWith("500")
+        extractChatStatus(Number(existingOpenAndGroupListOrder)) === "pinned"
       ) {
         // 핀 설정된 채팅방: 기존 값 유지
         updates[`${basePath}/openAndGroupChatListOrder`] =
           existingOpenAndGroupListOrder;
       } else if (existingOpenAndGroupListOrder !== undefined) {
         // 기존 필드가 있는 경우
-        updates[`${basePath}/openAndGroupChatListOrder`] = isSender ?
-          `${timestamp}` :
-          `200${timestamp}`;
+        updates[`${basePath}/openAndGroupChatListOrder`] = toChatListOrder(
+          timestamp,
+          isSender ? "read" : "unread"
+        );
       } else {
-        // 기존 필드가 없는 경우: 새로 생성
-        updates[`${basePath}/openAndGroupChatListOrder`] = `${timestamp}`;
+        // 기존 필드가 없는 경우: 새로 생성 (읽음 상태로 초기화)
+        updates[`${basePath}/openAndGroupChatListOrder`] = toChatListOrder(
+          timestamp,
+          "read"
+        );
       }
 
       // newMessageCount 증가 (발신자 제외)

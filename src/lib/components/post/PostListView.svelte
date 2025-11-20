@@ -29,8 +29,6 @@
 		orderBy?: string;
 		/** 정렬 접두사 (기본값: "") */
 		orderPrefix?: string;
-		/** 역순 정렬 여부 (기본값: true) */
-		reverse?: boolean;
 		/** 무한 스크롤 트리거 거리 (기본값: 300px) */
 		threshold?: number;
 		/** 카테고리 필터 (선택 사항) */
@@ -62,7 +60,6 @@
 		pageSize = 20,
 		orderBy = 'createdAt',
 		orderPrefix = '',
-		reverse = true,
 		threshold = 300,
 		category = null,
 		editMode = 'navigate',
@@ -105,7 +102,6 @@
 	{pageSize}
 	orderBy={category ? 'categoryOrder' : 'allCategoryOrder'}
 	orderPrefix={category ? `${category}-` : ''}
-	reverse={category ? true : false}
 	newItemPosition="top"
 	{threshold}
 >

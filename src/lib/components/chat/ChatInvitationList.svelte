@@ -107,7 +107,6 @@ $effect(() => {
 			pageSize={PAGE_SIZE}
 			orderBy={ORDER_FIELD}
 			threshold={320}
-			reverse={true}
 		>
 			{#snippet item(itemData)}
 				{@const invitation = (itemData.data ?? {}) as InvitationData}

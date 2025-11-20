@@ -6,6 +6,11 @@
 
 import * as admin from "firebase-admin";
 import * as logger from "firebase-functions/logger";
+import {
+  toChatListOrder,
+  extractTimestampFromChatOrder,
+  extractChatStatus,
+} from "../../../../shared/order-value.utils";
 
 /**
  * 채팅방 핀 생성 시 비즈니스 로직 처리
@@ -60,7 +65,7 @@ export async function handleChatRoomPinCreate(
   const data = snapshot.val();
 
   // xxxListOrder 또는 xxxChatListOrder 필드 찾기
-  const updates: Record<string, string> = {};
+  const updates: Record<string, number> = {};
 
   for (const key of Object.keys(data)) {
     // order 필드만 처리 (ListOrder 또는 ChatListOrder로 끝나는 필드)
@@ -71,21 +76,20 @@ export async function handleChatRoomPinCreate(
       continue;
     }
 
-    const currentValue = String(data[key]);
+    const currentValue = Number(data[key]);
 
-    // Base timestamp 추출 (prefix 제거)
-    let baseTimestamp: string;
-    if (currentValue.startsWith("500")) {
-      // 이미 "500" prefix가 있으면 건너뜀
+    // 이미 핀 상태인지 확인
+    const currentStatus = extractChatStatus(currentValue);
+    if (currentStatus === "pinned") {
+      // 이미 핀 설정되어 있으면 건너뜀
       continue;
-    } else if (currentValue.startsWith("200")) {
-      baseTimestamp = currentValue.slice(3); // "200" 제거
-    } else {
-      baseTimestamp = currentValue;
     }
 
-    // 핀 설정: "500" prefix 추가
-    const newValue = `500${baseTimestamp}`;
+    // 원본 타임스탬프 추출
+    const timestamp = extractTimestampFromChatOrder(currentValue);
+
+    // 핀 설정: PINNED_OFFSET 적용
+    const newValue = toChatListOrder(timestamp, "pinned");
 
     // 값이 실제로 변경된 경우에만 업데이트
     if (newValue !== currentValue) {
@@ -96,6 +100,7 @@ export async function handleChatRoomPinCreate(
         field: key,
         from: currentValue,
         to: newValue,
+        timestamp,
       });
     }
   }

@@ -11,7 +11,6 @@
     pageSize={20}
     orderBy="createdAt"
     threshold={300}
-    reverse={true}
   >
     {#snippet item(itemData, index)}
       <div class="user-card">
@@ -76,14 +75,13 @@
    * - orderPrefix: 정렬 필드의 prefix 값 (예: "community-")으로 필터링 (선택 사항)
    * - equalToValue: orderBy 필드가 특정 값과 정확히 일치하는 데이터만 조회 (선택 사항)
    * - threshold: 스크롤 threshold (px) - 바닥에서 이 값만큼 떨어지면 다음 페이지 로드 (기본값: 300)
-   * - reverse: 역순 정렬 여부 (기본값: false)
    * - scrollTrigger: 스크롤 트리거 위치 (기본값: "bottom")
    *   - "bottom": 아래로 스크롤하면 다음 페이지 로드 (일반 목록)
    *   - "top": 위로 스크롤하면 이전 페이지 로드 (채팅방 스타일)
    * - newItemPosition: 새 아이템 추가 위치 (기본값: "auto")
    *   - "top": 항상 맨 위에 추가 (게시판 목록에 적합)
    *   - "bottom": 항상 맨 아래에 추가 (채팅 메시지에 적합)
-   *   - "auto": reverse와 scrollTrigger 옵션에 따라 자동 결정
+   *   - "auto": scrollTrigger에 따라 자동 결정 (bottom=맨 앞, top=맨 뒤)
    * - autoScrollToEnd: 초기 로드 후 자동으로 스크롤을 맨 아래로 이동 (기본값: false)
    *   - scrollTrigger="top"과 함께 사용하면 채팅방 스타일 동작
    * - autoScrollOnNewData: 새 데이터 추가 시 자동 스크롤 여부 (기본값: false)
@@ -106,7 +104,6 @@
     orderPrefix?: string;
     equalToValue?: string | number | boolean | null;
     threshold?: number;
-    reverse?: boolean;
     scrollTrigger?: 'bottom' | 'top';
     newItemPosition?: 'top' | 'bottom' | 'auto';
     autoScrollToEnd?: boolean;
@@ -127,7 +124,6 @@
     orderPrefix = '',
     equalToValue = undefined,
     threshold = 300,
-    reverse = false,
     scrollTrigger = 'bottom',
     newItemPosition = 'auto',
     autoScrollToEnd = false,
@@ -271,7 +267,6 @@
       orderBy,
       orderPrefix,
       pageSize,
-      reverse,
       scrollTrigger,
       resolvedEqualValue
     };
@@ -368,6 +363,7 @@
 
   /**
    * Firebase Realtime Database의 정렬 규칙에 따라 두 값을 비교합니다.
+   * 항상 오름차순으로만 정렬합니다 (음수 값은 오름차순 시 자동으로 최신이 먼저).
    *
    * Firebase 정렬 순서:
    * 1. null (또는 undefined)
@@ -378,17 +374,16 @@
    *
    * @param a 첫 번째 값
    * @param b 두 번째 값
-   * @param reverseOrder 역순 정렬 여부 (기본값: false)
    * @returns -1 (a < b), 0 (a === b), 1 (a > b)
    */
-  function compareOrderByValues(a: any, b: any, reverseOrder: boolean = false): number {
+  function compareOrderByValues(a: any, b: any): number {
     // null/undefined 처리
     const aIsNull = a === null || a === undefined;
     const bIsNull = b === null || b === undefined;
 
     if (aIsNull && bIsNull) return 0;
-    if (aIsNull) return reverseOrder ? 1 : -1;
-    if (bIsNull) return reverseOrder ? -1 : 1;
+    if (aIsNull) return -1;
+    if (bIsNull) return 1;
 
     // 타입 우선순위: boolean < number < string
     const aType = typeof a;
@@ -396,31 +391,27 @@
 
     // boolean 처리
     if (aType === 'boolean' && bType === 'boolean') {
-      const result = a === b ? 0 : (a ? 1 : -1);
-      return reverseOrder ? -result : result;
+      return a === b ? 0 : (a ? 1 : -1);
     }
-    if (aType === 'boolean') return reverseOrder ? 1 : -1;
-    if (bType === 'boolean') return reverseOrder ? -1 : 1;
+    if (aType === 'boolean') return -1;
+    if (bType === 'boolean') return 1;
 
-    // number 처리
+    // number 처리 (오름차순)
     if (aType === 'number' && bType === 'number') {
-      const result = a - b;
-      return reverseOrder ? -result : result;
+      return a - b;
     }
-    if (aType === 'number') return reverseOrder ? 1 : -1;
-    if (bType === 'number') return reverseOrder ? -1 : 1;
+    if (aType === 'number') return -1;
+    if (bType === 'number') return 1;
 
     // string 처리 (사전순)
     if (aType === 'string' && bType === 'string') {
-      const result = a < b ? -1 : (a > b ? 1 : 0);
-      return reverseOrder ? -result : result;
+      return a < b ? -1 : (a > b ? 1 : 0);
     }
 
     // 기타 타입 (Object 등) - 문자열로 변환하여 비교
     const aStr = String(a);
     const bStr = String(b);
-    const result = aStr < bStr ? -1 : (aStr > bStr ? 1 : 0);
-    return reverseOrder ? -result : result;
+    return aStr < bStr ? -1 : (aStr > bStr ? 1 : 0);
   }
 
   /**
@@ -472,8 +463,7 @@
   function repositionItem(itemKey: string, newData: any, newOrderByValue: any): void {
     // console.log(`[repositionItem] 아이템 재배치 시작: ${itemKey}`, {
       // newOrderByValue,
-      // orderBy,
-      // reverse
+      // orderBy
     // });
 
     // 1. items 배열에서 현재 아이템 찾기
@@ -495,16 +485,15 @@
     };
     const itemsWithoutCurrent = items.filter(item => item.key !== itemKey);
 
-    // 3. 새로운 orderBy 값에 따라 올바른 삽입 위치 찾기
+    // 3. 새로운 orderBy 값에 따라 올바른 삽입 위치 찾기 (항상 오름차순)
     let insertIndex = 0;
-    const reverseOrder = reverse && scrollTrigger !== 'top';
 
     for (let i = 0; i < itemsWithoutCurrent.length; i++) {
       const compareValue = itemsWithoutCurrent[i].data[orderBy];
-      const comparison = compareOrderByValues(newOrderByValue, compareValue, reverseOrder);
+      const comparison = compareOrderByValues(newOrderByValue, compareValue);
 
       if (comparison < 0) {
-        // newOrderByValue가 더 작음 (또는 reverse에서 더 큰 값)
+        // newOrderByValue가 더 작음 - 여기에 삽입
         insertIndex = i;
         break;
       }
@@ -703,14 +692,16 @@
       // newItemPosition 옵션에 따라 배열의 앞 또는 뒤에 추가
       // - "top": 항상 맨 위에 추가 (게시판 목록에 적합)
       // - "bottom": 항상 맨 아래에 추가 (채팅 메시지에 적합)
-      // - "auto": reverse 옵션에 따라 자동 결정
+      // - "auto": scrollTrigger에 따라 자동 결정 (bottom=맨 뒤, top=맨 앞)
       let addToTop = false;
       if (newItemPosition === 'top') {
         addToTop = true;
       } else if (newItemPosition === 'bottom') {
         addToTop = false;
       } else { // 'auto'
-        addToTop = reverse;
+        // scrollTrigger가 'top'이면 채팅방 스타일 (맨 뒤에 추가)
+        // scrollTrigger가 'bottom'이면 일반 목록 스타일 (맨 앞에 추가, 최신글이 위에)
+        addToTop = scrollTrigger === 'bottom';
       }
 
       if (addToTop) {
@@ -884,7 +875,7 @@
       return;
     }
 
-    console.log('DatabaseListView: Loading initial data from', path, '(reverse:', reverse, ')');
+    console.log('DatabaseListView: Loading initial data from', path, '(scrollTrigger:', scrollTrigger, ')');
     initialLoading = true;
     error = null;
     items = [];
@@ -921,7 +912,7 @@
 
       // Firebase 쿼리 생성
       // scrollTrigger='top'이면 채팅방 스타일이므로 limitToLast 사용 (최신 메시지 가져오기)
-      // reverse가 true면 limitToLast를 사용하여 가장 최근 데이터부터 가져옵니다
+      // 그 외에는 limitToFirst 사용 (오름차순, 음수 타임스탬프 시 최신이 먼저)
       // pageSize + 1개를 가져와서 hasMore를 판단합니다
       // equalToValue가 있으면 정확히 일치하는 값만 조회합니다.
       // orderPrefix가 있으면 startAt과 endAt으로 범위 필터링
@@ -930,8 +921,8 @@
       if (hasEqualFilter) {
         dataQuery = query(baseRef, orderByChild(orderBy), equalTo(resolvedEqualValue));
         // console.log('DatabaseListView: Using equalTo filter for initial load:', resolvedEqualValue);
-      } else if (scrollTrigger === 'top' || reverse) {
-        // 채팅방 스타일 또는 역순 정렬: limitToLast 사용
+      } else if (scrollTrigger === 'top') {
+        // 채팅방 스타일: limitToLast 사용
         if (orderPrefix) {
           // orderPrefix가 있으면 범위 쿼리 추가
           dataQuery = query(
@@ -945,7 +936,6 @@
         } else {
           // orderPrefix가 없으면 startAt(false) 사용
           // 이렇게 하면 orderBy 필드가 null 또는 undefined인 항목은 제외됩니다
-          // orderBy 필드가 숫자 타입인 경우 가장 작은 값부터 정렬됩니다
           dataQuery = query(
             baseRef,
             orderByChild(orderBy),
@@ -1002,7 +992,7 @@
         console.log(
           `%c[DatabaseListView] Initial Load - Query Settings`,
           'color: #10b981; font-weight: bold;',
-          { path, orderBy, orderPrefix, reverse, pageSize }
+          { path, orderBy, orderPrefix, pageSize }
         );
         console.log(
           `%c[DatabaseListView] Initial Load - Firebase returned ${loadedItems.length} items`,
@@ -1041,9 +1031,9 @@
           // );
         }
 
-        // 클라이언트 측 명시적 정렬
+        // 클라이언트 측 명시적 정렬 (항상 오름차순)
         // Firebase에서 받은 데이터를 orderBy 필드 기준으로 정렬합니다
-        // 이렇게 하면 Firebase 쿼리 순서와 관계없이 정확한 정렬을 보장합니다
+        // 음수 타임스탬프의 경우 오름차순 정렬 시 자동으로 최신이 먼저 나옵니다
         loadedItems.sort((a, b) => {
           const aValue = a.data[orderBy];
           const bValue = b.data[orderBy];
@@ -1053,27 +1043,16 @@
           if (aValue == null) return 1;
           if (bValue == null) return -1;
 
-          // reverse가 true이고 scrollTrigger가 'top'이 아니면 내림차순 (최신 글 먼저)
-          // scrollTrigger가 'top'이면 오름차순 (오래된 메시지가 위에)
-          if (reverse && scrollTrigger !== 'top') {
-            // 내림차순: 큰 값이 먼저 (최신 글 먼저)
-            if (typeof aValue === 'string' && typeof bValue === 'string') {
-              return bValue.localeCompare(aValue); // 문자열 내림차순 (b > a이면 양수, b가 뒤로)
-            } else {
-              return Number(bValue) - Number(aValue); // 숫자 내림차순
-            }
+          // 항상 오름차순 정렬
+          if (typeof aValue === 'string' && typeof bValue === 'string') {
+            return aValue.localeCompare(bValue); // 문자열 오름차순
           } else {
-            // 오름차순: 작은 값이 먼저 (오래된 글 먼저)
-            if (typeof aValue === 'string' && typeof bValue === 'string') {
-              return aValue.localeCompare(bValue); // 문자열 오름차순 (a > b이면 양수, a가 뒤로)
-            } else {
-              return Number(aValue) - Number(bValue); // 숫자 오름차순
-            }
+            return Number(aValue) - Number(bValue); // 숫자 오름차순
           }
         });
 
         // console.log(
-          // `%c[DatabaseListView] After client-side sorting (${reverse && scrollTrigger !== 'top' ? 'newest first' : 'oldest first'}):`,
+          // `%c[DatabaseListView] After client-side sorting (ascending order):`,
           // 'color: #10b981;',
           // loadedItems.map((item, idx) => ({
             // index: idx,
@@ -1229,8 +1208,8 @@
    * 다음 페이지 데이터 로드 (Firebase 쿼리)
    *
    * Firebase 쿼리를 사용하여 다음 페이지를 로드합니다.
-   * - reverse가 false일 때: startAfter + limitToFirst 사용 (오래된 글 → 최신 글 순서)
-   * - reverse가 true일 때: endBefore + limitToLast 사용 (최신 글 → 오래된 글 순서)
+   * - scrollTrigger='bottom'일 때: startAfter + limitToFirst 사용 (오름차순, 음수 타임스탬프 시 최신이 먼저)
+   * - scrollTrigger='top'일 때: endBefore + limitToLast 사용 (채팅방 스타일)
    * pageSize + 1개를 로드하여 hasMore를 판단합니다.
    */
   async function loadMore() {
@@ -1281,12 +1260,12 @@
       const baseRef = dbRef(database, path);
 
       // Firebase 쿼리 생성
-      // scrollTrigger='top' 또는 reverse=true일 때 endBefore + limitToLast 사용
+      // scrollTrigger='top'일 때 endBefore + limitToLast 사용 (채팅방 스타일)
       // orderPrefix가 있으면 범위 쿼리도 함께 적용 (서버 측 필터링)
       // orderPrefix가 없으면 startAt(false)로 null/undefined 값 제외
       let dataQuery;
-      if (scrollTrigger === 'top' || reverse) {
-        // 채팅방 스타일 또는 역순 정렬: endBefore + limitToLast 사용
+      if (scrollTrigger === 'top') {
+        // 채팅방 스타일: endBefore + limitToLast 사용
         // limitToLast를 사용하면 마지막 N개를 가져오는데,
         // endBefore로 현재 커서 이전 데이터를 가져옵니다
         //
@@ -1300,7 +1279,7 @@
             endBefore(lastLoadedValue),
             limitToLast(pageSize + 1)
           );
-          // console.log('DatabaseListView: Using startAt + endBefore + limitToLast for chat/reverse pagination with orderPrefix:', orderPrefix, '(scrollTrigger:', scrollTrigger, ')');
+          // console.log('DatabaseListView: Using startAt + endBefore + limitToLast for chat pagination with orderPrefix:', orderPrefix, '(scrollTrigger:', scrollTrigger, ')');
         } else {
           // orderPrefix가 없으면 endBefore()만 사용
           // 초기 로드에서 이미 null/undefined 값을 제외했으므로,
@@ -1311,7 +1290,7 @@
             endBefore(lastLoadedValue),
             limitToLast(pageSize + 1)
           );
-          // console.log('DatabaseListView: Using endBefore + limitToLast for chat/reverse pagination (scrollTrigger:', scrollTrigger, ')');
+          // console.log('DatabaseListView: Using endBefore + limitToLast for chat pagination (scrollTrigger:', scrollTrigger, ')');
         }
       } else {
         // 정순 정렬: startAfter + limitToFirst 사용
@@ -1356,7 +1335,8 @@
 
         // console.log(`[loadMore] Firebase 반환: ${newItems.length}개`);
 
-        // 클라이언트 측 명시적 정렬
+        // 클라이언트 측 명시적 정렬 (항상 오름차순)
+        // 음수 타임스탬프의 경우 오름차순 정렬 시 자동으로 최신이 먼저 나옵니다
         newItems.sort((a, b) => {
           const aValue = a.data[orderBy];
           const bValue = b.data[orderBy];
@@ -1366,20 +1346,11 @@
           if (aValue == null) return 1;
           if (bValue == null) return -1;
 
-          if (reverse && scrollTrigger !== 'top') {
-            // 내림차순: 큰 값이 먼저 (최신 글 먼저)
-            if (typeof aValue === 'string' && typeof bValue === 'string') {
-              return bValue.localeCompare(aValue); // 문자열 내림차순
-            } else {
-              return Number(bValue) - Number(aValue); // 숫자 내림차순
-            }
+          // 항상 오름차순 정렬
+          if (typeof aValue === 'string' && typeof bValue === 'string') {
+            return aValue.localeCompare(bValue); // 문자열 오름차순
           } else {
-            // 오름차순: 작은 값이 먼저 (오래된 글 먼저)
-            if (typeof aValue === 'string' && typeof bValue === 'string') {
-              return aValue.localeCompare(bValue); // 문자열 오름차순
-            } else {
-              return Number(aValue) - Number(bValue); // 숫자 오름차순
-            }
+            return Number(aValue) - Number(bValue); // 숫자 오름차순
           }
         });
 

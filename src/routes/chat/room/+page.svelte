@@ -1498,7 +1498,6 @@
 						orderBy={roomOrderField}
 						orderPrefix={roomOrderPrefix}
 						threshold={300}
-						reverse={false}
 						scrollTrigger="top"
 						autoScrollToEnd={true}
 						autoScrollOnNewData={true}

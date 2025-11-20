@@ -6,6 +6,10 @@
 
 import * as admin from "firebase-admin";
 import * as logger from "firebase-functions/logger";
+import {
+  toChatListOrder,
+  extractTimestampFromChatOrder,
+} from "../../../../shared/order-value.utils";
 
 /**
  * 채팅방 핀 삭제 시 비즈니스 로직 처리
@@ -63,7 +67,7 @@ export async function handleChatRoomPinDelete(
   const newMessageCount = Number(data.newMessageCount ?? 0);
 
   // xxxListOrder 또는 xxxChatListOrder 필드 찾기
-  const updates: Record<string, string> = {};
+  const updates: Record<string, number> = {};
 
   for (const key of Object.keys(data)) {
     // order 필드만 처리 (ListOrder 또는 ChatListOrder로 끝나는 필드)
@@ -74,25 +78,14 @@ export async function handleChatRoomPinDelete(
       continue;
     }
 
-    const currentValue = String(data[key]);
+    const currentValue = Number(data[key]);
 
-    // Base timestamp 추출 (prefix 제거)
-    let baseTimestamp: string;
-    if (currentValue.startsWith("500")) {
-      baseTimestamp = currentValue.slice(3); // "500" 제거
-    } else if (currentValue.startsWith("200")) {
-      baseTimestamp = currentValue.slice(3); // "200" 제거
-    } else {
-      baseTimestamp = currentValue;
-    }
+    // 원본 타임스탬프 추출
+    const timestamp = extractTimestampFromChatOrder(currentValue);
 
-    // 핀 해제: newMessageCount에 따라 "200" 추가 또는 prefix 제거
-    let newValue: string;
-    if (newMessageCount > 0) {
-      newValue = `200${baseTimestamp}`;
-    } else {
-      newValue = baseTimestamp;
-    }
+    // 핀 해제: newMessageCount에 따라 상태 결정
+    const newStatus = newMessageCount > 0 ? "unread" : "read";
+    const newValue = toChatListOrder(timestamp, newStatus);
 
     // 값이 실제로 변경된 경우에만 업데이트
     if (newValue !== currentValue) {
@@ -103,7 +96,9 @@ export async function handleChatRoomPinDelete(
         field: key,
         from: currentValue,
         to: newValue,
+        timestamp,
         newMessageCount,
+        newStatus,
       });
     }
   }

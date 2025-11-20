@@ -20,6 +20,7 @@ import {
   recordMyAction,
   recordReceivedReaction,
 } from "../utils/reaction-history.utils";
+import {toNegativeTimestamp} from "../../../../shared/order-value.utils";
 
 
 /**
@@ -271,14 +272,36 @@ export async function handleCommentCreate(
   commentData: Record<string, unknown>
 ): Promise<void> {
   const parentId = commentData.parentId as string | null;
+  const createdAt = commentData.createdAt as number | undefined;
 
   logger.info("댓글 생성 감지", {
     postId,
     commentId,
     parentId,
+    createdAt,
   });
 
   try {
+    // 0. order 필드 추가 (정렬용)
+    let timestamp = createdAt;
+    if (!timestamp) {
+      timestamp = Date.now();
+    }
+
+    const order = toNegativeTimestamp(timestamp);
+    const commentRef = admin.database().ref(`comments/${postId}/${commentId}`);
+
+    await commentRef.update({
+      createdAt: timestamp,  // 양수 유지
+      order,                 // 새로 추가 (음수)
+    });
+
+    logger.info("댓글 order 필드 생성 완료", {
+      postId,
+      commentId,
+      order,
+    });
+
     // 1. 모든 댓글에 대해 게시글의 totalChildCount 증가 (총 댓글 수)
     const postTotalChildCountRef = admin
       .database()

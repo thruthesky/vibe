@@ -11,6 +11,7 @@ import {
   isValidCategory,
 } from "../../../../shared/categories";
 import { handleMessageCategoryCreateFanout } from "./feed.fanout.handler";
+import {toNegativeTimestamp} from "../../../../shared/order-value.utils";
 
 /**
  * 전체 게시글 통계 카운터 증가
@@ -134,14 +135,19 @@ export async function handleChatMessageCategoryCreate(
     throw new Error("postId 생성 실패");
   }
 
+  // 정렬 필드 생성
+  const order = toNegativeTimestamp(timestamp);
+  const allCategoryOrder = toNegativeTimestamp(timestamp);
+
   logger.info("게시글 노드 생성 준비", {
     roomId,
     messageId,
     postId,
     category,
     timestamp,
+    order,
     categoryOrder,
-    allCategoryOrder: -timestamp,
+    allCategoryOrder,
     type: "post",
   });
 
@@ -155,12 +161,14 @@ export async function handleChatMessageCategoryCreate(
     [`posts/${postId}/urls`]: urls || null,
     [`posts/${postId}/createdAt`]: timestamp,
     [`posts/${postId}/authorUid`]: senderUid,
+    [`posts/${postId}/order`]: order,
     [`posts/${postId}/categoryOrder`]: categoryOrder,
-    [`posts/${postId}/allCategoryOrder`]: -timestamp,
+    [`posts/${postId}/allCategoryOrder`]: allCategoryOrder,
 
     // 채팅 메시지 노드에 필드 추가
+    [`chat-messages/${roomId}/${messageId}/order`]: order,
     [`chat-messages/${roomId}/${messageId}/categoryOrder`]: categoryOrder,
-    [`chat-messages/${roomId}/${messageId}/allCategoryOrder`]: -timestamp,
+    [`chat-messages/${roomId}/${messageId}/allCategoryOrder`]: allCategoryOrder,
     [`chat-messages/${roomId}/${messageId}/type`]: "post",
     [`chat-messages/${roomId}/${messageId}/postId`]: postId,
   };
@@ -171,8 +179,9 @@ export async function handleChatMessageCategoryCreate(
     roomId,
     messageId,
     postId,
+    order,
     categoryOrder,
-    allCategoryOrder: -timestamp,
+    allCategoryOrder,
     type: "post",
   });
 

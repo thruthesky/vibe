@@ -17,6 +17,8 @@
  * - story: 나의 이야기
  */
 
+import { toInvertedCategoryOrder } from './order-value.utils';
+
 /**
  * 게시판 카테고리 목록 (읽기 전용 배열)
  */
@@ -58,26 +60,26 @@ export function isValidCategory(category: string): category is ForumCategory {
 }
 
 /**
- * 카테고리와 타임스탬프로 categoryOrder 필드 생성
+ * 카테고리와 타임스탬프로 categoryOrder 필드 생성 (역순 문자열)
  *
- * categoryOrder는 문자열이므로 양수 타임스탬프를 사용합니다.
- * 클라이언트에서 역순으로 정렬하여 최신순으로 표시합니다.
+ * Firebase는 문자열을 사전순으로 오름차순 정렬합니다.
+ * 최신 게시글을 위에 표시하려면 타임스탬프를 역순으로 저장합니다.
  *
  * @param category - 카테고리 ID
  * @param timestamp - Unix timestamp (밀리초)
- * @returns categoryOrder 문자열 (예: "qna-1698473000000")
+ * @returns categoryOrder 문자열 (예: "qna-8289999999999")
  *
  * @example
  * ```typescript
- * createCategoryOrder("qna", 1698473000000);
- * // 반환값: "qna-1698473000000"
+ * createCategoryOrder("qna", 1710000000000);
+ * // 반환값: "qna-8289999999999"
  * ```
  */
 export function createCategoryOrder(
   category: ForumCategory,
   timestamp: number
 ): string {
-  return `${category}-${timestamp}`;
+  return toInvertedCategoryOrder(category, timestamp);
 }
 
 /**

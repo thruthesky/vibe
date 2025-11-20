@@ -358,7 +358,7 @@
 		</div>
 
 		{#key `${pageSize}-${combinedOrderBy}-${reverse}`}
-			<DatabaseListView path="test/data" pageSize={pageSize} orderBy={orderBy} orderPrefix={orderPrefix} threshold={320} reverse={reverse}>
+			<DatabaseListView path="test/data" pageSize={pageSize} orderBy={orderBy} orderPrefix={orderPrefix} threshold={320}>
 				{#snippet item(itemData: { key: string; data: any }, index: number)}
 					{@const category = getCategory(itemData.data)}
 					{@const actualPageNumber = Math.floor(index / pageSize) + 1}

@@ -19,6 +19,8 @@ import * as logger from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import {handleMessageCategoryCreateFanout} from "./feed.fanout.handler";
 import {recordMyAction} from "../utils/reaction-history.utils";
+import {toNegativeTimestamp} from "../../../../shared/order-value.utils";
+import {createCategoryOrder, type ForumCategory} from "../../../../shared/categories";
 
 /**
  * 게시글 생성 시 비즈니스 로직 처리
@@ -60,33 +62,44 @@ export async function handlePostCreate(
       category,
     });
 
-    // 2. 정렬 필드 자동 생성 (categoryOrder, allCategoryOrder)
-    // categoryOrder: 문자열이므로 양수 타임스탬프 사용
-    // allCategoryOrder: 숫자이므로 음수 타임스탬프 사용 (Firebase 오름차순 정렬로 최신순 표시)
-    if (category && createdAt) {
-      const categoryOrder = `${category}-${Number(createdAt)}`;
-      const allCategoryOrder = -Number(createdAt);
+    // 2. 정렬 필드 자동 생성 (order, categoryOrder, allCategoryOrder)
+    // order: 기본 정렬 필드 (음수 타임스탬프)
+    // categoryOrder: 카테고리별 정렬 (역순 문자열)
+    // allCategoryOrder: 전체 카테고리 정렬 (음수 타임스탬프)
+    let timestamp = createdAt as number;
+    if (!timestamp) {
+      timestamp = Date.now();
+    }
+
+    if (category) {
+      const order = toNegativeTimestamp(timestamp);
+      const allCategoryOrder = toNegativeTimestamp(timestamp);
+      const categoryOrder = createCategoryOrder(category as ForumCategory, timestamp);
 
       logger.info("정렬 필드 생성 시작", {
         postId,
         category,
+        order,
         categoryOrder,
         allCategoryOrder,
       });
 
       const postRef = admin.database().ref(`posts/${postId}`);
       await postRef.update({
-        categoryOrder,
-        allCategoryOrder,
+        createdAt: timestamp,    // 양수 유지
+        order,                   // 새로 추가 (음수)
+        categoryOrder,           // 역순 문자열
+        allCategoryOrder,        // 음수
       });
 
       logger.info("정렬 필드 생성 완료", {
         postId,
+        order,
         categoryOrder,
         allCategoryOrder,
       });
     } else {
-      logger.warn("category 또는 createdAt이 없어서 정렬 필드를 생성하지 않습니다", {
+      logger.warn("category가 없어서 정렬 필드를 생성하지 않습니다", {
         postId,
         category,
         createdAt,

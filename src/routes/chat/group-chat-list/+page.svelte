@@ -225,7 +225,6 @@
 					pageSize={PAGE_SIZE}
 					orderBy={JOIN_ORDER_FIELD}
 					threshold={320}
-					reverse={true}
 				>
 					{#snippet item(itemData, index)}
 						<!--

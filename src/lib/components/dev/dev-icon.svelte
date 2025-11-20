@@ -11,6 +11,8 @@
 	 * - 현재 로그인한 사용자 UID 표시
 	 *
 	 * 테스트 계정 (이메일/비밀번호):
+	 *
+	 * 과일 계정 (A-H):
 	 * - A: apple@test.com / 12345a,*
 	 * - B: banana@test.com / 12345a,*
 	 * - C: cherry@test.com / 12345a,*
@@ -19,6 +21,23 @@
 	 * - F: fig@test.com / 12345a,*
 	 * - G: grape@test.com / 12345a,*
 	 * - H: honeydew@test.com / 12345a,*
+	 *
+	 * 브라우저 계정 (I-W):
+	 * - I: chrome@test.com / 12345a,*
+	 * - J: canary@test.com / 12345a,*
+	 * - K: opera@test.com / 12345a,*
+	 * - L: safari@test.com / 12345a,*
+	 * - M: chatgptatlas@test.com / 12345a,*
+	 * - N: edge@test.com / 12345a,*
+	 * - O: firefox@test.com / 12345a,*
+	 * - P: arc@test.com / 12345a,*
+	 * - Q: whale@test.com / 12345a,*
+	 * - R: genspark@test.com / 12345a,*
+	 * - S: dia@test.com / 12345a,*
+	 * - T: vivaldi@test.com / 12345a,*
+	 * - U: min@test.com / 12345a,*
+	 * - V: comet@test.com / 12345a,*
+	 * - W: zen@test.com / 12345a,*
 	 *
 	 * 주의: 이 컴포넌트는 개발 환경에서만 사용해야 합니다.
 	 */
@@ -52,6 +71,26 @@
 	 * Firebase Console의 "Authentication"에서 이메일/비밀번호로 로그인할 수 있는 계정들
 	 */
 	const TEST_ACCOUNTS: TestAccount[] = [
+
+
+		// 브라우저 계정 (I-W)
+		{ label: 'I', name: 'chrome', email: 'chrome@test.com' },
+		{ label: 'J', name: 'canary', email: 'canary@test.com' },
+		{ label: 'K', name: 'opera', email: 'opera@test.com' },
+		{ label: 'L', name: 'safari', email: 'safari@test.com' },
+		{ label: 'M', name: 'chatgptatlas', email: 'chatgptatlas@test.com' },
+		{ label: 'N', name: 'edge', email: 'edge@test.com' },
+		{ label: 'O', name: 'firefox', email: 'firefox@test.com' },
+		{ label: 'P', name: 'arc', email: 'arc@test.com' },
+		{ label: 'Q', name: 'whale', email: 'whale@test.com' },
+		{ label: 'R', name: 'genspark', email: 'genspark@test.com' },
+		{ label: 'S', name: 'dia', email: 'dia@test.com' },
+		{ label: 'T', name: 'vivaldi', email: 'vivaldi@test.com' },
+		{ label: 'U', name: 'min', email: 'min@test.com' },
+		{ label: 'V', name: 'comet', email: 'comet@test.com' },
+		{ label: 'W', name: 'zen', email: 'zen@test.com' },
+
+		// 과일 계정 (A-H)
 		{ label: 'A', name: 'apple', email: 'apple@test.com' },
 		{ label: 'B', name: 'banana', email: 'banana@test.com' },
 		{ label: 'C', name: 'cherry', email: 'cherry@test.com' },
@@ -59,7 +98,8 @@
 		{ label: 'E', name: 'elderberry', email: 'elderberry@test.com' },
 		{ label: 'F', name: 'fig', email: 'fig@test.com' },
 		{ label: 'G', name: 'grape', email: 'grape@test.com' },
-		{ label: 'H', name: 'honeydew', email: 'honeydew@test.com' }
+		{ label: 'H', name: 'honeydew', email: 'honeydew@test.com' },
+
 	];
 
 	/**
@@ -463,6 +503,8 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.25rem;
+		max-height: 300px;
+		overflow-y: auto;
 	}
 
 	.account-button {

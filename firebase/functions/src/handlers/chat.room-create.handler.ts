@@ -6,6 +6,7 @@
 
 import * as admin from "firebase-admin";
 import * as logger from "firebase-functions/logger";
+import {toNegativeTimestamp} from "../../../../shared/order-value.utils";
 
 /**
  * 채팅방 생성 시 비즈니스 로직 처리
@@ -152,7 +153,7 @@ export async function handleChatRoomCreate(
 
     // 단계 5: groupListOrder/openListOrder 필드 설정 (type에 따라)
     // 최신순 정렬을 위해 음수 타임스탬프 사용
-    const listOrder = -timestamp;
+    const listOrder = toNegativeTimestamp(timestamp);
 
     if (roomType === "group") {
       const groupListOrderRef = admin.database().ref(

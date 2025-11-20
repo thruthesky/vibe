@@ -215,7 +215,6 @@
 				path={`my-actions/${authStore.user.uid}`}
 				pageSize={20}
 				orderBy="createdAt"
-				reverse={true}
 				newItemPosition="top"
 			>
 				{#snippet item(itemData)}

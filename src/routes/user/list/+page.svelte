@@ -125,7 +125,6 @@
       pageSize={listPageSize}
       orderBy={listOrderBy}
       threshold={300}
-      reverse={false}
       equalToValue={isSearching ? normalizedLowerSearch : undefined}
     >
     {#snippet item(itemData: { key: string; data: any })}
