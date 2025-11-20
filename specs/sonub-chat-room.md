@@ -40,7 +40,7 @@ Sonub 애플리케이션의 1:1 채팅방 및 그룹 채팅방 기능에 대한 
 
 #### 채팅방 ID 생성 규칙
 
-**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/chat/room/+page.svelte.md)
+**소스 코드 위치**: [chat.pure-functions.ts.md](./repository/shared/chat.pure-functions.ts.md)
 
 ```typescript
 function buildSingleRoomId(a: string, b: string) {

@@ -1,0 +1,301 @@
+<script lang="ts">
+	/**
+	 * 통합 채팅방 생성 다이얼로그
+	 *
+	 * type prop에 따라 그룹 채팅방 또는 오픈 채팅방을 생성합니다.
+	 * - type='group': 비공개 그룹 채팅방
+	 * - type='open': 공개 오픈 채팅방
+	 */
+	import { createEventDispatcher } from 'svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import {
+		Dialog,
+		DialogContent,
+		DialogDescription,
+		DialogFooter,
+		DialogHeader,
+		DialogTitle
+	} from '$lib/components/ui/dialog';
+	import { authStore } from '$lib/stores/auth.svelte';
+	import { ref, push, set } from 'firebase/database';
+	import { rtdb } from '$lib/firebase';
+	import * as m from '$lib/paraglide/messages.js';
+
+	type ChatRoomType = 'group' | 'open';
+
+	interface Props {
+		open?: boolean;
+		type: ChatRoomType;
+		title?: string;
+		description?: string;
+	}
+
+	let {
+		open = $bindable(false),
+		type,
+		title = type === 'group' ? m.chatCreateGroupTitle() : m.chatCreateOpenTitle(),
+		description = type === 'group'
+			? m.chatCreateGroupDescription()
+			: m.chatCreateOpenDescription()
+	}: Props = $props();
+
+	const dispatch = createEventDispatcher<{
+		created: { roomId: string };
+		cancel: void;
+	}>();
+
+	let roomName = $state('');
+	let roomDescription = $state('');
+	let isCreating = $state(false);
+	let errorMessage = $state('');
+	let inputRef: HTMLInputElement | null = $state(null);
+
+	// type에 따른 동적 설정
+	const isGroupChat = $derived(type === 'group');
+	const isOpenChat = $derived(type === 'open');
+	const placeholderText = $derived(isGroupChat ? m.chatCreateGroupPlaceholder() : m.chatCreateOpenPlaceholder());
+	const dialogClass = $derived(
+		isGroupChat ? 'chat-create-dialog group' : 'chat-create-dialog open'
+	);
+
+	/**
+	 * 폼 제출 핸들러 - 채팅방 생성
+	 */
+	async function handleSubmit(event: SubmitEvent) {
+		event.preventDefault();
+
+		const trimmedName = roomName.trim();
+		if (!trimmedName) {
+			errorMessage = m.chatCreateNameRequired();
+			return;
+		}
+
+		if (!authStore.user?.uid) {
+			errorMessage = m.authLoginRequired();
+			return;
+		}
+
+		if (!rtdb) {
+			errorMessage = m.firebaseNotReady();
+			return;
+		}
+
+		isCreating = true;
+		errorMessage = '';
+
+		try {
+			// 1. chat-rooms에 새 채팅방 생성
+			const chatRoomsRef = ref(rtdb, 'chat-rooms');
+			const newRoomRef = push(chatRoomsRef);
+			const roomId = newRoomRef.key;
+
+			if (!roomId) {
+				throw new Error('Failed to generate room ID');
+			}
+
+			// 채팅방 데이터
+			// ⚠️ 중요: 클라이언트는 5개 필드를 저장합니다:
+			//    - name: 채팅방 이름
+			//    - description: 채팅방 설명
+			//    - type: 채팅방 타입 (group/open)
+			//    - owner: 채팅방 소유자 UID
+			//    - members: 참여자 목록 { uid: true } (그룹/오픈 채팅만)
+			// ⚠️ 다른 모든 필드는 Cloud Functions에서 자동으로 설정됩니다:
+			//    - createdAt: 생성 시각
+			//    - memberCount: 참여자 수 (그룹/오픈 채팅만)
+			//    - groupListOrder/openListOrder: 정렬 순서
+			// ⚠️ owner와 members는 클라이언트가 저장하지만, 보안 규칙으로 제한됨
+			const roomData: Record<string, unknown> = {
+				name: trimmedName,
+				description: roomDescription.trim() || '',
+				type: type,
+				owner: authStore.user.uid
+			};
+
+			// 그룹/오픈 채팅일 경우 members 필드 추가
+			if (type === 'group' || type === 'open') {
+				roomData.members = {
+					[authStore.user.uid]: true
+				};
+			}
+
+			console.log(`✅ ${isGroupChat ? '그룹' : '오픈'} 채팅방 생성 시작:`, roomData);
+
+			await set(newRoomRef, roomData);
+
+			// 폼 초기화
+			roomName = '';
+			roomDescription = '';
+
+			// 이벤트 발생 및 다이얼로그 닫기
+			dispatch('created', { roomId });
+			open = false;
+		} catch (error) {
+		console.error('❌ 채팅방 생성 실패:', error);
+		errorMessage = m.chatCreateFailed();
+	} finally {
+		isCreating = false;
+	}
+}
+
+	/**
+	 * 취소 버튼 핸들러
+	 */
+	function handleCancel() {
+		roomName = '';
+		roomDescription = '';
+		errorMessage = '';
+		dispatch('cancel');
+		open = false;
+	}
+
+	// 다이얼로그 열릴 때 입력 필드에 포커스
+	$effect(() => {
+		if (open && inputRef) {
+			requestAnimationFrame(() => {
+				inputRef?.focus();
+			});
+		}
+	});
+
+	// 다이얼로그가 닫힐 때 폼 초기화
+	$effect(() => {
+		if (!open) {
+			roomName = '';
+			roomDescription = '';
+			errorMessage = '';
+		}
+	});
+</script>
+
+<Dialog bind:open>
+	<DialogContent class={dialogClass}>
+		<DialogHeader>
+			<DialogTitle>{title}</DialogTitle>
+			<DialogDescription>{description}</DialogDescription>
+		</DialogHeader>
+
+		<form class="flex flex-col gap-4" onsubmit={handleSubmit}>
+			<!-- 채팅방 이름 -->
+			<label class="form-label flex flex-col gap-2">
+				<span class="label-text">{m.chatCreateNameLabel()} <span class="text-red-500">*</span></span>
+				<input
+					bind:this={inputRef}
+					bind:value={roomName}
+					type="text"
+					class="form-input"
+					placeholder={placeholderText}
+					maxlength="50"
+					required
+					disabled={isCreating}
+					onkeydown={(e) => e.stopPropagation()}
+				/>
+				<span class="hint-text">{m.chatCreateNameHint()}</span>
+			</label>
+
+			<!-- 채팅방 설명 -->
+			<label class="form-label flex flex-col gap-2">
+				<span class="label-text">{m.chatCreateDescriptionLabel()}</span>
+				<textarea
+					bind:value={roomDescription}
+					class="form-textarea"
+					placeholder={m.chatCreateDescriptionPlaceholder()}
+					maxlength="200"
+					rows="3"
+					disabled={isCreating}
+					onkeydown={(e) => e.stopPropagation()}
+				></textarea>
+				<span class="hint-text">{m.chatCreateDescriptionHint()}</span>
+			</label>
+
+			<!-- 오픈 채팅방 안내 (오픈 타입일 때만 표시) -->
+			{#if isOpenChat}
+				<div class="info-box">
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke-width="1.5"
+						stroke="currentColor"
+						class="h-5 w-5"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z"
+						/>
+					</svg>
+					<span>{m.chatCreateOpenChatInfo()}</span>
+				</div>
+			{/if}
+
+			<!-- 에러 메시지 -->
+			{#if errorMessage}
+				<div class="error-message">
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke-width="1.5"
+						stroke="currentColor"
+						class="h-5 w-5"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"
+						/>
+					</svg>
+					<span>{errorMessage}</span>
+				</div>
+			{/if}
+
+			<DialogFooter class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+				<Button
+					type="button"
+					variant="ghost"
+					class="w-full sm:w-auto"
+					onclick={handleCancel}
+					disabled={isCreating}
+				>
+					{m.commonCancel()}
+				</Button>
+				<Button type="submit" class="w-full sm:w-auto" disabled={isCreating}>
+					{isCreating ? m.chatCreating() : m.chatCreateButton()}
+				</Button>
+			</DialogFooter>
+		</form>
+	</DialogContent>
+</Dialog>
+
+<style>
+	@import 'tailwindcss' reference;
+
+	.chat-create-dialog :global(.form-label) {
+		@apply text-sm font-semibold text-gray-700;
+	}
+
+	.chat-create-dialog :global(.label-text) {
+		@apply text-sm font-semibold text-gray-700;
+	}
+
+	.chat-create-dialog :global(.form-input) {
+		@apply w-full rounded-xl border border-gray-300 px-4 py-3 text-base text-gray-900 transition-colors focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none disabled:cursor-not-allowed disabled:bg-gray-100;
+	}
+
+	.chat-create-dialog :global(.form-textarea) {
+		@apply w-full rounded-xl border border-gray-300 px-4 py-3 text-base text-gray-900 transition-colors focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none disabled:cursor-not-allowed disabled:bg-gray-100;
+	}
+
+	.chat-create-dialog :global(.hint-text) {
+		@apply text-xs text-gray-500;
+	}
+
+	.info-box {
+		@apply flex items-start gap-2 rounded-lg bg-blue-50 px-4 py-3 text-sm text-blue-700;
+	}
+
+	.error-message {
+		@apply flex items-center gap-2 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600;
+	}
+</style>

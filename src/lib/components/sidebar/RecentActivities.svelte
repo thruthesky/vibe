@@ -161,7 +161,7 @@
 
 	/* 섹션 컨테이너 - 보더 없이 심플하게 */
 	.recent-activities-section {
-		@apply rounded-xl bg-white/90 p-3 shadow-sm;
+		@apply rounded-xl bg-white p-3;
 	}
 
 	/* 헤더 영역 */
@@ -212,7 +212,7 @@
 	/* 활동 아이템 - 콤팩트한 디자인 */
 	.activity-item {
 		@apply block rounded-lg bg-gray-50/50 px-2.5 py-1.5 transition-all duration-200;
-		@apply hover:bg-orange-50/80 hover:shadow-sm;
+		@apply hover:bg-orange-50/80;
 	}
 
 	/* 활동 헤더 */

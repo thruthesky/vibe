@@ -13,7 +13,7 @@
 	 * - 무한 스크롤: DatabaseListView의 패턴을 참고하여 스크롤 기반 자동 로드
 	 */
 
-	import { onMount, onDestroy } from 'svelte';
+	import { onDestroy } from 'svelte';
 	import { rtdb as database } from '$lib/firebase';
 	import {
 		ref,
@@ -113,6 +113,20 @@
 			initialLoading = false;
 			return;
 		}
+
+		// 🔥 기존 구독 정리
+		if (unsubscribe) {
+			unsubscribe();
+			unsubscribe = null;
+		}
+		unsubscribeAllPosts();
+
+		// 🔥 상태 초기화
+		initialLoading = true;
+		feedMap = {};
+		postsCache = {};
+		lastTimestamp = null;
+		hasMore = true;
 
 		// 피드 경로: /user-feed/{myUid}
 		const feedRef = ref(database, `user-feed/${myUid}`);
@@ -338,11 +352,6 @@
 		}
 	}
 
-	// 컴포넌트 마운트 시 구독 시작
-	onMount(() => {
-		subscribeFeed();
-	});
-
 	// 컴포넌트 언마운트 시 구독 해제
 	onDestroy(() => {
 		if (unsubscribe) {
@@ -351,11 +360,14 @@
 		unsubscribeAllPosts();
 	});
 
-	// 로그인 상태 변경 시 재구독
+	// 로그인 상태 변경 시 자동으로 구독/구독 해제
+	// onMount 대신 effect를 사용하여 authStore.user 변경에 반응
 	$effect(() => {
 		if (authStore.user) {
+			// 로그인 상태: 피드 구독 시작
 			subscribeFeed();
 		} else {
+			// 로그아웃 상태: 구독 해제 및 상태 초기화
 			if (unsubscribe) {
 				unsubscribe();
 				unsubscribe = null;
@@ -394,6 +406,7 @@
 		{#each sortedFeedIds as postId (postId)}
 			{@const message = postsCache[postId]}
 
+			<!-- 게시글 데이터가 로드된 경우만 표시 -->
 			{#if message}
 				<PostItem
 					{message}
@@ -404,22 +417,6 @@
 					{onEdit}
 					onDelete={onDelete}
 				/>
-			{:else}
-				<!-- 게시글 데이터 로딩 중: skeleton 표시 -->
-				<div class="feed-item-skeleton">
-					<div class="skeleton-header">
-						<div class="skeleton-avatar"></div>
-						<div class="skeleton-info">
-							<div class="skeleton-name"></div>
-							<div class="skeleton-date"></div>
-						</div>
-					</div>
-					<div class="skeleton-content">
-						<div class="skeleton-line"></div>
-						<div class="skeleton-line"></div>
-						<div class="skeleton-line short"></div>
-					</div>
-				</div>
 			{/if}
 		{/each}
 
@@ -460,43 +457,6 @@
 	.feed-loading p,
 	.feed-empty p {
 		@apply text-gray-500 text-center;
-	}
-
-	/* Skeleton 로딩 상태 (각 피드 항목) */
-	.feed-item-skeleton {
-		@apply p-4 border-b border-gray-200 bg-white;
-	}
-
-	.skeleton-header {
-		@apply flex items-start gap-3 mb-3;
-	}
-
-	.skeleton-avatar {
-		@apply w-10 h-10 rounded-full bg-gray-200 animate-pulse;
-	}
-
-	.skeleton-info {
-		@apply flex-1 flex flex-col gap-2;
-	}
-
-	.skeleton-name {
-		@apply h-4 w-24 bg-gray-200 rounded animate-pulse;
-	}
-
-	.skeleton-date {
-		@apply h-3 w-16 bg-gray-200 rounded animate-pulse;
-	}
-
-	.skeleton-content {
-		@apply flex flex-col gap-2;
-	}
-
-	.skeleton-line {
-		@apply h-4 bg-gray-200 rounded animate-pulse;
-	}
-
-	.skeleton-line.short {
-		@apply w-2/3;
 	}
 
 	/* 더 로드 중 표시 (무한 스크롤) */

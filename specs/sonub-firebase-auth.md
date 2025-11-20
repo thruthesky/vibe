@@ -31,7 +31,7 @@ tags:
 
 ### 2.2 파일 경로
 
-- **파일:** `src/routes/demo/auth-example/+page.svelte`
+- **소스 코드 위치:** [auth-example/+page.svelte.md](./repository/src/routes/demo/auth-example/+page.svelte.md)
 
 ### 2.3 구현 코드
 
@@ -166,9 +166,26 @@ tags:
 
 ### 2.4 주요 포인트
 
-- `auth` 객체는 브라우저 환경에서만 초기화되므로, 서버 렌더링 시에는 null일 수 있음을 주석으로 명시합니다.
-- `onAuthStateChanged` 구독은 컴포넌트 언마운트 시 반드시 해제합니다.
-- Google 로그인 외 다른 공급자를 사용할 경우 `provider` 객체만 교체하면 됩니다.
+**⚠️ 주의: 실제 구현과의 차이점**
+
+위 예제는 Firebase Authentication의 기본 사용법을 보여주는 **데모 코드**입니다. 실제 Sonub 프로젝트에서는:
+
+1. **AuthStore 사용**: `src/lib/stores/auth.svelte.ts`에서 Svelte 5 runes 기반 상태 관리
+   - `$state`를 사용한 반응형 상태 (`user`, `loginUser`, `isAdmin`)
+   - 전역 인증 상태를 AuthStore에서 관리
+
+2. **Nullable Auth 객체**: `auth` 객체는 SSR 환경에서 `null`일 수 있음
+   - 모든 Auth 관련 함수 호출 전 `if (!auth) return;` 체크 필수
+   - 타입: `Auth | null`
+
+3. **onAuthStateChanged 구독**: 컴포넌트 언마운트 시 반드시 해제
+   - `onMount()` 내에서 `return () => unsubscribe()` 패턴 사용
+
+4. **프로필 동기화**: 실제 프로젝트에서는 Auth 프로필을 RTDB에 자동 동기화
+   - `syncUserProfile()` 함수로 photoUrl, displayName 자동 저장
+   - 섹션 3 "Firebase Auth 프로필 RTDB 동기화" 참고
+
+**소스 코드 위치**: [auth.svelte.ts.md](./repository/src/lib/stores/auth.svelte.ts.md)
 
 ## 3. Firebase Auth 프로필 RTDB 동기화
 
@@ -295,7 +312,7 @@ Firebase Authentication과 Realtime Database(RTDB)는 각각 독립적인 시스
 
 #### 3.3.1 파일 위치 및 수정 사항
 
-**파일:** `src/lib/stores/auth.svelte.ts`
+**소스 코드 위치:** [auth.svelte.ts.md](./repository/src/lib/stores/auth.svelte.ts.md)
 
 #### 3.3.2 Import 추가
 
@@ -448,7 +465,7 @@ onAuthStateChanged(auth, async (user) => {
 
 ### 3.5 전체 소스 코드
 
-**파일:** `src/lib/stores/auth.svelte.ts`
+**소스 코드 위치:** [auth.svelte.ts.md](./repository/src/lib/stores/auth.svelte.ts.md)
 
 ```typescript
 /**

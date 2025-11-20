@@ -1,4 +1,9 @@
 {
     "sherlock.previewLanguageTag": "ko",
-    "sherlock.inlineAnnotations": true
+    "search.exclude": {
+        "**/node_modules": true,
+        "**/build": true,
+        "**/*.js": true
+    }
+
 }

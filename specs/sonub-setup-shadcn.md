@@ -1052,7 +1052,7 @@ VSCode를 완전히 종료하고 재시작합니다.
 
 #### 방법 1: app.css가 레이아웃에서 임포트되었는지 확인
 
-**파일 위치:** `src/routes/+layout.svelte`
+**소스 코드 위치:** [src/routes/+layout.svelte.md](./repository/src/routes/+layout.svelte.md)
 
 ```svelte
 <script>
@@ -1098,7 +1098,7 @@ ls -la src/lib/utils.ts
 
 없다면 수동으로 생성:
 
-**파일 위치:** `src/lib/utils.ts`
+**소스 코드 위치:** [src/lib/utils.ts.md](./repository/src/lib/utils.ts.md)
 
 ```typescript
 import { type ClassValue, clsx } from "clsx";
@@ -1283,7 +1283,7 @@ UI 컴포넌트 구현을 위해 다음 패키지들이 설치되었습니다:
 
 ### 13.3. 생성된 유틸리티 함수
 
-**파일 경로:** `src/lib/utils.ts`
+**소스 코드 위치:** [src/lib/utils.ts.md](./repository/src/lib/utils.ts.md)
 
 **내용:**
 ```typescript

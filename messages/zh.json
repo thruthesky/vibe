@@ -529,5 +529,6 @@
   "messageEditSaveFailed": "保存失败。",
   "messageEditSaveFailedRetry": "保存失败。请重试。",
   "messageEditSaving": "保存中...",
-  "postListAllLoaded": "已加载所有帖子。"
+  "postListAllLoaded": "已加载所有帖子。",
+  "profileNicknameEnglishGuide": "为了与外国人交流，请用英语填写昵称。"
 }

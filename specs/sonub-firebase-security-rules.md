@@ -67,6 +67,8 @@ Sonub의 보안 규칙은 다음 원칙을 따릅니다:
 
 메뉴 페이지에서 관리자 권한 확인:
 
+**소스 코드 위치:** [src/lib/stores/auth.svelte.ts](./repository/src/lib/stores/auth.svelte.ts.md)
+
 ```typescript
 // src/lib/stores/auth.svelte.ts
 let adminList: string[] = $state([]);
@@ -87,6 +89,8 @@ export const isAdmin = $derived(
 
 메뉴 페이지에서 사용:
 
+**소스 코드 위치:** [src/routes/menu/+page.svelte](./repository/src/routes/menu/+page.svelte.md)
+
 ```svelte
 {#if authStore.isAdmin}
   <Button onclick={goToAdmin}>관리자 페이지</Button>
@@ -105,7 +109,7 @@ export const isAdmin = $derived(
   - 복잡한 규칙에는 반드시 주석을 추가하여 의도를 명확히 설명합니다.
   - 각 필드의 쓰기 권한 조건을 주석으로 설명합니다.
   - 허용/불허용 조건을 명시적으로 주석에 작성합니다.
-  - **주의**: JSON 문자열 값을 반드시 여러줄로 작성해야 해서, 가독성을 높입니다.
+  - **중요**: 모든 조건식은 반드시 여러 줄로 나누어 작성하여 가독성을 높입니다.
   - 예시:
   ```json
   "members": {
@@ -115,7 +119,30 @@ export const isAdmin = $derived(
       //   1. data.exists(): 이미 멤버 → 퇴장/알림 설정 변경 가능
       //   2. !password.exists(): 비밀번호 미설정 → 자유롭게 가입 가능
       //   3. owner === auth.uid: Owner → 비밀번호 설정 시에도 가입 가능
-      ".write": "auth != null && $uid === auth.uid && (data.exists() || !root.child('chat-rooms').child($roomId).child('password').exists() || root.child('chat-rooms').child($roomId).child('owner').val() === auth.uid)"
+      // 비밀번호 설정 시: 일반 사용자는 Cloud Functions를 통해서만 가입 가능
+      ".write": "
+        (
+          auth != null
+        )
+        &&
+        (
+          $uid === auth.uid
+        )
+        &&
+        (
+          (
+            data.exists()
+          )
+          ||
+          (
+            !root.child('chat-rooms').child($roomId).child('password').exists()
+          )
+          ||
+          (
+            root.child('chat-rooms').child($roomId).child('owner').val() === auth.uid
+          )
+        )
+      "
     }
   }
   ```
@@ -126,16 +153,35 @@ export const isAdmin = $derived(
   - 여러 줄 조건 앞뒤에는 주석을 추가해 의도를 설명하고, 단일 줄 조건식은 허용되지 않습니다.
 
 - **논리식 괄호 명시**: 연산자 우선순위를 괄호로 명시합니다.
-  - 올바른 예: `A || (B && C)`
-  - 잘못된 예: `A && B || C`
+  - 올바른 예: `(A) || (B && C)`
+  - 잘못된 예: `A && B || C` (우선순위 불명확)
 - **조건이 길어지면 여러 줄로 표현**:
 
 ```json
-".write": "auth != null && (
-  ($uid == auth.uid && !data.exists()) ||
-  root.child('admins').child(auth.uid).val() == true
-)"
+".write": "
+  (
+    auth != null
+  )
+  &&
+  (
+    (
+      $uid == auth.uid
+      &&
+      !data.exists()
+    )
+    ||
+    (
+      root.child('admins').child(auth.uid).val() == true
+    )
+  )
+"
 ```
+
+**주요 원칙:**
+- 각 조건은 괄호 `()`로 명확히 묶음
+- 논리 연산자 `&&`, `||`는 별도 줄에 작성
+- 중첩된 조건은 들여쓰기로 구분
+- 한 줄에 하나의 조건만 작성
 
 - **권한 체크와 필드 검증 분리**:
   - `.write`에서는 **권한**과 **존재 여부**만 확인합니다.
@@ -144,12 +190,38 @@ export const isAdmin = $derived(
 
 ```json
 "name": {
-  ".write": "root.child('chat-rooms').child($roomId).child('owner').val() === auth.uid",
-  ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 50"
+  // 쓰기 권한: 생성 시 누구나, 수정 시 owner만
+  ".write": "
+    (
+      !root.child('chat-rooms').child($roomId).exists()
+    )
+    ||
+    (
+      root.child('chat-rooms').child($roomId).child('owner').val() === auth.uid
+    )
+  ",
+  // 데이터 검증: 타입과 길이 체크
+  ".validate": "
+    (
+      newData.isString()
+    )
+    &&
+    (
+      newData.val().length > 0
+    )
+    &&
+    (
+      newData.val().length <= 50
+    )
+  "
 }
 ```
 
-이 방식으로 규칙을 작성하면 리뷰와 유지보수가 훨씬 쉬워집니다.
+**이 방식의 장점:**
+- 권한 로직과 데이터 검증 로직이 명확히 분리됨
+- 각 조건이 여러 줄로 나뉘어 가독성 향상
+- 리뷰와 유지보수가 훨씬 쉬워짐
+- 디버깅 시 어떤 조건에서 실패했는지 파악 용이
 
 ### 초기화 및 설정
 
@@ -169,37 +241,62 @@ firebase init database
 
 사용자의 프로필 데이터는 다음과 같이 보호됩니다:
 
+**소스 코드 위치:** [firebase/database.rules.json](./repository/firebase/database.rules.json.md)
+
 ```json
 {
   "rules": {
     "users": {
-        "$uid": {
-          // 자신만 읽기 가능. 모든 사용자가 읽기 불가능
-        ".read": "auth.uid == $uid",
-          // 2025-12-12 까지는 무조건 쓰기 통과 (테스트 데이터 생성용)
-          // 그 이후는 본인만 쓰기 가능
-          ".write": "now < 1765555200000 || auth.uid == $uid",
-          // 필수 필드 검증
-          ".validate": "newData.hasChildren(['displayName'])"
-        },
-        ".indexOn": ["createdAt"]
+      // 모든 사용자가 읽기 가능 (공개 프로필 정보)
+      ".read": true,
+      // 하위 모든 경로 쓰기 삭제: 단, shallower 경로에서 개별 규칙 설정 가능
+      ".write": false,
+      "$uid": {
+        // 2025-12-12 까지는 무조건 쓰기 통과 (테스트 데이터 생성용)
+        // 그 이후는 본인만 쓰기 가능
+        ".write": "
+          (
+            now < 1765555200000
+          )
+          ||
+          (
+            auth.uid == $uid
+          )
+        "
       },
-      "system": {
-        "settings": {
-          "admins": {
-            // 로그인한 모든 사용자가 읽기 가능 (메뉴에서 사용)
-            ".read": "auth != null",
-            // 관리자만 쓰기 가능 (배열에 있는 사용자만)
-            ".write": "root.child('system/settings/admins').val().contains(auth.uid)"
-          }
+      // 인덱스 설정: 사용자 정렬 및 검색용
+      ".indexOn": [
+        "createdAt",
+        "displayNameLowerCase",
+        "sort_recentWithPhoto",
+        "sort_recentFemaleWithPhoto",
+        "sort_recentMaleWithPhoto",
+        "registerOrder"
+      ]
+    },
+    "system": {
+      "settings": {
+        "admins": {
+          // 로그인한 모든 사용자가 읽기 가능 (메뉴에서 사용)
+          ".read": "auth != null",
+          // 관리자만 쓰기 가능 (배열에 있는 사용자만)
+          ".write": "root.child('system/settings/admins').val().contains(auth.uid)"
         }
-      },
+      }
+    },
     "test": {
-        "data": {
-          // QA 전용 테스트 데이터 노드 - 누구나 읽고 쓰기 가능
-          ".read": true,
-          ".write": true
-       }
+      "data": {
+        // QA 전용 테스트 데이터 노드 - 누구나 읽고 쓰기 가능
+        ".read": true,
+        ".write": true,
+        ".indexOn": [
+          "order",
+          "createdAt",
+          "qnaCreatedAt",
+          "reminderCreatedAt",
+          "newsCreatedAt"
+        ]
+      }
     }
   }
 }
@@ -243,56 +340,227 @@ firebase deploy --only database
 
 ### 필드별 보안 규칙
 
+**소스 코드 위치:** [firebase/database.rules.json](./repository/firebase/database.rules.json.md)
+
 ```json
 {
   "rules": {
     "chat-rooms": {
+      // 모든 사용자가 채팅방 목록 읽기 가능
       ".read": true,
       "$roomId": {
-        ".write": "auth != null",
+        // 새 채팅방 생성 규칙:
+        // 1. 인증된 사용자
+        // 2. 채팅방이 존재하지 않음 (새 채팅방 생성만 허용)
+        // 3. owner 필드가 있어야 하며, 인증된 사용자의 UID와 일치해야 함
+        // 4. members 필드는 선택적 (그룹/오픈 채팅만), 있으면 본인 UID가 true로 설정되어야 함
+        // 5. Cloud Functions 전용 필드를 포함하지 않음 (createdAt, memberCount, groupListOrder, openListOrder)
+        // 기존 채팅방: 전체 쓰기 불가 (개별 필드만 수정 가능)
+        ".write": "
+          (
+            auth != null
+          )
+          &&
+          (
+            !data.exists()
+          )
+          &&
+          (
+            newData.hasChild('owner')
+          )
+          &&
+          (
+            newData.child('owner').val() === auth.uid
+          )
+          &&
+          (
+            !newData.hasChild('members')
+            ||
+            newData.child('members').child(auth.uid).val() === true
+          )
+          &&
+          (
+            !newData.hasChild('createdAt')
+          )
+          &&
+          (
+            !newData.hasChild('memberCount')
+          )
+          &&
+          (
+            !newData.hasChild('groupListOrder')
+          )
+          &&
+          (
+            !newData.hasChild('openListOrder')
+          )
+        ",
         "owner": {
-          ".write": "!root.child('chat-rooms').child($roomId).exists() && newData.val() === auth.uid",
+          // 클라이언트가 한 번만 쓸 수 있음 (자신의 UID만 가능)
+          // Cloud Functions도 쓸 수 있음 (event.authId가 undefined일 때 대비)
+          ".write": "
+            (
+              !data.exists()
+            )
+            &&
+            (
+              newData.val() === auth.uid
+            )
+          ",
           ".validate": "newData.isString()"
         },
-        "name": {
-          ".write": "!root.child('chat-rooms').child($roomId).exists() || root.child('chat-rooms').child($roomId).child('owner').val() === auth.uid",
-          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 50"
-        },
-        "description": {
-          ".write": "!root.child('chat-rooms').child($roomId).exists() || root.child('chat-rooms').child($roomId).child('owner').val() === auth.uid",
-          ".validate": "newData.isString() && newData.val().length <= 200"
-        },
-        "type": {
-          ".write": "!data.exists()",
-          ".validate": "newData.val() === 'group' || newData.val() === 'open' || newData.val() === 'single'"
-        },
         "createdAt": {
-          ".write": "!data.exists()",
+          // Cloud Functions에서만 설정 가능 (클라이언트는 쓰기 불가)
+          ".write": false,
           ".validate": "newData.isNumber()"
         },
-        "groupListOrder": {
+        "name": {
+          // 채팅방이 존재하지 않으면 누구나 쓰기 가능, 존재하면 owner만 수정 가능
+          ".write": "
+            (
+              !root.child('chat-rooms').child($roomId).exists()
+            )
+            ||
+            (
+              root.child('chat-rooms').child($roomId).child('owner').val() === auth.uid
+            )
+          ",
+          ".validate": "
+            (
+              newData.isString()
+            )
+            &&
+            (
+              newData.val().length > 0
+            )
+            &&
+            (
+              newData.val().length <= 50
+            )
+          "
+        },
+        "description": {
+          // 채팅방이 존재하지 않으면 누구나 쓰기 가능, 존재하면 owner만 수정 가능
+          ".write": "
+            (
+              !root.child('chat-rooms').child($roomId).exists()
+            )
+            ||
+            (
+              root.child('chat-rooms').child($roomId).child('owner').val() === auth.uid
+            )
+          ",
+          ".validate": "
+            (
+              newData.isString()
+            )
+            &&
+            (
+              newData.val().length <= 200
+            )
+          "
+        },
+        "type": {
+          // 채팅방 타입은 생성 시에만 설정 가능 (수정 불가)
           ".write": "!data.exists()",
+          ".validate": "
+            (
+              newData.val() === 'group'
+            )
+            ||
+            (
+              newData.val() === 'open'
+            )
+            ||
+            (
+              newData.val() === 'single'
+            )
+          "
+        },
+        "password": {
+          // 비밀번호 활성화 플래그: owner만 설정 가능
+          ".write": "
+            (
+              root.child('chat-rooms').child($roomId).child('owner').val() === auth.uid
+            )
+          ",
+          ".validate": "newData.isBoolean()"
+        },
+        "groupListOrder": {
+          // Cloud Functions에서만 설정 가능 (클라이언트는 쓰기 불가)
+          ".write": false,
           ".validate": "newData.isNumber()"
         },
         "openListOrder": {
-          ".write": "!data.exists()",
+          // Cloud Functions에서만 설정 가능 (클라이언트는 쓰기 불가)
+          ".write": false,
           ".validate": "newData.isNumber()"
         },
         "memberCount": {
+          // Cloud Functions에서만 설정 가능 (자동 생성/증감)
           ".write": false,
-          ".validate": "newData.isNumber() && newData.val() >= 0"
+          ".validate": "
+            (
+              newData.isNumber()
+            )
+            &&
+            (
+              newData.val() >= 0
+            )
+          "
         },
         "members": {
           "$uid": {
-            ".write": "auth != null && ($uid === auth.uid || root.child('chat-rooms').child($roomId).child('owner').val() === auth.uid)",
-            ".validate": "newData.isBoolean() || newData.val() === null"
+            // 쓰기 권한: 본인만 ($uid === auth.uid)
+            // 허용 조건 (OR):
+            //   1. data.exists(): 이미 멤버 → 퇴장/알림 설정 변경 가능
+            //   2. !password.exists(): 비밀번호 미설정 → 자유롭게 가입 가능
+            //   3. owner === auth.uid: Owner → 비밀번호 설정 시에도 가입 가능
+            // 비밀번호 설정 시: 일반 사용자는 Cloud Functions를 통해서만 가입 가능
+            ".write": "
+              (
+                auth != null
+              )
+              &&
+              (
+                $uid === auth.uid
+              )
+              &&
+              (
+                (
+                  data.exists()
+                )
+                ||
+                (
+                  !root.child('chat-rooms').child($roomId).child('password').exists()
+                )
+                ||
+                (
+                  root.child('chat-rooms').child($roomId).child('owner').val() === auth.uid
+                )
+              )
+            ",
+            ".validate": "
+              (
+                newData.isBoolean()
+              )
+              ||
+              (
+                newData.val() === null
+              )
+            "
           }
         },
         "$other": {
+          // 정의되지 않은 필드는 생성 불가
           ".validate": false
         }
       },
-      ".indexOn": ["openListOrder"]
+      // 인덱스 설정: 채팅방 정렬용
+      ".indexOn": [
+        "openListOrder",
+        "createdAt"
+      ]
     }
   }
 }
@@ -302,16 +570,16 @@ firebase deploy --only database
 
 | 필드 | 쓰기 권한 | 검증 규칙 | 설명 |
 |------|----------|----------|------|
-| **owner** | Cloud Functions만 | 문자열 | 채팅방 소유자 UID. **Cloud Functions에서만 설정 가능** (`.write: false`) |
-| **createdAt** | Cloud Functions만 | 숫자(타임스탬프) | 생성 시간. **Cloud Functions에서만 설정 가능** (`.write: false`) |
-| **_requestingUid** | 생성 시 본인만 | 문자열 | **임시 필드**. 클라이언트가 `auth.uid`와 동일한 값으로 전달하면, Cloud Functions가 검증 후 `owner`로 복사하고 삭제 |
-| **name** | owner만 | 1-50자 문자열 | 채팅방 이름. owner만 수정 가능 |
-| **description** | owner만 | 최대 200자 문자열 | 채팅방 설명. owner만 수정 가능 |
+| **owner** | 생성 시 본인만 | 문자열 | 채팅방 소유자 UID. 생성 시에만 본인 UID로 설정 가능 |
+| **createdAt** | Cloud Functions만 | 숫자(타임스탬프) | 생성 시간. Cloud Functions에서만 설정 가능 |
+| **name** | 생성 시 누구나, 수정 시 owner만 | 1-50자 문자열 | 채팅방 이름. 생성 시 설정, 이후 owner만 수정 가능 |
+| **description** | 생성 시 누구나, 수정 시 owner만 | 최대 200자 문자열 | 채팅방 설명. 생성 시 설정, 이후 owner만 수정 가능 |
 | **type** | 생성 시만 | 'group', 'open', 'single' | 채팅방 타입. 생성 후 변경 불가 |
-| **groupListOrder** | 생성 시만 | 숫자 | 그룹 채팅 정렬 순서. 생성 후 변경 불가 |
-| **openListOrder** | 생성 시만 | 숫자 | 오픈 채팅 정렬 순서. `type === 'open'`일 때만 생성 |
-| **memberCount** | Cloud Functions만 | 0 이상의 숫자 | 멤버 수. 서버에서 자동 관리 |
-| **members/$uid** | 본인 또는 owner | boolean / null | 방 참여 여부와 알림 설정. 사용자는 스스로 true/false 설정, owner는 구성원 관리 가능, null은 퇴장 처리 |
+| **password** | owner만 | boolean | 비밀번호 활성화 플래그. owner만 설정 가능 |
+| **groupListOrder** | Cloud Functions만 | 숫자 | 그룹 채팅 정렬 순서. Cloud Functions에서 자동 생성 |
+| **openListOrder** | Cloud Functions만 | 숫자 | 오픈 채팅 정렬 순서. Cloud Functions에서 자동 생성 |
+| **memberCount** | Cloud Functions만 | 0 이상의 숫자 | 멤버 수. Cloud Functions에서 자동 관리 |
+| **members/$uid** | 본인만 (조건부) | boolean / null | 방 참여 여부. 본인만 설정 가능하며, 비밀번호 설정 시 제한됨 |
 | **$other** | 허용 안 함 | - | 정의되지 않은 필드는 생성 불가 |
 
 ### 보안 규칙 패턴
@@ -319,34 +587,99 @@ firebase deploy --only database
 #### 1. 불변 필드 (Immutable Field)
 ```json
 "owner": {
-  ".write": "!data.exists() && newData.val() === auth.uid",
+  ".write": "
+    (
+      !data.exists()
+    )
+    &&
+    (
+      newData.val() === auth.uid
+    )
+  ",
   ".validate": "newData.isString()"
 }
 ```
 - `!data.exists()`: 데이터가 없을 때만 (= 생성 시에만)
 - `newData.val() === auth.uid`: 값이 현재 사용자 UID와 일치해야 함
+- 조건식은 여러 줄로 나누어 가독성 향상
 
 #### 2. Owner 전용 수정 필드
 ```json
 "name": {
-  ".write": "root.child('chat-rooms').child($roomId).child('owner').val() === auth.uid",
-  ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 50"
+  ".write": "
+    (
+      !root.child('chat-rooms').child($roomId).exists()
+    )
+    ||
+    (
+      root.child('chat-rooms').child($roomId).child('owner').val() === auth.uid
+    )
+  ",
+  ".validate": "
+    (
+      newData.isString()
+    )
+    &&
+    (
+      newData.val().length > 0
+    )
+    &&
+    (
+      newData.val().length <= 50
+    )
+  "
 }
 ```
-- owner 값을 확인하여 소유자만 수정 가능
+- 생성 시: 누구나 설정 가능
+- 수정 시: owner만 가능
 - 데이터 타입과 길이 검증
+- 모든 조건은 여러 줄로 작성
 
-#### 3. 읽기 전용 필드 (생성 후)
+#### 3. 읽기 전용 필드 (Cloud Functions 전용)
 ```json
-"type": {
-  ".write": "!data.exists()",
-  ".validate": "newData.val() === 'group' || newData.val() === 'open' || newData.val() === 'single'"
+"createdAt": {
+  ".write": false,
+  ".validate": "newData.isNumber()"
 }
 ```
-- 생성 시에만 설정 가능
-- 허용된 값만 설정 가능
+- Cloud Functions에서만 설정 가능
+- 클라이언트는 쓰기 불가
 
-#### 4. 정의되지 않은 필드 차단
+#### 4. 조건부 쓰기 필드 (비밀번호 체크)
+```json
+"members": {
+  "$uid": {
+    ".write": "
+      (
+        auth != null
+      )
+      &&
+      (
+        $uid === auth.uid
+      )
+      &&
+      (
+        (
+          data.exists()
+        )
+        ||
+        (
+          !root.child('chat-rooms').child($roomId).child('password').exists()
+        )
+        ||
+        (
+          root.child('chat-rooms').child($roomId).child('owner').val() === auth.uid
+        )
+      )
+    "
+  }
+}
+```
+- 본인만 자신의 멤버 상태 변경 가능
+- 이미 멤버이거나, 비밀번호가 없거나, owner인 경우 가능
+- 복잡한 조건식도 여러 줄로 명확하게 표현
+
+#### 5. 정의되지 않은 필드 차단
 ```json
 "$other": {
   ".validate": false

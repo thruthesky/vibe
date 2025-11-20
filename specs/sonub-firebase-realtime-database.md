@@ -981,30 +981,108 @@ if (DEBUG) {
 
 ### 9.1 RTDB 보안 규칙
 
+**중요**: Firebase Security Rules는 여러 줄 문자열을 지원합니다. 모든 조건식은 반드시 여러 줄로 나누어 작성하여 가독성을 높여야 합니다.
+
 ```json
 {
   "rules": {
     "users": {
+      // 모든 사용자가 읽기 가능
+      ".read": true,
+      ".write": false,
       "$uid": {
-        ".read": true,
-        ".write": "$uid === auth.uid"
+        // 2025-12-12까지는 테스트를 위해 모든 사용자 쓰기 허용
+        // 이후에는 본인만 쓰기 가능
+        ".write": "
+          (
+            now < 1765555200000
+          )
+          ||
+          (
+            auth.uid == $uid
+          )
+        "
       }
     },
     "posts": {
+      ".read": true,
       "$postId": {
-        ".read": true,
-        ".write": "auth != null"
+        // 게시글 쓰기: 로그인한 사용자만, 본인이 작성자이며, 삭제되지 않았고, 90분 이내
+        ".write": "
+          (
+            auth != null
+          )
+          &&
+          (
+            (
+              !data.exists()
+              &&
+              newData.child('authorUid').val() === auth.uid
+            )
+            ||
+            (
+              data.exists()
+              &&
+              data.child('authorUid').val() === auth.uid
+              &&
+              data.child('deleted').val() != true
+              &&
+              (now - data.child('createdAt').val()) < 5400000
+            )
+          )
+        "
       }
     },
     "status": {
       "$uid": {
         ".read": true,
-        ".write": "$uid === auth.uid"
+        ".write": "
+          (
+            auth != null
+          )
+          &&
+          (
+            $uid === auth.uid
+          )
+        "
+      }
+    },
+    "chat-rooms": {
+      ".read": true,
+      "$roomId": {
+        // 새 채팅방 생성만 허용, 기존 채팅방은 개별 필드에서 관리
+        ".write": "
+          (
+            auth != null
+          )
+          &&
+          (
+            !data.exists()
+          )
+          &&
+          (
+            newData.hasChild('owner')
+          )
+          &&
+          (
+            newData.child('owner').val() === auth.uid
+          )
+        "
       }
     }
   }
 }
 ```
+
+**주요 원칙:**
+- 모든 조건식은 여러 줄로 나누어 작성
+- 각 조건은 괄호로 명확히 묶음
+- 논리 연산자(`&&`, `||`)는 별도 줄에 작성
+- 주석으로 규칙의 의도를 명확히 설명
+
+**상세 보안 규칙은 다음 문서를 참조하세요:**
+- [Firebase Security Rules 상세 가이드](./sonub-firebase-security-rules.md)
+- [실제 database.rules.json 파일](./repository/firebase/database.rules.json.md)
 
 ## 10. 확장 아이디어
 

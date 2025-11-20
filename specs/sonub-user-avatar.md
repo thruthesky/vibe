@@ -229,7 +229,7 @@ shouldShowImage = true (photoUrl 존재 && !imageLoadFailed)
 
 ### 3.1 파일 구조
 
-**파일:** `src/lib/components/user/avatar.svelte`
+**소스 코드 위치**: [avatar.svelte.md](./repository/src/lib/components/user/avatar.svelte.md)
 
 ### 3.2 Props 정의
 
@@ -289,6 +289,7 @@ interface Props {
 	 */
 
 	import { userProfileStore } from '$lib/stores/user-profile.svelte';
+	import { m } from '$lib/paraglide/messages';
 
 	// Props
 	interface Props {
@@ -382,13 +383,13 @@ interface Props {
 	class="inline-flex items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold shadow-sm overflow-hidden {className}"
 	style="width: {size}px; height: {size}px;"
 	role="img"
-	aria-label={displayName || '사용자 아바타'}
+	aria-label={displayName || m.userAvatar()}
 >
 	{#if shouldShowImage}
 		<!-- 프로필 사진 표시 -->
 		<img
 			src={photoUrl || ''}
-			alt={displayName || '사용자'}
+			alt={displayName || m.userAvatar()}
 			class="h-full w-full object-cover"
 			referrerpolicy="no-referrer"
 			crossorigin="anonymous"
@@ -401,6 +402,8 @@ interface Props {
 		</span>
 	{/if}
 </div>
+
+**참고**: `aria-label`과 `alt` 속성에서 하드코딩된 "사용자 아바타", "사용자"를 `m.userAvatar()` i18n 함수로 대체했습니다.
 ```
 
 **핵심 변경점 요약:**
@@ -673,7 +676,7 @@ const shouldShowImage = $derived(
 
 ### 4.1 top-bar.svelte에서 적용
 
-**파일:** `src/lib/components/top-bar.svelte`
+**소스 코드 위치**: [top-bar.svelte.md](./repository/src/lib/components/top-bar.svelte.md)
 
 **소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
 
@@ -702,7 +705,7 @@ import Avatar from '$lib/components/user/avatar.svelte';
 
 ### 4.2 menu/+page.svelte에서 적용
 
-**파일:** `src/routes/menu/+page.svelte`
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/menu/+page.svelte.md)
 
 **소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
 

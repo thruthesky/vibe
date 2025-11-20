@@ -509,14 +509,14 @@ export const onPasswordTry = onValueWritten(
     onCancel: () => void;
   }
 
-  let { roomId, open, onSuccess, onCancel }: Props = $props();
+  let { roomId, open = $bindable(), onSuccess, onCancel }: Props = $props();
 
   let password = $state('');
   let isVerifying = $state(false);
   let countdown = $state(5);
 
   async function handleSubmit() {
-    if (!password || !authStore.user?.uid) return;
+    if (!password || !authStore.user?.uid || !rtdb) return;
 
     isVerifying = true;
     countdown = 5;
@@ -532,24 +532,28 @@ export const onPasswordTry = onValueWritten(
       const verified = await waitForVerification(roomId, authStore.user.uid);
 
       if (verified) {
-        toast.success('비밀번호가 확인되었습니다');
+        toast.success(m.chatPasswordVerifySuccess());
         await invalidate('chat:room'); // SvelteKit 데이터 재로드
         onSuccess();
       } else {
-        toast.error('비밀번호가 올바르지 않습니다');
+        toast.error(m.chatPasswordIncorrect());
         password = '';
       }
     } catch (error) {
-      console.error('비밀번호 검증 에러:', error);
-      toast.error('비밀번호 검증에 실패했습니다');
+      console.error('❌ 비밀번호 검증 에러:', error);
+      toast.error(m.chatPasswordVerifyFailure());
     } finally {
       isVerifying = false;
     }
   }
 
   async function waitForVerification(roomId: string, uid: string): Promise<boolean> {
+    if (!rtdb) return false;
+
+    const db = rtdb; // 로컬 변수에 할당하여 TypeScript non-null 타입 보장
+
     return new Promise((resolve) => {
-      const memberRef = ref(rtdb, `chat-rooms/${roomId}/members/${uid}`);
+      const memberRef = ref(db, `chat-rooms/${roomId}/members/${uid}`);
       let intervalId: any;
       let timeoutId: any;
 

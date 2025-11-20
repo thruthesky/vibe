@@ -99,19 +99,21 @@ Firebase Realtime Database에서 사용자를 검색하고 선택할 수 있는 
 
 - \`open\`: 다이얼로그 열림/닫힘 상태 (bindable)
 - \`keyword\`: 검색어 (bindable)
-- \`title\`: 다이얼로그 제목 (기본값: "사용자 검색")
-- \`description\`: 다이얼로그 설명
-- \`label\`: 입력 필드 레이블
-- \`helperText\`: 도움말 텍스트
-- \`placeholder\`: 입력 필드 플레이스홀더
-- \`submitLabel\`: 검색 버튼 레이블 (기본값: "검색하기")
-- \`clearLabel\`: 초기화 버튼 레이블 (기본값: "검색 초기화")
+- \`title\`: 다이얼로그 제목 (기본값: \`m.userSearchTitle()\` - "사용자 검색")
+- \`description\`: 다이얼로그 설명 (기본값: \`m.userSearchDescription()\` - "displayNameLowerCase로 사용자를 찾습니다.")
+- \`label\`: 입력 필드 레이블 (기본값: \`m.userSearchLabel()\` - "사용자 이름")
+- \`helperText\`: 도움말 텍스트 (기본값: \`m.userSearchHelper()\` - "정확히 일치하는 사용자명을 입력하세요")
+- \`placeholder\`: 입력 필드 플레이스홀더 (기본값: \`m.userSearchPlaceholder()\` - "예: sonub")
+- \`submitLabel\`: 검색 버튼 레이블 (기본값: \`m.userSearchSubmit()\` - "검색하기")
+- \`clearLabel\`: 초기화 버튼 레이블 (기본값: \`m.userSearchClear()\` - "검색 초기화")
 - \`minLength\`: 최소 검색어 길이 (기본값: 2)
 - \`autoLowercase\`: 자동 소문자 변환 (기본값: true)
 - \`showResults\`: 검색 결과를 다이얼로그 내에 표시할지 여부 (기본값: false)
 - \`usersPath\`: RTDB 사용자 경로 (기본값: "users")
 - \`searchField\`: 검색할 필드 이름 (기본값: "displayNameLowerCase")
 - \`pageSize\`: 검색 결과 페이지 크기 (기본값: 20)
+
+**참고**: 모든 텍스트 관련 Props는 Paraglide i18n을 사용하여 다국어를 지원합니다. \`import { m } from '$lib/paraglide/messages'\`를 통해 i18n 함수를 가져옵니다.
 
 ### 2. 이벤트 인터페이스
 

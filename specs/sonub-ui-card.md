@@ -92,7 +92,7 @@ src/lib/components/ui/card/
 
 ### 3.1. Card (Root) 컴포넌트
 
-**파일 경로:** `src/lib/components/ui/card/card.svelte`
+**소스 코드 위치:** [src/lib/components/ui/card/card.svelte.md](./repository/src/lib/components/ui/card/card.svelte.md)
 
 **소스 코드 위치**: [PopularPostsCard.svelte.md](./repository/src/lib/components/sidebar/PopularPostsCard.svelte.md)
 
@@ -133,7 +133,7 @@ src/lib/components/ui/card/
 
 ### 3.2. CardHeader 컴포넌트
 
-**파일 경로:** `src/lib/components/ui/card/card-header.svelte`
+**소스 코드 위치:** [src/lib/components/ui/card/card-header.svelte.md](./repository/src/lib/components/ui/card/card-header.svelte.md)
 
 **소스 코드 위치**: [PopularPostsCard.svelte.md](./repository/src/lib/components/sidebar/PopularPostsCard.svelte.md)
 
@@ -169,7 +169,7 @@ src/lib/components/ui/card/
 
 ### 3.3. CardTitle 컴포넌트
 
-**파일 경로:** `src/lib/components/ui/card/card-title.svelte`
+**소스 코드 위치:** [src/lib/components/ui/card/card-title.svelte.md](./repository/src/lib/components/ui/card/card-title.svelte.md)
 
 **소스 코드 위치**: [PopularPostsCard.svelte.md](./repository/src/lib/components/sidebar/PopularPostsCard.svelte.md)
 
@@ -206,7 +206,7 @@ src/lib/components/ui/card/
 
 ### 3.4. CardDescription 컴포넌트
 
-**파일 경로:** `src/lib/components/ui/card/card-description.svelte`
+**소스 코드 위치:** [src/lib/components/ui/card/card-description.svelte.md](./repository/src/lib/components/ui/card/card-description.svelte.md)
 
 **소스 코드 위치**: [PopularPostsCard.svelte.md](./repository/src/lib/components/sidebar/PopularPostsCard.svelte.md)
 
@@ -241,7 +241,7 @@ src/lib/components/ui/card/
 
 ### 3.5. CardContent 컴포넌트
 
-**파일 경로:** `src/lib/components/ui/card/card-content.svelte`
+**소스 코드 위치:** [src/lib/components/ui/card/card-content.svelte.md](./repository/src/lib/components/ui/card/card-content.svelte.md)
 
 **소스 코드 위치**: [PopularPostsCard.svelte.md](./repository/src/lib/components/sidebar/PopularPostsCard.svelte.md)
 
@@ -276,7 +276,7 @@ src/lib/components/ui/card/
 
 ### 3.6. CardFooter 컴포넌트
 
-**파일 경로:** `src/lib/components/ui/card/card-footer.svelte`
+**소스 코드 위치:** [src/lib/components/ui/card/card-footer.svelte.md](./repository/src/lib/components/ui/card/card-footer.svelte.md)
 
 **소스 코드 위치**: [PopularPostsCard.svelte.md](./repository/src/lib/components/sidebar/PopularPostsCard.svelte.md)
 
@@ -311,7 +311,7 @@ src/lib/components/ui/card/
 
 ### 3.7. Export 파일 (index.ts)
 
-**파일 경로:** `src/lib/components/ui/card/index.ts`
+**소스 코드 위치:** [src/lib/components/ui/card/index.ts.md](./repository/src/lib/components/ui/card/index.ts.md)
 
 **소스 코드 위치**: [PopularPostsCard.svelte.md](./repository/src/lib/components/sidebar/PopularPostsCard.svelte.md)
 
@@ -828,7 +828,7 @@ npm run check
 
 ### 9.2. 시각적 테스트
 
-**파일 위치:** `src/routes/test/card/+page.svelte`
+**소스 코드 위치:** [src/routes/test/card/+page.svelte.md](./repository/src/routes/test/card/+page.svelte.md)
 
 **소스 코드 위치**: [PopularPostsCard.svelte.md](./repository/src/lib/components/sidebar/PopularPostsCard.svelte.md)
 

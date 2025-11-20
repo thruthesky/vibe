@@ -18,6 +18,7 @@
 	import { getLocale } from '$lib/paraglide/runtime.js';
 	import { getUserFields } from '$lib/functions/user.functions';
 	import Avatar from '$lib/components/user/avatar.svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
 	import { rtdb } from '$lib/firebase';
 	import { ref as dbRef, get } from 'firebase/database';
 	import { goto } from '$app/navigation';
@@ -170,11 +171,11 @@
 </svelte:head>
 
 <!-- 로그인 체크 -->
-{#if !authStore.user}
-	<section class="page-container">
-		<Card.Root class="auth-card">
-			<Card.Header>
-				<Card.Title>{m.authSignInRequired()}</Card.Title>
+	{#if !authStore.user}
+		<section class="page-container">
+			<Card.Root class="auth-card">
+				<Card.Header>
+					<Card.Title>{m.authSignInRequired()}</Card.Title>
 				<Card.Description>{m.authSignInRequiredDesc()}</Card.Description>
 			</Card.Header>
 			<Card.Content>
@@ -183,92 +184,127 @@
 		</Card.Root>
 	</section>
 
-<!-- 받은 반응 목록 -->
-{:else}
-	<section class="page-container">
-		<div class="header-section">
-			<h1 class="page-title">{m.receivedReactionsTitle()}</h1>
-			<p class="page-description">{m.receivedReactionsDescription()}</p>
-		</div>
+	<!-- 받은 반응 목록 -->
+	{:else}
+		<section class="page-container">
+			<div class="hero-card">
+				<div class="hero-text">
+					<p class="eyebrow">{m.receivedReactionsTitle()}</p>
+					<h1 class="page-title">Realtime feedback from your community</h1>
+					<p class="page-description">{m.receivedReactionsDescription()}</p>
 
-		<div class="list-container">
-			<DatabaseListView
-				path={`received-reactions/${authStore.user.uid}`}
-				pageSize={20}
-				orderBy="createdAt"
-				newItemPosition="top"
-			>
-				{#snippet item(itemData)}
-					{@const reaction = itemData.data}
-					{@const Icon = getReactionIcon(reaction.type)}
+					<div class="hero-tags">
+						<span class="pill pill-live">Live stream</span>
+						<span class="pill pill-safe">Only visible to you</span>
+						<span class="pill pill-cta" aria-hidden="true">Stay responsive</span>
+					</div>
 
-					<button
-						class="reaction-item"
-						onclick={() => handleReactionClick(reaction)}
-						type="button"
-					>
-						<!-- 사용자 아바타 -->
-						{#await getUserFields(reaction.fromUid, ['displayName', 'photoUrl'])}
-							<div class="avatar-placeholder"></div>
-						{:then userFields}
-							<Avatar
-								photoUrl={userFields.photoUrl}
-								displayName={userFields.displayName || ''}
-								size="md"
-							/>
-						{/await}
+					<div class="hero-actions">
+						<Button href="/my/stats" variant="secondary" size="sm" class="cursor-pointer">
+							View my stats
+						</Button>
+						<Button href="/post/write" size="sm" class="cursor-pointer">
+							Write a post
+						</Button>
+					</div>
+				</div>
 
-						<!-- 리액션 내용 -->
-						<div class="content-wrapper">
-							<!-- 사용자 이름 + 리액션 설명 -->
-							<div class="reaction-header">
-								{#await getUserFields(reaction.fromUid, ['displayName'])}
-									<span class="user-name loading">...</span>
-								{:then userFields}
-									<span class="user-name">{userFields.displayName || '알 수 없는 사용자'}</span>
-								{/await}
+				<div class="hero-visual" aria-hidden="true">
+					<div class="glow"></div>
+					<div class="hero-circle primary"></div>
+					<div class="hero-circle secondary"></div>
+					<div class="hero-label">Now updating</div>
+				</div>
+			</div>
 
-								<span class="reaction-desc">{getReactionDescription(reaction)}</span>
+			<div class="list-container">
+				<div class="list-header">
+					<div class="legend">
+						<span class="legend-chip legend-like">
+							<Heart class="legend-icon" size={16} />
+							Likes
+						</span>
+						<span class="legend-chip legend-comment">
+							<MessageCircle class="legend-icon" size={16} />
+							Comments
+						</span>
+						<span class="legend-chip legend-follow">
+							<UserPlus class="legend-icon" size={16} />
+							Follows
+						</span>
+					</div>
+					<p class="list-caption">Pulling events as they happen</p>
+				</div>
 
-								<!-- 리액션 아이콘 -->
-								<span class="icon-badge {getReactionColor(reaction.type)}">
-									<Icon size={16} />
-								</span>
+				<DatabaseListView
+					path={`received-reactions/${authStore.user.uid}`}
+					pageSize={20}
+					orderBy="createdAt"
+					newItemPosition="top"
+				>
+					{#snippet item(itemData)}
+						{@const reaction = itemData.data}
+						{@const Icon = getReactionIcon(reaction.type)}
+
+						<button
+							class="reaction-item mt-3"
+							onclick={() => handleReactionClick(reaction)}
+							type="button"
+						>
+							<div class="timeline-dot {getReactionColor(reaction.type)}">
+								<Icon size={14} />
 							</div>
 
-							<!-- 시간 -->
-							<p class="reaction-time">
-								{formatDistanceToNow(reaction.createdAt, {
-									addSuffix: true,
-									locale: getDateLocale()
-								})}
-							</p>
+							<div class="card-shell">
+								<div class="card-heading">
+									<div class="profile-line">
+										<Avatar uid={reaction.fromUid} size={48} />
+										<div class="profile-text">
+											<div class="name-row">
+												{#await getUserFields(reaction.fromUid, ['displayName'])}
+													<span class="user-name loading">...</span>
+												{:then userFields}
+													<span class="user-name">{userFields.displayName || '알 수 없는 사용자'}</span>
+												{/await}
+												<span class="badge">{getReactionDescription(reaction)}</span>
+											</div>
+											<p class="reaction-time">
+												{formatDistanceToNow(reaction.createdAt, {
+													addSuffix: true,
+													locale: getDateLocale()
+												})}
+											</p>
+										</div>
+									</div>
+									<span class="icon-badge {getReactionColor(reaction.type)}">
+										<Icon size={16} />
+									</span>
+								</div>
 
-							<!-- 대상 콘텐츠 (게시글/댓글 내용) -->
-							{#if reaction.type !== 'follow'}
-								{#await getTargetContent(reaction)}
-									<p class="target-content loading">...</p>
-								{:then content}
-									{#if content}
-										<p class="target-content">{content}</p>
-									{/if}
-								{/await}
-							{/if}
+								{#if reaction.type !== 'follow'}
+									{#await getTargetContent(reaction)}
+										<p class="target-content loading">...</p>
+									{:then content}
+										{#if content}
+											<p class="target-content">{content}</p>
+										{/if}
+									{/await}
+								{/if}
+							</div>
+						</button>
+					{/snippet}
+
+					{#snippet loading()}
+						<div class="status-message">
+							<p>{m.receivedReactionsLoading()}</p>
 						</div>
-					</button>
-				{/snippet}
+					{/snippet}
 
-				{#snippet loading()}
-					<div class="status-message">
-						<p>{m.receivedReactionsLoading()}</p>
-					</div>
-				{/snippet}
-
-				{#snippet empty()}
-					<div class="status-message">
-						<p>{m.receivedReactionsEmpty()}</p>
-					</div>
-				{/snippet}
+					{#snippet empty()}
+						<div class="status-message">
+							<p>{m.receivedReactionsEmpty()}</p>
+						</div>
+					{/snippet}
 
 				{#snippet error(errorMessage)}
 					<div class="status-message error">
@@ -278,84 +314,184 @@
 			</DatabaseListView>
 		</div>
 	</section>
-{/if}
+	{/if}
 
-<style>
-	@import 'tailwindcss' reference;
+	<style>
+		@import 'tailwindcss' reference;
 
-	.page-container {
-		@apply mx-auto max-w-3xl px-4 py-8;
-	}
+		.page-container {
+			@apply mx-auto max-w-5xl px-4 py-10;
+		}
 
-	.header-section {
-		@apply mb-6;
-	}
+		.hero-card {
+			@apply relative overflow-hidden rounded-3xl border border-[#e8ecf3] bg-gradient-to-br from-white via-indigo-50/70 to-blue-50/70 p-6 shadow-xl lg:flex lg:items-center lg:gap-6;
+		}
 
-	.page-title {
-		@apply mb-2 text-3xl font-bold text-gray-900;
-	}
+		.hero-text {
+			@apply space-y-3;
+		}
 
-	.page-description {
-		@apply text-base text-gray-600;
-	}
+		.eyebrow {
+			@apply text-xs font-semibold uppercase tracking-[0.18em] text-indigo-600;
+		}
 
-	.list-container {
-		@apply w-full;
-	}
+		.page-title {
+			@apply text-4xl font-bold text-gray-900 md:text-[42px];
+		}
 
-	.reaction-item {
-		@apply flex w-full cursor-pointer items-start gap-4 rounded-lg border border-gray-200 bg-white p-4 transition-all hover:border-gray-300 hover:shadow-md;
-	}
+		.page-description {
+			@apply text-base text-gray-600 md:text-lg;
+		}
 
-	.avatar-placeholder {
-		@apply h-12 w-12 flex-shrink-0 animate-pulse rounded-full bg-gray-200;
-	}
+		.hero-tags {
+			@apply flex flex-wrap gap-2 pt-2;
+		}
 
-	.content-wrapper {
-		@apply flex flex-1 flex-col gap-2;
-	}
+		.pill {
+			@apply inline-flex items-center gap-2 rounded-full px-3.5 py-1 text-xs font-semibold shadow-sm;
+		}
 
-	.reaction-header {
-		@apply flex flex-wrap items-center gap-2;
-	}
+		.pill-live {
+			@apply bg-red-50 text-red-600;
+		}
 
-	.user-name {
-		@apply font-semibold text-gray-900;
-	}
+		.pill-safe {
+			@apply bg-emerald-50 text-emerald-600;
+		}
 
-	.user-name.loading {
-		@apply animate-pulse text-gray-400;
-	}
+		.pill-cta {
+			@apply bg-indigo-50 text-indigo-600;
+		}
 
-	.reaction-desc {
-		@apply text-sm text-gray-600;
-	}
+		.hero-actions {
+			@apply flex flex-wrap gap-2.5 pt-2;
+		}
 
-	.icon-badge {
-		@apply flex items-center;
-	}
+		.hero-visual {
+			@apply relative mt-5 h-36 w-full overflow-hidden rounded-2xl bg-white/70 shadow-inner sm:h-40 lg:mt-0 lg:w-56;
+		}
 
-	.reaction-time {
-		@apply text-sm text-gray-500;
-	}
+		.glow {
+			@apply absolute inset-0 bg-gradient-to-br from-indigo-200/70 via-blue-100/60 to-white;
+		}
 
-	.target-content {
-		@apply mt-1 rounded-md bg-gray-50 p-3 text-sm text-gray-700;
-	}
+		.hero-circle {
+			@apply absolute rounded-full;
+		}
 
-	.target-content.loading {
-		@apply animate-pulse text-gray-400;
-	}
+		.hero-circle.primary {
+			@apply left-6 top-6 h-16 w-16 bg-indigo-500/35 blur-2xl;
+		}
 
-	.status-message {
-		@apply flex min-h-[200px] items-center justify-center p-8 text-center text-gray-600;
-	}
+		.hero-circle.secondary {
+			@apply right-6 bottom-6 h-14 w-14 bg-blue-400/35 blur-2xl;
+		}
 
-	.status-message.error {
-		@apply text-red-600;
-	}
+		.hero-label {
+			@apply absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-white/85 px-3.5 py-1 text-xs font-semibold text-indigo-700 shadow-sm backdrop-blur;
+		}
 
-	.auth-card {
-		@apply mx-auto max-w-md rounded-2xl border border-gray-100 bg-white shadow-lg;
-	}
-</style>
+		.list-container {
+			@apply mt-8 w-full space-y-5;
+		}
+
+		.list-header {
+			@apply flex flex-wrap items-center justify-between gap-3;
+		}
+
+		.legend {
+			@apply flex flex-wrap gap-2;
+		}
+
+		.legend-chip {
+			@apply inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold shadow-sm;
+		}
+
+		.legend-like {
+			@apply bg-red-50 text-red-600;
+		}
+
+		.legend-comment {
+			@apply bg-emerald-50 text-emerald-600;
+		}
+
+		.legend-follow {
+			@apply bg-purple-50 text-purple-600;
+		}
+
+		.legend-icon {
+			@apply h-4 w-4;
+		}
+
+		.list-caption {
+			@apply text-xs font-medium uppercase tracking-[0.12em] text-gray-500;
+		}
+
+		.reaction-item {
+			@apply relative flex w-full cursor-pointer items-start gap-4 rounded-3xl border border-[#e9edf5] bg-white p-4 shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl;
+		}
+
+		.timeline-dot {
+			@apply mt-2 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-50 shadow-inner;
+		}
+
+		.card-shell {
+			@apply relative flex-1 rounded-2xl border border-[#edf1f7] bg-white/90 p-4 shadow-inner;
+		}
+
+		.card-heading {
+			@apply flex items-start justify-between gap-3;
+		}
+
+		.profile-line {
+			@apply flex items-center gap-3;
+		}
+
+		.profile-text {
+			@apply flex flex-col items-start gap-1;
+		}
+
+		.name-row {
+			@apply flex flex-wrap items-center gap-2;
+		}
+
+		.user-name {
+			@apply text-base font-semibold text-gray-900;
+		}
+
+		.user-name.loading {
+			@apply animate-pulse text-gray-400;
+		}
+
+		.badge {
+			@apply rounded-full bg-gray-100 px-2.5 py-0.5 text-[11px] font-semibold text-gray-700 shadow-sm;
+		}
+
+		.reaction-time {
+			@apply text-sm text-gray-500 text-left leading-tight;
+		}
+
+		.icon-badge {
+			@apply rounded-full bg-gray-50 px-2 py-1 text-sm font-semibold text-gray-600 shadow;
+		}
+
+		.target-content {
+			@apply mt-3 rounded-xl bg-gray-50/80 p-3 text-sm text-gray-700 shadow-inner;
+		}
+
+		.target-content.loading {
+			@apply animate-pulse text-gray-400;
+		}
+
+		.status-message {
+			@apply flex min-h-[220px] items-center justify-center rounded-xl border border-dashed border-gray-200 bg-white/70 p-10 text-center text-gray-600;
+		}
+
+		.status-message.error {
+			@apply text-red-600;
+		}
+
+		.auth-card {
+			@apply mx-auto max-w-md rounded-2xl border border-gray-100 bg-white shadow-lg;
+		}
+	</style>

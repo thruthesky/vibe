@@ -109,110 +109,241 @@ const token = await getToken(messaging, { vapidKey: "YOUR_PUBLIC_VAPID_KEY" });
 
  공용 Firebase 초기화 파일 만들기
 
-src/lib/firebase.ts (또는 .js) 파일을 하나 만들어서, 브라우저에서만 messaging을 가져오도록 합니다. (SvelteKit은 서버/클라이언트 모두에서 코드가 실행되므로 보호 필요)
+`src/lib/firebase.ts` 파일에서 브라우저에서만 messaging을 가져오도록 합니다.
+(SvelteKit은 서버/클라이언트 모두에서 코드가 실행되므로 보호 필요)
 
------
+**⚠️ Sonub 프로젝트 실제 구현**
 
+**소스 코드 위치**: [repository/src/lib/firebase.ts.md](./repository/src/lib/firebase.ts.md)
 
+```typescript
 // src/lib/firebase.ts
 import { browser } from '$app/environment';
 import { initializeApp, getApps, type FirebaseApp } from 'firebase/app';
-import { getMessaging, type Messaging, isSupported } from 'firebase/messaging';
+import {
+	getMessaging,
+	isSupported as isMessagingSupported,
+	type Messaging
+} from 'firebase/messaging';
+
+// SvelteKit 환경 변수에서 Firebase Config 로드
+import {
+	PUBLIC_FIREBASE_API_KEY,
+	PUBLIC_FIREBASE_AUTH_DOMAIN,
+	PUBLIC_FIREBASE_PROJECT_ID,
+	PUBLIC_FIREBASE_STORAGE_BUCKET,
+	PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+	PUBLIC_FIREBASE_APP_ID,
+	PUBLIC_FIREBASE_MEASUREMENT_ID,
+	PUBLIC_FIREBASE_DATABASE_URL
+} from '$env/static/public';
 
 const firebaseConfig = {
-	apiKey: 'YOUR_API_KEY',
-	authDomain: 'YOUR_PROJECT.firebaseapp.com',
-	projectId: 'YOUR_PROJECT_ID',
-	storageBucket: 'YOUR_PROJECT.appspot.com',
-	messagingSenderId: 'YOUR_SENDER_ID',
-	appId: 'YOUR_APP_ID'
-	// measurementId 등 필요하면 추가
+	apiKey: PUBLIC_FIREBASE_API_KEY,
+	authDomain: PUBLIC_FIREBASE_AUTH_DOMAIN,
+	projectId: PUBLIC_FIREBASE_PROJECT_ID,
+	storageBucket: PUBLIC_FIREBASE_STORAGE_BUCKET,
+	messagingSenderId: PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+	appId: PUBLIC_FIREBASE_APP_ID,
+	measurementId: PUBLIC_FIREBASE_MEASUREMENT_ID,
+	databaseURL: PUBLIC_FIREBASE_DATABASE_URL
 };
 
-let app: FirebaseApp | null = null;
+// Firebase 앱 초기화 (중복 방지)
+let app: FirebaseApp;
+if (browser) {
+	app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+} else {
+	app = {} as FirebaseApp;
+}
+
+// Messaging 인스턴스 (싱글톤)
 let messaging: Messaging | null = null;
 
-export function getFirebaseApp(): FirebaseApp | null {
-	if (!browser) return null;
-	if (!getApps().length) {
-		app = initializeApp(firebaseConfig);
-	} else {
-		app = getApps()[0]!;
-	}
-	return app;
-}
-
+/**
+ * Firebase Messaging 인스턴스를 가져오는 비동기 함수
+ * @returns {Promise<Messaging | null>} Messaging 인스턴스 또는 null
+ */
 export async function getFirebaseMessaging(): Promise<Messaging | null> {
-	if (!browser) return null;
-
-	// Safari 등 일부 브라우저는 messaging 미지원일 수 있음
-	const supported = await isSupported();
-	if (!supported) return null;
-
-	if (!app) getFirebaseApp();
-	if (!app) return null;
-
-	if (!messaging) {
-		messaging = getMessaging(app);
+	// 서버 환경에서는 null 반환
+	if (!browser) {
+		console.warn('[FCM] 서버 환경에서는 Messaging을 사용할 수 없습니다.');
+		return null;
 	}
-	return messaging;
+
+	// 이미 초기화된 경우 기존 인스턴스 반환
+	if (messaging) {
+		return messaging;
+	}
+
+	try {
+		// 브라우저가 FCM을 지원하는지 체크 (Safari iOS는 미지원)
+		const supported = await isMessagingSupported();
+
+		if (!supported) {
+			console.warn('[FCM] 이 브라우저는 Firebase Cloud Messaging을 지원하지 않습니다.');
+			return null;
+		}
+
+		// Messaging 인스턴스 생성
+		messaging = getMessaging(app);
+		return messaging;
+	} catch (error) {
+		console.error('[FCM] Messaging 초기화 실패:', error);
+		return null;
+	}
 }
+
+export default app;
+```
+
+**주요 변경 사항 (스펙 예제 vs 실제 구현)**:
+
+1. ✅ **환경 변수 사용**: `$env/static/public`에서 Firebase Config 로드 (하드코딩 방지)
+2. ✅ **함수명 변경**: `isSupported()` → `isMessagingSupported()` (정확한 API 명칭)
+3. ✅ **getFirebaseApp() 제거**: 직접 `app` 변수 사용 (불필요한 함수 제거)
+4. ✅ **에러 처리 강화**: try-catch 블록으로 안전성 향상
+5. ✅ **console.log 추가**: 디버깅을 위한 상세한 로그
 
 ----
 클라이언트에서 토큰 발급 & 권한 요청
 
-예제로 src/routes/+page.svelte에서 버튼을 눌러 토큰을 요청하는 코드를 만들어봅시다.
+`src/lib/fcm.ts` 파일에서 FCM 토큰을 발급받고 Realtime Database에 저장합니다.
 
-5-1. 토큰 요청 유틸 (브라우저 전용)
-----
+**⚠️ Sonub 프로젝트 실제 구현**
 
+**소스 코드 위치**: [repository/src/lib/fcm.ts.md](./repository/src/lib/fcm.ts.md)
+
+```typescript
 // src/lib/fcm.ts
 import { browser } from '$app/environment';
-import { getFirebaseMessaging } from './firebase';
+import { getFirebaseMessaging } from '$lib/firebase';
+import { rtdb } from '$lib/firebase';
+import { ref, set } from 'firebase/database';
 import { getToken, onMessage, type Messaging } from 'firebase/messaging';
+import { PUBLIC_FIREBASE_VAPID_KEY } from '$env/static/public';
+import { authStore } from '$lib/stores/auth.svelte';
 
-const VAPID_KEY = 'YOUR_WEB_PUSH_PUBLIC_VAPID_KEY'; // 콘솔에서 복사한 값
-
+/**
+ * FCM 토큰을 발급받고 Realtime Database에 저장하는 함수
+ */
 export async function requestFcmToken(): Promise<string | null> {
 	if (!browser) return null;
 
 	const messaging = await getFirebaseMessaging();
-	if (!messaging) {
-		console.warn('Firebase messaging is not supported in this browser.');
+	if (!messaging) return null;
+
+	if (!PUBLIC_FIREBASE_VAPID_KEY) {
+		console.error('[FCM] VAPID Key가 환경 변수에 설정되지 않았습니다.');
 		return null;
 	}
 
-	// 서비스 워커 수동 등록 (선택) – 안 해도 default로 firebase-messaging-sw.js를 찾습니다.
-	const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+	try {
+		// 이미 등록된 서비스 워커 사용, 없으면 새로 등록
+		let registration: ServiceWorkerRegistration | undefined;
 
-	const token = await getToken(messaging as Messaging, {
-		vapidKey: VAPID_KEY,
-		serviceWorkerRegistration: registration
-	});
+		if ('serviceWorker' in navigator) {
+			const existingRegistration = await navigator.serviceWorker.getRegistration('/');
 
-	if (!token) {
-		console.warn('No registration token available. Request permission to generate one.');
+			if (existingRegistration) {
+				console.log('[FCM] 기존 서비스 워커 재사용:', existingRegistration);
+				registration = existingRegistration;
+			} else {
+				console.log('[FCM] 서비스 워커 새로 등록');
+				registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
+					scope: '/'
+				});
+				await navigator.serviceWorker.ready;
+			}
+		}
+
+		// FCM 토큰 발급
+		const token = await getToken(messaging as Messaging, {
+			vapidKey: PUBLIC_FIREBASE_VAPID_KEY,
+			serviceWorkerRegistration: registration
+		});
+
+		if (!token) {
+			console.warn('[FCM] 토큰을 발급받지 못했습니다. 권한을 허용했는지 확인하세요.');
+			return null;
+		}
+
+		console.log('✅ [FCM] 토큰 발급 완료:', token);
+
+		// Realtime Database에 토큰 저장
+		await saveFcmTokenToDatabase(token);
+
+		return token;
+	} catch (error) {
+		console.error('[FCM] 토큰 발급 실패:', error);
 		return null;
 	}
-
-	// TODO: 이 토큰을 서버(백엔드)에 저장해서 특정 유저에게 푸시를 보낼 수 있게 합니다.
-	console.log('FCM Token:', token);
-	return token;
 }
 
-export async function subscribeOnMessage(callback: (payload: any) => void) {
+/**
+ * FCM 토큰을 Realtime Database에 저장
+ */
+async function saveFcmTokenToDatabase(token: string): Promise<void> {
+	if (!rtdb) {
+		console.error('[FCM] Realtime Database가 초기화되지 않았습니다.');
+		return;
+	}
+
+	try {
+		// 토큰 문자열을 Base64로 인코딩하여 Firebase 키로 사용 가능하게 변환
+		const tokenId = btoa(token).replace(/[^a-zA-Z0-9]/g, '');
+
+		const tokenRef = ref(rtdb, `fcm-tokens/${tokenId}`);
+
+		await set(tokenRef, {
+			device: 'web',
+			uid: authStore.user?.uid || null,
+			createdAt: Date.now(),
+			updatedAt: Date.now()
+		});
+
+		console.log('✅ [FCM] 토큰이 데이터베이스에 저장되었습니다:', tokenId);
+	} catch (error) {
+		console.error('[FCM] 토큰 저장 실패:', error);
+	}
+}
+
+/**
+ * 포그라운드 메시지 수신 리스너
+ */
+export async function subscribeOnMessage(callback: (payload: any) => void): Promise<void> {
 	if (!browser) return;
 
 	const messaging = await getFirebaseMessaging();
 	if (!messaging) return;
 
 	onMessage(messaging, (payload) => {
-		console.log('Message received in foreground: ', payload);
+		console.log('📩 [FCM] 포그라운드 메시지 수신:', payload);
 		callback(payload);
 	});
 }
+```
+
+**주요 변경 사항 (스펙 예제 vs 실제 구현)**:
+
+1. ✅ **환경 변수 사용**: `PUBLIC_FIREBASE_VAPID_KEY` import (하드코딩 방지)
+2. ✅ **토큰 저장**: Realtime Database에 자동 저장 (`fcm-tokens/{tokenId}`)
+3. ✅ **서비스 워커 재사용**: 이미 등록된 서비스 워커 확인 후 재사용
+4. ✅ **에러 처리**: 상세한 try-catch 및 console.log
+5. ✅ **타입 안전성**: TypeScript 타입 명시
+
+**Database 구조**:
+
+```
+/fcm-tokens
+  /{tokenId}
+    device: "web"
+    uid: "user123" | null
+    createdAt: timestamp
+    updatedAt: timestamp
+```
+
 ----
-getToken 옵션으로 vapidKey와 serviceWorkerRegistration을 넘길 수 있습니다. 넘기지 않으면 기본 스코프의 서비스 워커를 찾습니다.  ￼
 
 5-2. Svelte 5 컴포넌트 예제 (+page.svelte)
 -----

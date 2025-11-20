@@ -350,7 +350,7 @@ Sonub 프로젝트는 **Svelte 5 클라이언트**와 **Firebase Cloud Functions
 
 #### 4.1.5 TypeScript 설정 (tsconfig.json)
 
-**파일 위치**: `/firebase/functions/tsconfig.json`
+**소스 코드 위치**: [tsconfig.json.md](./repository/firebase/functions/tsconfig.json.md)
 
 ```json
 {
@@ -401,7 +401,7 @@ npm install --save-dev tsc-alias
 
 ##### package.json 설정
 
-**파일 위치**: `/firebase/functions/package.json`
+**소스 코드 위치**: [package.json.md](./repository/firebase/functions/package.json.md)
 
 ```json
 {
@@ -433,7 +433,7 @@ npm install --save-dev tsc-alias
 
 ##### 4.1.7.1 공유 함수 정의
 
-**소스 코드 위치**: [repository/src/lib/functions/chat.functions.ts.md](./repository/src/lib/functions/chat.functions.ts.md)
+**소스 코드 위치**: [chat.functions.ts.md](./repository/src/lib/functions/chat.functions.ts.md)
 
 ```typescript
 /**
@@ -1380,22 +1380,28 @@ if (type === "post" || type === "comment") {
  * 게시글 작성 시 카테고리 통계 업데이트
  * /posts/{postId} 경로에 새 게시글이 생성될 때 트리거됨
  */
-export const onPostCreate = functions.database.onCreate('/posts/{postId}', async (snapshot, context) => {
-  const post = snapshot.val();
-  const category = post.category;  // 'community', 'qna', 'news', 'market'
+export const onPostCreate = onValueCreated(
+  {
+    ref: "/posts/{postId}",
+    region: FIREBASE_REGION,
+  },
+  async (event) => {
+    const post = event.data.val();
+    const category = post.category;  // 'community', 'qna', 'news', 'market'
 
-  // 카테고리 postCount 증가
-  await admin
-    .database()
-    .ref(`categories/${category}/postCount`)
-    .transaction((currentCount) => {
-      return (currentCount || 0) + 1;
-    });
-});
+    // 카테고리 postCount 증가
+    await admin
+      .database()
+      .ref(`categories/${category}/postCount`)
+      .transaction((currentCount) => {
+        return (currentCount || 0) + 1;
+      });
+  }
+);
 ```
 
 **트리거 경로**: `/posts/{postId}`
-**이벤트**: onCreate
+**이벤트**: onValueCreated (Gen 2 API)
 **동작**: `/categories/{category}/postCount` +1
 
 #### 8.2.2 댓글 작성 시 commentCount 증가
@@ -1407,30 +1413,36 @@ export const onPostCreate = functions.database.onCreate('/posts/{postId}', async
  * 댓글 작성 시 카테고리 통계 업데이트
  * /comments/{commentId} 경로에 새 댓글이 생성될 때 트리거됨
  */
-export const onCommentCreate = functions.database.onCreate('/comments/{commentId}', async (snapshot, context) => {
-  const comment = snapshot.val();
-  const postId = comment.postId;
+export const onCommentCreate = onValueCreated(
+  {
+    ref: "/comments/{commentId}",
+    region: FIREBASE_REGION,
+  },
+  async (event) => {
+    const comment = event.data.val();
+    const postId = comment.postId;
 
-  // 게시글 정보 조회 (카테고리 확인용)
-  const postSnapshot = await admin.database().ref(`posts/${postId}`).get();
-  const post = postSnapshot.val();
+    // 게시글 정보 조회 (카테고리 확인용)
+    const postSnapshot = await admin.database().ref(`posts/${postId}`).get();
+    const post = postSnapshot.val();
 
-  if (post) {
-    const category = post.category;
+    if (post) {
+      const category = post.category;
 
-    // 카테고리 commentCount 증가
-    await admin
-      .database()
-      .ref(`categories/${category}/commentCount`)
-      .transaction((currentCount) => {
-        return (currentCount || 0) + 1;
-      });
+      // 카테고리 commentCount 증가
+      await admin
+        .database()
+        .ref(`categories/${category}/commentCount`)
+        .transaction((currentCount) => {
+          return (currentCount || 0) + 1;
+        });
+    }
   }
-});
+);
 ```
 
 **트리거 경로**: `/comments/{commentId}`
-**이벤트**: onCreate
+**이벤트**: onValueCreated (Gen 2 API)
 **동작**: `/categories/{category}/commentCount` +1
 
 #### 8.2.3 게시글 삭제 시 postCount 감소
@@ -1442,22 +1454,28 @@ export const onCommentCreate = functions.database.onCreate('/comments/{commentId
  * 게시글 삭제 시 카테고리 통계 업데이트
  * /posts/{postId} 경로의 게시글이 삭제될 때 트리거됨
  */
-export const onPostDelete = functions.database.onDelete('/posts/{postId}', async (snapshot, context) => {
-  const post = snapshot.val();
-  const category = post.category;
+export const onPostDelete = onValueDeleted(
+  {
+    ref: "/posts/{postId}",
+    region: FIREBASE_REGION,
+  },
+  async (event) => {
+    const post = event.data.val();
+    const category = post.category;
 
-  // 카테고리 postCount 감소
-  await admin
-    .database()
-    .ref(`categories/${category}/postCount`)
-    .transaction((currentCount) => {
-      return Math.max(0, (currentCount || 0) - 1);
-    });
-});
+    // 카테고리 postCount 감소
+    await admin
+      .database()
+      .ref(`categories/${category}/postCount`)
+      .transaction((currentCount) => {
+        return Math.max(0, (currentCount || 0) - 1);
+      });
+  }
+);
 ```
 
 **트리거 경로**: `/posts/{postId}`
-**이벤트**: onDelete
+**이벤트**: onValueDeleted (Gen 2 API)
 **동작**: `/categories/{category}/postCount` -1 (음수 방지)
 
 #### 8.2.4 댓글 삭제 시 commentCount 감소
@@ -1469,30 +1487,36 @@ export const onPostDelete = functions.database.onDelete('/posts/{postId}', async
  * 댓글 삭제 시 카테고리 통계 업데이트
  * /comments/{commentId} 경로의 댓글이 삭제될 때 트리거됨
  */
-export const onCommentDelete = functions.database.onDelete('/comments/{commentId}', async (snapshot, context) => {
-  const comment = snapshot.val();
-  const postId = comment.postId;
+export const onCommentDelete = onValueDeleted(
+  {
+    ref: "/comments/{commentId}",
+    region: FIREBASE_REGION,
+  },
+  async (event) => {
+    const comment = event.data.val();
+    const postId = comment.postId;
 
-  // 게시글 정보 조회 (카테고리 확인용)
-  const postSnapshot = await admin.database().ref(`posts/${postId}`).get();
-  const post = postSnapshot.val();
+    // 게시글 정보 조회 (카테고리 확인용)
+    const postSnapshot = await admin.database().ref(`posts/${postId}`).get();
+    const post = postSnapshot.val();
 
-  if (post) {
-    const category = post.category;
+    if (post) {
+      const category = post.category;
 
-    // 카테고리 commentCount 감소
-    await admin
-      .database()
-      .ref(`categories/${category}/commentCount`)
-      .transaction((currentCount) => {
-        return Math.max(0, (currentCount || 0) - 1);
-      });
+      // 카테고리 commentCount 감소
+      await admin
+        .database()
+        .ref(`categories/${category}/commentCount`)
+        .transaction((currentCount) => {
+          return Math.max(0, (currentCount || 0) - 1);
+        });
+    }
   }
-});
+);
 ```
 
 **트리거 경로**: `/comments/{commentId}`
-**이벤트**: onDelete
+**이벤트**: onValueDeleted (Gen 2 API)
 **동작**: `/categories/{category}/commentCount` -1 (음수 방지)
 
 #### 8.2.5 주의사항

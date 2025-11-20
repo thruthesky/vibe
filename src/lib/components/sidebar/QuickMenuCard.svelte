@@ -158,6 +158,11 @@
 			<span class="quick-link-desc">{m.homeSidebarStatsDesc()}</span>
 		</div>
 	</a>
+
+	<!-- 더 보기 -->
+	<a href="/menu" class="see-more-link">
+		{m.homeSidebarSeeMore()}
+	</a>
 </div>
 
 <style>
@@ -165,7 +170,7 @@
 
 	/* 섹션 컨테이너 */
 	.quick-menu-section {
-		@apply flex flex-col gap-1.5 rounded-2xl bg-white/80 p-3 shadow-sm;
+		@apply flex flex-col gap-1.5 rounded-2xl bg-white p-3;
 	}
 
 	/* 빠른 링크 */
@@ -176,7 +181,7 @@
 
 	/* 빠른 링크 아이콘 */
 	.quick-link-icon {
-		@apply flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 shadow-inner;
+		@apply flex h-8 w-8 items-center justify-center rounded-full bg-gray-100;
 	}
 
 	.quick-link-icon-inner {
@@ -199,5 +204,10 @@
 	/* 빠른 링크 카운트 */
 	.quick-link-count {
 		@apply text-sm font-semibold text-gray-600;
+	}
+
+	/* 더 보기 링크 */
+	.see-more-link {
+		@apply mt-1 block text-left pl-[3.25rem] text-xs text-gray-400 transition-colors hover:text-gray-600 hover:underline;
 	}
 </style>

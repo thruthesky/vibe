@@ -741,7 +741,7 @@ if (result.success && result.data) {
 **소스 코드 위치**: [database.svelte.ts.md](./repository/src/lib/stores/database.svelte.ts.md)
 
 ```typescript
-export function setupPresence(uid: string): void
+export function setupPresence(userId: string): void
 ```
 
 **용도:** 사용자의 온라인/오프라인 상태 자동 관리
@@ -750,61 +750,66 @@ export function setupPresence(uid: string): void
 
 | 파라미터 | 타입 | 필수 | 설명 |
 |----------|------|------|------|
-| `uid` | `string` | ✅ | 사용자 UID |
+| `userId` | `string` | ✅ | 사용자 UID |
 
-**반환값:** 없음 (`void`)
+**반환값:** `void` (반환값 없음)
 
 #### 3.7.2 전체 구현
 
 **소스 코드 위치**: [database.svelte.ts.md](./repository/src/lib/stores/database.svelte.ts.md)
 
 ```typescript
-let presenceInitialized = false;
-
-export function setupPresence(uid: string): void {
-	if (presenceInitialized) {
-		console.warn('[setupPresence] 이미 초기화되었습니다.');
+export function setupPresence(userId: string): void {
+	if (!rtdb) {
+		console.error('❌ Firebase Realtime Database가 초기화되지 않았습니다.');
 		return;
 	}
 
-	const userStatusRef = ref(rtdb, `/status/${uid}`);
+	const userStatusRef = ref(rtdb, `status/${userId}`);
 	const connectedRef = ref(rtdb, '.info/connected');
 
+	// Firebase 연결 상태 모니터링
 	onValue(connectedRef, (snapshot) => {
 		if (snapshot.val() === true) {
-			// 연결됨: 온라인 상태로 설정
+			// 온라인 상태로 설정
 			set(userStatusRef, {
-				state: 'online',
-				lastChanged: Date.now()
+				online: true,
+				lastSeen: Date.now()
 			});
 
-			// 연결 해제 시 오프라인 상태로 자동 변경
-			onDisconnect(userStatusRef).set({
-				state: 'offline',
-				lastChanged: Date.now()
+			// 연결이 끊기면 오프라인으로 변경
+			onValue(ref(rtdb!, '.info/connected'), (snap) => {
+				if (!snap.val()) {
+					update(userStatusRef, {
+						online: false,
+						lastSeen: Date.now()
+					});
+				}
 			});
 		}
 	});
-
-	presenceInitialized = true;
 }
 ```
 
 #### 3.7.3 동작 원리
 
-1. **중복 초기화 방지**
-   - `presenceInitialized` 플래그로 한 번만 실행
+1. **RTDB 초기화 확인**
+   - `rtdb`가 초기화되지 않았으면 에러 로그 출력 후 함수 종료
 
 2. **연결 상태 감지**
    - `.info/connected` 경로를 구독하여 RTDB 연결 상태 확인
    - 연결되면 `true`, 끊기면 `false`
 
 3. **온라인 상태 설정**
-   - 연결 시 `/status/{uid}` 경로에 `{ state: 'online', lastChanged }` 저장
+   - 연결 시 `status/{userId}` 경로에 `{ online: true, lastSeen: Date.now() }` 저장
 
-4. **오프라인 상태 예약**
-   - `onDisconnect().set()`으로 연결 해제 시 자동으로 오프라인 상태로 변경
-   - 앱이 강제 종료되어도 Firebase가 자동으로 실행
+4. **오프라인 상태 감지**
+   - 중첩된 `onValue()` 리스너로 연결 해제 감지
+   - 연결 끊김 시 `{ online: false, lastSeen: Date.now() }`로 업데이트
+
+5. **자동 관리**
+   - 함수가 호출되면 자동으로 온라인 상태를 추적
+   - 별도의 cleanup 함수 반환 없음 (리스너는 앱 라이프사이클 동안 유지)
 
 #### 3.7.4 사용 예제
 
@@ -817,6 +822,7 @@ export function setupPresence(uid: string): void {
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { setupPresence } from '$lib/stores/database.svelte';
 
+	// 로그인 시 온라인 상태 관리 시작
 	$effect(() => {
 		if (authStore.isAuthenticated && authStore.user) {
 			setupPresence(authStore.user.uid);
@@ -833,12 +839,12 @@ export function setupPresence(uid: string): void {
 {
   "status": {
     "abc123": {
-      "state": "online",
-      "lastChanged": 1699999999999
+      "online": true,
+      "lastSeen": 1699999999999
     },
     "def456": {
-      "state": "offline",
-      "lastChanged": 1699999999999
+      "online": false,
+      "lastSeen": 1699999999999
     }
   }
 }
@@ -853,8 +859,8 @@ export function setupPresence(uid: string): void {
 	import { createRealtimeStore } from '$lib/stores/database.svelte';
 
 	interface UserStatus {
-		state: 'online' | 'offline';
-		lastChanged: number;
+		online: boolean;
+		lastSeen: number;
 	}
 
 	const statusStore = createRealtimeStore<Record<string, UserStatus>>('status');
@@ -864,8 +870,8 @@ export function setupPresence(uid: string): void {
 	<h3>온라인 사용자</h3>
 	<ul>
 		{#each Object.entries($statusStore.data) as [uid, status]}
-			{#if status.state === 'online'}
-				<li>{uid}</li>
+			{#if status.online}
+				<li>{uid} (마지막 접속: {new Date(status.lastSeen).toLocaleString()})</li>
 			{/if}
 		{/each}
 	</ul>
@@ -1110,50 +1116,71 @@ export async function readData<T = any>(path: string): Promise<ReadDataResult<T>
 }
 
 /**
- * 온라인 상태 관리 초기화 플래그
+ * 온라인 상태 인터페이스
  */
-let presenceInitialized = false;
+export interface UserStatus {
+	/** 온라인 여부 */
+	online: boolean;
+	/** 마지막 접속 시간 (Unix timestamp, 밀리초) */
+	lastSeen: number;
+}
 
 /**
- * 사용자 온라인/오프라인 상태 자동 관리
+ * 온라인 상태 관리
  *
- * @param uid - 사용자 UID
+ * Firebase의 .info/connected를 사용하여 사용자의 온라인/오프라인 상태를 관리합니다.
+ * 사용자가 연결되면 online: true로 설정되고, 연결이 끊기면 자동으로 online: false로 변경됩니다.
+ *
+ * @param userId - 사용자 ID
+ * @returns 상태 관리 해제 함수
  *
  * @example
  * ```typescript
- * $effect(() => {
- *   if (authStore.isAuthenticated && authStore.user) {
- *     setupPresence(authStore.user.uid);
- *   }
- * });
+ * // 로그인 시 온라인 상태 관리 시작
+ * const cleanup = setupPresence('user123');
+ *
+ * // 로그아웃 시 정리
+ * cleanup();
  * ```
  */
-export function setupPresence(uid: string): void {
-	if (presenceInitialized) {
-		console.warn('[setupPresence] 이미 초기화되었습니다.');
-		return;
+export function setupPresence(userId: string): () => void {
+	if (!rtdb) {
+		console.error('❌ Firebase Realtime Database가 초기화되지 않았습니다.');
+		return () => {};
 	}
 
-	const userStatusRef = ref(rtdb, `/status/${uid}`);
+	const userStatusRef = ref(rtdb, `status/${userId}`);
 	const connectedRef = ref(rtdb, '.info/connected');
 
+	// Firebase 연결 상태 모니터링
 	onValue(connectedRef, (snapshot) => {
 		if (snapshot.val() === true) {
-			// 연결됨: 온라인 상태로 설정
+			// 온라인 상태로 설정
 			set(userStatusRef, {
-				state: 'online',
-				lastChanged: Date.now()
+				online: true,
+				lastSeen: Date.now()
 			});
 
-			// 연결 해제 시 오프라인 상태로 자동 변경
-			onDisconnect(userStatusRef).set({
-				state: 'offline',
-				lastChanged: Date.now()
+			// 연결이 끊기면 오프라인으로 변경
+			onValue(ref(rtdb!, '.info/connected'), (snap) => {
+				if (!snap.val()) {
+					update(userStatusRef, {
+						online: false,
+						lastSeen: Date.now()
+					});
+				}
 			});
 		}
 	});
 
-	presenceInitialized = true;
+	return () => {
+		// 수동으로 오프라인 상태로 설정
+		update(userStatusRef, {
+			online: false,
+			lastSeen: Date.now()
+		});
+		off(connectedRef);
+	};
 }
 ```
 
@@ -1358,12 +1385,12 @@ export function setupPresence(uid: string): void {
 	});
 
 	// 다른 사용자의 온라인 상태 표시
-	const userStatus = createRealtimeStore<{ state: string }>('status/abc123');
+	const userStatus = createRealtimeStore<{ online: boolean; lastSeen: number }>('status/abc123');
 </script>
 
 {#if $userStatus.data}
-	<span class="status-{$userStatus.data.state}">
-		{$userStatus.data.state === 'online' ? '🟢 온라인' : '⚫ 오프라인'}
+	<span class="status-indicator">
+		{$userStatus.data.online ? '🟢 온라인' : '⚫ 오프라인'}
 	</span>
 {/if}
 ```
@@ -1419,8 +1446,9 @@ export function setupPresence(uid: string): void {
 
 1. 로그인 후 `setupPresence(uid)` 실행
 2. 확인 사항:
-   - [ ] Firebase Console에서 `/status/{uid}/state` = "online"
-   - [ ] 브라우저 탭 닫기 또는 새로고침 후 "offline"으로 자동 변경
+   - [ ] Firebase Console에서 `/status/{uid}/online` = true
+   - [ ] Firebase Console에서 `/status/{uid}/lastSeen`에 현재 타임스탬프 저장됨
+   - [ ] 브라우저 탭 닫기 또는 새로고침 후 `online`이 false로 자동 변경
 
 ## 7. 보안 고려사항
 

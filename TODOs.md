@@ -42,6 +42,20 @@
   - 프로필 통계 클릭 시 해당 페이지로 이동
 
 
+아래 항목 중 원하시는 작업을 선택해주세요:
+ SED 사양 문서 최종 검토 - specs/sonub-popular-posts.md 문서가 SED 형식을 완벽히 준수하는지 확인
+💡 다음 작업 추천
+현재 작업과 관련하여 다음 작업을 추천드립니다:
+리액션 통계 페이지 개선 - src/routes/my/reactions/+page.svelte에서 받은 반응 목록을 표시하는데, Popular Posts와 유사하게 필터링 로직이 필요한지 검토
+피드 시스템 검증 - firebase/functions/src/handlers/feed.fanout.handler.ts의 fan-out 로직이 카테고리가 있는 게시글만 전파하는지 확인
+게시글 생성 핸들러 검증 - firebase/functions/src/handlers/post.create.handler.ts에서 통계 증가 로직이 올바르게 작동하는지 확인
+
+
+
+- 푸시 알림:
+  - foreground 푸시 알림 처리. 토스트 클릭하면 해당 페이지(영역)으로 이동
+  - 백그라운드 푸시 알림 처리. 토스트 클릭하면 해당 페이지(영역)으로 이동
+  - FCM 토큰 갱신 처리
 
 
 ## 다음 단계

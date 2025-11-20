@@ -28,7 +28,7 @@ tags:
 사용자가 자신의 프로필 정보를 수정할 수 있는 페이지입니다.
 
 - **페이지 경로**: `/my/profile`
-- **파일 위치**: `src/routes/my/profile/+page.svelte`
+- **소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/profile/+page.svelte.md)
 - **주요 기능**:
   - 프로필 사진 업로드/제거
   - 닉네임 수정

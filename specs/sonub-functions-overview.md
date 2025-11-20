@@ -142,7 +142,7 @@ export async function joinChatRoom(db: Database, roomId: string, uid: string) {
 
 ### 3.3. Firebase Cloud Functions (서버 전용)
 
-- Firebase Functions는 `firebase/functions/src/handlers/` 폴더에 위치한다.
+- **소스 코드 위치:** Firebase Functions는 [firebase/functions/src/handlers/](./repository/firebase/functions/src/handlers/) 폴더에 위치한다.
 - **Shared pure functions 직접 사용**: Cloud Functions는 `shared/` 폴더에서 직접 import한다.
 
 **예시**:

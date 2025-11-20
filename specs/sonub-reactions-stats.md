@@ -1819,7 +1819,7 @@ const sortKey = `-${String(influencerScore).padStart(10, '0')}-${uid}`;
 
 #### 11.2.1. 공통 유틸리티 (`stats.utils.ts`)
 
-**파일 경로**: `firebase/functions/src/utils/stats.utils.ts`
+**소스 코드 위치**: [stats.utils.ts.md](./repository/firebase/functions/src/utils/stats.utils.ts.md)
 
 **구현 함수**:
 
@@ -1833,9 +1833,6 @@ const sortKey = `-${String(influencerScore).padStart(10, '0')}-${uid}`;
    - 일별/월별/연간/전체 통계를 동시에 업데이트
    - `ServerValue.increment()`를 사용한 동시성 보장
    - 데이터베이스 경로:
-
-**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
-
      ```
      /user-stats/{uid}/daily/{yyyyMMdd}/{statType}
      /user-stats/{uid}/monthly/{yyyyMM}/{statType}
@@ -1851,8 +1848,6 @@ const sortKey = `-${String(influencerScore).padStart(10, '0')}-${uid}`;
    - 점수가 0이면 경로 삭제 (순위에서 제거)
 
 **핵심 로직**:
-
-**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
 
 ```typescript
 // UTC 날짜 계산 예시
@@ -1875,7 +1870,7 @@ await admin.database().ref().update(updates);
 
 #### 11.2.2. 좋아요 통계 핸들러 (`stats.like.handler.ts`)
 
-**파일 경로**: `firebase/functions/src/handlers/stats.like.handler.ts`
+**소스 코드 위치**: [stats.like.handler.ts.md](./repository/firebase/functions/src/handlers/stats.like.handler.ts.md)
 
 **트리거 경로**: `/likes/{uid}/{targetId}`
 
@@ -1895,8 +1890,6 @@ await admin.database().ref().update(updates);
    - 인플루언서 점수 재계산
 
 **핵심 로직**:
-
-**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
 
 ```typescript
 // 타겟 작성자 조회
@@ -1919,7 +1912,7 @@ await updateInfluencerScore(targetAuthorUid);
 
 #### 11.2.3. 댓글 통계 핸들러 (`stats.comment.handler.ts`)
 
-**파일 경로**: `firebase/functions/src/handlers/stats.comment.handler.ts`
+**소스 코드 위치**: [stats.comment.handler.ts.md](./repository/firebase/functions/src/handlers/stats.comment.handler.ts.md)
 
 **트리거 경로**: `/comments/{postId}/{commentId}`
 
@@ -1940,8 +1933,6 @@ await updateInfluencerScore(targetAuthorUid);
    - 인플루언서 점수 재계산
 
 **핵심 로직**:
-
-**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
 
 ```typescript
 // 타겟 작성자 조회
@@ -1966,7 +1957,7 @@ await updateInfluencerScore(targetAuthorUid);
 
 #### 11.2.4. 게시글 통계 핸들러 (`stats.post.handler.ts`)
 
-**파일 경로**: `firebase/functions/src/handlers/stats.post.handler.ts`
+**소스 코드 위치**: [stats.post.handler.ts.md](./repository/firebase/functions/src/handlers/stats.post.handler.ts.md)
 
 **트리거 경로**: `/posts/{postId}`
 
@@ -1984,7 +1975,7 @@ await updateInfluencerScore(targetAuthorUid);
 
 #### 11.2.5. 팔로우 통계 핸들러 (`stats.follow.handler.ts`)
 
-**파일 경로**: `firebase/functions/src/handlers/stats.follow.handler.ts`
+**소스 코드 위치**: [stats.follow.handler.ts.md](./repository/firebase/functions/src/handlers/stats.follow.handler.ts.md)
 
 **트리거 경로**: `/user-following/{followerUid}/{followingUid}`
 
@@ -2000,8 +1991,6 @@ await updateInfluencerScore(targetAuthorUid);
 
 **핵심 로직**:
 
-**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
-
 ```typescript
 // 팔로우를 받은 사용자(followingUid)의 통계 업데이트
 await updateUserStats(followingUid, 'receivedFollowers', 1, Date.now());
@@ -2014,7 +2003,7 @@ await updateInfluencerScore(followingUid);
 
 #### 11.2.6. 인플루언서 순위 핸들러 (`stats.ranking.handler.ts`)
 
-**파일 경로**: `firebase/functions/src/handlers/stats.ranking.handler.ts`
+**소스 코드 위치**: [stats.ranking.handler.ts.md](./repository/firebase/functions/src/handlers/stats.ranking.handler.ts.md)
 
 **트리거 경로**: `/influencer-scores/{uid}`
 
@@ -2027,8 +2016,6 @@ await updateInfluencerScore(followingUid);
    - 점수가 0이거나 null이면 순위에서 제거
 
 **핵심 로직**:
-
-**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
 
 ```typescript
 // 현재 UTC 날짜 계산
@@ -2059,7 +2046,7 @@ await admin.database().ref().update(updates);
 
 #### 11.2.7. Cloud Functions 트리거 등록 (`index.ts`)
 
-**파일 경로**: `firebase/functions/src/index.ts`
+**소스 코드 위치**: [index.ts.md](./repository/firebase/functions/src/index.ts.md)
 
 **등록된 트리거 (총 9개)**:
 
@@ -2087,11 +2074,9 @@ await admin.database().ref().update(updates);
 
 #### 11.3.1. 인플루언서 데이터 조회 함수 (`user.functions.ts`)
 
-**파일 경로**: `src/lib/functions/user.functions.ts`
+**소스 코드 위치**: [user.functions.ts.md](./repository/src/lib/functions/user.functions.ts.md)
 
 **추가된 인터페이스**:
-
-**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
 
 ```typescript
 export interface InfluencerRanking {
@@ -2124,8 +2109,6 @@ export interface InfluencerRanking {
 
 **핵심 로직**:
 
-**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
-
 ```typescript
 // 날짜 계산
 const today = getCurrentDate('yyyyMMdd');  // "20250119"
@@ -2145,7 +2128,7 @@ const rankings = await getTopInfluencers('daily', today, 5);
 
 #### 11.3.2. 사이드바 Top 5 인플루언서 표시
 
-**파일 경로**: `src/lib/components/sidebar/SuggestionsCard.svelte`
+**소스 코드 위치**: [PopularUsersCard.svelte.md](./repository/src/lib/components/sidebar/PopularUsersCard.svelte.md)
 
 **구현 내용**:
 - "인기 사용자" 메뉴 아이템 추가
@@ -2154,8 +2137,6 @@ const rankings = await getTopInfluencers('daily', today, 5);
 - "인기 사용자" 클릭 시 `/user/influencers` 페이지로 이동
 
 **UI 구조**:
-
-**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
 
 ```
 ┌─────────────────────────────┐
@@ -2193,7 +2174,7 @@ const rankings = await getTopInfluencers('daily', today, 5);
 
 #### 11.3.3. 인플루언서 순위 페이지 (`/user/influencers`)
 
-**파일 경로**: `src/routes/user/influencers/+page.svelte`
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/influencers/+page.svelte.md)
 
 **구현 내용**:
 - 일간/월간/연간 탭 메뉴
@@ -2203,8 +2184,6 @@ const rankings = await getTopInfluencers('daily', today, 5);
 - 클릭 시 해당 사용자 프로필로 이동
 
 **UI 구조**:
-
-**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
 
 ```
 ┌──────────────────────────────────────┐
@@ -2238,7 +2217,7 @@ const rankings = await getTopInfluencers('daily', today, 5);
 
 #### 11.3.4. 사용자 프로필 페이지 인플루언서 점수 표시
 
-**파일 경로**: `src/routes/user/profile/+page.svelte`
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
 
 **구현 날짜**: 2025-01-19
 
@@ -2250,8 +2229,6 @@ const rankings = await getTopInfluencers('daily', today, 5);
 **추가된 코드**:
 
 1. **데이터 조회 (Import 및 State)**:
-
-**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
 
 ```typescript
 import { getUserActionCounters, getInfluencerScore } from '$lib/functions/user.functions';
@@ -2271,8 +2248,6 @@ $effect(() => {
 ```
 
 2. **UI 표시**:
-
-**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
 
 ```svelte
 <!-- 사용자 통계 섹션 -->
@@ -2299,8 +2274,6 @@ $effect(() => {
 
 3. **스타일링**:
 
-**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
-
 ```css
 /* 인플루언서 점수 강조 스타일 */
 .stat-influencer {
@@ -2313,8 +2286,6 @@ $effect(() => {
 ```
 
 **UI 구조**:
-
-**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
 
 ```
 ┌──────────────────────────────────────┐
@@ -2394,7 +2365,7 @@ $effect(() => {
 **명령**: `npm run check`
 
 **결과**:
-- ✅ 새로 구현된 파일 (`user.functions.ts`, `SuggestionsCard.svelte`, `/user/influencers/+page.svelte`): **0 에러**
+- ✅ 새로 구현된 파일 (`user.functions.ts`, `PopularUsersCard.svelte`, `/user/influencers/+page.svelte`): **0 에러**
 - ⚠️ 기존 파일 (`/user/profile/+page.svelte`): 2 에러 (기존 문제, 인플루언서 기능과 무관)
 - ⚠️ 전체 프로젝트: 2572 경고 (대부분 CSS @apply 규칙 및 접근성 경고, 무시 가능)
 
@@ -2404,15 +2375,13 @@ $effect(() => {
 
 ### 11.5. Firebase Database Security Rules 구현
 
-**파일 경로**: `firebase/database.rules.json`
+**소스 코드 위치**: [database.rules.json.md](./repository/firebase/database.rules.json.md)
 
 **구현 일시**: 2025-01-19
 
 **추가된 보안 규칙**:
 
 #### 11.5.1. `/user-stats/{uid}` 경로
-
-**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
 
 ```json
 "user-stats": {
@@ -2453,8 +2422,6 @@ $effect(() => {
 
 #### 11.5.2. `/influencer-scores/{uid}` 경로
 
-**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
-
 ```json
 "influencer-scores": {
   ".read": "auth != null",
@@ -2472,8 +2439,6 @@ $effect(() => {
 - 점수는 `number` 타입만 허용 (또는 `null`)
 
 #### 11.5.3. `/influencer-rankings/{period}/{date}` 경로
-
-**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
 
 ```json
 "influencer-rankings": {
@@ -2766,7 +2731,7 @@ $effect(() => {
    - [ ] 반환 순서: D (20) → B (10) → E (5)
 
 4. **UI 표시 확인**
-   - [ ] 사이드바 Top 5 인플루언서 표시 확인 ([SuggestionsCard.svelte](./repository/src/lib/components/sidebar/SuggestionsCard.svelte))
+  - [ ] 사이드바 Top 5 인플루언서 표시 확인 ([PopularUsersCard.svelte](./repository/src/lib/components/sidebar/PopularUsersCard.svelte.md))
    - [ ] `/user/influencers` 페이지에서 순위 표시 확인
 
 ### 12.4. 테스트 자동화 (선택 사항)
@@ -2831,7 +2796,7 @@ describe('Influencer Statistics', () => {
     - [x] `getTopInfluencers()` - Top N 인플루언서 조회
     - [x] `getInfluencerScore()` - 개별 사용자 점수 조회
     - [x] `getCurrentDate()` - UTC 날짜 계산 헬퍼
-  - [x] 사이드바 Top 5 인플루언서 표시 (`SuggestionsCard.svelte`)
+ - [x] 사이드바 Top 5 인플루언서 표시 (`PopularUsersCard.svelte`)
   - [x] `/user/influencers` 페이지 생성 (일간/월간/연간 탭, Top 100 표시)
   - [x] `/user/profile` 페이지에 인플루언서 점수 표시 추가
     - [x] 통계 섹션에 인플루언서 점수 추가

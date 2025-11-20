@@ -14,16 +14,14 @@
 	import { toggleLikeTarget, type LikeTargetType } from '$lib/functions/like.functions';
 	import * as m from '$lib/paraglide/messages.js';
 	import { Button } from '$lib/components/ui/button';
-	import PostItem from '$lib/components/post/PostItem.svelte';
+	import PopularPostItem from '$lib/components/post/PopularPostItem.svelte';
 	import PostEditDialog from '$lib/components/post/PostEditDialog.svelte';
 	import CommentCreateDialog from '$lib/components/comment/CommentCreateDialog.svelte';
 	import { TrendingUp, Calendar, CalendarDays } from 'lucide-svelte';
-	import type { ChatMessage } from '$lib/types/chat.types';
 	import { ref, remove } from 'firebase/database';
 	import { rtdb } from '$lib/firebase';
 
 	type Period = 'daily' | 'weekly' | 'monthly';
-	type TabType = Period;
 
 	// 기간 선택 상태
 	let activePeriod = $state<Period>('daily');
@@ -31,9 +29,6 @@
 	// 인기 게시글 데이터
 	let popularPosts = $state<Array<{ postId: string; score: number }>>([]);
 	let isLoading = $state(false);
-
-	// 게시글 메시지 데이터 (실시간 구독)
-	let messagesMap = $state<Record<string, ChatMessage>>({});
 
 	// 글 수정 모달 상태
 	let isEditDialogOpen = $state(false);
@@ -79,10 +74,10 @@
 	/**
 	 * 인기 게시글 데이터 로드
 	 */
-	async function loadPopularPosts() {
+	async function loadPopularPosts(period: Period) {
 		isLoading = true;
 		try {
-			popularPosts = await getPopularPosts(activePeriod, 100);
+			popularPosts = await getPopularPosts(period, 100);
 		} catch (error) {
 			console.error('인기 게시글 로드 실패:', error);
 		} finally {
@@ -94,33 +89,9 @@
 	 * 기간 변경 시 자동으로 데이터 로드
 	 */
 	$effect(() => {
-		loadPopularPosts();
-	});
-
-	/**
-	 * 게시글 메시지 실시간 구독
-	 */
-	$effect(() => {
-		const unsubscribers: Array<() => void> = [];
-
-		popularPosts.forEach(({ postId }) => {
-			const store = createRealtimeStore<ChatMessage>(`chat-messages/${postId}`, {} as ChatMessage);
-
-			const unsubscribe = store.subscribe((state) => {
-				if (state.data) {
-					messagesMap = { ...messagesMap, [postId]: state.data };
-				}
-			});
-
-			unsubscribers.push(() => {
-				unsubscribe();
-				store.unsubscribe();
-			});
-		});
-
-		return () => {
-			unsubscribers.forEach((unsub) => unsub());
-		};
+		// activePeriod가 변경될 때만 실행되도록 명시적으로 의존성 설정
+		const period = activePeriod;
+		void loadPopularPosts(period);
 	});
 
 	/**
@@ -165,10 +136,14 @@
 	/**
 	 * 댓글 작성 핸들러
 	 */
-	function handleCreateComment(postId: string, parentId: string | null, parentText: string | null) {
+	function handleCreateComment(
+		postId: string,
+		parentId: string | null | undefined,
+		parentText: string | null | undefined
+	) {
 		selectedPostId = postId;
-		selectedParentId = parentId;
-		selectedParentText = parentText;
+		selectedParentId = parentId ?? null;
+		selectedParentText = parentText ?? null;
 		isCommentDialogOpen = true;
 	}
 
@@ -192,6 +167,11 @@
 		}
 
 		if (!confirm('정말 삭제하시겠습니까?')) {
+			return;
+		}
+
+		if (!rtdb) {
+			alert('데이터베이스 연결이 없습니다.');
 			return;
 		}
 
@@ -261,37 +241,18 @@
 			</div>
 		{:else}
 			<div class="posts-list">
-				{#each popularPosts as { postId, score }, index}
-					{@const message = messagesMap[postId]}
-					{#if message && !message.deleted}
-						<div class="post-item">
-							<!-- 순위 배지 -->
-							<div class="rank-badge {index < 3 ? 'rank-top' : ''}">
-								#{index + 1}
-							</div>
-
-							<!-- 게시글 카드 -->
-							<div class="post-card-wrapper">
-								<PostItem
-									{message}
-									{postId}
-									{userLikes}
-									onToggleLike={(e, id, type) => handleToggleLike(e, id, type)}
-									onOpenCommentDialog={(id, parentId, parentText) =>
-										handleCreateComment(id, parentId, parentText)}
-									onEdit={(id, text, urls, roomId) => handleEditPost(id, text, urls, roomId)}
-									onDelete={(id) => handleDeletePost(id)}
-									editMode="dialog"
-								/>
-							</div>
-
-							<!-- 점수 표시 -->
-							<div class="score-badge">
-								<TrendingUp class="score-icon" />
-								<span>{score}</span>
-							</div>
-						</div>
-					{/if}
+				{#each popularPosts as { postId, score }, index (postId)}
+					<PopularPostItem
+						{postId}
+						{score}
+						{index}
+						{userLikes}
+						onToggleLike={(e, id, type) => handleToggleLike(e, id, type)}
+						onOpenCommentDialog={(id, parentId, parentText) =>
+							handleCreateComment(id, parentId, parentText)}
+						onEdit={(id, text, urls, roomId) => handleEditPost(id, text, urls, roomId)}
+						onDelete={(id) => handleDeletePost(id)}
+					/>
 				{/each}
 			</div>
 		{/if}
@@ -300,20 +261,22 @@
 
 <!-- 게시글 수정 모달 -->
 <PostEditDialog
-	bind:isOpen={isEditDialogOpen}
+	bind:open={isEditDialogOpen}
 	postId={editingPostId}
 	initialText={editingPostText}
 	initialUrls={editingPostUrls}
 	roomId={editingPostRoomId}
+	onClose={() => (isEditDialogOpen = false)}
 />
 
 <!-- 댓글 작성 모달 -->
 <CommentCreateDialog
-	bind:isOpen={isCommentDialogOpen}
-	postId={selectedPostId}
+	bind:open={isCommentDialogOpen}
+	messageId={selectedPostId}
 	parentId={selectedParentId}
 	parentText={selectedParentText}
-	onCommentCreated={handleCommentCreated}
+	onClose={handleCommentCreated}
+	onCreated={handleCommentCreated}
 />
 
 <style>
@@ -373,36 +336,5 @@
 
 	:global(.posts-list) {
 		@apply flex flex-col gap-4;
-	}
-
-	:global(.post-item) {
-		@apply relative flex items-start gap-4 p-4;
-		@apply bg-white rounded-lg border border-gray-200;
-		@apply hover:shadow-md transition-shadow duration-200;
-	}
-
-	:global(.rank-badge) {
-		@apply flex-shrink-0 flex items-center justify-center;
-		@apply w-10 h-10 rounded-full;
-		@apply bg-gray-100 text-gray-700 font-bold text-sm;
-	}
-
-	:global(.rank-top) {
-		@apply bg-gradient-to-br from-yellow-400 to-orange-500;
-		@apply text-white;
-	}
-
-	:global(.post-card-wrapper) {
-		@apply flex-1;
-	}
-
-	:global(.score-badge) {
-		@apply flex-shrink-0 flex items-center gap-1;
-		@apply px-3 py-1 rounded-full;
-		@apply bg-blue-50 text-blue-700 text-sm font-medium;
-	}
-
-	:global(.score-icon) {
-		@apply w-3 h-3;
 	}
 </style>

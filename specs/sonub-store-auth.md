@@ -316,36 +316,50 @@ private initializeAuthListener(): void {
 **소스 코드 위치**: [auth.svelte.ts.md](./repository/src/lib/stores/auth.svelte.ts.md)
 
 ```typescript
-private async syncUserProfile(user: User): Promise<void> {
+private async syncUserProfile(user: User) {
 	if (!rtdb) {
-		console.warn('[AuthStore] RTDB가 초기화되지 않았습니다.');
+		console.warn('Firebase Realtime Database가 초기화되지 않았습니다.');
 		return;
 	}
 
 	try {
+		// RTDB에서 현재 사용자 데이터 확인
 		const userRef = ref(rtdb, `users/${user.uid}`);
 		const snapshot = await get(userRef);
 		const existingData = snapshot.val() || {};
 
+		// 동기화할 데이터 준비
 		const updates: Record<string, any> = {};
 
-		// photoUrl 동기화: RTDB에 값이 없거나 공백이면 Auth photoURL 저장
+		// photoUrl: 없거나 null이거나 공백일 때만 동기화
+		// trim() 전에 undefined 체크를 위해 옵셔널 체이닝 사용
 		if (!existingData.photoUrl?.trim() && user.photoURL) {
 			updates.photoUrl = user.photoURL;
+			// console.log('photoUrl 동기화:', user.photoURL);
 		}
 
-		// displayName 동기화: RTDB에 값이 없으면 Auth displayName 저장
+		// displayName: 없을 때만 동기화
 		if (!existingData.displayName && user.displayName) {
 			updates.displayName = user.displayName;
+			// console.log('displayName 동기화:', user.displayName);
 		}
 
-		// 업데이트할 내용이 있으면 RTDB에 저장
+		// languageCode: 없을 때만 브라우저 언어로 동기화
+		if (!existingData.languageCode) {
+			const browserLang = this.detectBrowserLanguage();
+			updates.languageCode = browserLang;
+			// console.log('languageCode 동기화:', browserLang);
+		}
+
+		// 업데이트할 항목이 있으면 RTDB에 저장
 		if (Object.keys(updates).length > 0) {
 			await update(userRef, updates);
-			console.log('[AuthStore] 프로필 동기화 완료:', updates);
+			// console.log('사용자 프로필 동기화 완료:', updates);
+		} else {
+			// console.log('동기화할 프로필 정보 없음');
 		}
 	} catch (error) {
-		console.error('[AuthStore] 프로필 동기화 실패:', error);
+		console.error('사용자 프로필 동기화 실패:', error);
 	}
 }
 ```
@@ -360,6 +374,53 @@ private async syncUserProfile(user: User): Promise<void> {
 |-----------|-----------|------|
 | `photoUrl` | `photoURL` | RTDB 값이 없거나 공백(`!existingData.photoUrl?.trim()`)일 때만 |
 | `displayName` | `displayName` | RTDB 값이 없을 때만 |
+| `languageCode` | 브라우저 언어 (`detectBrowserLanguage()`) | RTDB 값이 없을 때만 |
+
+#### 3.4.3 detectBrowserLanguage()
+
+**소스 코드 위치**: [auth.svelte.ts.md](./repository/src/lib/stores/auth.svelte.ts.md)
+
+```typescript
+private detectBrowserLanguage(): string {
+	const SUPPORTED_LANGUAGES = ['en', 'ko', 'ja', 'zh'];
+	const DEFAULT_LANGUAGE = 'en';
+
+	if (typeof navigator === 'undefined') {
+		return DEFAULT_LANGUAGE;
+	}
+
+	// navigator.language 예: "ko-KR", "en-US", "ja-JP", "zh-CN"
+	const browserLang = navigator.language || navigator.languages?.[0] || DEFAULT_LANGUAGE;
+
+	// 첫 2글자만 추출 (예: "ko-KR" -> "ko")
+	const langCode = browserLang.substring(0, 2).toLowerCase();
+
+	// 지원하는 언어인지 확인
+	if (SUPPORTED_LANGUAGES.includes(langCode)) {
+		return langCode;
+	}
+
+	return DEFAULT_LANGUAGE;
+}
+```
+
+**역할:**
+- 브라우저의 언어 설정을 감지하여 지원하는 언어 코드 반환
+- 사용자 프로필 `languageCode` 초기화에 사용
+
+**지원 언어:**
+- `en` (영어) - 기본값
+- `ko` (한국어)
+- `ja` (일본어)
+- `zh` (중국어)
+
+**동작:**
+1. SSR 환경(`navigator` undefined) 시 기본값 `'en'` 반환
+2. `navigator.language` 또는 `navigator.languages[0]`에서 언어 코드 추출
+3. 첫 2글자만 추출 (예: `"ko-KR"` → `"ko"`)
+4. 지원 언어에 포함되면 해당 코드 반환, 아니면 `'en'` 반환
+
+---
 
 **동작 예시:**
 

@@ -406,8 +406,11 @@ export async function handleUserDisplayNameUpdate(
    - DB 반영
 
 **로깅:**
-- "displayName 필드 변경 감지": uid, beforeValue, afterValue, action (생성/수정/삭제)
+- "displayName 변경 감지": uid, beforeValue, afterValue, action (생성/수정/삭제)
 - "displayName 삭제, displayNameLowerCase도 삭제": uid (삭제 시)
+- "displayNameLowerCase 자동 생성/수정": uid, displayNameLowerCase (생성/수정 시)
+- "updatedAt 업데이트": uid, updatedAt (생성/수정/삭제 모두)
+- "displayName 변경 처리 완료": uid, updatesCount
 
 ---
 
@@ -464,11 +467,14 @@ export async function handleUserPhotoUrlUpdate(
    - DB 반영
 
 **로깅:**
-- "photoUrl 필드 변경 감지": uid, beforeValue, afterValue, action (생성/수정/삭제)
+- "photoUrl 변경 감지": uid, beforeValue, afterValue, action (생성/수정/삭제)
 - "photoUrl 삭제, 모든 정렬 필드도 삭제": uid (삭제 시)
 - "sort_recentWithPhoto 생성": uid, value (생성/수정 시)
 - "sort_recentFemaleWithPhoto 생성": uid, value (gender=F일 때)
 - "sort_recentMaleWithPhoto 생성": uid, value (gender=M일 때)
+- "사용자 데이터를 찾을 수 없음" (경고): uid
+- "updatedAt 업데이트": uid, updatedAt (생성/수정/삭제 모두)
+- "photoUrl 변경 처리 완료": uid, updatesCount
 
 **특징:**
 
@@ -540,9 +546,14 @@ export async function handleUserBirthYearMonthDayUpdate(
    - DB 반영
 
 **로깅:**
-- "birthYearMonthDay 필드 변경 감지": uid, beforeValue, afterValue, action (생성/수정/삭제)
+- "birthYearMonthDay 변경 감지": uid, beforeValue, afterValue, action (생성/수정/삭제)
 - "birthYearMonthDay 삭제, 모든 파생 필드도 삭제": uid (삭제 시)
-- "birthYearMonthDay 파싱 및 파생 필드 생성": uid, birthYearMonthDay, birthYear, birthMonth, birthDay, birthMonthDay (생성/수정 시)
+- "birthYearMonthDay 파싱 및 파생 필드 생성/수정": uid, birthYearMonthDay, birthYear, birthMonth, birthDay, birthMonthDay (생성/수정 시)
+- "birthYearMonthDay 형식이 올바르지 않습니다 (YYYY-MM-DD 형식 필요)" (경고): uid, birthYearMonthDay
+- "birthYearMonthDay 변경 처리 완료": uid, updatesCount
+
+**참고:**
+- 이 함수는 내부 속성 변경으로 간주되어 updatedAt을 업데이트하지 않습니다
 
 ---
 
@@ -600,12 +611,16 @@ export async function handleUserGenderUpdate(
    - DB 반영
 
 **로깅:**
-- "gender 필드 변경 감지": uid, beforeValue, afterValue, action (생성/수정/삭제)
+- "gender 변경 감지": uid, beforeValue, afterValue, action (생성/수정/삭제)
 - "gender 삭제, 성별 관련 정렬 필드도 삭제": uid (삭제 시)
 - "photoUrl 존재, gender에 따라 정렬 필드 업데이트": uid, gender, photoUrl (생성/수정 시)
 - "sort_recentFemaleWithPhoto 생성, sort_recentMaleWithPhoto 삭제": uid, value (gender=F일 때)
 - "sort_recentMaleWithPhoto 생성, sort_recentFemaleWithPhoto 삭제": uid, value (gender=M일 때)
+- "gender가 F/M이 아님, 두 정렬 필드 모두 삭제": uid, gender (gender가 F/M이 아닐 때)
 - "photoUrl 없음, 두 정렬 필드 모두 삭제": uid (photoUrl이 없을 때)
+- "사용자 데이터를 찾을 수 없음" (경고): uid
+- "updatedAt 업데이트": uid, updatedAt (생성/수정/삭제 모두)
+- "gender 변경 처리 완료": uid, updatesCount
 
 **특징:**
 
@@ -646,6 +661,25 @@ import * as admin from "firebase-admin";
 import * as logger from "firebase-functions/logger";
 import {UserData} from "../types";
 import {incrementActionCounter} from "./user-action-counters.handler";
+
+/**
+ * createdAt 필드가 없으면 자동 생성하는 헬퍼 함수
+ *
+ * @param {string} uid - 사용자 UID
+ * @returns {Promise<number | null>} createdAt 값 (생성 필요 시 새 값, 아니면 null)
+ */
+async function ensureCreatedAt(uid: string): Promise<number | null> {
+  const userRef = admin.database().ref(`users/${uid}`);
+  const snapshot = await userRef.child("createdAt").once("value");
+
+  if (!snapshot.exists()) {
+    const now = Date.now();
+    logger.info("createdAt 필드가 없어 자동 생성", {uid, createdAt: now});
+    return now;
+  }
+
+  return null; // 이미 존재하므로 생성 불필요
+}
 
 /**
  * 사용자 등록 시 user-props 노드에 주요 필드를 분리 저장하고 createdAt을 설정합니다.
@@ -1100,7 +1134,7 @@ export const onUserDisplayNameWrite = onValueWritten(
     const beforeValue = event.data.before.val() as string | null;
     const afterValue = event.data.after.val() as string | null;
 
-    logger.info("displayName 필드 변경 감지 (생성/수정/삭제)", {
+    logger.info("displayName 변경 감지", {
       uid,
       beforeValue,
       afterValue,
@@ -1126,7 +1160,7 @@ export const onUserPhotoUrlWrite = onValueWritten(
     const beforeValue = event.data.before.val() as string | null;
     const afterValue = event.data.after.val() as string | null;
 
-    logger.info("photoUrl 필드 변경 감지 (생성/수정/삭제)", {
+    logger.info("photoUrl 변경 감지", {
       uid,
       beforeValue,
       afterValue,
@@ -1152,7 +1186,7 @@ export const onUserBirthYearMonthDayWrite = onValueWritten(
     const beforeValue = event.data.before.val() as string | null;
     const afterValue = event.data.after.val() as string | null;
 
-    logger.info("birthYearMonthDay 필드 변경 감지 (생성/수정/삭제)", {
+    logger.info("birthYearMonthDay 변경 감지", {
       uid,
       beforeValue,
       afterValue,

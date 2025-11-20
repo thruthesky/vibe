@@ -201,7 +201,7 @@ sonub@0.0.1 /Users/thruthesky/apps/sonub
 
 UI 컴포넌트에서 사용할 `cn` 유틸리티 함수를 생성합니다.
 
-**파일 경로:** `src/lib/utils.ts`
+**소스 코드 위치:** [utils.ts.md](./repository/src/lib/utils.ts.md)
 
 **내용:**
 
@@ -236,7 +236,7 @@ export function cn(...inputs: ClassValue[]) {
 
 #### 4.3.1 Button 컴포넌트
 
-**파일 경로:** `src/lib/components/ui/button/button.svelte`
+**소스 코드 위치:** [button.svelte.md](./repository/src/lib/components/ui/button/button.svelte.md)
 
 **전체 코드는 실제 구현 파일을 참조하세요.**
 
@@ -246,7 +246,7 @@ export function cn(...inputs: ClassValue[]) {
 - Svelte 5 runes ($props, Snippet) 사용
 - Tailwind CSS 기반 스타일링
 
-**파일 경로:** `src/lib/components/ui/button/index.ts`
+**소스 코드 위치:** [index.ts.md](./repository/src/lib/components/ui/button/index.ts.md)
 
 **소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/influencers/+page.svelte.md)
 
@@ -277,7 +277,7 @@ export { Button };
 - Svelte 5 runes 사용
 - 반응형 디자인
 
-**파일 경로:** `src/lib/components/ui/card/index.ts`
+**소스 코드 위치:** [index.ts.md](./repository/src/lib/components/ui/card/index.ts.md)
 
 **소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/influencers/+page.svelte.md)
 
@@ -324,7 +324,7 @@ export {
 - Svelte 5 runes 사용
 - 접근성 지원 (role="alert")
 
-**파일 경로:** `src/lib/components/ui/alert/index.ts`
+**소스 코드 위치:** [index.ts.md](./repository/src/lib/components/ui/alert/index.ts.md)
 
 **소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/influencers/+page.svelte.md)
 
@@ -356,7 +356,7 @@ export {
 
 Firebase는 이미 `sonub-setup-firebase.md`에 따라 초기화되어 있어야 합니다.
 
-**파일 경로:** `src/lib/firebase.ts`
+**소스 코드 위치:** [firebase.ts.md](./repository/src/lib/firebase.ts.md)
 
 **확인 사항:**
 - ✅ Firebase 앱 초기화
@@ -365,7 +365,7 @@ Firebase는 이미 `sonub-setup-firebase.md`에 따라 초기화되어 있어야
 
 ### 5.2 인증 헬퍼 함수 작성
 
-**파일 경로:** `src/lib/utils/auth-helpers.ts`
+**소스 코드 위치:** [auth-helpers.ts.md](./repository/src/lib/utils/auth-helpers.ts.md)
 
 **목적:** 로그인 관련 유틸리티 함수 제공
 
@@ -495,13 +495,47 @@ export async function signOut(): Promise<void> {
 /**
  * Firebase 에러 코드를 사용자 친화적인 메시지로 변환
  *
+ * 참고: 실제 구현에서는 Paraglide i18n을 사용하여 다국어 지원이 필요합니다.
+ * messages/ko.json, messages/en.json 등에 에러 메시지를 추가하고,
+ * `import { m } from '$lib/paraglide/messages'`를 통해 m.authErrorPopupClosed() 형태로 사용하세요.
+ *
  * @param {string} errorCode - Firebase 에러 코드
  * @param {string} provider - 로그인 제공자 ('google' | 'apple')
- * @returns {string} 한글 에러 메시지
+ * @returns {string} i18n 처리된 에러 메시지
+ *
+ * @example
+ * // i18n 적용 예시
+ * import { m } from '$lib/paraglide/messages';
+ *
+ * export function getAuthErrorMessage(errorCode: string, provider: 'google' | 'apple'): string {
+ *   const providerName = provider === 'google' ? 'Google' : 'Apple';
+ *
+ *   switch (errorCode) {
+ *     case 'auth/popup-closed-by-user':
+ *       return m.authErrorPopupClosed();
+ *     case 'auth/popup-blocked':
+ *       return m.authErrorPopupBlocked();
+ *     case 'auth/cancelled-popup-request':
+ *       return m.authErrorCancelled();
+ *     case 'auth/account-exists-with-different-credential':
+ *       return m.authErrorDifferentAccount();
+ *     case 'auth/invalid-credential':
+ *       return m.authErrorInvalidCredential();
+ *     case 'auth/operation-not-allowed':
+ *       return m.authErrorNotAllowed({ provider: providerName });
+ *     case 'auth/user-disabled':
+ *       return m.authErrorUserDisabled();
+ *     case 'auth/network-request-failed':
+ *       return m.authErrorNetwork();
+ *     default:
+ *       return m.authErrorGeneric({ provider: providerName });
+ *   }
+ * }
  */
 export function getAuthErrorMessage(errorCode: string, provider: 'google' | 'apple'): string {
 	const providerName = provider === 'google' ? 'Google' : 'Apple';
 
+	// 참고: 아래 메시지들은 실제로는 i18n 함수로 대체되어야 합니다
 	switch (errorCode) {
 		case 'auth/popup-closed-by-user':
 			return '로그인 창이 닫혔습니다. 다시 시도해주세요.';
@@ -527,7 +561,7 @@ export function getAuthErrorMessage(errorCode: string, provider: 'google' | 'app
 
 ### 5.3 인증 상태 관리 스토어
 
-**파일 경로:** `src/lib/stores/auth.svelte.ts`
+**소스 코드 위치:** [auth.svelte.ts.md](./repository/src/lib/stores/auth.svelte.ts.md)
 
 **목적:** 전역 인증 상태 관리
 
@@ -556,13 +590,13 @@ const isAdmin = authStore.isAdmin;
 
 ### 5.4 로그인 컴포넌트 작성
 
-**파일 경로:** `src/lib/components/user-login.svelte`
+**소스 코드 위치:** [user-login.svelte.md](./repository/src/lib/components/user-login.svelte.md)
 
 **목적:** Google 및 Apple 로그인 UI 및 로직 제공
 
 **내용:**
 
-**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/influencers/+page.svelte.md)
+**소스 코드 위치**: [user-login.svelte.md](./repository/src/lib/components/user-login.svelte.md)
 
 ```svelte
 <script lang="ts">
@@ -578,9 +612,9 @@ const isAdmin = authStore.isAdmin;
 	import * as Alert from '$lib/components/ui/alert/index.js';
 	import { cn } from '$lib/utils.js';
 	import { signInWithGoogle, signInWithApple, getAuthErrorMessage } from '$lib/utils/auth-helpers';
-	import { authStore } from '$lib/stores/auth.svelte';
 	import { goto } from '$app/navigation';
 	import type { HTMLAttributes } from 'svelte/elements';
+	import { m } from '$lib/paraglide/messages';
 
 	// Props: 컴포넌트의 추가 클래스명과 기타 HTML 속성
 	let { class: className, ...restProps }: HTMLAttributes<HTMLDivElement> = $props();
@@ -663,9 +697,9 @@ const isAdmin = authStore.isAdmin;
 <div class={cn('flex flex-col gap-6', className)} {...restProps}>
 	<Card.Root>
 		<Card.Header class="text-center">
-			<Card.Title class="text-xl">환영합니다</Card.Title>
+			<Card.Title class="text-xl">{m.authWelcome()}</Card.Title>
 			<Card.Description>
-				Google 또는 Apple 계정으로 로그인하세요
+				{m.authSignInGuide()}
 			</Card.Description>
 		</Card.Header>
 		<Card.Content>
@@ -673,7 +707,7 @@ const isAdmin = authStore.isAdmin;
 				<!-- 에러 메시지 표시 -->
 				{#if errorMessage}
 					<Alert.Root variant="destructive">
-						<Alert.Title>로그인 실패</Alert.Title>
+						<Alert.Title>{m.authSignInFailed()}</Alert.Title>
 						<Alert.Description class="flex items-center justify-between">
 							<span>{errorMessage}</span>
 							<button
@@ -681,7 +715,7 @@ const isAdmin = authStore.isAdmin;
 								class="ml-2 text-sm underline hover:no-underline"
 								type="button"
 							>
-								닫기
+								{m.commonClose()}
 							</button>
 						</Alert.Description>
 					</Alert.Root>
@@ -717,7 +751,7 @@ const isAdmin = authStore.isAdmin;
 								d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
 							></path>
 						</svg>
-						로그인 중...
+						{m.authSigningIn()}
 					{:else}
 						<!-- Google 아이콘 -->
 						<svg
@@ -730,7 +764,7 @@ const isAdmin = authStore.isAdmin;
 								fill="currentColor"
 							/>
 						</svg>
-						Google로 로그인
+						{m.authSignInWithGoogle()}
 					{/if}
 				</Button>
 
@@ -764,7 +798,7 @@ const isAdmin = authStore.isAdmin;
 								d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
 							></path>
 						</svg>
-						로그인 중...
+						{m.authSigningIn()}
 					{:else}
 						<!-- Apple 아이콘 -->
 						<svg
@@ -777,7 +811,7 @@ const isAdmin = authStore.isAdmin;
 								fill="currentColor"
 							/>
 						</svg>
-						Apple로 로그인
+						{m.authSignInWithApple()}
 					{/if}
 				</Button>
 			</div>
@@ -788,7 +822,7 @@ const isAdmin = authStore.isAdmin;
 
 ### 5.5 로그인 페이지 작성
 
-**파일 경로:** `src/routes/user/login/+page.svelte`
+**소스 코드 위치:** [+page.svelte.md](./repository/src/routes/user/login/+page.svelte.md)
 
 **목적:** 로그인 페이지 렌더링 및 인증 상태 확인
 
@@ -874,7 +908,7 @@ const isAdmin = authStore.isAdmin;
 
 ### 6.1 홈페이지에서 사용자 정보 표시
 
-**파일 경로:** `src/routes/+page.svelte` (예제)
+**소스 코드 위치:** [+page.svelte.md](./repository/src/routes/+page.svelte.md) (예제)
 
 **내용:**
 
@@ -1196,7 +1230,7 @@ const isAdmin = authStore.isAdmin;
 
 Firestore에 사용자 프로필을 저장하려면 다음과 같이 구현:
 
-**파일 경로:** `src/lib/utils/auth-helpers.ts`에 추가
+**소스 코드 위치:** [auth-helpers.ts.md](./repository/src/lib/utils/auth-helpers.ts.md)에 추가
 
 **소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/influencers/+page.svelte.md)
 

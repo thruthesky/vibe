@@ -643,5 +643,7 @@
   "commentWrite": "Write Comment",
   "chatRoomLabel": "Chat Room",
   "commonTimeUnknown": "Time Unknown",
-  "commonEdit": "Edit"
+  "commonEdit": "Edit",
+  "sidebarReactions": "Reactions",
+  "profileNicknameEnglishGuide": "Please use English for your nickname to communicate with global users."
 }

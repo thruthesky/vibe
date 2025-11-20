@@ -64,8 +64,9 @@ src/
 <aside class="right-sidebar hidden lg:block">
   <Card.Root class="profile-card">…</Card.Root>
   <Card.Root class="notification-card">…</Card.Root>
+  <Card.Root class="popular-posts-card">…</Card.Root>
+  <Card.Root class="popular-users-card">…</Card.Root>
   <Card.Root class="stats-card">…</Card.Root>
-  <Card.Root class="suggestions-card">…</Card.Root>
   <Card.Root class="cta-card">…</Card.Root>
 </aside>
 ```
@@ -73,6 +74,7 @@ src/
 - 세로 위치: `sticky top-20`
 - 카드 간격: `gap-4`
 - 각 카드 내부 패딩: 기본 `px-4 py-4` (상황에 따라 조정)
+- 실시간 통계 카드는 다른 정보/추천 카드보다 아래쪽에 배치하여 사용자가 메인 정보와 CTA를 먼저 확인한 뒤 참고하도록 한다.
 
 ### 2.2 브레이크포인트
 - `hidden md:block`: 지원하지 않음 (콘텐츠 밀집도 문제)
@@ -96,11 +98,15 @@ src/
 - 항목 예: 전체 사용자, 게시글 수, 댓글 수, 오늘 생성된 방 수
 - 숫자는 `Intl.NumberFormat`으로 포맷
 
-### 3.4 추천/작업 카드
+### 3.4 인기 사용자 카드
+- 오늘 기준 상위 인플루언서(일간 랭킹 Top 5)를 보여준다.
+- 아바타, 이름, 점수를 단일 리스트로 노출하고 `/user/influencers` 링크를 통해 전체 보기 제공.
+
+### 3.5 추천/작업 카드 (옵션)
 - 다음 행동을 촉구하는 CTA (예: “새 글 쓰기”, “친구 찾기”)
 - `Button` 컴포넌트 사용, variant=`secondary` 또는 `outline`
 
-### 3.5 시스템 메시지 카드 (옵션)
+### 3.6 시스템 메시지 카드 (옵션)
 - 공지사항 또는 릴리즈 노트를 강조하는 라벨
 - `Sparkles` 아이콘과 gradient 배경 사용
 
@@ -149,4 +155,3 @@ src/
 - [ ] CTA 버튼 클릭 시 의도한 경로로 이동하는가?
 - [ ] 사이드바가 1024px 이하에서 완전히 숨겨지는가?
 - [ ] `npm run check` 실행 시 타입 오류가 없는가?
-

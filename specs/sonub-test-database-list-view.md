@@ -42,7 +42,7 @@ tags:
 
 ## 3. 관리자 페이지: `/admin/test/create-test-data`
 
-- **파일 경로**: `src/routes/admin/test/create-test-data/+page.svelte`
+- **소스 코드 위치**: [+page.svelte.md](./repository/src/routes/admin/test/create-test-data/+page.svelte.md)
 - **주요 기능**
   1. 입력한 수량(1~200개)을 기준으로 `/test/data` 하위에 테스트 레코드를 순차 생성한다.
   2. 카테고리는 `qna`, `news`, `reminder` 중에서 랜덤으로 선정된다.
@@ -61,7 +61,7 @@ tags:
 
 ## 4. 개발자 전용 리스트 뷰: `/dev/test/database-list-view`
 
-- **파일 경로**: `src/routes/dev/test/database-list-view/+page.svelte`
+- **소스 코드 위치**: [+page.svelte.md](./repository/src/routes/dev/test/database-list-view/+page.svelte.md)
 - **DatabaseListView 설정** (동적으로 변경 가능)
   - `path="test/data"`
   - `orderBy` - 내부적으로 추출: `createdAt`, `qnaCreatedAt`, `newsCreatedAt`, `reminderCreatedAt`, `order`

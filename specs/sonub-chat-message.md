@@ -91,9 +91,9 @@ tags:
 {/if}
 ```
 
-### 2.2 메시지 수정 모달 (MessageEditModal)
+### 2.2 메시지 수정 모달 (ChatMessageEditModal)
 
-**소스 코드 위치**: [repository/src/lib/components/chat/MessageEditModal.svelte.md](./repository/src/lib/components/chat/MessageEditModal.svelte.md)
+**소스 코드 위치**: [ChatMessageEditModal.svelte.md](./repository/src/lib/components/chat/ChatMessageEditModal.svelte.md)
 
 #### 2.2.1 기능
 

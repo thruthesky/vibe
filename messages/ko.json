@@ -345,7 +345,7 @@
   "homeSidebarRecentUsersSubtitle": "사진이 있는 신규 가입자",
   "homeSidebarRecentUsersLoading": "프로필을 불러오는 중입니다...",
   "homeSidebarRecentUsersEmpty": "사진이 있는 신규 가입자가 없습니다.",
-  "homeSidebarSeeMore": "더보기",
+  "homeSidebarSeeMore": "더 보기 ...",
   "homeSidebarOpenChatSubtitle": "최근 개설된 오픈 채팅방",
   "homeSidebarOpenChatLoading": "오픈 채팅을 불러오는 중입니다...",
   "homeSidebarOpenChatEmpty": "아직 오픈 채팅방이 없습니다.",
@@ -692,5 +692,7 @@
   "fileAttachmentImage": "첨부 이미지",
   "commonBack": "뒤로가기",
   "fileAttachmentZoomed": "확대 이미지",
-  "commonSaving": "저장 중..."
+  "commonSaving": "저장 중...",
+  "sidebarReactions": "반응",
+  "profileNicknameEnglishGuide": "외국인들과 소통을 위해서 닉네임은 영어로 적어주세요"
 }

@@ -1094,11 +1094,13 @@ export const onLikeCreated = onValueCreated(
     // targetType 검증:
     // - 'message', 'comment', 'post' 허용
     // - 'chat-message-{roomId}' 형식 허용 (예: 'chat-message-post')
+    // - 'comment-{postId}' 형식 허용 (예: 'comment--OeWL2LIT-keSpjunojV')
     if (
       targetType !== "message" &&
       targetType !== "comment" &&
       targetType !== "post" &&
-      !(typeof targetType === "string" && targetType.startsWith("chat-message-"))
+      !(typeof targetType === "string" && targetType.startsWith("chat-message-")) &&
+      !(typeof targetType === "string" && targetType.startsWith("comment-"))
     ) {
       logger.error("잘못된 좋아요 타입입니다.", {
         uid,
@@ -1130,11 +1132,13 @@ export const onLikeDeleted = onValueDeleted(
     // targetType 검증:
     // - 'message', 'comment', 'post' 허용
     // - 'chat-message-{roomId}' 형식 허용 (예: 'chat-message-post')
+    // - 'comment-{postId}' 형식 허용 (예: 'comment--OeWL2LIT-keSpjunojV')
     if (
       targetType !== "message" &&
       targetType !== "comment" &&
       targetType !== "post" &&
-      !(typeof targetType === "string" && targetType.startsWith("chat-message-"))
+      !(typeof targetType === "string" && targetType.startsWith("chat-message-")) &&
+      !(typeof targetType === "string" && targetType.startsWith("comment-"))
     ) {
       logger.error("잘못된 좋아요 타입입니다.", {
         uid,

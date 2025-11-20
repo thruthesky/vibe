@@ -70,7 +70,7 @@ src/lib/components/ui/alert/
 
 ### 3.1. Alert (Root) 컴포넌트
 
-**파일 경로:** `src/lib/components/ui/alert/alert.svelte`
+**소스 코드 위치:** [src/lib/components/ui/alert/alert.svelte.md](./repository/src/lib/components/ui/alert/alert.svelte.md)
 
 ```svelte
 <script lang="ts">
@@ -146,7 +146,7 @@ const variantStyles = {
 
 ### 3.2. AlertTitle 컴포넌트
 
-**파일 경로:** `src/lib/components/ui/alert/alert-title.svelte`
+**소스 코드 위치:** [src/lib/components/ui/alert/alert-title.svelte.md](./repository/src/lib/components/ui/alert/alert-title.svelte.md)
 
 ```svelte
 <script lang="ts">
@@ -181,7 +181,7 @@ const variantStyles = {
 
 ### 3.3. AlertDescription 컴포넌트
 
-**파일 경로:** `src/lib/components/ui/alert/alert-description.svelte`
+**소스 코드 위치:** [src/lib/components/ui/alert/alert-description.svelte.md](./repository/src/lib/components/ui/alert/alert-description.svelte.md)
 
 ```svelte
 <script lang="ts">
@@ -214,7 +214,7 @@ const variantStyles = {
 
 ### 3.4. Export 파일 (index.ts)
 
-**파일 경로:** `src/lib/components/ui/alert/index.ts`
+**소스 코드 위치:** [src/lib/components/ui/alert/index.ts.md](./repository/src/lib/components/ui/alert/index.ts.md)
 
 ```typescript
 /**
@@ -750,7 +750,7 @@ npm run check
 
 ### 11.2. 시각적 테스트
 
-**파일 위치:** `src/routes/test/alert/+page.svelte`
+**소스 코드 위치:** [src/routes/test/alert/+page.svelte.md](./repository/src/routes/test/alert/+page.svelte.md)
 
 ```svelte
 <script lang="ts">
@@ -850,7 +850,7 @@ npm run check
 
 **해결:**
 
-**파일 경로:** `src/lib/components/ui/alert/alert.svelte`
+**소스 코드 위치:** [src/lib/components/ui/alert/alert.svelte.md](./repository/src/lib/components/ui/alert/alert.svelte.md)
 
 **수정 전:**
 ```typescript

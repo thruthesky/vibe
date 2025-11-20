@@ -9,7 +9,7 @@
 	import NotificationCard from './sidebar/NotificationCard.svelte';
 	import StatsCard from './sidebar/StatsCard.svelte';
 	import PopularPostsCard from './sidebar/PopularPostsCard.svelte';
-	import SuggestionsCard from './sidebar/SuggestionsCard.svelte';
+	import PopularUsersCard from './sidebar/PopularUsersCard.svelte';
 </script>
 
 <aside class="hidden lg:block lg:w-64 xl:w-72">
@@ -22,11 +22,10 @@
 		<!-- 인기 게시글 카드 -->
 		<PopularPostsCard />
 
+		<!-- 인기 사용자 카드 -->
+		<PopularUsersCard />
+
 		<!-- 통계 카드 -->
 		<StatsCard />
-
-		<!-- 제안 카드 -->
-		<SuggestionsCard />
 	</div>
 </aside>
-

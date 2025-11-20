@@ -84,8 +84,10 @@
 	 * 좋아요 사용자 목록 로드
 	 */
 	$effect(() => {
-		if (message.likeCount && message.likeCount > 0) {
-			loadLikedUsers();
+		// likeCount 값만 추적하여 불필요한 재실행 방지
+		const likeCount = message.likeCount;
+		if (likeCount && likeCount > 0) {
+			void loadLikedUsers();
 		} else {
 			likedByUids = [];
 		}

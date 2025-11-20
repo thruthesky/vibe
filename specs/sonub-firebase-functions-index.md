@@ -195,15 +195,40 @@ export const onChatMessageCreate = onValueCreated(
 
 // Gen 2 API imports
 import {setGlobalOptions} from "firebase-functions/v2";
-import {onValueCreated, onValueUpdated} from "firebase-functions/v2/database";
+import {
+  onValueCreated,
+  onValueDeleted,
+  onValueUpdated,
+  onValueWritten,
+  DatabaseEvent,
+} from "firebase-functions/v2/database";
+import type {DataSnapshot} from "firebase-admin/database";
 import * as logger from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 
 // 타입 임포트
-import {UserData} from "./types";
+import {UserData, ChatMessage, LikeTargetType} from "./types";
+
+// Firebase Database Event에 인증 정보를 포함하는 확장 타입
+// Firebase Functions v2에서는 authType과 authId가 있지만 타입 정의에 누락됨
+interface DatabaseEventWithAuth<T = DataSnapshot, Params = Record<string, string>>
+  extends DatabaseEvent<T, Params> {
+  authType?: string;
+  authId?: string;
+}
 
 // 비즈니스 로직 핸들러 임포트
-import {handleUserCreate, handleUserUpdate} from "./handlers/user.handler";
+import {
+  handleUserCreate,
+  handleUserDisplayNameUpdate,
+  handleUserPhotoUrlUpdate,
+  handleUserBirthYearMonthDayUpdate,
+  handleUserGenderUpdate,
+} from "./handlers/user.handler";
+
+// 상수 정의
+const FIREBASE_REGION = "asia-southeast1";
+
 
 // Firebase Admin 초기화
 if (!admin.apps.length) {
@@ -215,21 +240,37 @@ if (!admin.apps.length) {
 // 최대 10개의 컨테이너만 동시 실행하여 예상치 못한 비용 급증 방지
 setGlobalOptions({
   maxInstances: 10,
-  region: "asia-southeast1", // RTDB region과 일치 필수
+  region: FIREBASE_REGION, // RTDB region과 일치 필수
 });
 
 /**
- * 채팅 메시지 생성 (게시글 + 댓글 역할 통합)
+ * 채팅 메시지 생성 시 트리거되는 Cloud Function
  *
- * 트리거 경로: /chat-messages/{messageId}
+ * 트리거 경로: /chat-messages/{roomId}/{messageId}
  *
- * 현재는 후속 구현을 위한 빈 함수로 남겨둔다.
+ * 수행 작업:
+ * 1. 프로토콜 메시지 건너뛰기 (시스템 메시지)
+ * 2. 필수 필드 유효성 검사 (senderUid, roomId)
+ * 3. 1:1 채팅인 경우:
+ *    - 양쪽 사용자의 chat-joins 자동 생성/업데이트
+ *    - lastMessageText, lastMessageAt, newMessageCount 업데이트
+ * 4. 그룹/오픈 채팅인 경우:
+ *    - 모든 멤버의 chat-joins 업데이트
+ *
+ * 비즈니스 로직은 handlers/chat.message-create.handler.ts의 handleChatMessageCreate() 참조
  */
 export const onChatMessageCreate = onValueCreated(
-  "/chat-messages/{messageId}",
-  async () => {
-    // TODO: 채팅 메시지 생성 시 처리 로직을 추가하세요.
-    return;
+  {
+    ref: "/chat-messages/{roomId}/{messageId}",
+    region: FIREBASE_REGION,
+  },
+  async (event) => {
+    // roomId는 2단계 구조를 위한 경로 파라미터
+    const messageId = event.params.messageId as string;
+    const messageData = (event.data.val() || {}) as ChatMessage;
+
+    // 비즈니스 로직 핸들러 호출
+    return await handleChatMessageCreate(messageId, messageData);
   }
 );
 
@@ -248,46 +289,193 @@ export const onChatMessageCreate = onValueCreated(
  *    - /user-props/ 노드 동기화
  *    - /stats/counters/user +1 (전체 사용자 통계 업데이트)
  */
-export const onUserCreate = onValueCreated("/users/{uid}", async (event) => {
-  const uid = event.params.uid as string;
-  const userData = (event.data.val() || {}) as UserData;
+export const onUserCreate = onValueCreated(
+  {
+    ref: "/users/{uid}",
+    region: FIREBASE_REGION,
+  },
+  async (event) => {
+    const uid = event.params.uid as string;
+    const userData = (event.data.val() || {}) as UserData;
 
-  logger.info("새 사용자 등록 감지", {
-    uid,
-    displayName: userData.displayName ?? null,
-  });
+    logger.info("새 사용자 등록 감지", {
+      uid,
+      displayName: userData.displayName ?? null,
+    });
 
-  // 비즈니스 로직 핸들러 호출
-  return await handleUserCreate(uid, userData);
-});
+    // 비즈니스 로직 핸들러 호출
+    return await handleUserCreate(uid, userData);
+  }
+);
 
 
 
 /**
- * 사용자 정보 수정
+ * 사용자 displayName 필드 생성/수정/삭제 시 트리거
  *
- * 트리거 경로: /users/{uid}
+ * 트리거 경로: /users/{uid}/displayName
+ * 트리거 이벤트: onValueWritten (생성, 수정, 삭제 모두 감지)
  *
  * 수행 작업:
- * 1. createdAt 필드가 없으면 자동 생성
- * 2. 주의: updatedAt 은 모든 업데이트에서 수정하는 것이 아니라, `displayName`, `photoUrl` 이 업데이트 된 경우에만, updatedAt 을 새로운 timestamp 로 업데이트 합니다.
+ * - 생성/수정 시:
+ *   1. createdAt 필드가 없으면 자동 생성
+ *   2. displayNameLowerCase 자동 생성 (대소문자 구분 없는 검색용)
+ *   3. updatedAt 업데이트
+ * - 삭제 시:
+ *   1. displayNameLowerCase 삭제 (동기화)
+ *   2. updatedAt 업데이트
+ *
+ * 무한 루프 방지:
+ * - displayName 필드만 감지하므로 displayNameLowerCase 업데이트 시 재트리거 안 됨
  */
-export const onUserUpdate = onValueUpdated("/users/{uid}", async (event) => {
-  const uid = event.params.uid as string;
+export const onUserDisplayNameWrite = onValueWritten(
+  {
+    ref: "/users/{uid}/displayName",
+    region: FIREBASE_REGION,
+  },
+  async (event) => {
+    const uid = event.params.uid as string;
+    const beforeValue = event.data.before.val() as string | null;
+    const afterValue = event.data.after.val() as string | null;
 
-  // onValueUpdated는 before와 after 데이터를 모두 제공
-  const beforeData = (event.data.before.val() || {}) as UserData;
-  const afterData = (event.data.after.val() || {}) as UserData;
+    logger.info("displayName 필드 변경 감지 (생성/수정/삭제)", {
+      uid,
+      beforeValue,
+      afterValue,
+      action: afterValue === null ? "삭제" : beforeValue === null ? "생성" : "수정",
+    });
 
-  logger.info("사용자 정보 수정 감지", {
-    uid,
-    beforeDisplayName: beforeData.displayName ?? null,
-    afterDisplayName: afterData.displayName ?? null,
-  });
+    // 비즈니스 로직 핸들러 호출
+    return await handleUserDisplayNameUpdate(uid, beforeValue, afterValue);
+  }
+);
 
-  // 비즈니스 로직 핸들러 호출 (before/after 데이터 전달)
-  return await handleUserUpdate(uid, beforeData, afterData);
-});
+/**
+ * 사용자 photoUrl 필드 생성/수정/삭제 시 트리거
+ *
+ * 트리거 경로: /users/{uid}/photoUrl
+ * 트리거 이벤트: onValueWritten (생성, 수정, 삭제 모두 감지)
+ *
+ * 수행 작업:
+ * - 생성/수정 시:
+ *   1. createdAt 필드가 없으면 자동 생성
+ *   2. updatedAt 업데이트
+ * - 삭제 시:
+ *   1. updatedAt 업데이트
+ *
+ * 무한 루프 방지:
+ * - photoUrl 필드만 감지하므로 다른 필드 업데이트 시 재트리거 안 됨
+ */
+export const onUserPhotoUrlWrite = onValueWritten(
+  {
+    ref: "/users/{uid}/photoUrl",
+    region: FIREBASE_REGION,
+  },
+  async (event) => {
+    const uid = event.params.uid as string;
+    const beforeValue = event.data.before.val() as string | null;
+    const afterValue = event.data.after.val() as string | null;
+
+    logger.info("photoUrl 필드 변경 감지 (생성/수정/삭제)", {
+      uid,
+      beforeValue,
+      afterValue,
+      action: afterValue === null ? "삭제" : beforeValue === null ? "생성" : "수정",
+    });
+
+    // 비즈니스 로직 핸들러 호출
+    return await handleUserPhotoUrlUpdate(uid, beforeValue, afterValue);
+  }
+);
+
+/**
+ * 사용자 birthYearMonthDay 필드 생성/수정/삭제 시 트리거
+ *
+ * 트리거 경로: /users/{uid}/birthYearMonthDay
+ * 트리거 이벤트: onValueWritten (생성, 수정, 삭제 모두 감지)
+ *
+ * 수행 작업:
+ * - 생성/수정 시:
+ *   1. createdAt 필드가 없으면 자동 생성
+ *   2. YYYY-MM-DD 형식 파싱 및 유효성 검증
+ *   3. 파생 필드 자동 생성:
+ *      - birthYear (number): 생년
+ *      - birthMonth (number): 생월
+ *      - birthDay (number): 생일
+ *      - birthMonthDay (string): 생월일 (MM-DD 형식)
+ * - 삭제 시:
+ *   1. 모든 파생 필드 삭제 (동기화)
+ *
+ * 무한 루프 방지:
+ * - birthYearMonthDay 필드만 감지하므로 파생 필드 업데이트 시 재트리거 안 됨
+ *
+ * 참고:
+ * - updatedAt은 업데이트하지 않음 (내부 속성 변경으로 간주)
+ */
+export const onUserBirthYearMonthDayWrite = onValueWritten(
+  {
+    ref: "/users/{uid}/birthYearMonthDay",
+    region: FIREBASE_REGION,
+  },
+  async (event) => {
+    const uid = event.params.uid as string;
+    const beforeValue = event.data.before.val() as string | null;
+    const afterValue = event.data.after.val() as string | null;
+
+    logger.info("birthYearMonthDay 필드 변경 감지 (생성/수정/삭제)", {
+      uid,
+      beforeValue,
+      afterValue,
+      action: afterValue === null ? "삭제" : beforeValue === null ? "생성" : "수정",
+    });
+
+    // 비즈니스 로직 핸들러 호출
+    return await handleUserBirthYearMonthDayUpdate(uid, beforeValue, afterValue);
+  }
+);
+
+/**
+ * 사용자 gender 필드 생성/수정/삭제 시 트리거
+ *
+ * 트리거 경로: /users/{uid}/gender
+ * 트리거 이벤트: onValueWritten (생성, 수정, 삭제 모두 감지)
+ *
+ * 수행 작업:
+ * - 생성/수정 시:
+ *   1. photoUrl 존재 여부 확인
+ *   2. photoUrl이 있는 경우:
+ *      - gender=F: sort_recentFemaleWithPhoto에 createdAt 설정, sort_recentMaleWithPhoto는 null
+ *      - gender=M: sort_recentMaleWithPhoto에 createdAt 설정, sort_recentFemaleWithPhoto는 null
+ *   3. photoUrl이 없는 경우: 두 정렬 필드 모두 null
+ *   4. updatedAt 업데이트
+ * - 삭제 시:
+ *   1. sort_recentFemaleWithPhoto와 sort_recentMaleWithPhoto 삭제
+ *   2. updatedAt 업데이트
+ *
+ * 무한 루프 방지:
+ * - gender 필드만 감지하므로 다른 필드 업데이트 시 재트리거 안 됨
+ */
+export const onUserGenderWrite = onValueWritten(
+  {
+    ref: "/users/{uid}/gender",
+    region: FIREBASE_REGION,
+  },
+  async (event) => {
+    const uid = event.params.uid as string;
+    const beforeValue = event.data.before.val() as string | null;
+    const afterValue = event.data.after.val() as string | null;
+
+    logger.info("gender 필드 변경 감지 (생성/수정/삭제)", {
+      uid,
+      beforeValue,
+      afterValue,
+      action: afterValue === null ? "삭제" : beforeValue === null ? "생성" : "수정",
+    });
+
+    // 비즈니스 로직 핸들러 호출
+    return await handleUserGenderUpdate(uid, beforeValue, afterValue);
+  }
+);
 ```
 
 ## 의존성

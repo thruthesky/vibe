@@ -140,7 +140,7 @@
 
 	/* 섹션 컨테이너 - 보더 없이 심플하게 */
 	.recent-users-section {
-		@apply rounded-xl bg-white/90 p-3 shadow-sm;
+		@apply rounded-xl bg-white p-3;
 	}
 
 	/* 헤더 영역 */
@@ -191,7 +191,7 @@
 	/* 사용자 아이템 - 콤팩트한 디자인 */
 	.user-item {
 		@apply flex items-center gap-2 rounded-lg bg-gray-50/50 px-2.5 py-1.5 transition-all duration-200;
-		@apply hover:bg-purple-50/80 hover:shadow-sm;
+		@apply hover:bg-purple-50/80;
 	}
 
 	/* 아바타 래퍼 */
@@ -201,7 +201,7 @@
 
 	/* 아바타 */
 	.user-avatar {
-		@apply h-7 w-7 rounded-full border-2 border-white object-cover shadow-sm;
+		@apply h-7 w-7 rounded-full border-2 border-white object-cover;
 		@apply transition-transform duration-200;
 	}
 

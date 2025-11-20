@@ -260,17 +260,51 @@ export async function handleChatMessageCategoryDelete(
     messageId,
   });
 
-  // categoryOrder, allCategoryOrder, type 필드 삭제
-  const updates: {[key: string]: null} = {
-    [`chat-messages/${roomId}/${messageId}/categoryOrder`]: null,
-    [`chat-messages/${roomId}/${messageId}/allCategoryOrder`]: null,
-    [`chat-messages/${roomId}/${messageId}/type`]: null,
-  };
+  try {
+    // 1. 채팅 메시지에서 postId 조회
+    const messageRef = admin.database().ref(`chat-messages/${roomId}/${messageId}/postId`);
+    const postIdSnapshot = await messageRef.once("value");
+    const postId = postIdSnapshot.val();
 
-  await admin.database().ref().update(updates);
+    logger.info("postId 조회 결과", {
+      roomId,
+      messageId,
+      postId,
+    });
 
-  logger.info("categoryOrder, allCategoryOrder, type 필드 삭제 완료", {
-    roomId,
-    messageId,
-  });
+    // 2. 채팅 메시지 필드 삭제 및 postId에 따라 posts 노드 처리
+    const updates: {[key: string]: null} = {
+      // 채팅 메시지 필드 삭제
+      [`chat-messages/${roomId}/${messageId}/categoryOrder`]: null,
+      [`chat-messages/${roomId}/${messageId}/allCategoryOrder`]: null,
+      [`chat-messages/${roomId}/${messageId}/type`]: null,
+      [`chat-messages/${roomId}/${messageId}/postId`]: null,
+      [`chat-messages/${roomId}/${messageId}/order`]: null,
+    };
+
+    // 3. postId가 있으면 /posts/{postId} 노드 전체 삭제
+    if (postId) {
+      updates[`posts/${postId}`] = null;
+      logger.info("/posts/ 노드 삭제 예정", {
+        roomId,
+        messageId,
+        postId,
+      });
+    }
+
+    await admin.database().ref().update(updates);
+
+    logger.info("카테고리 삭제 및 posts 노드 삭제 완료", {
+      roomId,
+      messageId,
+      postId,
+    });
+  } catch (error) {
+    logger.error("카테고리 삭제 처리 실패", {
+      roomId,
+      messageId,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    throw error;
+  }
 }

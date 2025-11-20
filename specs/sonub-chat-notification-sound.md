@@ -182,7 +182,7 @@ export async function handleNewMessageCountWritten(
 
 ### 4.1 Cloud Functions 구현
 
-**파일:** `firebase/functions/src/handlers/chat.new-message.handler.ts`
+**소스 코드 위치:** [chat.new-message.handler.ts.md](./repository/firebase/functions/src/handlers/chat.new-message.handler.ts.md)
 
 **주요 함수:**
 - `handleNewMessageCountWritten()`: newMessageCount 변경 시 비즈니스 로직 처리
@@ -198,7 +198,7 @@ export async function handleNewMessageCountWritten(
 
 ### 4.2 TopBar 알림 배지 구현
 
-**파일:** `src/lib/components/top-bar.svelte`
+**소스 코드 위치:** [top-bar.svelte.md](./repository/src/lib/components/top-bar.svelte.md)
 
 **주요 기능:**
 1. `/users/{uid}/newMessageCount` 실시간 구독
@@ -250,7 +250,7 @@ let newMessageCount = $derived.by(() => {
 
 ### 4.3 전역 알림음 시스템 구현
 
-**파일:** `src/routes/+layout.svelte`
+**소스 코드 위치:** [+layout.svelte.md](./repository/src/routes/+layout.svelte.md)
 
 **주요 기능:**
 1. `/users/{uid}/newMessageCount` 실시간 구독
@@ -361,7 +361,7 @@ onMount(async () => {
 
 ### 4.4 알림음 파일
 
-**파일 경로:** `/static/sound/new-message.mp3`
+**소스 코드 위치:** [new-message.mp3](./repository/static/sound/new-message.mp3)
 
 **사용 방법:**
 

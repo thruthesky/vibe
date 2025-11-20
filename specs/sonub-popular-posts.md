@@ -104,11 +104,41 @@ export const onPostTotalChildCountWritten = onValueWritten({
 **수행 작업:**
 
 1. **게시글 데이터 조회**
-   - `/posts/{postId}` 노드에서 `likeCount`, `commentCount`, `deleted` 필드 읽기
+   - `/posts/{postId}` 노드에서 `likeCount`, `commentCount`, `deleted`, `roomId` 필드 읽기
 
 2. **유효성 검증**
    - 게시글이 존재하지 않으면 종료
+   - **채팅 메시지 기반 게시글 필터링**: `roomId` 필드가 존재하면 순위 업데이트를 건너뜀 (순수한 게시글만 Popular Posts에 포함)
    - 게시글이 삭제되었으면 순위에서 제거 (`removePostFromRankings()` 호출)
+
+**채팅 메시지 필터링 로직:**
+
+**소스 코드 위치**: [post-ranking.handler.ts:59-72](./repository/firebase/functions/src/handlers/post-ranking.handler.ts)
+
+   ```typescript
+   const roomId = postData.roomId; // 채팅 메시지 기반 post 여부
+   const category = postData.category; // 카테고리 필드
+
+   // 순수 채팅 메시지 (카테고리 없음)는 인기 순위에서 제외
+   // roomId는 있지만 category가 없으면 → 순수 채팅 메시지이므로 제외
+   // roomId와 category가 둘 다 있으면 → 카테고리가 추가된 채팅 메시지이므로 포함
+   if (roomId && !category) {
+     logger.info("카테고리 없는 순수 채팅 메시지는 인기 순위에 포함하지 않습니다", {
+       postId,
+       roomId,
+       category,
+     });
+     return;
+   }
+   ```
+
+**배경:**
+- 채팅 메시지에 카테고리가 추가되면 `/posts/{postId}` 경로에도 저장됨 (dual storage)
+- 이 post에는 `roomId`, `messageId`, `category` 필드가 포함됨
+- **Popular Posts 포함 조건:**
+  - ✅ `roomId` 없음 → 순수한 게시글 (포함)
+  - ✅ `roomId` 있고 `category` 있음 → 카테고리가 추가된 채팅 메시지 (포함)
+  - ❌ `roomId` 있고 `category` 없음 → 순수 채팅 메시지 (제외)
 
 3. **점수 계산**
 
@@ -209,14 +239,14 @@ const rankingsQuery = query(rankingsRef, orderByValue(), limitToFirst(limit));
 
 **예시:**
 
-**소스 코드 위치**: [post.functions.ts.md](./repository/src/lib/functions/post.functions.ts.md)
+**소스 코드 위치**: [post.functions.ts](/Users/thruthesky/apps/sonub/src/lib/functions/post.functions.ts)
 
 ```typescript
 // 단일 필드
-const title = await getPostField('post123', 'title');
+const text = await getPostField('post123', 'text');
 
 // 여러 필드 (병렬 처리)
-const data = await getPostFields('post123', ['title', 'text', 'authorUid']);
+const data = await getPostFields('post123', ['text', 'authorUid', 'createdAt']);
 ```
 
 ### 4.2 인기 게시글 페이지
@@ -472,6 +502,55 @@ npm run deploy
 4. 상위 100개 게시글 ID 및 점수 반환
 5. 각 게시글의 세부 정보 로드
 6. 순위와 함께 UI에 표시
+
+#### 시나리오 5: 채팅 메시지 카테고리 추가 후 삭제
+
+**문제 상황 (수정 전):**
+1. 채팅 메시지에 카테고리 추가 → `/posts/{postId}` 생성 (`category`, `roomId` 필드 포함)
+2. 사용자가 카테고리 삭제 → `/chat-messages/` 필드만 삭제
+3. **문제**: `/posts/{postId}`는 삭제되지 않고 그대로 남음
+4. **결과**: `roomId`는 있지만 `category`가 없는 post가 Popular Posts에 표시됨
+
+**수정 후 (현재 동작):**
+
+**소스 코드 위치**: [chat.message-category.handler.ts:254-310](./repository/firebase/functions/src/handlers/chat.message-category.handler.ts)
+
+1. 채팅 메시지에 카테고리 추가 → `/posts/{postId}` 생성
+2. 사용자가 카테고리 삭제
+3. `handleChatMessageCategoryDelete` 함수 실행:
+   - 채팅 메시지에서 `postId` 조회
+   - 채팅 메시지 필드 삭제: `categoryOrder`, `allCategoryOrder`, `type`, `postId`, `order`
+   - **`/posts/{postId}` 노드 전체 삭제** (추가됨)
+4. **결과**: 순수 채팅 메시지로 복원, Popular Posts에서 자동 제거
+
+```typescript
+// 카테고리 삭제 핸들러 수정 사항
+export async function handleChatMessageCategoryDelete(
+  roomId: string,
+  messageId: string
+): Promise<void> {
+  // 1. 채팅 메시지에서 postId 조회
+  const messageRef = admin.database().ref(`chat-messages/${roomId}/${messageId}/postId`);
+  const postIdSnapshot = await messageRef.once("value");
+  const postId = postIdSnapshot.val();
+
+  // 2. 채팅 메시지 필드 삭제
+  const updates: {[key: string]: null} = {
+    [`chat-messages/${roomId}/${messageId}/categoryOrder`]: null,
+    [`chat-messages/${roomId}/${messageId}/allCategoryOrder`]: null,
+    [`chat-messages/${roomId}/${messageId}/type`]: null,
+    [`chat-messages/${roomId}/${messageId}/postId`]: null,
+    [`chat-messages/${roomId}/${messageId}/order`]: null,
+  };
+
+  // 3. postId가 있으면 /posts/{postId} 노드 전체 삭제 ← 추가됨!
+  if (postId) {
+    updates[`posts/${postId}`] = null;
+  }
+
+  await admin.database().ref().update(updates);
+}
+```
 
 ### 8.3 예상 결과
 

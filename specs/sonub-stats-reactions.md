@@ -28,7 +28,7 @@ tags:
   - `likes/{uid}/{messageId}`: 내가 좋아요를 누른 대상
   - `chat-message-likes/{messageId}`: 내 글/댓글에 좋아요를 남긴 사용자 목록 (향후 표시 예정)
   - `chat-comments/{messageId}`: 내 글/댓글에 달린 코멘트
-- **현재 상태**: `Card` 컴포넌트로 공사중 메시지를 노출 (Svelte 파일: `src/routes/my/reactions/+page.svelte`)
+- **현재 상태**: 헤더 히어로 카드 + 반응 유형 레전드 + 넉넉한 여백의 타임라인 카드 UI가 적용된 리스트가 실서비스 상태로 동작 (Svelte 파일: `src/routes/my/reactions/+page.svelte`). 최근 업데이트로 카드·타임스탬프 정렬을 더 컴팩트하게 조정하고 시간 표기를 좌측 정렬로 고정함.
 - **향후 구현 노트**
   1. 좋아요/댓글 이력을 시간순으로 정렬
   2. 각 항목 클릭 시 원본 게시글(`/chat-messages/{messageId}`)로 이동
@@ -78,4 +78,3 @@ tags:
 2. `/stats/{uid}/{yyyymmdd}` Cloud Functions 집계 로직 정의 및 배포
 3. `/my/stats`에 기간 선택기, 비교(전일 대비) 배지, 다운로드 버튼 추가
 4. 사이드바 Reactions/Stats 섹션에 핵심 지표(오늘 받은 좋아요 수 등) 요약 배치
-

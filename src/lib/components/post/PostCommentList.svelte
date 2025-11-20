@@ -62,6 +62,9 @@
 	let editingCommentUrls = $state<Record<number, string>>({});
 	const pendingCommentLikes = new Set<string>();
 
+	// 로컬 좋아요 상태 (현재 사용자가 좋아요한 댓글 추적)
+	let localUserLikes = $state<Record<string, boolean>>({});
+
 	// 좋아요 사용자 모달 상태
 	let likesModalOpen = $state(false);
 	let likesModalTargetId = $state<string>('');
@@ -179,7 +182,13 @@ async function handleDeleteComment(commentId: string) {
 		});
 		pendingCommentLikes.delete(commentId);
 
-		if (!result.success && result.error) {
+		if (result.success) {
+			// 로컬 상태 업데이트: liked 값으로 좋아요 상태 저장
+			localUserLikes[commentId] = result.liked || false;
+
+			// 좋아요 사용자 목록 새로고침 (아바타 스택 업데이트)
+			await loadCommentLikedUsers(commentId);
+		} else if (result.error) {
 			alert(result.error);
 		}
 	}
@@ -323,13 +332,13 @@ async function handleDeleteComment(commentId: string) {
 						<div class="comment-actions">
 							<button
 								class="comment-like-button"
-								class:liked={userLikes[comment.commentId] === 'comment'}
+								class:liked={localUserLikes[comment.commentId] || userLikes[comment.commentId] === 'comment'}
 								disabled={!authStore.user}
 								onclick={(e: MouseEvent) => handleCommentLikeToggle(e, comment.commentId)}
 							>
 								<svg
 									class="h-4 w-4"
-									fill={userLikes[comment.commentId] === 'comment' ? 'currentColor' : 'none'}
+									fill={localUserLikes[comment.commentId] || userLikes[comment.commentId] === 'comment' ? 'currentColor' : 'none'}
 									stroke="currentColor"
 									viewBox="0 0 24 24"
 									stroke-width="2"

@@ -99,7 +99,7 @@
 	}
 
 	.language-row {
-		@apply rounded-2xl bg-white/90 px-3 py-2.5 shadow-sm;
+		@apply rounded-2xl bg-white px-3 py-2.5;
 	}
 
 	.language-label {
@@ -111,7 +111,7 @@
 	}
 
 	.language-select {
-		@apply rounded-xl border border-transparent bg-white px-2.5 py-1.5 text-xs font-medium text-gray-900 shadow-sm transition duration-200;
+		@apply rounded-xl border border-transparent bg-white px-2.5 py-1.5 text-xs font-medium text-gray-900 transition duration-200;
 		@apply hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-200;
 	}
 

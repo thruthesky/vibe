@@ -95,7 +95,7 @@ tags:
 
 ### 3.1. HTML 구조
 
-**소스 코드 위치**: [post.functions.ts.md](./repository/src/lib/functions/post.functions.ts.md)
+**소스 코드 위치**: [PostItem.svelte](/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte)
 
 ```html
 <div class="post-card-wrapper">
@@ -103,21 +103,30 @@ tags:
   <div class="post-card">
     <!-- 1. 상단 메타 영역 -->
     <div class="post-header">
-      <!-- 왼쪽: 작성자 프로필 -->
-      <UserProfile uid={message.senderUid} photoSize="h-8 w-8" textSize="text-sm" />
+      <!-- 왼쪽: 작성자 프로필 + 팔로우 버튼 -->
+      <div class="post-header-left">
+        <UserProfile uid={message.authorUid} photoSize="h-8 w-8" textSize="text-sm" />
+        {#if !isMyPost}
+          <div class="ml-2">
+            <FollowButton targetUid={message.authorUid} />
+          </div>
+        {/if}
+      </div>
 
       <!-- 오른쪽: 카테고리 + 채팅방 이름 + 시간 -->
       <div class="post-header-right">
         {#if message.category}
-          <span class="post-category-badge">자유토론</span>
+          <span class="post-category-badge">{getCategoryMessage(message.category)}</span>
         {/if}
-        {#if rtdb}
+        {#if rtdb && message.roomId !== 'post'}
           {#await getChatRoomName(rtdb, message.roomId)}
-            <span class="post-room-name">...</span>
+            <button class="post-room-name" disabled>...</button>
           {:then roomName}
-            <span class="post-room-name">{roomName}</span>
+            <button class="post-room-name" onclick={(e) => { e.stopPropagation(); goto(`/chat/room?roomId=${message.roomId}`); }}>
+              {roomName}
+            </button>
           {:catch}
-            <span class="post-room-name">(채팅방)</span>
+            <button class="post-room-name" disabled>({m.chatRoomLabel()})</button>
           {/await}
         {/if}
         <span class="post-time">4분 전</span>
@@ -211,11 +220,11 @@ tags:
 
 **사용 예시:**
 
-**소스 코드 위치**: [post.functions.ts.md](./repository/src/lib/functions/post.functions.ts.md)
+**소스 코드 위치**: [PostItem.svelte](/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte)
 
 ```svelte
 <UserProfile
-  uid={message.senderUid}
+  uid={message.authorUid}
   photoSize="h-8 w-8"
   textSize="text-sm"
 />
@@ -275,11 +284,11 @@ tags:
 
 **사용 예시:**
 
-**소스 코드 위치**: [post.functions.ts.md](./repository/src/lib/functions/post.functions.ts.md)
+**소스 코드 위치**: [PostItem.svelte](/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte)
 
 ```svelte
 {#if message.urls}
-  <FileAttachments urls={message.urls} />
+  <FileAttachments urls={message.urls} maxDisplay={5} />
 {/if}
 ```
 
@@ -395,14 +404,15 @@ tags:
 
 **사용 예시:**
 
-**소스 코드 위치**: [post.functions.ts.md](./repository/src/lib/functions/post.functions.ts.md)
+**소스 코드 위치**: [PostItem.svelte](/Users/thruthesky/apps/sonub/src/lib/components/post/PostItem.svelte)
 
 ```svelte
 <PostCommentList
-  bind:this={commentListRefs[messageId]}
-  messageId={messageId}
+  bind:this={commentListRef}
+  messageId={postId}
   totalChildCount={message.totalChildCount || 0}
-  onOpenCommentDialog={handleOpenCommentDialog}
+  {onOpenCommentDialog}
+  {userLikes}
 />
 ```
 
@@ -893,33 +903,30 @@ export async function getChatRoomName(
 
 ### 7.4. 게시글 삭제 함수
 
-**소스 코드 위치**: [post.functions.ts.md](./repository/src/lib/functions/post.functions.ts.md)
+**소스 코드 위치**: [+page.svelte](/Users/thruthesky/apps/sonub/src/routes/+page.svelte)
 
 ```typescript
-async function handleDeletePost(messageId: string) {
-  if (!confirm('게시글을 삭제하시겠습니까?')) {
+async function handleDeletePost(postId: string) {
+  if (!confirm(m.postDeleteConfirm())) {
     return;
   }
 
   if (!rtdb) {
-    alert('Firebase 연결이 없습니다.');
+    alert(m.firebaseNotReady());
     return;
   }
 
   try {
-    const messageRef = ref(rtdb, `chat-messages/${messageId}`);
-    await update(messageRef, {
+    const postRef = ref(rtdb, `posts/${postId}`);
+    await update(postRef, {
       text: null,
       urls: null,
       deleted: true,
       deletedAt: Date.now()
     });
-
-    // 목록 새로고침
-    listViewRef?.refresh();
   } catch (error) {
     console.error('게시글 삭제 실패:', error);
-    alert('게시글 삭제에 실패했습니다.');
+    alert(m.postDeleteFailed());
   }
 }
 ```
@@ -1090,65 +1097,42 @@ loadedItems.sort((a, b) => {
 
 ### 11.1. 홈페이지 (최근 게시글)
 
-**소스 코드 위치:** `src/routes/+page.svelte` (참조: [post.functions.ts.md](./repository/src/lib/functions/post.functions.ts.md))
+**소스 코드 위치:** `/Users/thruthesky/apps/sonub/src/routes/+page.svelte`
 
 ```svelte
 <script lang="ts">
-  import DatabaseListView from '$lib/components/DatabaseListView.svelte';
-  import UserProfile from '$lib/components/UserProfile.svelte';
-  import FileAttachments from '$lib/components/FileAttachments.svelte';
-  import PostCommentList from '$lib/components/post/PostCommentList.svelte';
-  import { getChatRoomName } from '$lib/functions/chat.functions';
-  import { rtdb } from '$lib/firebase';
+  import PostCreateDialog from '$lib/components/post/PostCreateDialog.svelte';
+  import PostEditDialog from '$lib/components/post/PostEditDialog.svelte';
+  import CommentCreateDialog from '$lib/components/comment/CommentCreateDialog.svelte';
+  import FeedList from '$lib/components/friend/feed-list.svelte';
+  import PostListView from '$lib/components/post/PostListView.svelte';
+  import { toggleLikeTarget, type LikeTargetType } from '$lib/functions/like.functions';
 
-  // 카테고리 선택 상태
-  let selectedCategory = $state<ForumCategory | null>(null);
+  // 글쓰기 모달 상태
+  let isCreateDialogOpen = $state(false);
 
-  // 정렬 기준 필드
-  const orderByField = $derived(
-    selectedCategory ? 'categoryOrder' : 'allCategoryOrder'
-  );
-  const orderPrefixValue = $derived(
-    selectedCategory ? `${selectedCategory}-` : ''
-  );
+  // 좋아요 상태
+  type UserLikesMap = Record<string, LikeTargetType>;
+  let userLikes = $state<UserLikesMap>({});
 </script>
 
 <div class="post-list-container">
-  <!-- 헤더 -->
-  <div class="post-list-header">
-    <h1 class="post-list-title">최근 게시글</h1>
-    <Button onclick={() => (isCreateDialogOpen = true)}>글쓰기</Button>
+  <!-- 글쓰기 유도 폼 -->
+  <div class="compose-wrapper">
+    <div class="compose-prompt" onclick={() => (isCreateDialogOpen = true)}>
+      <!-- 아바타 + 가짜 입력창 + 카메라 아이콘 -->
+    </div>
   </div>
 
-  <!-- 카테고리 탭 -->
-  <div class="category-tabs">
-    <button
-      class="category-chip"
-      class:active={selectedCategory === null}
-      onclick={() => (selectedCategory = null)}
-    >
-      전체
-    </button>
-    {#each FORUM_CATEGORIES as category}
-      <button
-        class="category-chip"
-        class:active={selectedCategory === category}
-        onclick={() => (selectedCategory = category)}
-      >
-        {getCategoryMessage(category)}
-      </button>
-    {/each}
-  </div>
-
-  <!-- 게시글 목록 -->
+  <!-- 피드 또는 글 목록 표시 -->
   <div class="post-list-content">
-    <DatabaseListView
-      path="chat-messages"
+    <FeedList
       pageSize={20}
-      orderBy={orderByField}
-      orderPrefix={orderPrefixValue}
-      reverse={true}
-      threshold={300}
+      {userLikes}
+      onToggleLike={handleToggleLike}
+      onOpenCommentDialog={handleOpenCommentDialog}
+      onEdit={handleEdit}
+      onDelete={handleDeletePost}
     >
       {#snippet item(itemData, index)}
         {@const message = itemData.data}

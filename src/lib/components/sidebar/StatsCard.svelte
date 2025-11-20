@@ -108,7 +108,7 @@
 
 	/* 섹션 컨테이너 - 보더 없이 심플하게 */
 	.stats-section {
-		@apply rounded-xl bg-white/90 p-4 shadow-sm;
+		@apply rounded-xl bg-white p-4;
 	}
 
 	/* 헤더 영역 */
@@ -155,7 +155,7 @@
 	/* 통계 아이템 */
 	.stat-item {
 		@apply flex flex-col gap-1 rounded-lg bg-gradient-to-br from-emerald-50/50 to-white p-2.5 transition-all duration-200;
-		@apply hover:from-emerald-50 hover:shadow-sm;
+		@apply hover:from-emerald-50;
 	}
 
 	.stat-label {

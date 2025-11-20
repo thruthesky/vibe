@@ -155,7 +155,7 @@ src/lib/components/ui/button/
 
 ### 3.1. Button 컴포넌트 (button.svelte)
 
-**파일 경로:** `src/lib/components/ui/button/button.svelte`
+**소스 코드 위치:** [src/lib/components/ui/button/button.svelte.md](./repository/src/lib/components/ui/button/button.svelte.md)
 
 **전체 코드:**
 
@@ -275,7 +275,7 @@ src/lib/components/ui/button/
 
 ### 3.2. Export 파일 (index.ts)
 
-**파일 경로:** `src/lib/components/ui/button/index.ts`
+**소스 코드 위치:** [src/lib/components/ui/button/index.ts.md](./repository/src/lib/components/ui/button/index.ts.md)
 
 **소스 코드 위치**: [Button.stories.svelte.md](./repository/src/stories/Button.stories.svelte.md)
 
@@ -661,7 +661,7 @@ npm run check
 
 테스트 페이지를 생성하여 모든 variant와 size를 확인합니다.
 
-**파일 위치:** `src/routes/test/button/+page.svelte`
+**소스 코드 위치:** [src/routes/test/button/+page.svelte.md](./repository/src/routes/test/button/+page.svelte.md)
 
 **소스 코드 위치**: [Button.stories.svelte.md](./repository/src/stories/Button.stories.svelte.md)
 

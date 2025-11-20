@@ -115,11 +115,9 @@ tags: chat, file-upload, firebase-storage, attachment, svelte5, realtime, instan
 
 ### 3.1 Phase 1: 타입 정의
 
-**파일:** `src/lib/types/chat.types.ts` (신규 생성)
+**소스 코드 위치:** [chat.types.ts.md](./repository/src/lib/types/chat.types.ts.md)
 
 **구현:**
-
-**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
 
 ```typescript
 export interface ChatMessage {
@@ -151,13 +149,11 @@ export interface FileUploadStatus {
 
 ### 3.2 Phase 2: Storage 함수
 
-**파일:** `src/lib/functions/storage.functions.ts` (신규 생성)
+**소스 코드 위치:** [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
 
 **주요 함수:**
 
 #### 3.2.1 uploadChatFile()
-
-**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
 
 ```typescript
 export async function uploadChatFile(
@@ -181,8 +177,6 @@ export async function uploadChatFile(
 5. URL 문자열 반환
 
 #### 3.2.2 uploadMultipleChatFiles()
-
-**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
 
 ```typescript
 export async function uploadMultipleChatFiles(
@@ -208,8 +202,6 @@ export async function uploadMultipleChatFiles(
 
 **파일명 추출:**
 
-**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
-
 ```typescript
 export function getFilenameFromUrl(url: string): string {
   // URL에서 파일명 추출 후 timestamp 제거
@@ -218,8 +210,6 @@ export function getFilenameFromUrl(url: string): string {
 ```
 
 **파일 타입 감지:**
-
-**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
 
 ```typescript
 export function isImageUrl(url: string): boolean {
@@ -237,8 +227,6 @@ export function getFileExtension(url: string): string {
 
 **파일 크기 포맷:**
 
-**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
-
 ```typescript
 export function formatFileSize(bytes: number): string {
   // 1536000 → "1.5 MB"
@@ -246,8 +234,6 @@ export function formatFileSize(bytes: number): string {
 ```
 
 #### 3.2.4 deleteChatFile() - 파일 삭제 (v1.1.0 추가)
-
-**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
 
 ```typescript
 export async function deleteChatFile(url: string): Promise<void>
@@ -264,8 +250,6 @@ export async function deleteChatFile(url: string): Promise<void>
 
 **헬퍼 함수:**
 
-**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
-
 ```typescript
 export function getFilePathFromUrl(url: string): string {
   // "https://firebasestorage.googleapis.com/.../o/users%2Fuid%2Fchat-files%2Froomid%2F123-photo.jpg?token=..."
@@ -275,8 +259,6 @@ export function getFilePathFromUrl(url: string): string {
 
 **사용 예시:**
 
-**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
-
 ```typescript
 await deleteChatFile("https://firebasestorage.googleapis.com/.../photo.jpg");
 console.log('파일 삭제 완료');
@@ -284,11 +266,9 @@ console.log('파일 삭제 완료');
 
 ### 3.3 Phase 3-6: UI 구현
 
-**파일:** `src/routes/chat/room/+page.svelte` (수정)
+**소스 코드 위치:** [+page.svelte.md](./repository/src/routes/chat/room/+page.svelte.md)
 
 #### 3.3.1 상태 변수 추가
-
-**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
 
 ```typescript
 // 파일 업로드 상태
@@ -304,8 +284,6 @@ const MAX_VIDEO_SIZE = 24 * 1024 * 1024; // 동영상 파일 (.mp4): 24MB (v1.1.
 
 **handleFileButtonClick():**
 
-**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
-
 ```typescript
 function handleFileButtonClick() {
   fileInputRef?.click();  // 숨겨진 input 트리거
@@ -313,8 +291,6 @@ function handleFileButtonClick() {
 ```
 
 **handleFileSelect() - v1.1.0 업데이트:**
-
-**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
 
 ```typescript
 async function handleFileSelect(event: Event) {
@@ -396,8 +372,6 @@ async function handleFileSelect(event: Event) {
 
 **handleRemoveFile() - v1.1.0 업데이트:**
 
-**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
-
 ```typescript
 async function handleRemoveFile(index: number) {
   const fileStatus = uploadingFiles[index];
@@ -425,8 +399,6 @@ async function handleRemoveFile(index: number) {
 
 **onDestroy() 정리 - v1.1.0 업데이트:**
 
-**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
-
 ```typescript
 onDestroy(() => {
   // ❌ Blob URL을 사용하지 않으므로 정리 작업 불필요
@@ -441,8 +413,6 @@ onDestroy(() => {
 #### 3.3.3 메시지 전송 로직 수정
 
 **handleSendMessage() 수정 - v1.1.0 업데이트:**
-
-**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
 
 ```typescript
 async function handleSendMessage(event: SubmitEvent) {
@@ -518,8 +488,6 @@ async function handleSendMessage(event: SubmitEvent) {
 
 **HTML 구조:**
 
-**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
-
 ```svelte
 {#if uploadingFiles.length > 0}
   <div class="file-preview-container">
@@ -585,8 +553,6 @@ async function handleSendMessage(event: SubmitEvent) {
 
 **CSS 스타일 - v1.1.0 업데이트:**
 
-**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
-
 ```css
 .file-preview-grid {
   @apply grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-4;
@@ -635,8 +601,6 @@ async function handleSendMessage(event: SubmitEvent) {
 
 **카메라 버튼 추가:**
 
-**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
-
 ```svelte
 <form class="composer-form" onsubmit={handleSendMessage}>
   <!-- 파일 업로드 버튼 (카메라 아이콘) -->
@@ -669,8 +633,6 @@ async function handleSendMessage(event: SubmitEvent) {
 #### 3.3.6 메시지 버블 내 첨부파일 표시
 
 **HTML 구조:**
-
-**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
 
 ```svelte
 <div class="message-bubble">
@@ -706,16 +668,12 @@ async function handleSendMessage(event: SubmitEvent) {
 
 **타입 단언 필요:**
 
-**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
-
 ```typescript
 Object.entries(message.urls as Record<string, string>)
 ```
 → TypeScript는 `message.urls`를 `Record<number, string>`으로 인식하지만, `Object.entries()`는 `unknown` 타입 반환. 명시적 타입 단언으로 해결.
 
 **CSS 스타일:**
-
-**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
 
 ```css
 .message-attachments {
@@ -738,9 +696,7 @@ Object.entries(message.urls as Record<string, string>)
 
 ### 3.4 Phase 7: Firebase Storage Security Rules
 
-**파일:** `firebase/storage.rules` (신규 생성)
-
-**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
+**소스 코드 위치:** [storage.rules.md](./repository/firebase/storage.rules.md)
 
 ```
 rules_version = '2';
@@ -775,7 +731,7 @@ service firebase.storage {
 
 **firebase.json 수정:**
 
-**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
+**소스 코드 위치:** [firebase.json.md](./repository/firebase/firebase.json.md)
 
 ```json
 {
@@ -786,8 +742,6 @@ service firebase.storage {
 ```
 
 **배포 명령:**
-
-**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
 
 ```bash
 cd firebase
@@ -820,8 +774,6 @@ firebase deploy --only storage
 
 **문제:**
 
-**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
-
 ```typescript
 // Error: Type 'unknown' is not assignable to type 'string'
 Object.entries(message.urls) as [index, url]
@@ -833,8 +785,6 @@ Object.entries(message.urls) as [index, url]
 - TypeScript가 value 타입을 `unknown`으로 추론
 
 **해결:**
-
-**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
 
 ```typescript
 Object.entries(message.urls as Record<string, string>) as [index, url]
@@ -851,8 +801,6 @@ Object.entries(message.urls as Record<string, string>) as [index, url]
 1. **파일 삭제 시:** `handleRemoveFile()`에서 `URL.revokeObjectURL()` 호출
 2. **메시지 전송 후:** 성공 시 모든 미리보기 URL 해제
 3. **컴포넌트 정리:** `onDestroy()`에서 모든 URL 해제
-
-**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
 
 ```typescript
 onDestroy(() => {
@@ -871,8 +819,6 @@ onDestroy(() => {
 - Svelte 5 runes의 반응성 트리거 필요
 
 **해결:**
-
-**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
 
 ```typescript
 urls = await uploadMultipleChatFiles(

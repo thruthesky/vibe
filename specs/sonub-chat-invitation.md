@@ -395,11 +395,11 @@ const message = t("ko", "chatInvitation.message", {
 - `chatSearchUserToInvite`: "초대할 친구를 검색하세요"
 - `chatInvitationSent`: "초대를 보냈습니다"
 
-**파일 위치:**
-- `/Users/thruthesky/apps/sonub/messages/ko.json`
-- `/Users/thruthesky/apps/sonub/messages/en.json`
-- `/Users/thruthesky/apps/sonub/messages/ja.json`
-- `/Users/thruthesky/apps/sonub/messages/zh.json`
+**소스 코드 위치:**
+- [ko.json.md](./repository/messages/ko.json.md)
+- [en.json.md](./repository/messages/en.json.md)
+- [ja.json.md](./repository/messages/ja.json.md)
+- [zh.json.md](./repository/messages/zh.json.md)
 
 ## 언어 코드 자동 저장
 

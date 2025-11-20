@@ -50,11 +50,12 @@ tags:
 ```
 /Users/thruthesky/apps/sonub/
 ├── shared/
-│   └── chat.pure-functions.ts           # 순수 함수 (이 문서)
-│       ├── buildSingleRoomId()          # roomId 생성
-│       ├── isSingleChat()               # 1:1 채팅 여부 확인
-│       ├── extractUidsFromSingleRoomId()# UID 추출
-│       └── resolveRoomTypeLabel()       # 타입 레이블 변환
+│   └── chat.pure-functions.ts                # 순수 함수 (이 문서)
+│       ├── buildSingleRoomId()               # roomId 생성
+│       ├── isSingleChat()                    # 1:1 채팅 여부 확인
+│       ├── extractUidsFromSingleRoomId()     # UID 추출
+│       ├── getPartnerUidFromSingleRoomId()   # 상대방 UID 추출
+│       └── resolveRoomTypeLabel()            # 타입 레이블 변환
 │
 ├── src/lib/functions/
 │   └── chat.functions.ts                # Svelte 클라이언트 함수
@@ -235,7 +236,7 @@ if (isSingleChat(roomId)) {
 
 ### 3.3. `extractUidsFromSingleRoomId()`
 
-1:1 채팅방 roomId에서 두 사용자의 UID를 추출합니다.
+1:1 채팅방 roomId에서 두 사용자의 UID를 튜플로 추출합니다.
 
 **시그니처**:
 
@@ -320,7 +321,93 @@ if (uids) {
 }
 ```
 
-### 3.4. `resolveRoomTypeLabel()`
+### 3.4. `getPartnerUidFromSingleRoomId()`
+
+1:1 채팅방 roomId와 현재 사용자 UID를 받아서 상대방 UID를 추출합니다. `extractUidsFromSingleRoomId()`의 편의 함수입니다.
+
+**시그니처**:
+
+**소스 코드 위치**: [chat.pure-functions.ts.md](./repository/shared/chat.pure-functions.ts.md)
+
+```typescript
+function getPartnerUidFromSingleRoomId(roomId: string, myUid: string): string | null
+```
+
+**파라미터**:
+- `roomId`: 1:1 채팅방 ID (형식: `"single-uid1-uid2"`)
+- `myUid`: 현재 사용자 UID
+
+**반환값**:
+- `string`: 상대방 UID
+- `null`: 형식이 올바르지 않거나 상대방을 찾을 수 없는 경우
+
+**비즈니스 로직**:
+1. `extractUidsFromSingleRoomId()`를 호출하여 두 UID 추출
+2. 추출된 UID가 없으면 `null` 반환
+3. 두 UID 중에서 `myUid`가 아닌 것을 찾아 반환
+4. 찾지 못하면 `null` 반환
+
+**Pure Function 보장**:
+- ✅ 동일 입력 → 동일 출력
+- ✅ 외부 상태 읽기/쓰기 없음
+- ✅ 부수 효과(side effect) 없음
+
+**예시**:
+
+**소스 코드 위치**: [chat.pure-functions.ts.md](./repository/shared/chat.pure-functions.ts.md)
+
+```typescript
+// 올바른 형식 - alice 입장
+getPartnerUidFromSingleRoomId('single-alice-bob', 'alice')
+// → 'bob'
+
+// 올바른 형식 - bob 입장
+getPartnerUidFromSingleRoomId('single-alice-bob', 'bob')
+// → 'alice'
+
+// 올바른 형식 (숫자 포함)
+getPartnerUidFromSingleRoomId('single-user123-user456', 'user123')
+// → 'user456'
+
+// 잘못된 형식: roomId가 유효하지 않음
+getPartnerUidFromSingleRoomId('alice-bob', 'alice')
+// → null
+
+// 잘못된 형식: 그룹 채팅방
+getPartnerUidFromSingleRoomId('group-abc123', 'alice')
+// → null
+```
+
+**사용 사례**:
+
+**소스 코드 위치**: [chat.pure-functions.ts.md](./repository/shared/chat.pure-functions.ts.md)
+
+```typescript
+// Svelte 컴포넌트: 상대방 UID 가져오기 (간결한 방법)
+import { getPartnerUidFromSingleRoomId } from '$lib/functions/chat.functions';
+import { authStore } from '$lib/stores/auth.svelte';
+import { userProfileStore } from '$lib/stores/user-profile.svelte';
+
+// partnerUid 추출 (1:1 채팅의 경우)
+const partnerUid = $derived.by(() => {
+  if (!isSingle) return '';
+  return getPartnerUidFromSingleRoomId(roomId, authStore.user?.uid || '') || '';
+});
+
+// $effect를 사용하여 profile 실시간 구독
+$effect(() => {
+  if (isSingle && partnerUid) {
+    userProfileStore.ensureSubscribed(partnerUid);
+  }
+});
+
+// profile 데이터 가져오기 (캐시된 데이터)
+const profile = $derived(
+  isSingle && partnerUid ? userProfileStore.getCachedProfile(partnerUid) : null
+);
+```
+
+### 3.5. `resolveRoomTypeLabel()`
 
 채팅방 유형 문자열을 UI 표시용 짧은 배지 텍스트로 변환합니다.
 
@@ -416,6 +503,7 @@ export {
   buildSingleRoomId,
   isSingleChat,
   extractUidsFromSingleRoomId,
+  getPartnerUidFromSingleRoomId,
   resolveRoomTypeLabel
 } from '$shared/chat.pure-functions';
 
@@ -436,27 +524,34 @@ export async function joinChatRoom(db: Database, roomId: string, uid: string) {
     buildSingleRoomId,
     isSingleChat,
     extractUidsFromSingleRoomId,
+    getPartnerUidFromSingleRoomId,
     resolveRoomTypeLabel
   } from '$lib/functions/chat.functions';
+  import { authStore } from '$lib/stores/auth.svelte';
 
   // 1:1 채팅방 생성
   async function startDirectChat(otherUserUid: string) {
-    const roomId = buildSingleRoomId(currentUser.uid, otherUserUid);
+    const roomId = buildSingleRoomId(authStore.user.uid, otherUserUid);
     await createRoom(roomId);
     goto(`/chat/room?id=${roomId}`);
   }
 
   // 채팅방 타입 확인
-  $: isDirectChat = isSingleChat(roomId);
+  const isDirectChat = $derived(isSingleChat(roomId));
 
-  // UID 추출
-  $: otherUserUid = (() => {
+  // UID 추출 (방법 1: extractUidsFromSingleRoomId 사용)
+  const otherUserUid1 = $derived.by(() => {
     if (!isDirectChat) return null;
     const uids = extractUidsFromSingleRoomId(roomId);
     if (!uids) return null;
     const [uid1, uid2] = uids;
-    return uid1 === currentUser.uid ? uid2 : uid1;
-  })();
+    return uid1 === authStore.user.uid ? uid2 : uid1;
+  });
+
+  // UID 추출 (방법 2: getPartnerUidFromSingleRoomId 사용 - 간결)
+  const otherUserUid2 = $derived(
+    isDirectChat ? getPartnerUidFromSingleRoomId(roomId, authStore.user.uid) : null
+  );
 </script>
 ```
 

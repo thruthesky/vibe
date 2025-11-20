@@ -56,6 +56,20 @@ export async function handlePostRankingUpdate(
     const likeCount = postData.likeCount || 0;
     const commentCount = postData.commentCount || postData.totalChildCount || 0;
     const deleted = postData.deleted || false;
+    const roomId = postData.roomId; // 채팅 메시지 기반 post 여부
+    const category = postData.category; // 카테고리 필드
+
+    // 순수 채팅 메시지 (카테고리 없음)는 인기 순위에서 제외
+    // roomId는 있지만 category가 없으면 → 순수 채팅 메시지이므로 제외
+    // roomId와 category가 둘 다 있으면 → 카테고리가 추가된 채팅 메시지이므로 포함
+    if (roomId && !category) {
+      logger.info("카테고리 없는 순수 채팅 메시지는 인기 순위에 포함하지 않습니다", {
+        postId,
+        roomId,
+        category,
+      });
+      return;
+    }
 
     // 삭제된 게시글은 순위에서 제외
     if (deleted) {

@@ -455,5 +455,7 @@
   "commentWrite": "コメント作成",
   "chatRoomLabel": "チャットルーム",
   "commonTimeUnknown": "時間情報なし",
-  "commonEdit": "編集"
+  "commonEdit": "編集",
+  "sidebarReactions": "リアクション",
+  "profileNicknameEnglishGuide": "外国人とのコミュニケーションのために、ニックネームは英語で入力してください。"
 }

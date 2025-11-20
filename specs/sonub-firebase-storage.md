@@ -35,7 +35,7 @@ tags:
 	import { browser } from '$app/environment';
 	import { storage, auth } from '$lib/firebase';
 	import {
-		ref as sRef,
+		ref,
 		uploadBytesResumable,
 		getDownloadURL,
 		deleteObject,
@@ -52,17 +52,23 @@ tags:
 
 	/**
 	 * 파일 업로드
+	 *
+	 * 실제 프로젝트에서는 src/lib/functions/storage.functions.ts의
+	 * uploadChatFile() 함수를 사용하는 것을 권장합니다.
+	 *
+	 * 경로 형식: users/{uid}/chat-files/{roomId}/{timestamp}-{filename}
 	 */
 	function upload(): void {
-		if (!file || !auth.currentUser) {
+		if (!file || !auth || !auth.currentUser) {
 			alert('파일을 선택하고 로그인하세요.');
 			return;
 		}
 
 		const userId = auth.currentUser.uid;
 		const timestamp = Date.now();
-		const path = `uploads/${userId}/${timestamp}_${file.name}`;
-		const storageRef = sRef(storage, path);
+		// 실제 프로젝트 경로 형식 사용 (하이픈 구분자)
+		const path = `users/${userId}/uploads/${timestamp}-${file.name}`;
+		const storageRef = ref(storage, path);
 
 		uploadTask = uploadBytesResumable(storageRef, file, {
 			contentType: file.type
@@ -77,7 +83,7 @@ tags:
 			},
 			// 에러 처리
 			(error) => {
-				console.error('업로드 실패:', error);
+				console.error('❌ 업로드 실패:', error);
 				alert(`업로드 실패: ${error.message}`);
 				progress = 0;
 			},
@@ -85,12 +91,12 @@ tags:
 			async () => {
 				try {
 					lastURL = await getDownloadURL(uploadTask!.snapshot.ref);
-					console.log('업로드 완료:', lastURL);
+					console.log('✅ 업로드 완료:', lastURL);
 					await refreshList();
 					progress = 0;
 					file = null;
 				} catch (error: any) {
-					console.error('다운로드 URL 가져오기 실패:', error);
+					console.error('❌ 다운로드 URL 가져오기 실패:', error);
 					alert(`다운로드 URL 가져오기 실패: ${error.message}`);
 				}
 			}
@@ -110,12 +116,14 @@ tags:
 
 	/**
 	 * 파일 목록 새로고침
+	 *
+	 * 실제 프로젝트에서는 사용자 인증 상태를 더 엄격하게 체크합니다.
 	 */
 	async function refreshList(): Promise<void> {
-		if (!auth.currentUser) return;
+		if (!auth || !auth.currentUser) return;
 
 		const userId = auth.currentUser.uid;
-		const dirRef = sRef(storage, `uploads/${userId}`);
+		const dirRef = ref(storage, `users/${userId}/uploads`);
 
 		try {
 			const result = await listAll(dirRef);
@@ -139,23 +147,26 @@ tags:
 			// 최신 업로드 순 정렬
 			files.sort((a, b) => b.uploadedAt - a.uploadedAt);
 		} catch (error: any) {
-			console.error('목록 가져오기 실패:', error);
+			console.error('❌ 목록 가져오기 실패:', error);
 			alert(`목록 가져오기 실패: ${error.message}`);
 		}
 	}
 
 	/**
 	 * 파일 삭제
+	 *
+	 * 실제 프로젝트에서는 src/lib/functions/storage.functions.ts의
+	 * deleteChatFile() 함수를 사용하는 것을 권장합니다.
 	 */
 	async function remove(fullPath: string): Promise<void> {
 		if (!confirm('정말로 삭제하시겠습니까?')) return;
 
 		try {
-			await deleteObject(sRef(storage, fullPath));
-			console.log('삭제 완료:', fullPath);
+			await deleteObject(ref(storage, fullPath));
+			console.log('✅ 삭제 완료:', fullPath);
 			await refreshList();
 		} catch (error: any) {
-			console.error('삭제 실패:', error);
+			console.error('❌ 삭제 실패:', error);
 			alert(`삭제 실패: ${error.message}`);
 		}
 	}
@@ -397,6 +408,40 @@ tags:
 - 업로드 완료 후 `getDownloadURL`을 호출하여 최근 업로드 URL을 화면에 출력합니다.
 - `listAll`과 `getMetadata`를 조합해 파일 목록을 최신 업로드 순으로 정렬합니다.
 - 삭제 버튼은 `confirm()`으로 재확인을 거친 뒤 `deleteObject`를 호출합니다.
+
+**⚠️ 중요: 실제 프로젝트 구현**
+
+Sonub 프로젝트에서는 위의 예제 대신 **재사용 가능한 함수**를 사용합니다:
+
+- **파일 업로드**: `uploadChatFile()` - `src/lib/functions/storage.functions.ts`
+- **파일 삭제**: `deleteChatFile()` - `src/lib/functions/storage.functions.ts`
+- **파일 URL 분석**: `getFilenameFromUrl()`, `isImageUrl()`, `isVideoUrl()`
+
+**실제 구현 예시**:
+
+**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
+
+```typescript
+import { uploadChatFile, deleteChatFile } from '$lib/functions/storage.functions';
+import { authStore } from '$lib/stores/auth.svelte';
+
+// 파일 업로드
+const url = await uploadChatFile(
+	file,
+	authStore.user!.uid,
+	'room123',
+	(progress) => console.log(`${progress}%`)
+);
+
+// 파일 삭제
+await deleteChatFile(url);
+```
+
+**주요 차이점**:
+1. ✅ **경로 표준화**: `users/{uid}/chat-files/{roomId}/{timestamp}-{filename}`
+2. ✅ **Promise 기반**: async/await로 깔끔한 에러 처리
+3. ✅ **재사용성**: 모든 컴포넌트에서 동일한 로직 사용
+4. ✅ **타입 안전성**: TypeScript 타입 정의 완비
 
 ## 4. 검증 절차
 

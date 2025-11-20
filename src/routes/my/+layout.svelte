@@ -19,17 +19,16 @@
 
 <div class="user-layout">
 	<div class="user-container">
-		<!-- 상단 탭바 네비게이션 -->
-		<nav class="tab-nav">
+		<!-- 상단 탭바 네비게이션 (삭제됨) -->
+		<!-- <nav class="tab-nav">
 			<ul class="tab-list">
 				<li>
 					<a href="/my/reports" class="tab-link" class:active={$page.url.pathname === '/my/reports'}>
 						내 신고 목록
 					</a>
 				</li>
-				<!-- 향후 추가 사용자 메뉴 -->
 			</ul>
-		</nav>
+		</nav> -->
 
 		<!-- 사용자 메인 컨텐츠 -->
 		<main class="user-main">

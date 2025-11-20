@@ -111,10 +111,15 @@
 <div class="popular-posts-section">
 	<!-- 헤더 -->
 	<div class="section-header">
-		<div class="header-left flex items-center gap-2">
+		<button
+			type="button"
+			onclick={goToPopularPosts}
+			class="header-left flex items-center gap-2 hover:text-blue-600 transition-colors cursor-pointer"
+			aria-label={m.sidebarPopularPosts()}
+		>
 			<TrendingUp class="section-icon" aria-hidden="true" />
 			<h3 class="section-title">{m.sidebarPopularPosts()}</h3>
-		</div>
+		</button>
 		<button
 			type="button"
 			onclick={goToPopularPosts}
@@ -179,7 +184,7 @@
 
 	/* 섹션 컨테이너 */
 	.popular-posts-section {
-		@apply rounded-xl bg-white/90 p-4 shadow-sm;
+		@apply rounded-xl bg-white p-4;
 	}
 
 	/* 헤더 영역 */
@@ -233,7 +238,7 @@
 	.post-item {
 		@apply flex items-start gap-2 rounded-lg p-2.5 transition-all duration-200;
 		@apply bg-gradient-to-br from-blue-50/30 to-white;
-		@apply hover:from-blue-50 hover:shadow-sm;
+		@apply hover:from-blue-50;
 		@apply cursor-pointer text-left w-full;
 	}
 

@@ -344,7 +344,7 @@ interface Props {
 
 **경로:** `/chat/group-chat-list`
 
-**페이지 파일:** `/src/routes/chat/group-chat-list/+page.svelte`
+**소스 코드 위치:** [group-chat-list/+page.svelte.md](./repository/src/routes/chat/group-chat-list/+page.svelte.md)
 
 **데이터 소스:**
 - `/chat-joins/{myUid}` 경로에서 조회
@@ -370,7 +370,7 @@ interface Props {
 
 **경로:** `/chat/open-chat-list`
 
-**페이지 파일:** `/src/routes/chat/open-chat-list/+page.svelte`
+**소스 코드 위치:** [open-chat-list/+page.svelte.md](./repository/src/routes/chat/open-chat-list/+page.svelte.md)
 
 **데이터 소스:**
 - `/chat-rooms/` 경로에서 직접 조회 (사용자별 경로 아님)
@@ -475,14 +475,14 @@ console.log(isPinned ? '핀 설정됨' : '핀 해제됨');
   - `onValueDeleted` 이벤트 사용
   - newMessageCount에 따라 "200" prefix 추가 또는 prefix 제거
 
-**관련 파일:**
-- Cloud Functions: `/firebase/functions/src/handlers/chat.handler.ts` - `handleChatRoomPinCreate`, `handleChatRoomPinDelete` 함수
-- Cloud Functions 트리거: `/firebase/functions/src/index.ts` - `onChatRoomPinCreate`, `onChatRoomPinDelete` 트리거
-- 클라이언트 함수: `/src/lib/functions/chat.functions.ts` - `togglePinChatRoom` 함수
+**소스 코드 위치:**
+- Cloud Functions: [chat.handler.ts.md](./repository/firebase/functions/src/handlers/chat.handler.ts.md) - `handleChatRoomPinCreate`, `handleChatRoomPinDelete` 함수
+- Cloud Functions 트리거: [index.ts.md](./repository/firebase/functions/src/index.ts.md) - `onChatRoomPinCreate`, `onChatRoomPinDelete` 트리거
+- 클라이언트 함수: [chat.functions.ts.md](./repository/src/lib/functions/chat.functions.ts.md) - `togglePinChatRoom` 함수
 - UI 컴포넌트:
-  - `/src/routes/chat/list/+page.svelte` (1:1 채팅 목록)
-  - `/src/routes/chat/group-chat-list/+page.svelte` (그룹챗 목록)
-  - `/src/routes/chat/room/+page.svelte` (채팅방 페이지)
+  - [list/+page.svelte.md](./repository/src/routes/chat/list/+page.svelte.md) (1:1 채팅 목록)
+  - [group-chat-list/+page.svelte.md](./repository/src/routes/chat/group-chat-list/+page.svelte.md) (그룹챗 목록)
+  - [room/+page.svelte.md](./repository/src/routes/chat/room/+page.svelte.md) (채팅방 페이지)
 
 ### 채팅방 입장
 
