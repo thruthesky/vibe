@@ -84,7 +84,7 @@ async function handleToggleLike(event: MouseEvent, targetId: string, targetType:
 	event.stopPropagation();
 
 	if (!authStore.user) {
-		alert('로그인이 필요합니다.');
+		alert(m.authLoginRequired());
 		return;
 	}
 
@@ -138,15 +138,15 @@ async function handleToggleLike(event: MouseEvent, targetId: string, targetType:
 	/**
 	 * 게시글 삭제 함수
 	 */
-	async function handleDeletePost(postId: string) {
-		if (!confirm('게시글을 삭제하시겠습니까?')) {
-			return;
-		}
+async function handleDeletePost(postId: string) {
+	if (!confirm(m.postDeleteConfirm())) {
+		return;
+	}
 
-		if (!rtdb) {
-			alert('Firebase 연결이 없습니다.');
-			return;
-		}
+	if (!rtdb) {
+		alert(m.firebaseNotReady());
+		return;
+	}
 
 		try {
 			const postRef = ref(rtdb, `posts/${postId}`);
@@ -156,15 +156,15 @@ async function handleToggleLike(event: MouseEvent, targetId: string, targetType:
 				deleted: true,
 				deletedAt: Date.now()
 			});
-		} catch (error) {
-			console.error('게시글 삭제 실패:', error);
-			alert('게시글 삭제에 실패했습니다.');
-		}
+	} catch (error) {
+		console.error('게시글 삭제 실패:', error);
+		alert(m.postDeleteFailed());
 	}
+}
 </script>
 
 <svelte:head>
-	<title>Sonub - 홈</title>
+	<title>Sonub - {m.navHome()}</title>
 </svelte:head>
 
 	<div class="post-list-container">
@@ -201,7 +201,7 @@ async function handleToggleLike(event: MouseEvent, targetId: string, targetType:
 					</div>
 				</div>
 
-				<button class="compose-icon-circle" type="button" aria-label="사진 첨부">
+				<button class="compose-icon-circle" type="button" aria-label={m.commonAddPhoto()}>
 					<Camera class="compose-icon" />
 				</button>
 			</div>

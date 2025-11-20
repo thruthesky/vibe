@@ -11,6 +11,7 @@
 	import { formatNumberWithComma } from '$lib/functions/number.functions';
 	import { goto } from '$app/navigation';
 	import { BarChart3, ChevronRight } from 'lucide-svelte';
+	import * as m from '$lib/paraglide/messages.js';
 
 	// 실시간 통계 데이터 스토어
 	const userCountStore = rtdbStore<number>('stats/counters/user', 0);
@@ -32,15 +33,15 @@
 	<div class="section-header">
 		<div class="header-left flex items-center gap-2">
 			<BarChart3 class="section-icon" aria-hidden="true" />
-			<h3 class="section-title">실시간 통계</h3>
+			<h3 class="section-title">{m.statsRealtimeTitle()}</h3>
 		</div>
 		<button
 			type="button"
 			onclick={goToStats}
 			class="more-button"
-			aria-label="통계 상세 보기"
+			aria-label={`${m.statsRealtimeTitle()} ${m.homeSidebarSeeMore()}`}
 		>
-			<span class="more-text">더보기</span>
+			<span class="more-text">{m.homeSidebarSeeMore()}</span>
 			<ChevronRight class="more-icon" size={16} />
 		</button>
 	</div>
@@ -49,7 +50,7 @@
 	<div class="section-content">
 		<div class="stats-grid">
 			<div class="stat-item">
-				<span class="stat-label">사용자</span>
+				<span class="stat-label">{m.commonUser()}</span>
 				<span class="stat-value">
 					{#if $userCountStore.loading}
 						...
@@ -59,7 +60,7 @@
 				</span>
 			</div>
 			<div class="stat-item">
-				<span class="stat-label">게시글</span>
+				<span class="stat-label">{m.commonPost()}</span>
 				<span class="stat-value">
 					{#if $postCountStore.loading}
 						...
@@ -69,7 +70,7 @@
 				</span>
 			</div>
 			<div class="stat-item">
-				<span class="stat-label">댓글</span>
+				<span class="stat-label">{m.commonComment()}</span>
 				<span class="stat-value">
 					{#if $commentCountStore.loading}
 						...
@@ -79,7 +80,7 @@
 				</span>
 			</div>
 			<div class="stat-item">
-				<span class="stat-label">메시지</span>
+				<span class="stat-label">{m.statsMessageLabel()}</span>
 				<span class="stat-value">
 					{#if $messageCountStore.loading}
 						...
@@ -89,7 +90,7 @@
 				</span>
 			</div>
 			<div class="stat-item">
-				<span class="stat-label">팔로우</span>
+				<span class="stat-label">{m.statsFollowLabel()}</span>
 				<span class="stat-value">
 					{#if $followCountStore.loading}
 						...

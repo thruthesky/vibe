@@ -50,6 +50,8 @@ tags:
 
 ### 2.1. HTML Layout 계층 구조
 
+**소스 코드 위치**: [post.functions.ts.md](./repository/src/lib/functions/post.functions.ts.md)
+
 ```
 .post-list-container (컨테이너)
 ├── .compose-prompt (가짜 글쓰기 폼 - 최상단)
@@ -92,6 +94,8 @@ tags:
 ## 3. 게시글 카드 (post-card) 상세 구조
 
 ### 3.1. HTML 구조
+
+**소스 코드 위치**: [post.functions.ts.md](./repository/src/lib/functions/post.functions.ts.md)
 
 ```html
 <div class="post-card-wrapper">
@@ -178,6 +182,8 @@ tags:
 
 ### 3.2. 삭제된 게시글 표시
 
+**소스 코드 위치**: [post.functions.ts.md](./repository/src/lib/functions/post.functions.ts.md)
+
 ```html
 <!-- 삭제된 게시글 -->
 {#if message.deleted}
@@ -204,6 +210,9 @@ tags:
 - `textSize?: string` - 텍스트 크기 (기본값: "text-sm")
 
 **사용 예시:**
+
+**소스 코드 위치**: [post.functions.ts.md](./repository/src/lib/functions/post.functions.ts.md)
+
 ```svelte
 <UserProfile
   uid={message.senderUid}
@@ -213,6 +222,9 @@ tags:
 ```
 
 **렌더링 결과:**
+
+**소스 코드 위치**: [post.functions.ts.md](./repository/src/lib/functions/post.functions.ts.md)
+
 ```html
 <div class="flex items-center gap-2">
   <!-- 프로필 사진 -->
@@ -229,6 +241,9 @@ tags:
 ```
 
 **프로필 사진이 없는 경우:**
+
+**소스 코드 위치**: [post.functions.ts.md](./repository/src/lib/functions/post.functions.ts.md)
+
 ```html
 <div class="flex items-center gap-2">
   <!-- 첫 글자 표시 -->
@@ -259,6 +274,9 @@ tags:
 - `thumbnailSize?: string` - 썸네일 크기 (기본값: "h-32 w-32")
 
 **사용 예시:**
+
+**소스 코드 위치**: [post.functions.ts.md](./repository/src/lib/functions/post.functions.ts.md)
+
 ```svelte
 {#if message.urls}
   <FileAttachments urls={message.urls} />
@@ -273,6 +291,9 @@ tags:
 - **간격:** 1px (gap-1)
 
 **렌더링 결과:**
+
+**소스 코드 위치**: [post.functions.ts.md](./repository/src/lib/functions/post.functions.ts.md)
+
 ```html
 <!-- Grid 레이아웃 (Facebook 스타일) -->
 <div class="attachment-grid mt-3 grid gap-1 grid-cols-2">
@@ -312,6 +333,9 @@ tags:
 ```
 
 **CSS 스타일 (v1.4.0+):**
+
+**소스 코드 위치**: [post.functions.ts.md](./repository/src/lib/functions/post.functions.ts.md)
+
 ```css
 /* 그리드 컨테이너 */
 .attachment-grid {
@@ -370,6 +394,9 @@ tags:
 - `onOpenCommentDialog: Function` - 댓글 작성 모달 열기 콜백 (필수)
 
 **사용 예시:**
+
+**소스 코드 위치**: [post.functions.ts.md](./repository/src/lib/functions/post.functions.ts.md)
+
 ```svelte
 <PostCommentList
   bind:this={commentListRefs[messageId]}
@@ -380,6 +407,9 @@ tags:
 ```
 
 **렌더링 결과:**
+
+**소스 코드 위치**: [post.functions.ts.md](./repository/src/lib/functions/post.functions.ts.md)
+
 ```html
 <!-- 댓글 정보 및 버튼 -->
 <div class="post-actions">
@@ -426,6 +456,8 @@ tags:
 
 ### 5.1. 컨테이너 및 레이아웃
 
+**소스 코드 위치**: [post.functions.ts.md](./repository/src/lib/functions/post.functions.ts.md)
+
 ```css
 /* 페이지 컨테이너 */
 .post-list-container {
@@ -466,6 +498,8 @@ tags:
 ```
 
 ### 5.2. 게시글 카드
+
+**소스 코드 위치**: [post.functions.ts.md](./repository/src/lib/functions/post.functions.ts.md)
 
 ```css
 /* 게시글 카드 래퍼 */
@@ -563,6 +597,8 @@ tags:
 
 ### 5.3. 댓글 목록
 
+**소스 코드 위치**: [post.functions.ts.md](./repository/src/lib/functions/post.functions.ts.md)
+
 ```css
 /* 댓글 정보 및 버튼 */
 .post-actions {
@@ -630,6 +666,8 @@ tags:
 
 ### 5.4. 로딩 상태
 
+**소스 코드 위치**: [post.functions.ts.md](./repository/src/lib/functions/post.functions.ts.md)
+
 ```css
 /* 로딩 상태 */
 .list-status {
@@ -649,6 +687,8 @@ tags:
 **데스크톱 화면 (≥768px):**
 - **컨테이너 padding 유지:** 좌/우 여백 적용
 - **카드 테두리/그림자 표시:** 카드 강조
+
+**소스 코드 위치**: [post.functions.ts.md](./repository/src/lib/functions/post.functions.ts.md)
 
 ```css
 /* 페이지 컨테이너 (v1.4.0+) */
@@ -688,6 +728,8 @@ tags:
 
 **레이아웃 구조 업데이트 (v1.4.0+):**
 
+**소스 코드 위치**: [post.functions.ts.md](./repository/src/lib/functions/post.functions.ts.md)
+
 ```svelte
 <!-- src/routes/+layout.svelte -->
 <div class="container mx-auto md:px-4 py-8" class:p-0={isChatRoom}>
@@ -709,6 +751,8 @@ tags:
 **중요:** 게시글 카드에서 채팅방으로 직접 이동하는 기능이 제거되었습니다. 대신 상단 오른쪽에 채팅방 이름을 표시하여 어느 채팅방의 게시글인지 알 수 있습니다.
 
 **채팅방 이름 가져오기 함수:**
+
+**소스 코드 위치**: [post.functions.ts.md](./repository/src/lib/functions/post.functions.ts.md)
 
 ```typescript
 // src/lib/functions/chat.functions.ts
@@ -743,6 +787,8 @@ export async function getChatRoomName(
 
 **사용 예시:**
 
+**소스 코드 위치**: [post.functions.ts.md](./repository/src/lib/functions/post.functions.ts.md)
+
 ```html
 <!-- 오른쪽: 카테고리 + 채팅방 이름 + 시간 -->
 <div class="post-header-right">
@@ -770,6 +816,8 @@ export async function getChatRoomName(
 4. **로딩 상태:** 채팅방 이름을 로딩하는 동안 `...`를 표시합니다.
 
 ### 7.2. 액션 버튼 (좋아요, 댓글)
+
+**소스 코드 위치**: [post.functions.ts.md](./repository/src/lib/functions/post.functions.ts.md)
 
 ```html
 <!-- 좋아요 버튼 -->
@@ -804,6 +852,8 @@ export async function getChatRoomName(
 ### 7.3. 아이콘 버튼 (수정, 삭제)
 
 작성자에게만 표시되며, 아이콘만 사용합니다.
+
+**소스 코드 위치**: [post.functions.ts.md](./repository/src/lib/functions/post.functions.ts.md)
 
 ```html
 {@const isMyPost = authStore.user?.uid === message.senderUid}
@@ -842,6 +892,8 @@ export async function getChatRoomName(
 ```
 
 ### 7.4. 게시글 삭제 함수
+
+**소스 코드 위치**: [post.functions.ts.md](./repository/src/lib/functions/post.functions.ts.md)
 
 ```typescript
 async function handleDeletePost(messageId: string) {
@@ -899,6 +951,8 @@ async function handleDeletePost(messageId: string) {
 
 ### 8.3. DatabaseListView Props 및 정렬 로직
 
+**소스 코드 위치**: [post.functions.ts.md](./repository/src/lib/functions/post.functions.ts.md)
+
 ```typescript
 <DatabaseListView
   path="posts"                   // Firebase RTDB 경로
@@ -926,6 +980,8 @@ async function handleDeletePost(messageId: string) {
 **클라이언트 측 정렬 로직:**
 
 DatabaseListView는 Firebase에서 데이터를 받은 후 클라이언트 측에서 명시적으로 정렬합니다. 이는 Firebase의 `limitToLast` + `reverse()` 조합이 페이지네이션 커서 로직을 깨뜨리는 문제를 해결합니다.
+
+**소스 코드 위치**: [post.functions.ts.md](./repository/src/lib/functions/post.functions.ts.md)
 
 ```typescript
 // DatabaseListView 내부 정렬 로직
@@ -959,6 +1015,9 @@ loadedItems.sort((a, b) => {
 게시글 정렬 성능을 최적화하기 위해 다음 필드에 인덱스를 설정합니다.
 
 **설정된 인덱스:**
+
+**소스 코드 위치**: [post.functions.ts.md](./repository/src/lib/functions/post.functions.ts.md)
+
 ```json
 {
   "posts": {
@@ -999,6 +1058,8 @@ loadedItems.sort((a, b) => {
 
 ### 10.1. 시맨틱 HTML
 
+**소스 코드 위치**: [post.functions.ts.md](./repository/src/lib/functions/post.functions.ts.md)
+
 ```html
 <!-- 제목 -->
 <h1 class="post-list-title">최근 게시글</h1>
@@ -1030,6 +1091,8 @@ loadedItems.sort((a, b) => {
 ### 11.1. 홈페이지 (최근 게시글)
 
 **파일 경로:** `src/routes/+page.svelte`
+
+**소스 코드 위치**: [post.functions.ts.md](./repository/src/lib/functions/post.functions.ts.md)
 
 ```svelte
 <script lang="ts">
@@ -1361,6 +1424,9 @@ loadedItems.sort((a, b) => {
 - 게시판 목록: 수정/삭제 아이콘 버튼 표시 (작성자만)
 
 **구현 예시:**
+
+**소스 코드 위치**: [post.functions.ts.md](./repository/src/lib/functions/post.functions.ts.md)
+
 ```svelte
 <!-- 하단 액션 바 -->
 <div class="post-actions">

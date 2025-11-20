@@ -101,7 +101,7 @@
 				>
 					<input
 						type="text"
-						placeholder="친구를 검색하세요"
+						placeholder={m.navSearchFriendsPlaceholder()}
 						class="h-10 w-40 bg-transparent text-sm text-gray-700 border-none outline-none focus:outline-none focus:ring-0 appearance-none"
 						style="box-shadow: none;"
 						bind:value={searchKeyword}
@@ -110,7 +110,7 @@
 						type="submit"
 						class="flex h-8 w-8 items-center justify-center rounded-full bg-white text-gray-700 shadow-sm disabled:opacity-40"
 						disabled={!searchKeyword.trim()}
-						aria-label="친구 검색"
+						aria-label={m.navSearchFriendsAria()}
 					>
 						<span class="text-lg">➜</span>
 					</button>

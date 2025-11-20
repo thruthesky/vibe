@@ -59,6 +59,8 @@ tags:
 
 타임스탬프 옆에 설정 아이콘 (⚙) 표시:
 
+**소스 코드 위치**: [chat.functions.ts.md](./repository/src/lib/functions/chat.functions.ts.md)
+
 ```svelte
 <DropdownMenu.Root>
   <DropdownMenu.Trigger>
@@ -79,6 +81,8 @@ tags:
 
 삭제된 메시지는 회색 이탤릭체로 "삭제된 메시지입니다" 표시:
 
+**소스 코드 위치**: [chat.functions.ts.md](./repository/src/lib/functions/chat.functions.ts.md)
+
 ```svelte
 {#if message.deleted}
   <div class="message-bubble deleted-message">
@@ -89,7 +93,7 @@ tags:
 
 ### 2.2 메시지 수정 모달 (MessageEditModal)
 
-**파일**: `/src/lib/components/chat/MessageEditModal.svelte`
+**소스 코드 위치**: [repository/src/lib/components/chat/MessageEditModal.svelte.md](./repository/src/lib/components/chat/MessageEditModal.svelte.md)
 
 #### 2.2.1 기능
 
@@ -110,6 +114,8 @@ tags:
 
 #### 2.2.2 Props
 
+**소스 코드 위치**: [chat.functions.ts.md](./repository/src/lib/functions/chat.functions.ts.md)
+
 ```typescript
 interface Props {
   open: boolean;                      // 모달 열림 상태 (bindable)
@@ -123,6 +129,8 @@ interface Props {
 ```
 
 #### 2.2.3 저장 로직
+
+**소스 코드 위치**: [chat.functions.ts.md](./repository/src/lib/functions/chat.functions.ts.md)
 
 ```typescript
 const updates = {
@@ -141,7 +149,7 @@ await update(ref(rtdb, `chat-messages/${messageId}`), updates);
 
 **함수**: `canEditMessage(createdAt: number): boolean`
 
-**파일**: `/src/routes/chat/room/+page.svelte`
+**소스 코드 위치**: [repository/src/routes/chat/room/+page.svelte.md](./repository/src/routes/chat/room/+page.svelte.md)
 
 ```typescript
 function canEditMessage(createdAt: number): boolean {
@@ -162,7 +170,7 @@ function canEditMessage(createdAt: number): boolean {
 
 **함수**: `handleEditMessage(messageId, text, urls, createdAt)`
 
-**파일**: `/src/routes/chat/room/+page.svelte`
+**소스 코드 위치**: [repository/src/routes/chat/room/+page.svelte.md](./repository/src/routes/chat/room/+page.svelte.md)
 
 ```typescript
 function handleEditMessage(
@@ -183,13 +191,15 @@ function handleEditMessage(
 
 **함수**: `handleDeleteMessage(messageId, urls)`
 
-**파일**: `/src/routes/chat/room/+page.svelte`
+**소스 코드 위치**: [repository/src/routes/chat/room/+page.svelte.md](./repository/src/routes/chat/room/+page.svelte.md)
 
 #### 3.3.1 삭제 프로세스
 
 1. **사용자 확인**: `confirm()` 다이얼로그
 2. **첨부파일 삭제**: Storage에서 모든 첨부파일 삭제
 3. **Soft Delete**: RTDB에서 메시지 필드 업데이트
+
+**소스 코드 위치**: [chat.functions.ts.md](./repository/src/lib/functions/chat.functions.ts.md)
 
 ```typescript
 async function handleDeleteMessage(messageId: string, urls: Record<number, string>) {
@@ -239,7 +249,7 @@ async function handleDeleteMessage(messageId: string, urls: Record<number, strin
 
 ### 4.2 Security Rules
 
-**파일**: `/firebase/database.rules.json`
+**소스 코드 위치**: [repository/firebase/database.rules.json.md](./repository/firebase/database.rules.json.md)
 
 #### 4.2.1 쓰기 권한
 
@@ -291,7 +301,7 @@ async function handleDeleteMessage(messageId: string, urls: Record<number, strin
 
 **함수**: `uploadChatFile(file, uid, roomId, onProgress)`
 
-**파일**: `/src/lib/functions/storage.functions.ts`
+**소스 코드 위치**: [repository/src/lib/functions/storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
 
 - Firebase Storage 경로: `users/{uid}/chat-files/{roomId}/{timestamp}-{filename}`
 - 실시간 업로드 진행률 콜백
@@ -301,7 +311,7 @@ async function handleDeleteMessage(messageId: string, urls: Record<number, strin
 
 **함수**: `deleteChatFile(url)`
 
-**파일**: `/src/lib/functions/storage.functions.ts`
+**소스 코드 위치**: [repository/src/lib/functions/storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
 
 - URL에서 파일 경로 추출
 - Firebase Storage에서 파일 삭제
@@ -310,7 +320,7 @@ async function handleDeleteMessage(messageId: string, urls: Record<number, strin
 
 ## 6. 타입 정의
 
-**파일**: `/src/lib/types/chat.types.ts`
+**소스 코드 위치**: [repository/src/lib/types/chat.types.ts.md](./repository/src/lib/types/chat.types.ts.md)
 
 ```typescript
 export interface ChatMessage {
@@ -375,16 +385,3 @@ export interface ChatMessage {
 - 삭제 실패 시에도 메시지는 삭제 처리 (로그 기록)
 
 ---
-
-## 9. 작업 이력 (SED Log)
-
-| 날짜 | 작업자 | 변경 내용 |
-| ---- | ------ | -------- |
-| 2025-11-15 | Claude Code | 채팅 메시지 수정/삭제 기능 구현 |
-| 2025-11-15 | Claude Code | MessageEditModal 컴포넌트 생성 |
-| 2025-11-15 | Claude Code | 채팅방 페이지에 설정 아이콘 및 드롭다운 메뉴 추가 |
-| 2025-11-15 | Claude Code | 90분 시간 제한 로직 구현 (클라이언트 + 서버) |
-| 2025-11-15 | Claude Code | Firebase Security Rules 업데이트 |
-| 2025-11-15 | Claude Code | Soft Delete 방식으로 메시지 삭제 구현 |
-| 2025-11-15 | Claude Code | MessageEditModal textarea에서 스페이스바/Enter 키 입력 문제 수정: Dialog 컴포넌트 키보드 이벤트 전파 차단 |
-| 2025-11-15 | Claude Code | 첨부파일 중복 표시 문제 수정: 업로드 완료 후 1초 뒤 uploadingFiles에서 자동 제거 |

@@ -42,6 +42,8 @@ tags:
 
 `package.json`의 devDependencies에 아래 패키지가 존재해야 한다.
 
+**소스 코드 위치**: [runtime.js.md](./repository/src/paraglide/runtime.js.md)
+
 ```json
 {
   "@inlang/paraglide-js": "^2.4.0",
@@ -58,6 +60,8 @@ tags:
 ---
 
 ## 3. 최소 파일 구성
+
+**소스 코드 위치**: [runtime.js.md](./repository/src/paraglide/runtime.js.md)
 
 ```
 project.inlang/settings.json   # Paraglide 프로젝트 설정
@@ -79,6 +83,8 @@ messages/*.json                # 번역 원본
 
 최소 구성만 포함한다.
 
+**소스 코드 위치**: [runtime.js.md](./repository/src/paraglide/runtime.js.md)
+
 ```json
 {
   "$schema": "https://inlang.com/schema/project-settings",
@@ -98,6 +104,8 @@ messages/*.json                # 번역 원본
 ### 4.2 `vite.config.ts`
 
 `paraglideVitePlugin`을 단 한 번 호출하며 `outputStructure`만 지정한다.
+
+**소스 코드 위치**: [runtime.js.md](./repository/src/paraglide/runtime.js.md)
 
 ```ts
 import { paraglideVitePlugin } from '@inlang/paraglide-js';
@@ -123,6 +131,8 @@ export default defineConfig({
 
 서버 훅에서 Paraglide 미들웨어만 연결한다.
 
+**소스 코드 위치**: [runtime.js.md](./repository/src/paraglide/runtime.js.md)
+
 ```ts
 import type { Handle } from '@sveltejs/kit';
 import { paraglideMiddleware } from '$lib/paraglide/server';
@@ -144,6 +154,8 @@ export const handle: Handle = handleParaglide;
 
 HTML 루트에 `%paraglide.lang%` 플레이스홀더만 배치한다.
 
+**소스 코드 위치**: [runtime.js.md](./repository/src/paraglide/runtime.js.md)
+
 ```html
 <!doctype html>
 <html lang="%paraglide.lang%">
@@ -164,6 +176,9 @@ HTML 루트에 `%paraglide.lang%` 플레이스홀더만 배치한다.
 1. `messages/*.json`에서 키를 추가·수정한다.
 2. 개발 서버 또는 `paraglideVitePlugin`이 자동으로 재컴파일한다.
 3. 필요 시 수동으로 재컴파일:
+
+**소스 코드 위치**: [runtime.js.md](./repository/src/paraglide/runtime.js.md)
+
    ```bash
    npx @inlang/paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide
    ```

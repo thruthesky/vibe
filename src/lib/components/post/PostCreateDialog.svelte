@@ -68,18 +68,18 @@
 	 */
 	async function handleSave(
 		text: string,
-		urls: Record<number, string>
-	): Promise<{ success: boolean; error?: string }> {
-		// 유효성 검사
-		if (!text.trim() && Object.keys(urls).length === 0) {
-			return { success: false, error: '내용을 입력하거나 사진을 첨부해주세요.' };
-		}
-		if (!selectedCategory) {
-			return { success: false, error: '카테고리를 선택해주세요.' };
-		}
-		if (!authStore.user?.uid) {
-			return { success: false, error: '로그인이 필요합니다.' };
-		}
+	urls: Record<number, string>
+): Promise<{ success: boolean; error?: string }> {
+	// 유효성 검사
+	if (!text.trim() && Object.keys(urls).length === 0) {
+		return { success: false, error: m.postContentOrAttachmentRequired() };
+	}
+	if (!selectedCategory) {
+		return { success: false, error: m.postCategoryRequired() };
+	}
+	if (!authStore.user?.uid) {
+		return { success: false, error: m.authLoginRequired() };
+	}
 
 		try {
 			/**
@@ -103,28 +103,28 @@
 				category: selectedCategory
 			};
 
-			// /posts/{postId}에 게시글 직접 저장
-			// Cloud Functions가 자동으로 피드 fan-out 처리
-			const result = await pushData('posts', payload);
+	// /posts/{postId}에 게시글 직접 저장
+	// Cloud Functions가 자동으로 피드 fan-out 처리
+	const result = await pushData('posts', payload);
 
-			if (!result.success) {
-				return { success: false, error: result.error ?? '저장에 실패했습니다.' };
-			}
+	if (!result.success) {
+		return { success: false, error: result.error ?? m.postSaveFailed() };
+	}
 
 			// 성공 시 상태 초기화
 			const createdCategory = selectedCategory as ForumCategory;
 			selectedCategory = '';
 
 			// 게시판 페이지에서 카테고리 자동 선택을 위한 콜백 호출
-			if (onPostCreated) {
-				onPostCreated(createdCategory);
-			}
+	if (onPostCreated) {
+		onPostCreated(createdCategory);
+	}
 
-			return { success: true };
-		} catch (error) {
-			console.error('❌ 게시글 저장 실패:', error);
-			return { success: false, error: '게시글 저장에 실패했습니다. 다시 시도해주세요.' };
-		}
+	return { success: true };
+} catch (error) {
+	console.error('❌ 게시글 저장 실패:', error);
+	return { success: false, error: m.postSaveRetry() };
+}
 	}
 
 	/**
@@ -140,12 +140,12 @@
 
 <MessageEditModal
 	bind:open
-	title="게시글 작성"
+	title={m.postCreateTitle()}
 	textLabel=""
 	roomId="post"
-	saveButtonText="저장"
-	cancelButtonText="취소"
-	textPlaceholder="내용을 입력하세요"
+	saveButtonText={m.commonSave()}
+	cancelButtonText={m.commonCancel()}
+	textPlaceholder={m.postTextPlaceholder()}
 	onSave={handleSave}
 	onCancel={handleCancel}
 	hasAdditionalFields={true}
@@ -154,7 +154,7 @@
 	<div class="additional-fields">
 		<!-- 카테고리 선택 -->
 		<select id="category" bind:value={selectedCategory} class="form-select">
-			<option value="">카테고리 선택</option>
+			<option value="">{m.postCategorySelectPlaceholder()}</option>
 			{#each FORUM_CATEGORIES as category}
 				<option value={category}>{getCategoryMessage(category)}</option>
 			{/each}

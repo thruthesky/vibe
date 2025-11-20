@@ -16,6 +16,7 @@
 	import DatabaseListView from '$lib/components/DatabaseListView.svelte';
 	import PostItem from '$lib/components/post/PostItem.svelte';
 	import type { LikeTargetType } from '$lib/functions/like.functions';
+	import * as m from '$lib/paraglide/messages.js';
 
 	/**
 	 * Props 인터페이스
@@ -123,25 +124,25 @@
 
 	{#snippet loading()}
 		<div class="list-status">
-			<p>로딩 중...</p>
+			<p>{m.feedLoading()}</p>
 		</div>
 	{/snippet}
 
 	{#snippet empty()}
 		<div class="list-status">
-			<p>게시글이 없습니다.</p>
+			<p>{m.postListEmpty()}</p>
 		</div>
 	{/snippet}
 
 	{#snippet loadingMore()}
 		<div class="list-status">
-			<p>더 불러오는 중...</p>
+			<p>{m.feedLoadingMore()}</p>
 		</div>
 	{/snippet}
 
 	{#snippet noMore()}
 		<div class="list-status">
-			<p>모든 게시글을 불러왔습니다.</p>
+			<p>{m.postListAllLoaded()}</p>
 		</div>
 	{/snippet}
 </DatabaseListView>

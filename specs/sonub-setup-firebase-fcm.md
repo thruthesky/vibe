@@ -52,6 +52,9 @@ changelog:
 
 2. SvelteKit에 Firebase SDK 설치 + firebase.ts 초기화
 아래는 이미 설치되어져 있으면 생략
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/settings/fcm/permission/+page.svelte.md)
+
 ```
 npm install firebase
 ```
@@ -61,6 +64,8 @@ npm install firebase
 서비스 워커는 루트 스코프에서 동작해야 하므로,
 firebase-messaging-sw.js 는 반드시 /firebase-messaging-sw.js 경로로 접근 가능해야 합니다. SvelteKit에서는 static/에 두면 자동으로 그렇게 됩니다. 
 
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/settings/fcm/permission/+page.svelte.md)
 
 ```javascript
 // static/firebase-messaging-sw.js
@@ -187,11 +192,17 @@ self.addEventListener('notificationclick', (event) => {
 ## FCM 토큰 저장 구조
 
 ### Realtime Database 경로
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/settings/fcm/permission/+page.svelte.md)
+
 ```
 /fcm-tokens/{token-id}
 ```
 
 ### 데이터 구조
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/settings/fcm/permission/+page.svelte.md)
+
 ```typescript
 {
   web: true,           // 웹 플랫폼 여부
@@ -211,6 +222,9 @@ self.addEventListener('notificationclick', (event) => {
 ## VAPID 키 입력 위치
 
 ### 1. 개발 환경 (.env 파일)
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/settings/fcm/permission/+page.svelte.md)
+
 ```bash
 # FCM Web Push VAPID Key
 # Firebase Console > 프로젝트 설정 > Cloud Messaging > Web Push certificates에서 생성
@@ -219,6 +233,8 @@ PUBLIC_FIREBASE_VAPID_KEY=BClX3EL-df5V894SJzHam1OcoP5f1UsXArqQORkE1vr9CxeYwHi5Gq
 
 ### 2. 서비스 워커 (static/firebase-messaging-sw.js)
 서비스 워커는 환경 변수에 접근할 수 없으므로 Firebase Config를 직접 하드코딩해야 합니다:
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/settings/fcm/permission/+page.svelte.md)
 
 ```javascript
 firebase.initializeApp({
@@ -237,73 +253,13 @@ firebase.initializeApp({
 
 ## 설치된 패키지
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/settings/fcm/permission/+page.svelte.md)
+
 ```bash
 npm install svelte-sonner
 ```
 
 - **svelte-sonner**: Toast 알림 라이브러리 (Svelte 5 runes 지원)
-
----
-
-## 검증 체크리스트
-
-구현이 완료되었는지 아래 체크리스트로 확인하세요:
-
-### 설정 단계
-- [x] Firebase Console에서 VAPID Key 생성 완료
-- [x] `.env` 파일에 `PUBLIC_FIREBASE_VAPID_KEY` 추가 완료
-- [x] `.env.example` 파일에 VAPID Key 예시 추가 완료
-
-### 파일 생성 및 수정
-- [x] `static/firebase-messaging-sw.js` 파일 생성 완료
-- [x] `static/firebase-messaging-sw.js`에 firebaseConfig 하드코딩 완료
-- [x] `src/lib/firebase.ts`에 `getFirebaseMessaging()` 함수 추가 완료
-- [x] `src/lib/fcm.ts` 파일 생성 완료
-- [x] `svelte-sonner` 패키지 설치 완료
-- [x] `src/routes/+layout.svelte`에 `<Toaster />` 컴포넌트 추가 완료
-- [x] `src/routes/fcm-test/+page.svelte` FCM 테스트 페이지 생성 완료
-
-### 기능 테스트
-- [ ] 브라우저에서 `/fcm-test` 페이지 접속 확인
-- [ ] 브라우저에서 알림 권한 허용 테스트
-- [ ] FCM 토큰 발급 테스트
-- [ ] RTDB `/fcm-tokens/` 경로에 토큰 저장 확인
-- [ ] Firebase Console에서 테스트 메시지 전송
-- [ ] 포그라운드 메시지 수신 테스트 (Toast 표시)
-- [ ] 백그라운드 메시지 수신 테스트 (브라우저 알림)
-- [ ] 알림 클릭 시 URL 이동 테스트
-
-### 타입 체크
-- [x] `npm run check` 실행하여 타입 에러 확인
-- [x] FCM 관련 코드에서 타입 에러 없음 확인
-
----
-
-## 테스트 방법
-
-### 1. FCM 토큰 발급 테스트
-
-1. 브라우저에서 `http://localhost:5173/fcm-test` 접속
-2. "푸시 알림 활성화" 버튼 클릭
-3. 브라우저 알림 권한 허용
-4. 콘솔에서 FCM 토큰 확인
-5. Firebase Console > Realtime Database > `/fcm-tokens/` 경로에서 토큰 저장 확인
-
-### 2. 포그라운드 메시지 테스트
-
-1. Firebase Console → Cloud Messaging → "Send your first message"
-2. Notification title 및 body 입력
-3. "Send test message" 클릭
-4. 발급된 FCM 토큰 붙여넣기
-5. **테스트 페이지를 열어둔 상태**에서 메시지 전송
-6. Toast 알림이 화면 상단 중앙에 표시되는지 확인
-
-### 3. 백그라운드 메시지 테스트
-
-1. 위와 동일한 방법으로 메시지 전송
-2. 브라우저를 **다른 탭으로 전환하거나 최소화**
-3. 브라우저 알림이 OS 알림으로 표시되는지 확인
-4. 알림 클릭 시 브라우저가 포커스되고 해당 URL로 이동하는지 확인
 
 ---
 
@@ -370,6 +326,8 @@ npm install svelte-sonner
 
 ### 컴포넌트 구조
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/settings/fcm/permission/+page.svelte.md)
+
 ```
 src/lib/components/FcmPermissionGate.svelte
 ├── SessionStorage 카운팅 로직 (pageMoveCount)
@@ -384,6 +342,8 @@ src/lib/components/FcmPermissionGate.svelte
 └── 두 가지 모달 (권한 요청 / 거절 안내)
 ```
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/settings/fcm/permission/+page.svelte.md)
+
 ```
 src/routes/settings/fcm/permission/+page.svelte
 ├── onMount 훅 (페이지 접속 시 플래그 저장)
@@ -394,6 +354,8 @@ src/routes/settings/fcm/permission/+page.svelte
 ### 사용 방법
 
 `src/routes/+layout.svelte`에 한 번만 추가하면 전체 앱에서 자동 작동:
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/settings/fcm/permission/+page.svelte.md)
 
 ```svelte
 <script lang="ts">

@@ -34,6 +34,8 @@ Firebase Cloud Functions Gen 2를 사용하여 Firebase Realtime Database의 이
 
 비용 관리를 위한 전역 옵션 설정:
 
+**소스 코드 위치**: [index.ts.md](./repository/firebase/functions/src/index.ts.md)
+
 ```typescript
 setGlobalOptions({
   maxInstances: 10,              // 최대 10개의 컨테이너만 동시 실행
@@ -66,6 +68,8 @@ setGlobalOptions({
    - `/stats/counters/user +1` (전체 사용자 통계 업데이트)
 
 **소스 코드:**
+
+**소스 코드 위치**: [index.ts.md](./repository/firebase/functions/src/index.ts.md)
 
 ```typescript
 export const onUserCreate = onValueCreated("/users/{uid}", async (event) => {
@@ -108,6 +112,8 @@ export const onUserCreate = onValueCreated("/users/{uid}", async (event) => {
 3. `displayNameLowerCase` 자동 생성 및 저장 (displayName 변경 시)
 
 **소스 코드:**
+
+**소스 코드 위치**: [index.ts.md](./repository/firebase/functions/src/index.ts.md)
 
 ```typescript
 export const onUserUpdate = onValueUpdated("/users/{uid}", async (event) => {
@@ -157,6 +163,8 @@ export const onUserUpdate = onValueUpdated("/users/{uid}", async (event) => {
 
 **소스 코드:**
 
+**소스 코드 위치**: [index.ts.md](./repository/firebase/functions/src/index.ts.md)
+
 ```typescript
 export const onChatMessageCreate = onValueCreated(
   "/chat-messages/{messageId}",
@@ -167,16 +175,13 @@ export const onChatMessageCreate = onValueCreated(
 );
 ```
 
-**향후 구현 예정:**
-- 채팅 메시지 통계 업데이트
-- 알림 발송
-- 기타 비즈니스 로직
-
 ---
 
 ## 전체 소스 코드
 
 **파일 경로:** `firebase/functions/src/index.ts`
+
+**소스 코드 위치**: [index.ts.md](./repository/firebase/functions/src/index.ts.md)
 
 ```typescript
 /**
@@ -301,6 +306,8 @@ export const onUserUpdate = onValueUpdated("/users/{uid}", async (event) => {
 
 ## 배포
 
+**소스 코드 위치**: [index.ts.md](./repository/firebase/functions/src/index.ts.md)
+
 ```bash
 # 배포 전 빌드 및 린트
 npm run deploy
@@ -334,6 +341,8 @@ firebase deploy --only functions
 - `user.handler.test.ts`: handleUserUpdate 함수 테스트
 
 테스트 실행:
+
+**소스 코드 위치**: [index.ts.md](./repository/firebase/functions/src/index.ts.md)
 
 ```bash
 npm run test:unit

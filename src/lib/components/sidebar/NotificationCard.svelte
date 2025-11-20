@@ -30,9 +30,9 @@
 			type="button"
 			onclick={goToNotifications}
 			class="more-button"
-			aria-label="알림 더보기"
+			aria-label={`${m.sidebarNotifications()} ${m.homeSidebarSeeMore()}`}
 		>
-			<span class="more-text">더보기</span>
+			<span class="more-text">{m.homeSidebarSeeMore()}</span>
 			<ChevronRight class="more-icon" size={16} />
 		</button>
 	</div>

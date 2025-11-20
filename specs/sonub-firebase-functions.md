@@ -433,7 +433,7 @@ npm install --save-dev tsc-alias
 
 ##### 4.1.7.1 공유 함수 정의
 
-**파일**: `/src/lib/functions/chat.functions.ts`
+**소스 코드 위치**: [repository/src/lib/functions/chat.functions.ts.md](./repository/src/lib/functions/chat.functions.ts.md)
 
 ```typescript
 /**
@@ -480,7 +480,7 @@ export function buildSingleRoomId(uid1: string, uid2: string): string {
 
 ##### 4.1.7.2 서버에서 사용 (Cloud Functions)
 
-**파일**: `/firebase/functions/src/handlers/chat.handler.ts`
+**소스 코드 위치**: [repository/firebase/functions/src/handlers/chat.handler.ts.md](./repository/firebase/functions/src/handlers/chat.handler.ts.md)
 
 ```typescript
 import * as logger from "firebase-functions/logger";
@@ -530,7 +530,7 @@ export async function handleChatMessageCreate(
 
 ##### 4.1.7.3 클라이언트에서 사용 (Svelte)
 
-**파일**: `/src/routes/chat/room/+page.svelte`
+**소스 코드 위치**: [repository/src/routes/chat/room/+page.svelte.md](./repository/src/routes/chat/room/+page.svelte.md)
 
 ```svelte
 <script lang="ts">
@@ -571,7 +571,7 @@ export async function handleChatMessageCreate(
 
 ##### 빌드 전 (TypeScript)
 
-**파일**: `/firebase/functions/src/handlers/chat.handler.ts`
+**소스 코드 위치**: [repository/firebase/functions/src/handlers/chat.handler.ts.md](./repository/firebase/functions/src/handlers/chat.handler.ts.md)
 
 ```typescript
 import {
@@ -582,7 +582,7 @@ import {
 
 ##### 빌드 후 (JavaScript)
 
-**파일**: `/firebase/functions/lib/src/handlers/chat.handler.js`
+**소스 코드 위치**: [repository/firebase/functions/lib/src/handlers/chat.handler.js.md](./repository/firebase/functions/lib/src/handlers/chat.handler.js.md)
 
 ```javascript
 // ✅ tsc-alias가 @functions를 실제 상대 경로로 변환
@@ -706,7 +706,7 @@ npm run build  # tsc && tsc-alias ✅
 - 환경별 설정 관리
 - **Gen 2 API**를 사용한 트리거 함수 정의 및 이벤트 라우팅
 
-**파일 위치**: [firebase/functions/src/index.ts](../firebase/functions/src/index.ts)
+**파일 위치**: [firebase/functions/src/index.ts](./repository/firebase/functions/src/index.ts)
 
 **중요**: 모든 함수는 `firebase-functions/v2` 패키지를 사용해야 합니다:
 ```typescript
@@ -1724,7 +1724,7 @@ npm run test:watch
 
 #### 9.6.1 순수 함수 테스트 (utils/)
 
-**파일**: `test/unit/like.handler.test.ts`
+**소스 코드 위치**: [repository/test/unit/like.handler.test.ts.md](./repository/test/unit/like.handler.test.ts.md)
 
 ```typescript
 import {expect} from "chai";
@@ -1763,7 +1763,7 @@ npm run test:unit
 
 #### 9.7.1 firebase-functions-test 설정
 
-**파일**: `test/integration/test-setup.ts`
+**소스 코드 위치**: [repository/test/integration/test-setup.ts.md](./repository/test/integration/test-setup.ts.md)
 
 ```typescript
 import * as functionsTest from "firebase-functions-test";
@@ -1792,7 +1792,7 @@ export function cleanup() {
 
 #### 9.7.2 이벤트 핸들러 테스트
 
-**파일**: `test/integration/onLike.test.ts`
+**소스 코드 위치**: [repository/test/integration/onLike.test.ts.md](./repository/test/integration/onLike.test.ts.md)
 
 ```typescript
 /**
@@ -1907,9 +1907,3 @@ npm run test:integration
 - ✅ **Region 일치**: Database trigger는 database region과 일치 필수
 
 이 문서는 SNS 프로젝트의 백그라운드 처리를 담당하는 Cloud Functions 개발 및 테스트 가이드입니다! 🚀
-
----
-
-**Last Updated**: 2025-01-05
-**Version**: 3.0.0 (리팩토링 및 Unit Test 추가)
-**Author**: SNS 개발팀

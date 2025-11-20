@@ -84,6 +84,8 @@ tags:
 
 ## 4. 데이터 흐름
 
+**소스 코드 위치**: [+layout.svelte.md](./repository/src/routes/admin/+layout.svelte.md)
+
 ```
 Button 클릭
   └─ generateTestUsers()  // 100명 가짜 데이터
@@ -105,6 +107,8 @@ Button 클릭
 | `src/lib/utils/admin-service.ts` | Firebase 저장/삭제 유틸리티 |
 
 ### 5.1 `src/lib/utils/test-user-generator.ts` 상세
+
+**소스 코드 위치**: [+layout.svelte.md](./repository/src/routes/admin/+layout.svelte.md)
 
 ```ts
 export interface TestUser {
@@ -137,6 +141,9 @@ export interface TestUser {
  12. 결과 배열에 push
 
 #### generateTestUserId(index: number)
+
+**소스 코드 위치**: [+layout.svelte.md](./repository/src/routes/admin/+layout.svelte.md)
+
 ```ts
 const timestamp = Date.now();
 const randomString = Math.random().toString(36).substring(2, 8);
@@ -145,6 +152,9 @@ return `test_${timestamp}_${index}_${randomString}`;
 - Firebase key 유사한 고유 ID 생성
 
 #### generateRandomBirthYear()
+
+**소스 코드 위치**: [+layout.svelte.md](./repository/src/routes/admin/+layout.svelte.md)
+
 ```ts
 const minYear = 1950;
 const maxYear = 2010;
@@ -152,6 +162,9 @@ return minYear + Math.floor(Math.random() * (maxYear - minYear + 1));
 ```
 
 #### testUserToFirebaseData(user: TestUser)
+
+**소스 코드 위치**: [+layout.svelte.md](./repository/src/routes/admin/+layout.svelte.md)
+
 ```ts
 return {
   displayName: user.displayName,
@@ -167,6 +180,8 @@ return {
 - `saveTestUsersToFirebase()`에서 호출하여 RTDB에 저장하기 위한 평면 객체로 변환한다.
 
 ### 5.2 `src/routes/admin/users/+page.svelte` 구조
+
+**소스 코드 위치**: [+layout.svelte.md](./repository/src/routes/admin/+layout.svelte.md)
 
 ```svelte
 <script lang="ts">
@@ -199,6 +214,9 @@ return {
 - UI는 `m.testUserCreate*` 번역 문자열을 사용해 `/admin/users`와 동일한 진행률/완료/에러 표시를 제공한다.
 
 #### 데이터 로딩
+
+**소스 코드 위치**: [+layout.svelte.md](./repository/src/routes/admin/+layout.svelte.md)
+
 ```ts
 async function loadUsers() {
   isLoading = true;
@@ -215,6 +233,9 @@ onMount(loadUsers);
 ```
 
 #### 테스트 사용자 생성
+
+**소스 코드 위치**: [+layout.svelte.md](./repository/src/routes/admin/+layout.svelte.md)
+
 ```ts
 async function handleCreateUsers() {
   if (isCreating) return;
@@ -242,6 +263,9 @@ async function handleCreateUsers() {
 ```
 
 #### UI 레이아웃 핵심
+
+**소스 코드 위치**: [+layout.svelte.md](./repository/src/routes/admin/+layout.svelte.md)
+
 ```svelte
 <div class="space-y-6">
   <!-- 통계 카드 -->
@@ -330,9 +354,3 @@ async function handleCreateUsers() {
 - [ ] 일괄 삭제 기능이 기존과 동일하게 동작한다.
 - [ ] 관리자 대시보드/테스트 메뉴의 링크가 모두 `/admin/users`를 가리킨다.
 
-## 7. 작업 이력 (SED Log)
-
-| 날짜 | 작업자 | 내용 |
-| ---- | ------ | ---- |
-| 2025-11-09 | Codex Agent | `/admin/users` 페이지에 테스트 사용자 생성 UI를 통합하고 `/admin/test/create-users` 경로를 제거. 관리자 대시보드/테스트 페이지, 관련 메뉴 및 문서를 모두 `/admin/users`로 업데이트. |
-| 2025-11-11 | Codex Agent | 테스트 사용자 생성 기능을 `/admin/test/create-test-data` 페이지로 이동하고, `/admin/users`는 목록/삭제 전용 페이지로 단순화. 문서 및 번역 안내 문구를 해당 구조에 맞게 수정. |

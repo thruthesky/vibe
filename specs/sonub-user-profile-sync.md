@@ -102,6 +102,8 @@ Firebase Authentication 로그인 성공 시, 사용자의 `displayName`과 `pho
 
 ### 2.1 전체 플로우
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/profile/+page.svelte.md)
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                         User Login Flow                          │
@@ -125,6 +127,8 @@ Firebase Authentication 로그인 성공 시, 사용자의 `displayName`과 `pho
 ```
 
 ### 2.2 데이터 흐름
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/profile/+page.svelte.md)
 
 ```
 Firebase Auth                Realtime Database              Cloud Functions
@@ -197,11 +201,16 @@ User.uid          ──┘                │
 ### 4.1 syncAuthProfileToRtdb() 함수
 
 **파일 위치:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/profile/+page.svelte.md)
+
 ```
 src/lib/utils/auth-helpers.ts
 ```
 
 **함수 시그니처:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/profile/+page.svelte.md)
 
 ```typescript
 /**
@@ -218,6 +227,8 @@ export async function syncAuthProfileToRtdb(user: User): Promise<void>
 ```
 
 **구현 코드:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/profile/+page.svelte.md)
 
 ```typescript
 import { rtdb } from '$lib/firebase';
@@ -280,6 +291,9 @@ export async function syncAuthProfileToRtdb(user: User): Promise<void> {
 ### 4.2 signInWithGoogle() 함수 수정
 
 **기존 코드:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/profile/+page.svelte.md)
+
 ```typescript
 export async function signInWithGoogle(): Promise<UserCredential> {
 	// ... 생략 ...
@@ -290,6 +304,9 @@ export async function signInWithGoogle(): Promise<UserCredential> {
 ```
 
 **수정 코드:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/profile/+page.svelte.md)
+
 ```typescript
 export async function signInWithGoogle(): Promise<UserCredential> {
 	if (!auth) {
@@ -325,6 +342,9 @@ export async function signInWithGoogle(): Promise<UserCredential> {
 ### 4.3 signInWithApple() 함수 수정
 
 **기존 코드:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/profile/+page.svelte.md)
+
 ```typescript
 export async function signInWithApple(): Promise<UserCredential> {
 	// ... 생략 ...
@@ -335,6 +355,9 @@ export async function signInWithApple(): Promise<UserCredential> {
 ```
 
 **수정 코드:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/profile/+page.svelte.md)
+
 ```typescript
 export async function signInWithApple(): Promise<UserCredential> {
 	if (!auth) {
@@ -374,6 +397,9 @@ export async function signInWithApple(): Promise<UserCredential> {
 ### 4.4 Auth Store 연동
 
 **파일 위치:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/profile/+page.svelte.md)
+
 ```
 src/lib/stores/auth.svelte.ts
 ```
@@ -382,6 +408,9 @@ src/lib/stores/auth.svelte.ts
 `initializeAuthListener()` 메서드의 `onAuthStateChanged` 콜백
 
 **기존 코드:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/profile/+page.svelte.md)
+
 ```typescript
 private initializeAuthListener() {
 	if (!auth) {
@@ -406,6 +435,9 @@ private initializeAuthListener() {
 ```
 
 **수정 코드:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/profile/+page.svelte.md)
+
 ```typescript
 private initializeAuthListener() {
 	if (!auth) {
@@ -462,6 +494,8 @@ private initializeAuthListener() {
 
 **1. 로그인 플로우 (`signInWithGoogle`, `signInWithApple`)**
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/profile/+page.svelte.md)
+
 ```typescript
 try {
 	const result = await signInWithPopup(auth, provider);
@@ -475,6 +509,8 @@ try {
 
 **2. Auth Store (`onAuthStateChanged`)**
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/profile/+page.svelte.md)
+
 ```typescript
 try {
 	await syncAuthProfileToRtdb(user);
@@ -487,6 +523,8 @@ try {
 **3. 사용자 피드백**
 
 `user-login.svelte`에서 에러 메시지 표시:
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/profile/+page.svelte.md)
 
 ```typescript
 try {
@@ -504,6 +542,9 @@ try {
 ### 5.3 로깅 규칙
 
 **성공 로그:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/profile/+page.svelte.md)
+
 ```typescript
 console.log(`[Profile Sync] 사용자 프로필 동기화 완료: ${user.uid}`, {
 	displayName: user.displayName,
@@ -512,11 +553,17 @@ console.log(`[Profile Sync] 사용자 프로필 동기화 완료: ${user.uid}`, 
 ```
 
 **에러 로그:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/profile/+page.svelte.md)
+
 ```typescript
 console.error(`[Profile Sync] 프로필 동기화 실패: ${user.uid}`, error);
 ```
 
 **경고 로그:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/profile/+page.svelte.md)
+
 ```typescript
 console.warn('[Profile Sync] 동기화할 데이터가 없습니다: ${user.uid}');
 ```
@@ -528,11 +575,17 @@ console.warn('[Profile Sync] 동기화할 데이터가 없습니다: ${user.uid}
 ### 6.1 onUserCreate 트리거
 
 **위치:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/profile/+page.svelte.md)
+
 ```
 firebase/functions/src/index.ts
 ```
 
 **기존 코드 (수정 불필요):**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/profile/+page.svelte.md)
+
 ```typescript
 export const onUserCreate = onValueCreated(
 	{
@@ -564,6 +617,9 @@ export const onUserCreate = onValueCreated(
 - ❌ 구현되지 않음 (specs/sonub-user-props.md line 97 참조)
 
 **향후 구현 필요:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/profile/+page.svelte.md)
+
 ```typescript
 export const onUserProfileUpdate = onValueUpdated(
 	{
@@ -590,6 +646,8 @@ export const onUserProfileUpdate = onValueUpdated(
 ### 6.3 user-props 동기화
 
 **현재 구현 (firebase/functions/src/handlers/user.handler.ts):**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/profile/+page.svelte.md)
 
 ```typescript
 // /user-props/displayName/{uid} 저장
@@ -622,11 +680,16 @@ if (userData.displayName) {
 ### 7.1 유닛 테스트
 
 **테스트 파일:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/profile/+page.svelte.md)
+
 ```
 src/lib/utils/auth-helpers.spec.ts
 ```
 
 **테스트 케이스:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/profile/+page.svelte.md)
 
 ```typescript
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -687,11 +750,16 @@ describe('syncAuthProfileToRtdb', () => {
 ### 7.2 통합 테스트
 
 **테스트 파일:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/profile/+page.svelte.md)
+
 ```
 src/lib/utils/auth-helpers.integration.spec.ts
 ```
 
 **테스트 케이스:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/profile/+page.svelte.md)
 
 ```typescript
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
@@ -744,11 +812,16 @@ describe('Profile Sync Integration', () => {
 ### 7.3 E2E 테스트
 
 **테스트 파일:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/profile/+page.svelte.md)
+
 ```
 e2e/user-login-profile-sync.test.ts
 ```
 
 **테스트 케이스:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/profile/+page.svelte.md)
 
 ```typescript
 import { test, expect } from '@playwright/test';
@@ -786,12 +859,16 @@ test.describe('User Profile Sync', () => {
 
 **1. Emulator 시작:**
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/profile/+page.svelte.md)
+
 ```bash
 cd firebase
 firebase emulators:start
 ```
 
 **2. 테스트 앱 실행:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/profile/+page.svelte.md)
 
 ```bash
 npm run dev
@@ -807,6 +884,8 @@ npm run dev
   - Functions > Logs 탭에 `onUserCreate` 실행 로그 확인
 
 **4. RTDB 데이터 확인:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/profile/+page.svelte.md)
 
 ```json
 {
@@ -839,6 +918,8 @@ npm run dev
 - 실제 사용자로 테스트
 
 **2. 모니터링:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/profile/+page.svelte.md)
 
 ```bash
 # Firebase Console > Functions > Logs

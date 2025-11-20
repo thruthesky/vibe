@@ -41,6 +41,8 @@ tags: ["menu", "ui", "authentication", "account", "navigation", "svelte5"]
 
 ### 1.4 구현 파일
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/menu/+page.svelte.md)
+
 ```
 src/
 ├── lib/
@@ -69,6 +71,8 @@ src/
 ### 2.2 메뉴 아이콘 구현
 
 **위치:** 탑바 우측, 사용자 프로필/로그인 버튼 옆 (또는 대체)
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/menu/+page.svelte.md)
 
 ```svelte
 <!-- 메뉴 아이콘 (우측) -->
@@ -127,6 +131,9 @@ src/
 ### 3.2 메뉴 페이지 구조
 
 **레이아웃:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/menu/+page.svelte.md)
+
 ```
 ┌─────────────────────────────────┐
 │       메뉴 페이지 헤더           │
@@ -147,6 +154,8 @@ src/
 
 ### 3.3 메뉴 페이지 구현
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/menu/+page.svelte.md)
+
 ```svelte
 <script lang="ts">
 	/**
@@ -157,11 +166,12 @@ src/
 	 */
 
 	import { Button } from '$lib/components/ui/button/index.js';
-	import * as Card from '$lib/components/ui/card/index.js';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { signOut } from 'firebase/auth';
 	import { auth } from '$lib/firebase';
 	import { goto } from '$app/navigation';
+	import Avatar from '$lib/components/user/avatar.svelte';
+	import { m } from '$lib/paraglide/messages';
 
 	// 로그아웃 처리 중 상태
 	let isSigningOut = $state(false);
@@ -175,7 +185,6 @@ src/
 		isSigningOut = true;
 		try {
 			await signOut(auth);
-			console.log('로그아웃 성공');
 			await goto('/');
 		} catch (error) {
 			console.error('로그아웃 에러:', error);
@@ -183,133 +192,72 @@ src/
 			isSigningOut = false;
 		}
 	}
-
-	/**
-	 * 로그인 페이지로 이동
-	 */
-	function goToLogin() {
-		goto('/user/login');
-	}
-
-	/**
-	 * 회원 정보 수정 페이지로 이동
-	 */
-	function goToProfile() {
-		goto('/my/profile');
-	}
-
-	/**
-	 * 관리자 페이지로 이동
-	 */
-	function goToAdmin() {
-		goto('/admin/dashboard');
-	}
 </script>
 
 <svelte:head>
-	<title>메뉴 - Sonub</title>
+	<title>{m.pageTitleMenu()}</title>
 </svelte:head>
 
-<div class="flex min-h-[calc(100vh-8rem)] flex-col items-center justify-center">
+<div class="min-h-[calc(100vh-8rem)] py-8 px-4">
 	<div class="mx-auto w-full max-w-md space-y-6">
-		<!-- 메뉴 헤더 -->
-		<div class="text-center">
-			<h1 class="text-2xl font-bold text-gray-900">메뉴</h1>
-			<p class="mt-2 text-sm text-gray-600">계정 및 설정 관리</p>
-		</div>
-
 		<!-- 로딩 상태 -->
 		{#if authStore.loading}
-			<Card.Root>
-				<Card.Content class="pt-6">
-					<p class="text-center text-gray-600">로딩 중...</p>
-				</Card.Content>
-			</Card.Root>
+			<div class="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+				<div class="flex justify-center items-center space-x-2">
+					<div class="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+					<p class="text-center text-gray-600">{m.commonLoading()}</p>
+				</div>
+			</div>
 
 		<!-- 로그인 상태 -->
 		{:else if authStore.isAuthenticated}
-			<!-- 사용자 정보 카드 -->
-			<Card.Root>
-				<Card.Header>
-					<Card.Title class="text-base">내 계정</Card.Title>
-				</Card.Header>
-				<Card.Content class="space-y-3">
-					<!-- 프로필 정보 -->
-					{#if authStore.user?.photoURL}
-						<div class="flex justify-center">
-							<img
-								src={authStore.user.photoURL}
-								alt={authStore.user.displayName || '사용자'}
-								class="h-16 w-16 rounded-full"
-							/>
-						</div>
-					{/if}
-					<div class="text-center">
-						<p class="font-medium text-gray-900">
-							{authStore.user?.displayName || '사용자'}
-						</p>
-						<p class="text-sm text-gray-600">
-							{authStore.user?.email || ''}
-						</p>
-					</div>
-				</Card.Content>
-			</Card.Root>
+			<!-- 사용자 정보 -->
+			<div class="flex items-center space-x-4 p-4 bg-white rounded-xl border border-gray-100 shadow-sm">
+				<Avatar uid={authStore.user?.uid} size={60} />
+				<div>
+					<p class="text-lg font-semibold text-gray-900">
+						{authStore.user?.displayName || m.commonUser()}
+					</p>
+					<p class="text-sm text-gray-500">
+						{authStore.user?.email || ''}
+					</p>
+				</div>
+			</div>
 
-			<!-- 메뉴 항목 카드 -->
-			<Card.Root>
-				<Card.Content class="space-y-2 pt-6">
-					<!-- 회원 정보 수정 -->
-					<Button
-						variant="ghost"
-						class="w-full justify-start text-left"
-						onclick={goToProfile}
-					>
-						<svg class="mr-3 h-5 w-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-						</svg>
-						<span>회원 정보 수정</span>
-					</Button>
-
-					<!-- 관리자 페이지 (관리자만) -->
-					{#if authStore.user?.isAdmin}
-						<Button
-							variant="ghost"
-							class="w-full justify-start text-left"
-							onclick={goToAdmin}
-						>
-							<svg class="mr-3 h-5 w-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-							</svg>
-							<span>관리자 페이지</span>
-						</Button>
-					{/if}
-
-					<!-- 로그아웃 -->
-					<Button
-						variant="ghost"
-						class="w-full justify-start text-left text-red-600 hover:bg-red-50"
-						onclick={handleSignOut}
-						disabled={isSigningOut}
-					>
-						<svg class="mr-3 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-						</svg>
-						<span>{isSigningOut ? '로그아웃 중...' : '로그아웃'}</span>
-					</Button>
-				</Card.Content>
-			</Card.Root>
+			<!-- 메뉴 항목 -->
+			<div class="space-y-4">
+				<!-- 프로필 -->
+				<div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+					<a href="/my/profile" class="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-0">
+						<span class="text-gray-700 font-medium">{m.menuEditProfile()}</span>
+						<svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+					</a>
+					<!-- ... 기타 메뉴 항목 ... -->
+				</div>
+                <!-- ... -->
+			</div>
 
 		<!-- 비로그인 상태 -->
 		{:else}
-			<Card.Root>
-				<Card.Header>
-					<Card.Title>로그인 필요</Card.Title>
-					<Card.Description>계정에 로그인하여 더 많은 기능을 사용하세요</Card.Description>
-				</Card.Header>
-				<Card.Content>
-					<Button class="w-full" onclick={goToLogin}>로그인하기</Button>
-				</Card.Content>
-			</Card.Root>
+			<div class="bg-white rounded-xl border border-gray-100 shadow-sm p-6 text-center space-y-4">
+				<div class="flex justify-center">
+					<div class="p-3 bg-blue-50 rounded-full">
+						<svg class="h-8 w-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+						</svg>
+					</div>
+				</div>
+				<div>
+					<h3 class="text-lg font-bold text-gray-900">{m.authSignInRequired()}</h3>
+					<p class="text-sm text-gray-500 mt-1">{m.authSignInRequiredDesc()}</p>
+				</div>
+				<Button
+					class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg"
+					href="/user/login"
+				>
+					{m.authSignInAction()}
+				</Button>
+			</div>
 		{/if}
 	</div>
 </div>
@@ -319,98 +267,72 @@ src/
 
 #### 3.4.1 페이지 레이아웃
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/menu/+page.svelte.md)
+
 ```svelte
-<div class="flex min-h-[calc(100vh-8rem)] flex-col items-center justify-center">
+<div class="min-h-[calc(100vh-8rem)] py-8 px-4">
 	<div class="mx-auto w-full max-w-md space-y-6">
 ```
 
 **TailwindCSS 클래스:**
-- `flex`: flexbox 레이아웃
-- `min-h-[calc(100vh-8rem)]`: 최소 높이 설정 (뷰포트 높이 - 2rem)
-- `flex-col`: 세로 방향 정렬
-- `items-center`: 수평 중앙 정렬
-- `justify-center`: 수직 중앙 정렬
-- `mx-auto`: 좌우 마진 자동 (중앙 정렬)
+- `min-h-[calc(100vh-8rem)]`: 최소 높이 설정
+- `py-8 px-4`: 상하 패딩 2rem, 좌우 패딩 1rem
+- `mx-auto`: 중앙 정렬
 - `w-full`: 전체 너비
-- `max-w-md`: 최대 너비 28rem (448px)
-- `space-y-6`: 자식 요소 간 세로 간격 1.5rem
+- `max-w-md`: 최대 너비 28rem
+- `space-y-6`: 요소 간 간격
 
-#### 3.4.2 헤더 섹션
+#### 3.4.2 헤더 섹션 (삭제됨)
 
-```svelte
-<div class="text-center">
-	<h1 class="text-2xl font-bold text-gray-900">메뉴</h1>
-	<p class="mt-2 text-sm text-gray-600">계정 및 설정 관리</p>
-</div>
-```
-
-**TailwindCSS 클래스:**
-- `text-center`: 텍스트 중앙 정렬
-- `text-2xl`: 폰트 크기 1.5rem (24px)
-- `font-bold`: 폰트 두께 700
-- `text-gray-900`: Light Mode 텍스트 색상 (진한 회색)
-- `mt-2`: 상단 마진 0.5rem
-- `text-sm`: 작은 폰트 크기 0.875rem (14px)
-- `text-gray-600`: Light Mode 중간 회색
+기존의 "메뉴" 타이틀 및 아이콘 헤더는 깔끔한 디자인을 위해 삭제되었습니다.
 
 #### 3.4.3 로딩 상태
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/menu/+page.svelte.md)
+
 ```svelte
 {#if authStore.loading}
-	<Card.Root>
-		<Card.Content class="pt-6">
-			<p class="text-center text-gray-600">로딩 중...</p>
-		</Card.Content>
-	</Card.Root>
+	<div class="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+        <!-- 스피너 -->
+	</div>
 ```
 
-**목적:** Firebase 인증 초기화 중 사용자에게 피드백 제공
+**목적:** 심플한 로딩 표시
 
 #### 3.4.4 로그인 상태 메뉴
 
-**사용자 정보 카드:**
-- 프로필 이미지 표시
-- 사용자 이름 및 이메일 표시
+**사용자 정보:**
+- `bg-white rounded-xl border border-gray-100 shadow-sm` 스타일 적용
+- 아바타 및 이름/이메일 표시
 
 **메뉴 항목:**
-1. **회원 정보 수정**
-   - 경로: `/my/profile`
-   - 아이콘: 연필 아이콘
-   - 모든 사용자에게 표시
-
-2. **관리자 페이지**
-   - 경로: `/admin/dashboard`
-   - 아이콘: 톱니바퀴 아이콘
-   - 관리자만 표시 (`authStore.user?.isAdmin`)
-
-3. **로그아웃**
-   - Firebase signOut 호출
-   - 호버 색상: 빨간색 (`text-red-600 hover:bg-red-50`)
-   - 로딩 상태: "로그아웃 중..." 표시
+- `space-y-4`로 그룹 간 간격 조정
+- 각 그룹은 `bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden` 컨테이너 사용
+- 각 항목은 `<a>` 태그 사용, `flex items-center justify-between p-4 hover:bg-gray-50` 스타일 적용
+- `divide-y` 대신 `border-b border-gray-100 last:border-0` 사용하여 구분선 처리
 
 #### 3.4.5 비로그인 상태
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/menu/+page.svelte.md)
+
 ```svelte
 {:else}
-	<Card.Root>
-		<Card.Header>
-			<Card.Title>로그인 필요</Card.Title>
-			<Card.Description>계정에 로그인하여 더 많은 기능을 사용하세요</Card.Description>
-		</Card.Header>
-		<Card.Content>
-			<Button class="w-full" onclick={goToLogin}>로그인하기</Button>
-		</Card.Content>
-	</Card.Root>
+	<div class="bg-white rounded-xl border border-gray-100 shadow-sm p-6 text-center space-y-4">
+        <!-- 로그인 유도 아이콘 및 텍스트 -->
+        <!-- 로그인 버튼 -->
+	</div>
 {/if}
 ```
 
-**목적:** 비로그인 사용자에게 로그인 유도
+**목적:** 깔끔한 카드 형태의 로그인 유도 화면
 
 ---
 
 ## 4. 인증 상태별 UI
 
 ### 4.1 상태 흐름도
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/menu/+page.svelte.md)
 
 ```
 authStore.loading === true
@@ -434,6 +356,9 @@ authStore.loading === false && authStore.isAuthenticated === false
 ### 5.1 탑바 레이아웃
 
 **수정 전:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/menu/+page.svelte.md)
+
 ```
 좌측: 로고 + 네비게이션 링크
       [홈] [소개] [제품] [연락]
@@ -443,6 +368,9 @@ authStore.loading === false && authStore.isAuthenticated === false
 ```
 
 **수정 후:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/menu/+page.svelte.md)
+
 ```
 좌측: 로고 + 네비게이션 링크
       [홈] [소개] [제품] [연락]
@@ -500,6 +428,9 @@ authStore.loading === false && authStore.isAuthenticated === false
 ### 7.2 ARIA 속성
 
 **메뉴 아이콘:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/menu/+page.svelte.md)
+
 ```svelte
 <button
   aria-label="메뉴"

@@ -10,6 +10,7 @@
 	import MessageEditModal from '$lib/components/MessageEditModal.svelte';
 	import { rtdb } from '$lib/firebase';
 	import { ref, update } from 'firebase/database';
+	import * as m from '$lib/paraglide/messages.js';
 
 	// Props
 	interface Props {
@@ -47,7 +48,7 @@
 		urls: Record<number, string>
 	): Promise<{ success: boolean; error?: string }> {
 		if (!rtdb) {
-			return { success: false, error: 'Firebase 연결이 없습니다.' };
+			return { success: false, error: m.firebaseNotReady() };
 		}
 
 		try {
@@ -65,26 +66,26 @@
 			onSaved?.();
 
 			return { success: true };
-		} catch (err) {
-			console.error('메시지 저장 실패:', err);
-			return {
-				success: false,
-				error: '메시지 저장에 실패했습니다. 다시 시도해주세요.'
-			};
-		}
+	} catch (err) {
+		console.error('메시지 저장 실패:', err);
+		return {
+			success: false,
+			error: m.chatMessageSaveFailed()
+		};
 	}
+}
 </script>
 
 <MessageEditModal
 	bind:open
-	title="메시지 수정"
-	textLabel="메시지 텍스트"
+	title={m.chatMessageEditTitle()}
+	textLabel={m.commonMessage()}
 	{initialText}
 	{initialUrls}
 	{roomId}
-	saveButtonText="저장"
-	cancelButtonText="취소"
-	textPlaceholder="메시지를 입력하세요..."
+	saveButtonText={m.commonSave()}
+	cancelButtonText={m.commonCancel()}
+	textPlaceholder={m.chatWriteMessage()}
 	onSave={handleSave}
 	onCancel={onClose}
 />

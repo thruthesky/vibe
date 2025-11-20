@@ -85,6 +85,9 @@ tags:
 **경로**: `/user-daily-stats/{uid}/{yyyymmdd}`
 
 **필드**:
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
+
 ```typescript
 interface UserDailyStats {
   // 받은 좋아요 수
@@ -110,6 +113,9 @@ interface UserDailyStats {
 ```
 
 **예시**:
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
+
 ```json
 {
   "user-daily-stats": {
@@ -158,6 +164,9 @@ interface UserDailyStats {
 **경로**: `/user-monthly-stats/{uid}/{yyyymm}`
 
 **필드**:
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
+
 ```typescript
 interface UserMonthlyStats {
   receivedLikes: number;
@@ -186,6 +195,9 @@ interface UserMonthlyStats {
 **경로**: `/user-yearly-stats/{uid}/{yyyy}`
 
 **필드**:
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
+
 ```typescript
 interface UserYearlyStats {
   receivedLikes: number;
@@ -209,6 +221,9 @@ interface UserYearlyStats {
 **경로**: `/users/{uid}/stats`
 
 **필드**:
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
+
 ```typescript
 interface UserTotalStats {
   // 받은 리액션 (전체 누적)
@@ -245,6 +260,9 @@ interface UserTotalStats {
 - `allTime` - 전체 랭킹
 
 **필드**:
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
+
 ```typescript
 interface InfluencerRanking {
   uid: string;
@@ -262,6 +280,9 @@ interface InfluencerRanking {
 - Firebase RTDB의 `orderByKey()` 쿼리로 효율적인 Top N 조회 가능
 
 **예시**:
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
+
 ```json
 {
   "rankings": {
@@ -316,6 +337,9 @@ interface InfluencerRanking {
    - `targetType.startsWith("comment-")` → targetType에서 postId 파싱 (`"comment-{postId}"` 형식) → `/comments/{postId}/{targetId}/authorUid`
    - `targetType.startsWith("chat-message-")` → `/chat-messages/{roomId}/{targetId}/senderUid`
 3. **본인 반응 제외** - 자기 자신의 게시글/댓글에 좋아요를 누른 경우 통계에서 제외:
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
+
    ```typescript
    // 좋아요를 누른 사용자 UID와 타겟 작성자 UID 비교
    if (uid === targetAuthorUid) {
@@ -326,6 +350,9 @@ interface InfluencerRanking {
    ```
 4. **오늘 날짜 계산** - `yyyymmdd` 형식 (UTC+0 기준, 예: "20250118")
 5. **Multi-path update**로 다음 경로를 원자적으로 업데이트:
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
+
    ```typescript
    const updates = {
      // 일일 통계
@@ -386,6 +413,9 @@ interface InfluencerRanking {
    - `parentId === null` → 게시글 작성자: `/posts/{postId}/authorUid`
    - `parentId !== null` → 부모 댓글 작성자: `/comments/{postId}/{parentId}/authorUid`
 3. **본인 반응 제외** - 자기 자신의 게시글/댓글에 댓글을 단 경우 통계에서 제외:
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
+
    ```typescript
    // 댓글 작성자 UID와 타겟 작성자 UID 비교
    if (authorUid === targetAuthorUid) {
@@ -396,6 +426,9 @@ interface InfluencerRanking {
    ```
 4. **오늘 날짜 계산** - `yyyymmdd` 형식 (UTC+0 기준)
 5. **Multi-path update**:
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
+
    ```typescript
    const targetAuthorUid = parentId ? parentCommentAuthorUid : postAuthorUid;
    const isPostComment = parentId === null;
@@ -449,6 +482,9 @@ interface InfluencerRanking {
    - `parentId !== null` → 부모 댓글 작성자: `/comments/{postId}/{parentId}/authorUid`
 3. **본인 반응 제외**:
    - 생성 시와 동일하게, 본인이 작성한 댓글은 통계에서 제외되었으므로 삭제 시에도 처리 불필요
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
+
    ```typescript
    if (authorUid === targetAuthorUid) {
      console.log(`Self-comment was not counted, skip delete stats update`);
@@ -457,6 +493,9 @@ interface InfluencerRanking {
    ```
 4. **오늘 날짜 계산** - `yyyymmdd` 형식 (UTC 기준)
 5. **Multi-path update**:
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
+
    ```typescript
    const targetAuthorUid = parentId ? parentCommentAuthorUid : postAuthorUid;
    const isPostComment = parentId === null;
@@ -529,6 +568,9 @@ interface InfluencerRanking {
 1. **팔로잉 대상 UID 확인** - `followingUid` (팔로우를 받는 사용자)
 2. **오늘 날짜 계산** - `yyyymmdd` 형식 (예: "20250118")
 3. **Multi-path update**로 다음 경로를 원자적으로 업데이트:
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
+
    ```typescript
    const updates = {
      // 일일 통계 (+1)
@@ -564,6 +606,9 @@ interface InfluencerRanking {
 1. **팔로잉 대상 UID 확인** - `followingUid` (언팔로우당하는 사용자)
 2. **오늘 날짜 계산** - `yyyymmdd` 형식
 3. **Multi-path update**로 다음 경로를 원자적으로 업데이트:
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
+
    ```typescript
    const updates = {
      // 일일 통계 (-1)
@@ -660,6 +705,8 @@ interface InfluencerRanking {
    - 게시글 삭제 시 작성자의 `createdPosts` 통계를 -1 감소시킵니다
    - 일일/월별/연도별/전체 통계 모두 감소
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
+
    ```typescript
    const authorUid = deletedPostSnapshot.val().authorUid;
 
@@ -700,6 +747,8 @@ interface InfluencerRanking {
 3. **구현 예시** (정책 A):
 
    게시글 삭제 시 하위 컬렉션도 함께 삭제하는 로직:
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
 
    ```typescript
    export const onPostDeleted = onValueDeleted(
@@ -769,6 +818,8 @@ interface InfluencerRanking {
 - 삭제 시 `createdAt`을 기준으로 날짜 계산하여 통계 감소
 - 이렇게 하면 작성 시 +1, 삭제 시 -1이 정확히 대칭적으로 동작
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
+
 ```typescript
 const createdAt = deletedPost.createdAt; // Unix timestamp
 const createdDate = new Date(createdAt);
@@ -812,6 +863,8 @@ const updates = {
 #### 4.7.2. 파일 구조 및 네이밍 컨벤션
 
 **디렉토리 구조**:
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
 
 ```
 firebase/functions/src/
@@ -932,7 +985,7 @@ firebase/functions/src/
 
 #### 4.7.4. 공통 유틸 함수 구현 예시
 
-**파일**: `firebase/functions/src/utils/stats.utils.ts`
+**소스 코드 위치**: [repository/firebase/functions/src/utils/stats.utils.ts.md](./repository/firebase/functions/src/utils/stats.utils.ts.md)
 
 ```typescript
 import * as admin from 'firebase-admin';
@@ -1113,6 +1166,8 @@ export async function updateInfluencerScore(uid: string): Promise<void> {
 
 **비즈니스 로직 핸들러 (`like.handler.ts`)**:
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
+
 ```typescript
 import { onValueCreated, onValueDeleted } from 'firebase-functions/v2/database';
 import * as admin from 'firebase-admin';
@@ -1151,6 +1206,8 @@ export const onLikeDeleted = onValueDeleted(
 ```
 
 **통계 집계 핸들러 (`stats.like.handler.ts`)** - 공통 유틸 함수 사용:
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
 
 ```typescript
 import { onValueCreated, onValueDeleted } from 'firebase-functions/v2/database';
@@ -1236,6 +1293,8 @@ export const onLikeDeletedStats = onValueDeleted(
 
 모든 핸들러를 `index.ts`에 등록하여 Cloud Functions에 배포합니다.
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
+
 ```typescript
 // firebase/functions/src/index.ts
 
@@ -1311,6 +1370,8 @@ export * from './handlers/stats.ranking.handler';
 
 **코드 예시**:
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
+
 ```typescript
 // shared/influencer-scores.constants.ts
 export const INFLUENCER_SCORES = {
@@ -1336,6 +1397,8 @@ export const INFLUENCER_SCORES = {
 ```
 
 **실시간 증감 예시**:
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
 
 ```typescript
 // 사용자 A의 인플루언서 점수 변화 시나리오
@@ -1364,6 +1427,8 @@ export const INFLUENCER_SCORES = {
 
 향후 확장 가능한 옵션으로, 최근 활동에 더 높은 가중치를 부여:
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
+
 ```typescript
 // 예: 30일 전 활동은 50% 가중치
 const daysSinceActivity = (Date.now() - activityTimestamp) / (1000 * 60 * 60 * 24);
@@ -1374,6 +1439,8 @@ const adjustedScore = influencerScore * decayFactor;
 **현재 계획**: 시간 감쇠 없이 단순 누적 점수 사용 (향후 확장 가능)
 
 ### 5.3. 랭킹 정렬 키
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
 
 ```typescript
 const sortKey = `-${String(influencerScore).padStart(10, '0')}-${uid}`;
@@ -1442,6 +1509,8 @@ const sortKey = `-${String(influencerScore).padStart(10, '0')}-${uid}`;
 ## 7. Firebase Database Security Rules
 
 ### 7.1. 통계 노드 보안 규칙
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
 
 ```json
 {
@@ -1676,6 +1745,9 @@ const sortKey = `-${String(influencerScore).padStart(10, '0')}-${uid}`;
 **구현 방법**:
 
 1. **좋아요 핸들러 (`like.handler.ts`)**:
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
+
    ```typescript
    // 좋아요를 누른 사용자 UID와 타겟 작성자 UID 비교
    if (uid === targetAuthorUid) {
@@ -1686,6 +1758,9 @@ const sortKey = `-${String(influencerScore).padStart(10, '0')}-${uid}`;
    ```
 
 2. **댓글 핸들러 (`comment.create.handler.ts`)**:
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
+
    ```typescript
    // 댓글 작성자 UID와 타겟 작성자 UID 비교
    if (authorUid === targetAuthorUid) {
@@ -1758,6 +1833,9 @@ const sortKey = `-${String(influencerScore).padStart(10, '0')}-${uid}`;
    - 일별/월별/연간/전체 통계를 동시에 업데이트
    - `ServerValue.increment()`를 사용한 동시성 보장
    - 데이터베이스 경로:
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
+
      ```
      /user-stats/{uid}/daily/{yyyyMMdd}/{statType}
      /user-stats/{uid}/monthly/{yyyyMM}/{statType}
@@ -1773,6 +1851,9 @@ const sortKey = `-${String(influencerScore).padStart(10, '0')}-${uid}`;
    - 점수가 0이면 경로 삭제 (순위에서 제거)
 
 **핵심 로직**:
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
+
 ```typescript
 // UTC 날짜 계산 예시
 const now = new Date();
@@ -1814,6 +1895,9 @@ await admin.database().ref().update(updates);
    - 인플루언서 점수 재계산
 
 **핵심 로직**:
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
+
 ```typescript
 // 타겟 작성자 조회
 const targetAuthorUid = await getTargetAuthorUid(targetId, targetType);
@@ -1856,6 +1940,9 @@ await updateInfluencerScore(targetAuthorUid);
    - 인플루언서 점수 재계산
 
 **핵심 로직**:
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
+
 ```typescript
 // 타겟 작성자 조회
 const targetAuthorUid = parentId
@@ -1912,6 +1999,9 @@ await updateInfluencerScore(targetAuthorUid);
    - 인플루언서 점수 재계산
 
 **핵심 로직**:
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
+
 ```typescript
 // 팔로우를 받은 사용자(followingUid)의 통계 업데이트
 await updateUserStats(followingUid, 'receivedFollowers', 1, Date.now());
@@ -1937,6 +2027,9 @@ await updateInfluencerScore(followingUid);
    - 점수가 0이거나 null이면 순위에서 제거
 
 **핵심 로직**:
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
+
 ```typescript
 // 현재 UTC 날짜 계산
 const dateDaily = formatDate(now, 'yyyyMMdd');
@@ -1997,6 +2090,9 @@ await admin.database().ref().update(updates);
 **파일 경로**: `src/lib/functions/user.functions.ts`
 
 **추가된 인터페이스**:
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
+
 ```typescript
 export interface InfluencerRanking {
   uid: string;
@@ -2027,6 +2123,9 @@ export interface InfluencerRanking {
    - 점수가 없으면 0 반환
 
 **핵심 로직**:
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
+
 ```typescript
 // 날짜 계산
 const today = getCurrentDate('yyyyMMdd');  // "20250119"
@@ -2055,6 +2154,9 @@ const rankings = await getTopInfluencers('daily', today, 5);
 - "인기 사용자" 클릭 시 `/user/influencers` 페이지로 이동
 
 **UI 구조**:
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
+
 ```
 ┌─────────────────────────────┐
 │ ✨ 추천                     │
@@ -2101,6 +2203,9 @@ const rankings = await getTopInfluencers('daily', today, 5);
 - 클릭 시 해당 사용자 프로필로 이동
 
 **UI 구조**:
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
+
 ```
 ┌──────────────────────────────────────┐
 │  인플루언서 순위                     │
@@ -2145,6 +2250,9 @@ const rankings = await getTopInfluencers('daily', today, 5);
 **추가된 코드**:
 
 1. **데이터 조회 (Import 및 State)**:
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
+
 ```typescript
 import { getUserActionCounters, getInfluencerScore } from '$lib/functions/user.functions';
 
@@ -2163,6 +2271,9 @@ $effect(() => {
 ```
 
 2. **UI 표시**:
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
+
 ```svelte
 <!-- 사용자 통계 섹션 -->
 <div class="profile-stats">
@@ -2187,6 +2298,9 @@ $effect(() => {
 ```
 
 3. **스타일링**:
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
+
 ```css
 /* 인플루언서 점수 강조 스타일 */
 .stat-influencer {
@@ -2199,6 +2313,9 @@ $effect(() => {
 ```
 
 **UI 구조**:
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
+
 ```
 ┌──────────────────────────────────────┐
 │  [커버 이미지]                       │
@@ -2238,6 +2355,9 @@ $effect(() => {
 - 중국어 (`messages/zh.json`)
 
 **추가된 번역 키** (인플루언서 순위 페이지):
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
+
 ```json
 {
   "influencerRankingTitle": "인플루언서 순위",
@@ -2255,6 +2375,9 @@ $effect(() => {
 ```
 
 **추가된 번역 키** (사용자 프로필 페이지):
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
+
 ```json
 {
   "프로필_인플루언서_점수": "인플루언서 점수"  // ko
@@ -2288,6 +2411,8 @@ $effect(() => {
 **추가된 보안 규칙**:
 
 #### 11.5.1. `/user-stats/{uid}` 경로
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
 
 ```json
 "user-stats": {
@@ -2328,6 +2453,8 @@ $effect(() => {
 
 #### 11.5.2. `/influencer-scores/{uid}` 경로
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
+
 ```json
 "influencer-scores": {
   ".read": "auth != null",
@@ -2345,6 +2472,8 @@ $effect(() => {
 - 점수는 `number` 타입만 허용 (또는 `null`)
 
 #### 11.5.3. `/influencer-rankings/{period}/{date}` 경로
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
 
 ```json
 "influencer-rankings": {
@@ -2637,12 +2766,14 @@ $effect(() => {
    - [ ] 반환 순서: D (20) → B (10) → E (5)
 
 4. **UI 표시 확인**
-   - [ ] 사이드바 Top 5 인플루언서 표시 확인 ([SuggestionsCard.svelte](../../src/lib/components/sidebar/SuggestionsCard.svelte))
+   - [ ] 사이드바 Top 5 인플루언서 표시 확인 ([SuggestionsCard.svelte](./repository/src/lib/components/sidebar/SuggestionsCard.svelte))
    - [ ] `/user/influencers` 페이지에서 순위 표시 확인
 
 ### 12.4. 테스트 자동화 (선택 사항)
 
 향후 Jest 또는 Mocha를 사용하여 테스트 자동화 가능:
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/reactions/+page.svelte.md)
 
 ```typescript
 // 예시: __tests__/stats.test.ts

@@ -50,6 +50,7 @@
   import type { Snippet } from 'svelte';
   import { tick } from 'svelte';
   import { rtdb as database } from '$lib/firebase';
+  import * as m from '$lib/paraglide/messages.js';
 
   /**
    * 아이템 데이터 타입
@@ -1646,7 +1647,7 @@
       {:else}
         <div class="loading-spinner">
           <div class="spinner"></div>
-          <p>로딩 중...</p>
+          <p>{m.commonLoading()}</p>
         </div>
       {/if}
     </div>
@@ -1658,9 +1659,9 @@
         {@render errorSnippet(error)}
       {:else}
         <div class="error-message">
-          <p>⚠️ 에러가 발생했습니다</p>
+          <p>⚠️ {m.listErrorGeneric()}</p>
           <p class="error-detail">{error}</p>
-          <button onclick={refresh} class="retry-button">다시 시도</button>
+          <button onclick={refresh} class="retry-button">{m.commonRetry()}</button>
         </div>
       {/if}
     </div>
@@ -1672,7 +1673,7 @@
         {@render empty()}
       {:else}
         <div class="empty-message">
-          <p>📭 표시할 데이터가 없습니다</p>
+          <p>📭 {m.listNoData()}</p>
         </div>
       {/if}
     </div>
@@ -1686,7 +1687,7 @@
           {#if noMore}
             {@render noMore()}
           {:else}
-            <p class="no-more-text">더 이상 데이터가 없습니다</p>
+            <p class="no-more-text">{m.listNoMore()}</p>
           {/if}
         </div>
       {/if}
@@ -1699,7 +1700,7 @@
           {:else}
             <div class="loading-spinner small">
               <div class="spinner"></div>
-              <p>더 불러오는 중...</p>
+              <p>{m.listLoadingMore()}</p>
             </div>
           {/if}
         </div>
@@ -1726,7 +1727,7 @@
           {:else}
             <div class="loading-spinner small">
               <div class="spinner"></div>
-              <p>더 불러오는 중...</p>
+              <p>{m.listLoadingMore()}</p>
             </div>
           {/if}
         </div>
@@ -1738,7 +1739,7 @@
           {#if noMore}
             {@render noMore()}
           {:else}
-            <p class="no-more-text">더 이상 데이터가 없습니다</p>
+            <p class="no-more-text">{m.listNoMore()}</p>
           {/if}
         </div>
       {/if}

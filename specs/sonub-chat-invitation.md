@@ -42,6 +42,8 @@ priority: "***"
 
 ## Security Rules
 
+**소스 코드 위치**: [chat.invitation-create.handler.ts.md](./repository/firebase/functions/src/handlers/chat.invitation-create.handler.ts.md)
+
 ```json
 "chat-invitations": {
   "$uid": {
@@ -65,6 +67,9 @@ priority: "***"
 ### 1. 초대 생성
 
 **클라이언트 코드:**
+
+**소스 코드 위치**: [chat.invitation-create.handler.ts.md](./repository/firebase/functions/src/handlers/chat.invitation-create.handler.ts.md)
+
 ```typescript
 async function inviteUserToChatRoom(
   db: Database,
@@ -88,6 +93,9 @@ async function inviteUserToChatRoom(
 ```
 
 **Cloud Functions 트리거:**
+
+**소스 코드 위치**: [chat.invitation-create.handler.ts.md](./repository/firebase/functions/src/handlers/chat.invitation-create.handler.ts.md)
+
 ```typescript
 export const onChatInvitationCreate = onValueCreated(
   { ref: "/chat-invitations/{uid}/{roomId}" },
@@ -167,6 +175,9 @@ export const onChatInvitationCreate = onValueCreated(
 ### 2. 초대 수락
 
 **클라이언트 코드:**
+
+**소스 코드 위치**: [chat.invitation-create.handler.ts.md](./repository/firebase/functions/src/handlers/chat.invitation-create.handler.ts.md)
+
 ```typescript
 async function acceptInvitation(
   db: Database,
@@ -192,6 +203,9 @@ async function acceptInvitation(
 ### 3. 초대 거절
 
 **클라이언트 코드:**
+
+**소스 코드 위치**: [chat.invitation-create.handler.ts.md](./repository/firebase/functions/src/handlers/chat.invitation-create.handler.ts.md)
+
 ```typescript
 async function rejectInvitation(
   db: Database,
@@ -229,6 +243,9 @@ async function rejectInvitation(
 - 반응형 디자인 (모바일에서는 세로 레이아웃)
 
 **코드 예시:**
+
+**소스 코드 위치**: [chat.invitation-create.handler.ts.md](./repository/firebase/functions/src/handlers/chat.invitation-create.handler.ts.md)
+
 ```svelte
 <script lang="ts">
   import DatabaseListView from '$lib/components/DatabaseListView.svelte';
@@ -290,6 +307,9 @@ async function rejectInvitation(
 - 그룹/오픈 채팅방에서만 표시 (1:1 채팅방은 숨김)
 
 **코드 예시:**
+
+**소스 코드 위치**: [chat.invitation-create.handler.ts.md](./repository/firebase/functions/src/handlers/chat.invitation-create.handler.ts.md)
+
 ```svelte
 <script>
   import UserSearchDialog from '$lib/components/user/UserSearchDialog.svelte';
@@ -340,6 +360,9 @@ async function rejectInvitation(
 - zh (中文)
 
 **번역 키:**
+
+**소스 코드 위치**: [chat.invitation-create.handler.ts.md](./repository/firebase/functions/src/handlers/chat.invitation-create.handler.ts.md)
+
 ```typescript
 {
   "chatInvitation.title": "채팅 초대",
@@ -349,6 +372,9 @@ async function rejectInvitation(
 ```
 
 **사용 예시:**
+
+**소스 코드 위치**: [chat.invitation-create.handler.ts.md](./repository/firebase/functions/src/handlers/chat.invitation-create.handler.ts.md)
+
 ```typescript
 import { t } from '../i18n';
 
@@ -391,6 +417,9 @@ const message = t("ko", "chatInvitation.message", {
    - `/users/{uid}/languageCode`에 저장
 
 **코드:**
+
+**소스 코드 위치**: [chat.invitation-create.handler.ts.md](./repository/firebase/functions/src/handlers/chat.invitation-create.handler.ts.md)
+
 ```typescript
 private detectBrowserLanguage(): string {
   const SUPPORTED_LANGUAGES = ['en', 'ko', 'ja', 'zh'];
@@ -448,6 +477,9 @@ private async syncUserProfile(user: User) {
 ## 파일 구조
 
 ### Cloud Functions
+
+**소스 코드 위치**: [chat.invitation-create.handler.ts.md](./repository/firebase/functions/src/handlers/chat.invitation-create.handler.ts.md)
+
 ```
 firebase/functions/src/
 ├── types/index.ts                  # ChatInvitationData 타입 정의
@@ -457,6 +489,9 @@ firebase/functions/src/
 ```
 
 ### 클라이언트
+
+**소스 코드 위치**: [chat.invitation-create.handler.ts.md](./repository/firebase/functions/src/handlers/chat.invitation-create.handler.ts.md)
+
 ```
 src/
 ├── lib/
@@ -486,12 +521,17 @@ src/
 
 ### Firebase Cloud Functions 배포
 
+**소스 코드 위치**: [chat.invitation-create.handler.ts.md](./repository/firebase/functions/src/handlers/chat.invitation-create.handler.ts.md)
+
 ```bash
 cd firebase/functions
 npm run deploy
 ```
 
 **배포 결과 (2024-11-14):**
+
+**소스 코드 위치**: [chat.invitation-create.handler.ts.md](./repository/firebase/functions/src/handlers/chat.invitation-create.handler.ts.md)
+
 ```
 ✔ functions[onChatInvitationCreate(asia-southeast1)] Successful create operation.
 ✔ Deploy complete!
@@ -504,82 +544,11 @@ npm run deploy
 
 Security Rules는 `firebase/database.rules.json` 파일에 추가되었습니다.
 
+**소스 코드 위치**: [chat.invitation-create.handler.ts.md](./repository/firebase/functions/src/handlers/chat.invitation-create.handler.ts.md)
+
 ```bash
 firebase deploy --only database
 ```
-
-## 테스트 시나리오
-
-### 1. 초대 생성 테스트
-
-**시나리오:**
-1. 사용자 A가 그룹 채팅방 "친구들 모임"에 참여
-2. 사용자 A가 사용자 B를 초대
-3. 사용자 B의 `/chat-invitations/{B-uid}/room-abc123`에 초대 정보 생성
-4. Cloud Functions가 자동으로 데이터 보강
-5. 사용자 B에게 FCM 푸시 알림 전송 (B의 언어로)
-
-**검증:**
-- [ ] 초대 정보가 올바르게 생성되었는가?
-- [ ] `roomName`, `roomType`, `inviterName`, `message` 필드가 추가되었는가?
-- [ ] 푸시 알림이 사용자 B의 언어로 전송되었는가?
-
-### 2. 초대 수락 테스트
-
-**시나리오:**
-1. 사용자 B가 초대를 수락
-2. `/chat-rooms/{roomId}/members/{B-uid}: true` 설정
-3. Cloud Functions가 `memberCount` 증가
-4. `/chat-joins/{B-uid}/{roomId}`에 채팅방 정보 생성
-5. `/chat-invitations/{B-uid}/{roomId}` 삭제
-
-**검증:**
-- [ ] 사용자 B가 채팅방 멤버로 추가되었는가?
-- [ ] `memberCount`가 증가했는가?
-- [ ] 초대 정보가 삭제되었는가?
-- [ ] 채팅방 목록에 표시되는가?
-
-### 3. 초대 거절 테스트
-
-**시나리오:**
-1. 사용자 B가 초대를 거절
-2. `/chat-invitations/{B-uid}/{roomId}` 삭제
-
-**검증:**
-- [ ] 초대 정보가 삭제되었는가?
-- [ ] 사용자 B는 채팅방 멤버가 아닌가?
-
-### 4. 언어 코드 자동 저장 테스트
-
-**시나리오:**
-1. 브라우저 언어가 한국어(ko-KR)인 새 사용자 로그인
-2. `/users/{uid}/languageCode: "ko"` 자동 저장
-3. 이후 초대 메시지가 한국어로 생성됨
-
-**검증:**
-- [ ] `languageCode`가 자동으로 저장되었는가?
-- [ ] 지원하는 언어(en, ko, ja, zh) 중 하나인가?
-- [ ] 이미 `languageCode`가 있으면 덮어쓰지 않는가?
-
-## 개선 사항 및 향후 과제
-
-### 현재 구현된 기능
-- ✅ 채팅방 초대 생성
-- ✅ 초대 수락/거절
-- ✅ 실시간 초대 목록 표시
-- ✅ 다국어 메시지 (4개 언어)
-- ✅ FCM 푸시 알림 (사용자 언어로)
-- ✅ 브라우저 언어 자동 감지 및 저장
-- ✅ Security Rules
-
-### 향후 개선 사항
-- [ ] 초대 만료 시간 설정 (예: 7일 후 자동 삭제)
-- [ ] 초대 취소 기능 (초대한 사람이 취소)
-- [ ] 초대 수락 시 알림 (초대한 사람에게)
-- [ ] 초대 거절 사유 입력
-- [ ] 초대 기록 보관 (수락/거절 이력)
-- [ ] 대량 초대 기능 (여러 명 동시 초대)
-- [ ] 초대 링크 생성 (URL로 공유)
 
 ## 참고 문서
 

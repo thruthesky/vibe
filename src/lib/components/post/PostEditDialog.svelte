@@ -10,6 +10,7 @@
 	import MessageEditModal from '$lib/components/MessageEditModal.svelte';
 	import { rtdb } from '$lib/firebase';
 	import { ref, update } from 'firebase/database';
+	import * as m from '$lib/paraglide/messages.js';
 
 	// Props
 	interface Props {
@@ -42,13 +43,13 @@
 	/**
 	 * 저장 핸들러: Firebase RTDB에 게시글 업데이트
 	 */
-	async function handleSave(
-		text: string,
-		urls: Record<number, string>
-	): Promise<{ success: boolean; error?: string }> {
-		if (!rtdb) {
-			return { success: false, error: 'Firebase 연결이 없습니다.' };
-		}
+async function handleSave(
+	text: string,
+	urls: Record<number, string>
+): Promise<{ success: boolean; error?: string }> {
+	if (!rtdb) {
+		return { success: false, error: m.firebaseNotReady() };
+	}
 
 		try {
 			const postRef = ref(rtdb, `posts/${postId}`);
@@ -64,26 +65,26 @@
 			onSaved?.();
 
 			return { success: true };
-		} catch (err) {
-			console.error('게시글 수정 실패:', err);
-			return {
-				success: false,
-				error: '게시글 수정에 실패했습니다. 다시 시도해주세요.'
-			};
-		}
+	} catch (err) {
+		console.error('게시글 수정 실패:', err);
+		return {
+			success: false,
+			error: m.postSaveRetry()
+		};
 	}
+}
 </script>
 
 <MessageEditModal
 	bind:open
-	title="게시글 수정"
+	title={m.postEditTitle()}
 	textLabel=""
 	{initialText}
 	{initialUrls}
 	{roomId}
-	saveButtonText="저장"
-	cancelButtonText="취소"
-	textPlaceholder="내용을 입력하세요..."
+	saveButtonText={m.commonSave()}
+	cancelButtonText={m.commonCancel()}
+	textPlaceholder={m.postTextPlaceholder()}
 	onSave={handleSave}
 	onCancel={onClose}
 />

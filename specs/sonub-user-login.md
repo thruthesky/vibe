@@ -45,6 +45,8 @@ tags: ["firebase", "authentication", "google-login", "apple-login", "oauth", "sv
 
 다음 패키지들이 필요합니다:
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/influencers/+page.svelte.md)
+
 ```json
 {
   "dependencies": {
@@ -71,6 +73,8 @@ tags: ["firebase", "authentication", "google-login", "apple-login", "oauth", "sv
 
 **설정 위치:** Firebase Console > Authentication > Sign-in method
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/influencers/+page.svelte.md)
+
 ```
 1. Firebase Console 접속: https://console.firebase.google.com
 2. 프로젝트 선택: "sonub"
@@ -90,6 +94,8 @@ tags: ["firebase", "authentication", "google-login", "apple-login", "oauth", "sv
 
 **설정 위치:** Firebase Console > Authentication > Sign-in method
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/influencers/+page.svelte.md)
+
 ```
 1. "Sign-in method" 탭에서 "Apple" 제공업체 클릭
 2. "사용 설정" 토글 ON
@@ -106,6 +112,8 @@ tags: ["firebase", "authentication", "google-login", "apple-login", "oauth", "sv
 
 **설정 위치:** Firebase Console > Authentication > Settings > Authorized domains
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/influencers/+page.svelte.md)
+
 ```
 개발 환경:
 - localhost (기본 포함)
@@ -118,6 +126,8 @@ tags: ["firebase", "authentication", "google-login", "apple-login", "oauth", "sv
 ## 3. 파일 구조
 
 본 명세서에 따라 생성되는 파일들:
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/influencers/+page.svelte.md)
 
 ```
 src/
@@ -158,6 +168,8 @@ src/
 
 Firebase와 UI 컴포넌트에 필요한 패키지를 설치합니다.
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/influencers/+page.svelte.md)
+
 ```bash
 # Firebase (이미 설치되어 있을 경우 skip)
 npm install firebase
@@ -168,11 +180,16 @@ npm install clsx tailwind-merge
 
 **설치 확인:**
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/influencers/+page.svelte.md)
+
 ```bash
 npm list firebase clsx tailwind-merge
 ```
 
 **예상 출력:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/influencers/+page.svelte.md)
+
 ```
 sonub@0.0.1 /Users/thruthesky/apps/sonub
 ├── firebase@12.5.0
@@ -187,6 +204,8 @@ UI 컴포넌트에서 사용할 `cn` 유틸리티 함수를 생성합니다.
 **파일 경로:** `src/lib/utils.ts`
 
 **내용:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/influencers/+page.svelte.md)
 
 ```typescript
 /**
@@ -229,6 +248,8 @@ export function cn(...inputs: ClassValue[]) {
 
 **파일 경로:** `src/lib/components/ui/button/index.ts`
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/influencers/+page.svelte.md)
+
 ```typescript
 /**
  * Button 컴포넌트 export
@@ -257,6 +278,8 @@ export { Button };
 - 반응형 디자인
 
 **파일 경로:** `src/lib/components/ui/card/index.ts`
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/influencers/+page.svelte.md)
 
 ```typescript
 /**
@@ -303,6 +326,8 @@ export {
 
 **파일 경로:** `src/lib/components/ui/alert/index.ts`
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/influencers/+page.svelte.md)
+
 ```typescript
 /**
  * Alert 컴포넌트 export
@@ -345,6 +370,8 @@ Firebase는 이미 `sonub-setup-firebase.md`에 따라 초기화되어 있어야
 **목적:** 로그인 관련 유틸리티 함수 제공
 
 **내용:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/influencers/+page.svelte.md)
 
 ```typescript
 /**
@@ -515,6 +542,9 @@ AuthStore의 전체 구현, API, 사용 예제는 [sonub-store-auth.md](./sonub-
 - `isAdmin` getter로 권한 확인
 
 **사용 예:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/influencers/+page.svelte.md)
+
 ```typescript
 import { authStore } from '$lib/stores/auth.svelte';
 
@@ -531,6 +561,8 @@ const isAdmin = authStore.isAdmin;
 **목적:** Google 및 Apple 로그인 UI 및 로직 제공
 
 **내용:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/influencers/+page.svelte.md)
 
 ```svelte
 <script lang="ts">
@@ -762,6 +794,8 @@ const isAdmin = authStore.isAdmin;
 
 **내용:**
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/influencers/+page.svelte.md)
+
 ```svelte
 <script lang="ts">
 	/**
@@ -844,6 +878,8 @@ const isAdmin = authStore.isAdmin;
 
 **내용:**
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/influencers/+page.svelte.md)
+
 ```svelte
 <script lang="ts">
 	/**
@@ -921,18 +957,27 @@ const isAdmin = authStore.isAdmin;
 **필수 검증 단계:**
 
 1. **Firebase 설정 확인**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/influencers/+page.svelte.md)
+
    ```bash
    # Firebase SDK 설치 확인
    npm list firebase
    ```
 
    **예상 출력:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/influencers/+page.svelte.md)
+
    ```
    sonub@0.0.1
    └── firebase@11.0.0
    ```
 
 2. **파일 생성 확인**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/influencers/+page.svelte.md)
+
    ```bash
    # 모든 필수 파일이 생성되었는지 확인
    ls -la src/lib/utils/auth-helpers.ts
@@ -942,16 +987,25 @@ const isAdmin = authStore.isAdmin;
    ```
 
 3. **TypeScript 컴파일 확인**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/influencers/+page.svelte.md)
+
    ```bash
    npm run check
    ```
 
    **예상 출력:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/influencers/+page.svelte.md)
+
    ```
    No errors found
    ```
 
 4. **개발 서버 실행**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/influencers/+page.svelte.md)
+
    ```bash
    npm run dev
    ```
@@ -963,6 +1017,8 @@ const isAdmin = authStore.isAdmin;
 ### 7.2 기능 검증
 
 #### 7.2.1 Google 로그인 테스트
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/influencers/+page.svelte.md)
 
 ```
 1. 브라우저에서 http://localhost:5173/user/login 접속
@@ -983,6 +1039,8 @@ const isAdmin = authStore.isAdmin;
 
 #### 7.2.2 Apple 로그인 테스트
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/influencers/+page.svelte.md)
+
 ```
 1. 브라우저에서 http://localhost:5173/user/login 접속
 2. "Apple로 로그인" 버튼 클릭
@@ -997,6 +1055,8 @@ const isAdmin = authStore.isAdmin;
 ```
 
 #### 7.2.3 인증 상태 관리 테스트
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/influencers/+page.svelte.md)
 
 ```
 1. 로그인 후 페이지 새로고침
@@ -1013,6 +1073,8 @@ const isAdmin = authStore.isAdmin;
 ```
 
 #### 7.2.4 다국어 지원 테스트
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/influencers/+page.svelte.md)
 
 ```
 1. 브라우저 언어 설정 변경:
@@ -1031,6 +1093,8 @@ const isAdmin = authStore.isAdmin;
 
 ### 7.3 보안 검증
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/influencers/+page.svelte.md)
+
 ```
 1. Firebase Console에서 보안 규칙 확인
 2. 승인된 도메인 목록 확인
@@ -1044,6 +1108,8 @@ const isAdmin = authStore.isAdmin;
 
 **문제 1: 팝업이 차단됨**
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/influencers/+page.svelte.md)
+
 ```
 증상: "auth/popup-blocked" 에러 발생
 원인: 브라우저의 팝업 차단 설정
@@ -1054,6 +1120,8 @@ const isAdmin = authStore.isAdmin;
 ```
 
 **문제 2: 로그인 제공업체가 활성화되지 않음**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/influencers/+page.svelte.md)
 
 ```
 증상: "auth/operation-not-allowed" 에러
@@ -1067,6 +1135,8 @@ const isAdmin = authStore.isAdmin;
 
 **문제 3: 도메인이 승인되지 않음**
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/influencers/+page.svelte.md)
+
 ```
 증상: "auth/unauthorized-domain" 에러
 원인: 현재 도메인이 Firebase 승인 목록에 없음
@@ -1077,6 +1147,8 @@ const isAdmin = authStore.isAdmin;
 ```
 
 **문제 4: 언어 설정이 적용되지 않음**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/influencers/+page.svelte.md)
 
 ```
 증상: 로그인 화면이 항상 영어로 표시됨
@@ -1092,6 +1164,8 @@ const isAdmin = authStore.isAdmin;
 
 **문제 1: Apple 로그인 실패**
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/influencers/+page.svelte.md)
+
 ```
 증상: Apple 로그인 시 에러 발생
 원인: Services ID 미설정 또는 잘못된 설정
@@ -1104,6 +1178,8 @@ const isAdmin = authStore.isAdmin;
 ```
 
 **문제 2: 사용자 정보가 null**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/influencers/+page.svelte.md)
 
 ```
 증상: Apple 로그인 후 displayName 또는 email이 null
@@ -1121,6 +1197,8 @@ const isAdmin = authStore.isAdmin;
 Firestore에 사용자 프로필을 저장하려면 다음과 같이 구현:
 
 **파일 경로:** `src/lib/utils/auth-helpers.ts`에 추가
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/influencers/+page.svelte.md)
 
 ```typescript
 import { db } from '$lib/firebase';
@@ -1156,6 +1234,8 @@ export async function saveUserProfile(user: User): Promise<void> {
 
 로그인 성공 시 호출:
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/influencers/+page.svelte.md)
+
 ```typescript
 // signInWithGoogle() 또는 signInWithApple() 함수에서
 const result = await signInWithPopup(auth, provider);
@@ -1165,6 +1245,8 @@ await saveUserProfile(result.user);
 ### 9.2 로그인 리다이렉션 개선
 
 이전 페이지로 돌아가기:
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/influencers/+page.svelte.md)
 
 ```typescript
 // 로그인 페이지에서

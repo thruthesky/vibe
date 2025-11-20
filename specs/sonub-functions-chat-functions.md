@@ -26,6 +26,8 @@ tags:
 
 ## 1. 파일 구조
 
+**소스 코드 위치**: [chat.functions.ts.md](./repository/src/lib/functions/chat.functions.ts.md)
+
 ```
 src/
 └── lib/
@@ -45,6 +47,8 @@ src/
 ## 2. 제공 함수 목록
 
 ### 2.1 `buildSingleRoomId(a: string, b: string): string`
+
+**소스 코드 위치**: [chat.functions.ts.md](./repository/src/lib/functions/chat.functions.ts.md)
 
 ```ts
 /**
@@ -77,6 +81,8 @@ export function buildSingleRoomId(a: string, b: string) {
 ---
 
 ### 2.2 `resolveRoomTypeLabel(roomType: string): string`
+
+**소스 코드 위치**: [chat.functions.ts.md](./repository/src/lib/functions/chat.functions.ts.md)
 
 ```ts
 /**

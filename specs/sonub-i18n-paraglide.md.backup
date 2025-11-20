@@ -1,0 +1,340 @@
+---
+name: sonub-i18n-paraglide
+title: Paraglide-JS 기반 i18n 다국어 지원 시스템
+version: 1.2.0
+description: SvelteKit 5에서 Paraglide-JS를 사용한 다국어(i18n) 지원 시스템 구현 명세서
+author: JaeHo Song
+email: thruthesky@gmail.com
+license: GPL-3.0
+step: 15
+priority: **
+dependencies:
+  - sonub-setup-svelte.md
+tags:
+  - i18n
+  - internationalization
+  - paraglide-js
+  - localization
+  - multi-language
+  - inlang
+  - sveltekit5
+  - svelte5
+  - typescript
+---
+
+# Paraglide-JS 기반 i18n 다국어 지원 시스템
+
+## 개요 (Overview)
+
+Paraglide-JS는 SvelteKit 프로젝트를 위한 현대적인 다국어 지원 라이브러리입니다. 이 명세서는 SvelteKit 5 환경에서 Paraglide-JS를 활용하여 다국어 지원 시스템을 구현하는 방법을 정의합니다.
+
+### 핵심 기능
+
+- **자동 메시지 생성**: Inlang 메시지 형식의 JSON 파일에서 TypeScript/JavaScript 함수 자동 생성
+- **타입 안전성**: 생성된 메시지 함수로 컴파일 타임 타입 검증
+- **유연한 로케일 전략**: 쿠키, localStorage, 전역 변수, URL, 선호 언어 등 다양한 전략 지원
+- **SSR 지원**: 서버 사이드 렌더링 환경에서의 완전한 지원
+- **성능 최적화**: 트리 쉐이킹으로 불필요한 코드 제거
+
+### 지원 언어
+
+- **기본 언어 (Base Locale)**: `en` (영어)
+- **지원 언어**: `ko` (한국어), `ja` (일본어), `zh` (중국어)
+
+---
+
+## 요구사항 (Requirements)
+
+Paraglide의 설치 및 최소 설정 절차는 [`sonub-setup-paraglide.md`](./sonub-setup-paraglide.md)에 정의되어 있습니다.  
+본 문서는 다음 전제 위에서 동작합니다.
+
+- `@inlang/paraglide-js` · `@inlang/paraglide-sveltekit` 패키지가 설치되어 있음.
+- `project.inlang/settings.json`과 `vite.config.ts`가 최소 설정 가이드와 동일함.
+- `messages/en|ko|ja|zh.json` 이 모두 존재하며 동일한 키 집합을 유지함.
+
+설정 파일 편집, Vite 플러그인 구성, 서버 훅 연결 등은 모두 setup 문서를 참조하세요.
+
+---
+
+## 빠른 시작 (Quick Start)
+
+### 1. 컴포넌트에서 번역 사용
+
+```svelte
+<script lang="ts">
+  import { m } from '$lib/paraglide/messages';
+</script>
+
+<h1>{m.navHome()}</h1>
+<p>{m.authWelcomeUser({ name: '사용자' })}</p>
+```
+
+### 2. 언어 변경
+
+```svelte
+<script lang="ts">
+  import { getLocale, setLocale, locales } from '$lib/paraglide/runtime';
+
+  function changeLanguage(newLocale) {
+    setLocale(newLocale); // 자동으로 쿠키 저장 및 페이지 새로고침
+  }
+</script>
+
+<select value={getLocale()} onchange={(e) => changeLanguage(e.target.value)}>
+  {#each locales as locale}
+    <option value={locale}>{locale}</option>
+  {/each}
+</select>
+```
+
+### 3. 현재 로케일 가져오기
+
+```typescript
+import { getLocale } from '$lib/paraglide/runtime';
+
+const currentLocale = getLocale(); // 'en', 'ko', 'ja', 'zh' 중 하나
+```
+
+---
+
+## 파일 구조 (File Structure)
+
+세부 디렉터리 구성은 [`sonub-setup-paraglide.md`](./sonub-setup-paraglide.md#3-최소-파일-구성)에서 관리합니다.  
+이 문서에서는 **편집 가능 영역**만 요약합니다.
+
+- `messages/*.json`: 번역 키와 값을 직접 수정하는 유일한 소스입니다.
+- `src/lib/paraglide/*`: 플러그인이 자동 생성하므로 수동 편집 금지.
+- `project.inlang/settings.json`, `vite.config.ts`, `src/hooks.server.ts`, `src/app.html`: 설정 문서를 통해서만 수정.
+
+---
+
+## 핵심 원칙 (Core Principles)
+
+### 1. 키 이름은 항상 camelCase
+
+Paraglide는 JSON 키를 camelCase 함수로 변환합니다.
+
+```json
+✅ { "navHome": "홈" }
+✅ { "authLogin": "로그인" }
+❌ { "nav_home": "홈" }
+❌ { "auth-login": "로그인" }
+```
+
+### 2. 모든 언어 파일에 동일한 키 유지
+
+누락된 키가 있으면 빌드 시 에러가 발생합니다.
+
+```json
+// messages/ko.json
+{ "greeting": "안녕하세요" }
+
+// messages/en.json
+{ "greeting": "Hello" }
+
+// messages/ja.json
+{ "greeting": "こんにちは" }
+
+// messages/zh.json
+{ "greeting": "你好" }
+```
+
+### 3. 자동 생성 파일은 수정 금지
+
+`src/lib/paraglide/` 폴더는 Paraglide가 자동으로 생성하고 관리합니다.
+
+**✅ 수정 가능**: `messages/*.json`
+**❌ 수정 금지**: `src/lib/paraglide/*`
+
+---
+
+## 키 명명 규칙 (Naming Conventions)
+
+카테고리별 접두사를 사용하여 체계적으로 관리합니다.
+
+```json
+{
+  "navHome": "홈",                    // 네비게이션
+  "navAbout": "소개",
+  "navProducts": "제품",
+  "navContact": "연락처",
+
+  "authLogin": "로그인",              // 인증
+  "authSignup": "회원가입",
+  "authLogout": "로그아웃",
+  "authWelcomeUser": "환영합니다, {name}님!",
+
+  "profileNickname": "닉네임",        // 프로필
+  "profileEmail": "이메일",
+  "profileGender": "성별",
+  "profilePicture": "프로필 사진",
+
+  "commonSave": "저장",               // 공통
+  "commonCancel": "취소",
+  "commonLoading": "로딩 중...",
+  "commonError": "오류가 발생했습니다",
+
+  "testUserList": "테스트 사용자 목록",  // 테스트
+  "testUserCreate": "테스트 사용자 생성"
+}
+```
+
+---
+
+## 작동 원리 (How It Works)
+
+### 서버 사이드 (Server-Side)
+
+**`src/hooks.server.ts`**
+
+```typescript
+import type { Handle } from '@sveltejs/kit';
+import { paraglideMiddleware } from '$lib/paraglide/server';
+
+const handleParaglide: Handle = ({ event, resolve }) =>
+  paraglideMiddleware(event.request, ({ request, locale }) => {
+    event.request = request;
+
+    return resolve(event, {
+      transformPageChunk: ({ html }) => html.replace('%paraglide.lang%', locale)
+    });
+  });
+
+export const handle: Handle = handleParaglide;
+```
+
+**자동 처리 작업:**
+1. 쿠키에서 `PARAGLIDE_LOCALE` 읽기
+2. Accept-Language 헤더 확인
+3. 기본 로케일(en)로 폴백
+4. HTML lang 속성 설정
+
+### 클라이언트 사이드 (Client-Side)
+
+**자동 감지:**
+- 페이지 로드 시 쿠키의 `PARAGLIDE_LOCALE` 값 사용
+- 쿠키가 없으면 기본 로케일(en) 사용
+
+**언어 변경:**
+```typescript
+setLocale('ko'); // 자동으로 쿠키 저장 (1년 유효) + 페이지 새로고침
+```
+
+**로케일 전략 순서:**
+```
+쿠키 (PARAGLIDE_LOCALE)
+  ↓ (없으면)
+Accept-Language 헤더
+  ↓ (없으면)
+기본 로케일 (en)
+```
+
+---
+
+## 새 번역 추가하기 (Adding New Translations)
+
+### 1단계: 메시지 파일에 키 추가
+
+**`messages/ko.json`**
+```json
+{
+  "myNewKey": "새로운 메시지",
+  "greetingWithParam": "안녕하세요, {name}님!"
+}
+```
+
+**`messages/en.json`**
+```json
+{
+  "myNewKey": "New message",
+  "greetingWithParam": "Hello, {name}!"
+}
+```
+
+**`messages/ja.json`**
+```json
+{
+  "myNewKey": "新しいメッセージ",
+  "greetingWithParam": "こんにちは、{name}さん!"
+}
+```
+
+**`messages/zh.json`**
+```json
+{
+  "myNewKey": "新消息",
+  "greetingWithParam": "你好，{name}！"
+}
+```
+
+### 2단계: Paraglide 재컴파일
+
+```bash
+npm run dev  # 개발 서버가 자동으로 재컴파일
+```
+
+### 3단계: 컴포넌트에서 사용
+
+```svelte
+<script lang="ts">
+  import { m } from '$lib/paraglide/messages';
+</script>
+
+<p>{m.myNewKey()}</p>
+<p>{m.greetingWithParam({ name: '홍길동' })}</p>
+```
+
+---
+
+## 파라미터 사용 (Using Parameters)
+
+### 단일 파라미터
+
+```json
+{
+  "welcome": "환영합니다, {name}님!"
+}
+```
+
+```svelte
+{m.welcome({ name: '홍길동' })}
+```
+
+### 복수 파라미터
+
+```json
+{
+  "notification": "{count}개의 새 메시지가 있습니다. {sender}님이 보냈습니다."
+}
+```
+
+```svelte
+{m.notification({ count: 5, sender: '김철수' })}
+```
+
+---
+
+## 주의사항 (Important Notes)
+
+### ✅ 해야 할 것
+
+1. **키 이름은 camelCase로 작성**: `myKey` (O), `my_key` (X)
+2. **모든 로케일에 동일한 키 유지**: 누락된 키가 있으면 빌드 에러
+3. **타입 안전성 활용**: TypeScript가 자동으로 타입 체크
+4. **번역 파일만 수정**: `messages/*.json` 파일만 수정
+
+### ❌ 하지 말아야 할 것
+
+1. **자동 생성 파일 수정 금지**: `src/lib/paraglide/` 폴더
+2. **snake_case 키 사용 금지**: camelCase만 사용
+3. **일부 언어에만 키 추가 금지**: 모든 언어 파일에 동일한 키 필요
+4. **수동 쿠키 관리 금지**: `setLocale()`이 자동으로 처리
+
+---
+
+## SED 작업 기록
+
+| 날짜 | 작업자 | 내용 |
+| --- | --- | --- |
+| 2025-01-20 | Codex Agent | 홈/사이드바/게시글·댓글/채팅 메시지 편집 UI의 하드코딩 텍스트를 Paraglide `m.*` 호출로 교체하고, 공통/신규 번역 키를 `messages/en|ko|ja|zh.json`에 추가했습니다. |
+| 2025-01-20 | Codex Agent | 주요 화면(홈/게시글 리스트·작성·수정·댓글, 채팅 리스트/룸/생성, 프로필, 사이드바/탑바) 추가 i18n: UserSearchDialog·ChatCreateDialog·ChatRoom·UserProfile 커버·Post/Database 리스트 상태문구를 번역 키로 교체하고 관련 키를 `messages` 전 언어에 동기화했습니다. |

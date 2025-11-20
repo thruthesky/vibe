@@ -105,6 +105,8 @@ tags:
 
 ### 3.1 보안 규칙
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/friend/followers/+page.svelte.md)
+
 ```jsonc
 {
   "rules": {
@@ -134,6 +136,8 @@ tags:
 ## 4. 구현 (Implementation)
 
 ### 4.1 컴포넌트 구조
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/friend/followers/+page.svelte.md)
 
 ```
 src/
@@ -165,6 +169,8 @@ src/
   - 로그인 체크
   - 자기 자신 팔로우 방지
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/friend/followers/+page.svelte.md)
+
 ```svelte
 <script lang="ts">
   import { useFollow } from './use-follow.svelte';
@@ -192,6 +198,8 @@ src/
   - 현재 사용자가 팔로우하는 사용자 목록 표시
   - 실시간 구독으로 목록 업데이트
   - 각 사용자 프로필과 언팔로우 버튼 표시
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/friend/followers/+page.svelte.md)
 
 ```typescript
 async function subscribeFollowing() {
@@ -241,6 +249,8 @@ async function subscribeFollowing() {
   - 실시간 구독으로 목록 업데이트
   - 각 사용자 프로필과 팔로우 버튼 표시 (맞팔로우 가능)
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/friend/followers/+page.svelte.md)
+
 ```typescript
 async function subscribeFollowers() {
   const myUid = authStore.user?.uid;
@@ -288,6 +298,8 @@ async function subscribeFollowers() {
 - **위치**: `src/lib/components/left-sidebar.svelte`
 - **변경사항**: 로그인 시 팔로잉/팔로워 링크 추가
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/friend/followers/+page.svelte.md)
+
 ```svelte
 <!-- 팔로잉/팔로워 링크 (로그인 시에만 표시) -->
 {#if authStore.user}
@@ -313,6 +325,8 @@ async function subscribeFollowers() {
 - **위치**: `src/routes/+page.svelte`
 - **변경사항**: 게시글 작성자 프로필 옆에 팔로우 버튼 추가
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/friend/followers/+page.svelte.md)
+
 ```svelte
 <!-- 상단 메타 영역 -->
 <div class="post-header">
@@ -337,7 +351,7 @@ async function subscribeFollowers() {
 ### 4.4 다국어 메시지
 
 #### 추가된 i18n 키
-- **파일**: `messages/ko.json`, `messages/en.json`, `messages/ja.json`, `messages/zh.json`
+- **소스 코드 위치**: [repository/messages/ko.json.md](./repository/messages/ko.json.md), `messages/en.json`, `messages/ja.json`, `messages/zh.json`
 
 ```json
 {
@@ -354,6 +368,8 @@ async function subscribeFollowers() {
 - **@reference 디렉티브**: Tailwind CSS v4 문법 사용
 - **Light Mode**: 다크 모드 미지원
 - **반응형**: 모바일/데스크톱 대응
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/friend/followers/+page.svelte.md)
 
 ```css
 @reference "tailwindcss";
@@ -435,11 +451,16 @@ async function subscribeFollowers() {
 
 ### 5.2 타입 체크
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/friend/followers/+page.svelte.md)
+
 ```bash
 npm run check
 ```
 
 **결과**:
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/friend/followers/+page.svelte.md)
+
 ```
 Getting Svelte diagnostics...
 ====================================

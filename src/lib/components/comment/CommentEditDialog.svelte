@@ -9,6 +9,7 @@
 <script lang="ts">
 	import MessageEditModal from '$lib/components/MessageEditModal.svelte';
 	import { updateComment } from '$lib/functions/comment.functions';
+	import * as m from '$lib/paraglide/messages.js';
 
 	// Props
 	interface Props {
@@ -49,7 +50,7 @@
 			const result = await updateComment(postId, commentId, text, urls);
 
 			if (!result.success) {
-				return { success: false, error: result.error ?? '댓글 수정에 실패했습니다.' };
+				return { success: false, error: result.error ?? m.commentSaveFailed() };
 			}
 
 			// 저장 완료 콜백 호출
@@ -60,7 +61,7 @@
 			console.error('댓글 수정 실패:', err);
 			return {
 				success: false,
-				error: '댓글 수정에 실패했습니다. 다시 시도해주세요.'
+				error: m.commentSaveFailed()
 			};
 		}
 	}
@@ -68,14 +69,14 @@
 
 <MessageEditModal
 	bind:open
-	title="댓글 수정"
+	title={m.commentEditTitle()}
 	textLabel=""
 	{initialText}
 	{initialUrls}
 	roomId={postId}
-	saveButtonText="저장"
-	cancelButtonText="취소"
-	textPlaceholder="댓글을 입력하세요..."
+	saveButtonText={m.commonSave()}
+	cancelButtonText={m.commonCancel()}
+	textPlaceholder={m.commentTextPlaceholder()}
 	onSave={handleSave}
 	onCancel={onClose}
 />

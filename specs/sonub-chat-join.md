@@ -89,6 +89,9 @@ dependencies: []
 - **자동 계산**: Cloud Functions가 자동으로 상대방 UID를 계산하여 저장
 
 **사용 예시:**
+
+**소스 코드 위치**: [chat.join-create.handler.ts.md](./repository/firebase/functions/src/handlers/chat.join-create.handler.ts.md)
+
 ```typescript
 // 1:1 채팅방 목록에서 상대방 프로필 조회
 const partnerUid = chatJoin.partnerUid;
@@ -96,6 +99,9 @@ const partnerProfile = await database.ref(`users/${partnerUid}`).once('value');
 ```
 
 **데이터 예시:**
+
+**소스 코드 위치**: [chat.join-create.handler.ts.md](./repository/firebase/functions/src/handlers/chat.join-create.handler.ts.md)
+
 ```json
 {
   "chat-joins": {
@@ -138,6 +144,9 @@ const partnerProfile = await database.ref(`users/${partnerUid}`).once('value');
 | `open-{roomId}` | `"open"` | `open-general` |
 
 **사용 예시:**
+
+**소스 코드 위치**: [chat.join-create.handler.ts.md](./repository/firebase/functions/src/handlers/chat.join-create.handler.ts.md)
+
 ```typescript
 // UI 분기
 if (chatJoin.roomType === 'single') {
@@ -166,6 +175,9 @@ if (chatJoin.roomType === 'single') {
 | `500` | PIN 고정 | 사용자가 고정한 채팅방 | `5001698473000000` |
 
 **정렬 순서** (reverse() 사용 시):
+
+**소스 코드 위치**: [chat.join-create.handler.ts.md](./repository/firebase/functions/src/handlers/chat.join-create.handler.ts.md)
+
 ```
 "5001698474000000"  (PIN 고정)          ← 최상위
 "2001698473000000"  (읽지 않은 메시지)  ← 맨 위
@@ -235,7 +247,7 @@ if (chatJoin.roomType === 'single') {
    - **발신자**: `listOrder` = timestamp (읽음 상태)
    - **수신자**: `listOrder` = 200+timestamp (읽지 않은 상태), `newMessageCount` = increment(1)
 
-**코드 참조**: [firebase/functions/src/handlers/chat.handler.ts](../firebase/functions/src/handlers/chat.handler.ts)
+**코드 참조**: [firebase/functions/src/handlers/chat.handler.ts](./repository/firebase/functions/src/handlers/chat.handler.ts)
 
 ### 2. chat-joins 노드 생성 시 (onChatJoinCreate)
 
@@ -246,11 +258,13 @@ if (chatJoin.roomType === 'single') {
 2. `joinedAt`이 없으면 현재 타임스탬프로 설정
 3. 이미 있으면 건너뜀
 
-**코드 참조**: [firebase/functions/src/handlers/chat.handler.ts](../firebase/functions/src/handlers/chat.handler.ts)
+**코드 참조**: [firebase/functions/src/handlers/chat.handler.ts](./repository/firebase/functions/src/handlers/chat.handler.ts)
 
 ## 클라이언트 구현 예시
 
 ### 채팅방 목록 조회
+
+**소스 코드 위치**: [chat.join-create.handler.ts.md](./repository/firebase/functions/src/handlers/chat.join-create.handler.ts.md)
 
 ```typescript
 import { ref, query, orderByChild, limitToLast, onValue } from 'firebase/database';
@@ -285,6 +299,8 @@ onValue(chatJoinsQuery, (snapshot) => {
 
 ### 읽음 처리 (채팅방 입장 시)
 
+**소스 코드 위치**: [chat.join-create.handler.ts.md](./repository/firebase/functions/src/handlers/chat.join-create.handler.ts.md)
+
 ```typescript
 import { ref, get, set } from 'firebase/database';
 
@@ -311,6 +327,8 @@ if (currentListOrder?.startsWith('500')) {
 ```
 
 ### PIN 고정/해제
+
+**소스 코드 위치**: [chat.join-create.handler.ts.md](./repository/firebase/functions/src/handlers/chat.join-create.handler.ts.md)
 
 ```typescript
 import { ref, get, set } from 'firebase/database';

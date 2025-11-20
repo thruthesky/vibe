@@ -99,6 +99,8 @@ tags:
 
 ### 4.1 Favorite 인터페이스
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/chat/group-chat-list/+page.svelte.md)
+
 ```typescript
 /**
  * 즐겨찾기 폴더 인터페이스
@@ -126,6 +128,8 @@ interface Favorite {
 
 ### 4.2 Props 인터페이스
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/chat/group-chat-list/+page.svelte.md)
+
 ```typescript
 /**
  * ChatFavoritesDialog 컴포넌트 Props
@@ -141,6 +145,8 @@ interface Props {
 
 ### 4.3 DisplayMode 타입
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/chat/group-chat-list/+page.svelte.md)
+
 ```typescript
 /**
  * 표시 모드 (채팅방에서 호출 시에만 사용)
@@ -154,6 +160,8 @@ type DisplayMode = 'add' | 'browse';
 ## 5. 주요 함수 구현 (Implementation Details)
 
 ### 5.1 loadFavorites() - 폴더 목록 불러오기
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/chat/group-chat-list/+page.svelte.md)
 
 ```typescript
 /**
@@ -205,6 +213,8 @@ async function loadFavorites() {
 ```
 
 ### 5.2 saveFolder() - 폴더 저장 (생성/수정)
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/chat/group-chat-list/+page.svelte.md)
 
 ```typescript
 /**
@@ -274,6 +284,8 @@ async function saveFolder() {
 
 ### 5.3 toggleRoomInFolder() - 채팅방 추가/제거 토글
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/chat/group-chat-list/+page.svelte.md)
+
 ```typescript
 /**
  * 폴더 선택 (채팅방 추가/제거 토글)
@@ -311,6 +323,8 @@ async function toggleRoomInFolder(favorite: Favorite) {
 
 ### 5.4 handleFolderClick() - 폴더 클릭 핸들러 (듀얼 모드)
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/chat/group-chat-list/+page.svelte.md)
+
 ```typescript
 /**
  * 폴더 클릭 핸들러
@@ -334,6 +348,8 @@ function handleFolderClick(favorite: Favorite) {
 
 ### 5.5 toggleDisplayMode() - 모드 전환
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/chat/group-chat-list/+page.svelte.md)
+
 ```typescript
 /**
  * 표시 모드 토글 (추가 ↔ 목록)
@@ -349,6 +365,8 @@ function toggleDisplayMode() {
 ```
 
 ### 5.6 $effect - 다이얼로그 초기화
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/chat/group-chat-list/+page.svelte.md)
 
 ```typescript
 /**
@@ -371,6 +389,8 @@ $effect(() => {
 ## 6. UI/UX 레이아웃
 
 ### 6.1 다이얼로그 헤더 (조건부 제목과 버튼)
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/chat/group-chat-list/+page.svelte.md)
 
 ```svelte
 <DialogHeader>
@@ -409,6 +429,8 @@ $effect(() => {
 ```
 
 ### 6.2 폴더 아이템 구조
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/chat/group-chat-list/+page.svelte.md)
 
 ```
 ┌─────────────────────────────────────────┐
@@ -449,6 +471,8 @@ $effect(() => {
 
 ### 7.1 채팅 목록 페이지에서 사용
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/chat/group-chat-list/+page.svelte.md)
+
 ```svelte
 <script lang="ts">
   import ChatFavoritesDialog from '$lib/components/chat/ChatFavoritesDialog.svelte';
@@ -477,6 +501,8 @@ $effect(() => {
 ```
 
 ### 7.2 채팅방 페이지에서 사용
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/chat/group-chat-list/+page.svelte.md)
 
 ```svelte
 <script lang="ts">
@@ -507,6 +533,8 @@ $effect(() => {
 
 ### 7.3 이벤트 처리
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/chat/group-chat-list/+page.svelte.md)
+
 ```svelte
 <ChatFavoritesDialog
   bind:open={favoritesDialogOpen}
@@ -522,103 +550,13 @@ $effect(() => {
 />
 ```
 
-## 8. 테스트 시나리오 (Test Scenarios)
-
-### 8.1 폴더 생성 테스트
-
-**테스트 케이스**: 새 폴더 생성
-1. 채팅 목록에서 "즐겨찾기" 버튼 클릭
-2. "폴더 생성" 버튼 클릭
-3. 폴더 이름: "테스트 폴더" 입력
-4. 폴더 설명: "테스트용 폴더입니다" 입력
-5. "저장" 버튼 클릭
-6. **예상 결과**: 폴더 목록에 새 폴더가 추가됨
-
-**테스트 케이스**: 상단 고정 폴더 생성
-1. "폴더 생성" 버튼 클릭
-2. 폴더 이름: "중요 폴더" 입력
-3. "상단 고정" 체크박스 선택
-4. "저장" 버튼 클릭
-5. **예상 결과**: 폴더가 목록 상단에 표시되고 📌 아이콘이 표시됨
-
-### 8.2 채팅방 추가/제거 테스트
-
-**테스트 케이스**: 채팅방을 폴더에 추가
-1. 특정 채팅방에서 "즐겨찾기" 버튼 클릭
-2. 다이얼로그가 "추가 모드"로 열림
-3. 원하는 폴더를 클릭
-4. **예상 결과**:
-   - 폴더가 핑크색으로 하이라이트됨
-   - "✓" 표시가 나타남
-   - 실시간으로 Firebase에 저장됨
-
-**테스트 케이스**: 채팅방을 폴더에서 제거
-1. 이미 추가된 폴더(핑크색 하이라이트)를 다시 클릭
-2. **예상 결과**:
-   - 하이라이트가 사라짐
-   - "+" 표시로 변경됨
-   - Firebase에서 삭제됨
-
-### 8.3 듀얼 모드 테스트
-
-**테스트 케이스**: 추가 모드에서 목록 모드로 전환
-1. 채팅방에서 "즐겨찾기" 버튼 클릭 (추가 모드)
-2. "목록" 버튼 클릭
-3. **예상 결과**:
-   - 제목이 "즐겨찾기"로 변경됨
-   - 설명이 "폴더를 클릭하여 저장된 채팅방 목록을 확인하세요"로 변경됨
-   - 폴더 클릭 시 확장/축소 동작으로 변경됨
-   - 버튼 텍스트가 "추가"로 변경됨
-
-**테스트 케이스**: 목록 모드에서 채팅방 목록 확인
-1. 목록 모드에서 폴더 클릭
-2. **예상 결과**:
-   - 폴더가 확장되고 채팅방 목록이 표시됨
-   - 채팅방을 클릭하면 해당 채팅방으로 이동함
-
-### 8.4 폴더 수정/삭제 테스트
-
-**테스트 케이스**: 폴더 수정
-1. 채팅 목록에서 "즐겨찾기" 버튼 클릭
-2. 수정하려는 폴더의 "✏️" 버튼 클릭
-3. 폴더 이름과 설명 수정
-4. "저장" 버튼 클릭
-5. **예상 결과**: 폴더 정보가 업데이트됨
-
-**테스트 케이스**: 폴더 삭제
-1. 삭제하려는 폴더의 "🗑️" 버튼 클릭
-2. 확인 다이얼로그에서 "확인" 클릭
-3. **예상 결과**: 폴더가 목록에서 제거됨
-
-### 8.5 정렬 테스트
-
-**테스트 케이스**: 고정 폴더 정렬
-1. 일반 폴더 2개, 고정 폴더 2개 생성
-2. **예상 결과**:
-   - 고정 폴더 2개가 상단에 표시됨
-   - 각 그룹 내에서 최신순으로 정렬됨
-
-### 8.6 엣지 케이스 테스트
-
-**테스트 케이스**: 빈 폴더 이름
-1. "폴더 생성" 버튼 클릭
-2. 폴더 이름을 입력하지 않고 "저장" 클릭
-3. **예상 결과**: "폴더 이름을 입력해주세요." 에러 메시지 표시
-
-**테스트 케이스**: 로그아웃 상태에서 호출
-1. 로그아웃 후 즐겨찾기 다이얼로그 열기 시도
-2. **예상 결과**: 에러가 발생하지 않고 빈 목록 표시 또는 로딩 상태 유지
-
-**테스트 케이스**: 네트워크 에러
-1. 네트워크 연결 끊기
-2. 폴더 생성 또는 수정 시도
-3. **예상 결과**: 명확한 에러 메시지 표시
-
-## 9. 스타일링 (Styling)
+## 8. 스타일링 (Styling)
 
 ### 9.1 TailwindCSS 클래스 적용
 
 모든 스타일은 TailwindCSS 유틸리티 클래스를 통해 적용되며, `<style>` 블록에서 `@apply` 지시어를 사용합니다:
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/chat/group-chat-list/+page.svelte.md)
 
 ```css
 @import 'tailwindcss' reference;
@@ -648,50 +586,18 @@ $effect(() => {
 - **트랜지션**: `transition-colors`
 - **포커스**: `focus:ring-2 focus:ring-blue-500`
 
-## 10. 향후 개선 사항 (Future Improvements)
-
-### 10.1 추가 기능
-- [ ] 폴더 드래그 앤 드롭으로 순서 변경
-- [ ] 채팅방 드래그 앤 드롭으로 폴더 간 이동
-- [ ] 폴더 색상 커스터마이징
-- [ ] 폴더 아이콘 선택
-- [ ] 폴더 검색 기능
-- [ ] 채팅방 정보 미리보기 (이름, 마지막 메시지 등)
-
-### 10.2 성능 최적화
-- [ ] 가상 스크롤 구현 (폴더/채팅방 수가 많을 때)
-- [ ] 로컬 캐싱으로 로딩 속도 개선
-- [ ] Debounce 적용 (폴더 이름 입력 시)
-
-### 10.3 UX 개선
-- [ ] 폴더 이동 애니메이션
-- [ ] 토스트 알림 추가 (성공/실패 메시지)
-- [ ] 키보드 단축키 지원
-- [ ] 접근성 개선 (ARIA 속성 추가)
-
-## 11. 관련 파일 (Related Files)
+## 10. 관련 파일 (Related Files)
 
 ### 11.1 컴포넌트
-- [src/lib/components/chat/ChatFavoritesDialog.svelte](../src/lib/components/chat/ChatFavoritesDialog.svelte) - 메인 컴포넌트
+- [src/lib/components/chat/ChatFavoritesDialog.svelte](./repository/src/lib/components/chat/ChatFavoritesDialog.svelte) - 메인 컴포넌트
 
 ### 11.2 페이지
-- [src/routes/chat/list/+page.svelte](../src/routes/chat/list/+page.svelte:357) - 채팅 목록 페이지
-- [src/routes/chat/group-chat-list/+page.svelte](../src/routes/chat/group-chat-list/+page.svelte:294) - 그룹 채팅 목록 페이지
-- [src/routes/chat/open-chat-list/+page.svelte](../src/routes/chat/open-chat-list/+page.svelte:295) - 오픈 채팅 목록 페이지
-- [src/routes/chat/room/+page.svelte](../src/routes/chat/room/+page.svelte) - 채팅방 페이지
+- [src/routes/chat/list/+page.svelte](./repository/src/routes/chat/list/+page.svelte:357) - 채팅 목록 페이지
+- [src/routes/chat/group-chat-list/+page.svelte](./repository/src/routes/chat/group-chat-list/+page.svelte:294) - 그룹 채팅 목록 페이지
+- [src/routes/chat/open-chat-list/+page.svelte](./repository/src/routes/chat/open-chat-list/+page.svelte:295) - 오픈 채팅 목록 페이지
+- [src/routes/chat/room/+page.svelte](./repository/src/routes/chat/room/+page.svelte) - 채팅방 페이지
 
 ### 11.3 스펙 문서
 - [specs/sonub-firebase-database-structure.md](./sonub-firebase-database-structure.md) - Firebase 데이터베이스 구조
 - [specs/sonub-chat-overview.md](./sonub-chat-overview.md) - 채팅 기능 개요
 
-## 12. 변경 이력 (Change History)
-
-### v1.0.0 (2025-11-13)
-- ✅ 초기 구현 완료
-- ✅ 폴더 생성/수정/삭제 기능
-- ✅ 채팅방 추가/제거 기능
-- ✅ 상단 고정 기능
-- ✅ 듀얼 모드 (추가/목록) 구현
-- ✅ 채팅 목록 페이지 통합
-- ✅ 채팅방 페이지 통합
-- ✅ SED 형식 문서 작성

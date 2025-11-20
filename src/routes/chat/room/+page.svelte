@@ -531,7 +531,7 @@
 				// 업로드 완료되지 않은 파일이 있는지 확인
 				const incompleteFiles = uploadingFiles.filter((fs) => !fs.completed && !fs.error);
 				if (incompleteFiles.length > 0) {
-					sendError = `업로드 중인 파일이 ${incompleteFiles.length}개 있습니다. 업로드 완료 후 다시 시도해주세요.`;
+					sendError = m.chatUploadInProgress({ count: incompleteFiles.length });
 					isSending = false;
 					return;
 				}
@@ -539,7 +539,7 @@
 				// 업로드 실패한 파일이 있는지 확인
 				const failedFiles = uploadingFiles.filter((fs) => fs.error);
 				if (failedFiles.length > 0) {
-					sendError = `업로드 실패한 파일이 ${failedFiles.length}개 있습니다. 삭제 후 다시 시도해주세요.`;
+					sendError = m.chatUploadFailedCount({ count: failedFiles.length });
 					isSending = false;
 					return;
 				}
@@ -617,7 +617,7 @@
 			}
 		} catch (error) {
 			console.error('❌ 메시지 전송 실패:', error);
-			sendError = '메시지 전송에 실패했습니다. 다시 시도해주세요.';
+			sendError = m.chatSendRetry();
 			isSending = false;
 		}
 	}
@@ -706,7 +706,7 @@
 	async function handleLeaveRoom() {
 		if (!activeRoomId || !authStore.user?.uid || !rtdb) return;
 
-		const confirmed = confirm('채팅방에서 나가시겠습니까?');
+		const confirmed = confirm(m.chatLeaveConfirm());
 		if (!confirmed) return;
 
 		try {
@@ -1381,9 +1381,9 @@
 				<div class="flex-1 overflow-hidden">
 					<h1 class="truncate text-lg font-semibold text-gray-900">{targetDisplayName}</h1>
 					{#if targetProfileLoading}
-						<p class="text-xs text-gray-500">로딩 중...</p>
+						<p class="text-xs text-gray-500">{m.chatProfileLoading()}</p>
 					{:else if targetProfileError}
-						<p class="text-xs text-red-500">프로필 로드 실패</p>
+						<p class="text-xs text-red-500">{m.chatProfileLoadFailed()}</p>
 					{/if}
 				</div>
 			{:else if activeRoomId}
@@ -1516,7 +1516,7 @@
 		<div
 			class="message-list-section"
 			role="region"
-			aria-label="채팅 메시지 영역"
+			aria-label={m.chatMessagesArea()}
 			ondragover={preventDrop}
 			ondrop={preventDrop}
 		>
@@ -1554,7 +1554,7 @@
 										<div
 											class={`message-bubble ${mine ? 'bubble-mine' : 'bubble-theirs'} deleted-message`}
 										>
-											<p class="message-text m-0 text-gray-400 italic">삭제된 메시지입니다</p>
+											<p class="message-text m-0 text-gray-400 italic">{m.chatMessageDeleted()}</p>
 										</div>
 									{:else}
 										<!-- 일반 메시지 표시 -->
@@ -1636,7 +1636,7 @@
 												onmouseleave={handleLongPressEnd}
 												ontouchstart={() => handleLongPressStart(messageId)}
 												ontouchend={handleLongPressEnd}
-												aria-label="좋아요"
+												aria-label={m.chatLikeAction()}
 											>
 												<svg
 													class="like-icon"
@@ -1674,7 +1674,7 @@
 											<!-- 설정 드롭다운 (90분 이내 메시지만) -->
 											<DropdownMenu.Root>
 												<DropdownMenu.Trigger>
-													<button class="message-settings-button" aria-label="메시지 설정">
+													<button class="message-settings-button" aria-label={m.chatMessageSettings()}>
 														⚙
 													</button>
 												</DropdownMenu.Trigger>
@@ -1742,7 +1742,7 @@
 						type="button"
 						class="scroll-button scroll-to-top"
 						onclick={handleScrollToTop}
-						title="맨 위로 이동"
+						title={m.chatScrollTop()}
 					>
 						↑
 					</button>
@@ -1750,7 +1750,7 @@
 						type="button"
 						class="scroll-button scroll-to-bottom"
 						onclick={handleScrollToBottom}
-						title="맨 아래로 이동"
+						title={m.chatScrollBottom()}
 					>
 						↓
 					</button>
@@ -1878,7 +1878,7 @@
 				class="file-upload-button"
 				onclick={handleFileButtonClick}
 				disabled={composerDisabled || isSending}
-				aria-label="파일 첨부"
+				aria-label={m.chatAttachFile()}
 			>
 				<!-- 카메라 아이콘 -->
 				<svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -1935,7 +1935,7 @@
 			</button>
 
 			{#if isDragging}
-				<div class="drag-drop-overlay" role="region" aria-label="파일 드래그 앤 드롭 안내">
+				<div class="drag-drop-overlay" role="region" aria-label={m.chatDragDropAria()}>
 					<div class="drag-drop-content">
 						<!-- 파일 아이콘 애니메이션 -->
 						<svg class="drag-drop-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -1947,13 +1947,11 @@
 							/>
 						</svg>
 						<!-- 안내 텍스트 -->
-						<p class="drag-drop-title">파일을 여기에 놓으세요</p>
-						<p class="drag-drop-subtitle">
-							이미지, 동영상, 문서 등 다양한 파일을 업로드할 수 있습니다
-						</p>
-					</div>
+						<p class="drag-drop-title">{m.chatDropTitle()}</p>
+					<p class="drag-drop-subtitle">{m.chatDropSubtitle()}</p>
 				</div>
-			{/if}
+			</div>
+		{/if}
 		</form>
 
 		<!-- 카테고리 드롭다운 -->

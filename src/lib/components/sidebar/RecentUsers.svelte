@@ -93,9 +93,9 @@
 			type="button"
 			onclick={goToUserList}
 			class="more-button"
-			aria-label="사용자 목록 더보기"
+			aria-label={`${m.homeSectionRecentUsers()} ${m.homeSidebarSeeMore()}`}
 		>
-			<span class="more-text">더보기</span>
+			<span class="more-text">{m.homeSidebarSeeMore()}</span>
 			<ChevronRight class="more-icon" size={16} />
 		</button>
 	</div>
@@ -103,7 +103,7 @@
 	<!-- 컨텐츠 -->
 	<div class="section-content">
 		{#if isLoadingRecentUsers}
-			<p class="placeholder-text">로딩 중...</p>
+			<p class="placeholder-text">{m.commonLoading()}</p>
 		{:else if recentUsers.length === 0}
 			<p class="placeholder-text">{m.homeSidebarRecentUsersEmpty()}</p>
 		{:else}
@@ -118,7 +118,7 @@
 							<div class="user-avatar-wrapper">
 								<img
 									src={user.photoUrl ?? ''}
-									alt={user.displayName || 'recent user'}
+									alt={user.displayName || m.commonUser()}
 									class="user-avatar"
 									loading="lazy"
 								/>

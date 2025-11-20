@@ -44,6 +44,9 @@ tags:
 - Firebase RTDB/Functions 가동 중 (실시간 카드에 데이터 공급)
 
 ### 1.4 파일 위치
+
+**소스 코드 위치**: [right-sidebar.svelte.md](./repository/src/lib/components/right-sidebar.svelte.md)
+
 ```
 src/
 └── lib/
@@ -54,6 +57,9 @@ src/
 ## 2. 레이아웃 구조
 
 ### 2.1 전체 배치
+
+**소스 코드 위치**: [right-sidebar.svelte.md](./repository/src/lib/components/right-sidebar.svelte.md)
+
 ```
 <aside class="right-sidebar hidden lg:block">
   <Card.Root class="profile-card">…</Card.Root>
@@ -144,8 +150,3 @@ src/
 - [ ] 사이드바가 1024px 이하에서 완전히 숨겨지는가?
 - [ ] `npm run check` 실행 시 타입 오류가 없는가?
 
-## 8. 변경 이력 (SED Log)
-| 날짜 | 작성자 | 내용 |
-| --- | --- | --- |
-| 2025-11-18 | Codex Agent | 문서 전체를 한글로 재작성하고 최신 UI 구조·색상 체계를 반영함 |
-| 2025-01-09 | JaeHo Song | 초기 명세 작성 |

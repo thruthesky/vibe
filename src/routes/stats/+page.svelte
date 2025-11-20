@@ -3,6 +3,7 @@
 	import { rtdb } from '$lib/firebase';
 	import { onMount } from 'svelte';
 	import { onValue, ref } from 'firebase/database';
+	import * as m from '$lib/paraglide/messages.js';
 
 	let userCount: number | null = null;
 	let loading = true;
@@ -31,21 +32,21 @@
 </script>
 
 <svelte:head>
-	<title>Sonub 통계</title>
+	<title>{m.statsPageTitle()}</title>
 </svelte:head>
 
 <section class="stats-page">
 	<div class="stats-card">
-		<h1>Sonub 통계</h1>
-		<p class="stats-section-title">총 사용자 수</p>
+		<h1>{m.statsPageTitle()}</h1>
+		<p class="stats-section-title">{m.statsUserCountTitle()}</p>
 		<p class="stats-value">
 			{#if loading}
-				로딩 중...
+				{m.commonLoading()}
 			{:else}
-				{userCount ?? 0}명
+				{m.statsUserCountValue({ count: userCount ?? 0 })}
 			{/if}
 		</p>
-		<p class="stats-description">가입 시 Cloud Functions가 `/stats/counters/user`를 자동으로 증가시킵니다.</p>
+		<p class="stats-description">{m.statsUserCountDesc()}</p>
 	</div>
 </section>
 

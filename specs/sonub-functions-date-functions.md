@@ -28,7 +28,7 @@ tags:
 
 ### 1.1 `formatLongDate(timestamp?: number | null): string`
 
-**파일**: `src/lib/functions/date.functions.ts`
+**소스 코드 위치**: [repository/src/lib/functions/date.functions.ts.md](./repository/src/lib/functions/date.functions.ts.md)
 
 ```ts
 import { getLocale } from '$lib/paraglide/runtime.js';
@@ -62,6 +62,8 @@ export function formatLongDate(timestamp?: number | null): string {
 - **사용처**: `src/routes/user/list/+page.svelte`, `src/routes/chat/list/+page.svelte`, `src/routes/chat/room/+page.svelte` 등.
 
 ### 1.2 `formatShortDate(value?: number | null): string`
+
+**소스 코드 위치**: [date.functions.ts.md](./repository/src/lib/functions/date.functions.ts.md)
 
 ```ts
 export function formatShortDate(value?: number | null): string {
@@ -99,7 +101,7 @@ export function formatShortDate(value?: number | null): string {
 
 ### 1.3 `formatChatMessageDate(value?: number | null): string`
 
-**파일**: `src/lib/functions/date.functions.ts`
+**소스 코드 위치**: [repository/src/lib/functions/date.functions.ts.md](./repository/src/lib/functions/date.functions.ts.md)
 
 ```ts
 import { formatChatMessageDate as formatChatMessageDatePure } from '$shared/date.pure-functions';
@@ -134,6 +136,8 @@ export function formatChatMessageDate(value?: number | null): string {
 | 타임존 지정 포맷 | `Intl.DateTimeFormat` + `timeZone` 옵션 |
 | 숫자·통화 포맷 | `Intl.NumberFormat` |
 
+**소스 코드 위치**: [date.functions.ts.md](./repository/src/lib/functions/date.functions.ts.md)
+
 ```svelte
 <script lang="ts">
   export let date: Date | string = new Date();
@@ -151,6 +155,8 @@ export function formatChatMessageDate(value?: number | null): string {
 
 <p>{fmtDate.format(d)}</p>
 ```
+
+**소스 코드 위치**: [date.functions.ts.md](./repository/src/lib/functions/date.functions.ts.md)
 
 ```ts
 // 상대 시간 (초/분/시간/일 단위 자동 선택)
@@ -185,6 +191,8 @@ function formatRelative(from: Date, to = new Date(), locale = 'ko-KR') {
 2. **SSR 시간 불일치**  
    서버에서 렌더한 “현재 시간”과 클라이언트 시간이 다를 수 있으므로 상대 시간은 onMount 이후 계산하거나 서버에서는 고정 값을 사용합니다.
 
+**소스 코드 위치**: [date.functions.ts.md](./repository/src/lib/functions/date.functions.ts.md)
+
    ```svelte
    <script>
      import { onMount } from 'svelte';
@@ -201,6 +209,8 @@ function formatRelative(from: Date, to = new Date(), locale = 'ko-KR') {
 4. **Svelte 5 rune 파생값**  
    잦은 포맷 재계산을 피하려면 `$derived`로 포맷터와 결과를 묶습니다.
 
+**소스 코드 위치**: [date.functions.ts.md](./repository/src/lib/functions/date.functions.ts.md)
+
    ```ts
    const locale = $state('ko-KR');
    const timeZone = $state('Asia/Seoul');
@@ -208,13 +218,3 @@ function formatRelative(from: Date, to = new Date(), locale = 'ko-KR') {
    const formatted = $derived(() => fmt.format(date));
    ```
 
----
-
-## 작업 이력 (SED Log)
-
-| 날짜 | 작업자 | 변경 내용 |
-| ---- | ------ | -------- |
-| 2025-11-11 | Codex Agent | 최초 작성 |
-| 2025-11-11 | Codex Agent | `formatDate` 함수와 Intl 가이드를 문서화, 구조 정리 |
-| 2025-11-11 | Codex Agent | `formatLongDate`, `formatShortDate`로 개편하고 사용처를 최신화 |
-| 2025-11-15 | Claude Code | `formatChatMessageDate()` 함수 추가: 채팅 메시지 타임스탬프에 최적화된 날짜/시간 포맷 |

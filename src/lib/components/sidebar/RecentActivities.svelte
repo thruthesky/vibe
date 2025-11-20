@@ -121,9 +121,9 @@
 			type="button"
 			onclick={goToPostList}
 			class="more-button"
-			aria-label="게시글 목록 더보기"
+			aria-label={`${m.homeSidebarActivityTitle()} ${m.homeSidebarSeeMore()}`}
 		>
-			<span class="more-text">더보기</span>
+			<span class="more-text">{m.homeSidebarSeeMore()}</span>
 			<ChevronRight class="more-icon" size={16} />
 		</button>
 	</div>
@@ -143,7 +143,7 @@
 							class="activity-item"
 						>
 							<div class="activity-header">
-								<span class="activity-category">{activity.category || 'post'}</span>
+								<span class="activity-category">{activity.category || m.commonPost()}</span>
 							</div>
 							<p class="activity-text">
 								{activity.text || m.homeSidebarActivityNoText()}

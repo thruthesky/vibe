@@ -64,6 +64,8 @@ tags:
 
 ### 2.1 컴포넌트 동작 흐름
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
+
 ```
 사용자 로그인
     ↓
@@ -141,6 +143,8 @@ tags:
 
 Avatar 컴포넌트는 다음의 흐름으로 데이터를 처리합니다:
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
+
 ```typescript
 // 1. Props 입력
 uid: "GljDA3yso2b3wIHh1M45vHGUcK72"
@@ -187,6 +191,8 @@ shouldShowImage = true (photoUrl 존재 && !imageLoadFailed)
 
 ### 2.3 시스템 컴포넌트 관계
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
+
 ```
 ┌──────────────────────────────────────────────────────────────┐
 │ 부모 컴포넌트 (top-bar, menu, 프로필 페이지 등)              │
@@ -227,6 +233,8 @@ shouldShowImage = true (photoUrl 존재 && !imageLoadFailed)
 
 ### 3.2 Props 정의
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
+
 ```typescript
 interface Props {
 	/**
@@ -263,6 +271,8 @@ interface Props {
 - ✅ **추가**: `UserProfileStore` 사용
 - ✅ **추가**: `$effect`로 구독 시작
 - ✅ **추가**: `$derived`로 데이터 읽기
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
 
 ```typescript
 <script lang="ts">
@@ -406,6 +416,8 @@ interface Props {
 
 **성능 개선:**
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
+
 ```
 이전 (v2.0.0):
   - Avatar 컴포넌트 3개 → RTDB 리스너 3개 (동일 uid)
@@ -421,6 +433,9 @@ interface Props {
 #### 3.4.1 이미지 로드 실패 추적 (핵심 개선)
 
 **문제점 (v1):**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
+
 ```typescript
 // ❌ 잘못된 방법
 onerror={(e) => {
@@ -434,6 +449,9 @@ onerror={(e) => {
 ```
 
 **해결 방법 (v2):**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
+
 ```typescript
 // ✅ 올바른 방법
 let imageLoadFailed = $state(false);
@@ -469,6 +487,9 @@ function handleImageError(e: Event) {
 #### 3.4.2 CORS/Referrer 문제 해결
 
 **문제 진단:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
+
 ```
 콘솔 로그:
 [Avatar] ✅ RTDB 데이터 수신: photoUrl: "https://lh3.googleusercontent.com/..."
@@ -484,6 +505,9 @@ shouldShowImage: true   ✅ 이미지 표시 시도
 - Google 서버가 localhost를 신뢰하지 않아 요청 차단
 
 **해결:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
+
 ```html
 <img
 	src={photoUrl || ''}
@@ -501,6 +525,9 @@ shouldShowImage: true   ✅ 이미지 표시 시도
 | `crossorigin="anonymous"` | CORS 요청을 명시적으로 허용 | 외부 도메인의 이미지를 안전하게 로드 |
 
 **검증:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
+
 ```
 이전 (속성 없음):
 → Request Headers: Referer: http://localhost:5174/
@@ -514,6 +541,8 @@ shouldShowImage: true   ✅ 이미지 표시 시도
 ```
 
 #### 3.4.3 실시간 데이터 가져오기
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
 
 ```typescript
 onMount(() => {
@@ -555,6 +584,8 @@ onMount(() => {
 
 **`get()` vs `onValue()` 비교:**
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
+
 ```typescript
 // ❌ get() 사용 (1회성 조회)
 const snapshot = await get(userRef);
@@ -569,6 +600,8 @@ const unsubscribe = onValue(userRef, (snapshot) => {
 ```
 
 #### 3.4.4 반응형 계산 ($derived)
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
 
 ```typescript
 // displayName의 첫 글자 계산
@@ -592,6 +625,9 @@ const shouldShowImage = $derived(
 - `initial`과 `shouldShowImage`는 항상 최신 상태 유지
 
 **흐름 예시:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
+
 ```
 1. 초기 상태:
    photoUrl = null
@@ -613,6 +649,8 @@ const shouldShowImage = $derived(
 ```
 
 #### 3.4.5 동적 크기 지정
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
 
 ```html
 <div style="width: {size}px; height: {size}px;">
@@ -636,6 +674,8 @@ const shouldShowImage = $derived(
 ### 4.1 top-bar.svelte에서 적용
 
 **파일:** `src/lib/components/top-bar.svelte`
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
 
 ```typescript
 // Import 추가
@@ -663,6 +703,8 @@ import Avatar from '$lib/components/user/avatar.svelte';
 ### 4.2 menu/+page.svelte에서 적용
 
 **파일:** `src/routes/menu/+page.svelte`
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
 
 ```typescript
 // Import 추가
@@ -694,6 +736,8 @@ import Avatar from '$lib/components/user/avatar.svelte';
 
 #### 패턴 1: uid로 RTDB에서 자동 로드 (권장)
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
+
 ```svelte
 <Avatar uid={authStore.user?.uid} size={40} />
 ```
@@ -709,6 +753,8 @@ import Avatar from '$lib/components/user/avatar.svelte';
 ## 5. 동작 시나리오
 
 ### 5.1 프로필 사진이 있는 경우
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
 
 ```
 1. 사용자 로그인
@@ -751,6 +797,8 @@ import Avatar from '$lib/components/user/avatar.svelte';
 
 ### 5.2 프로필 사진이 없는 경우
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
+
 ```
 1. 사용자 로그인
    - authStore.user.uid = "xyz789"
@@ -779,6 +827,8 @@ import Avatar from '$lib/components/user/avatar.svelte';
 ```
 
 ### 5.3 이미지 로드 실패 (CORS/404 등)
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
 
 ```
 1. RTDB 데이터
@@ -809,6 +859,8 @@ import Avatar from '$lib/components/user/avatar.svelte';
 ```
 
 ### 5.4 실시간 업데이트
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
 
 ```
 1. 초기 상태
@@ -859,6 +911,8 @@ import Avatar from '$lib/components/user/avatar.svelte';
 
 **get() vs onValue() 비교:**
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
+
 ```typescript
 // ❌ get() 사용 (1회성 조회)
 const snapshot = await get(userRef);
@@ -884,6 +938,9 @@ const unsubscribe = onValue(userRef, (snapshot) => {
 ### 6.3 imageLoadFailed 상태 추적 방식
 
 **v1 (잘못된 방법):**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
+
 ```typescript
 onerror={(e) => {
 	const target = e.currentTarget as HTMLImageElement;
@@ -897,6 +954,9 @@ onerror={(e) => {
 ```
 
 **v2 (올바른 방법):**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
+
 ```typescript
 let imageLoadFailed = $state(false);
 
@@ -925,6 +985,9 @@ function handleImageError(e: Event) {
 ### 6.4 CORS/Referrer 문제 해결 방식
 
 **문제 재현:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
+
 ```
 브라우저 콘솔:
 [Avatar] ✅ RTDB 데이터 수신: photoUrl: "https://lh3.googleusercontent.com/..."
@@ -942,6 +1005,9 @@ Status: (failed)
 3. Google 서버가 신뢰하지 않는 도메인이라 차단
 
 **해결책:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
+
 ```html
 <img
 	src={photoUrl || ''}
@@ -952,6 +1018,9 @@ Status: (failed)
 ```
 
 **검증:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
+
 ```
 이전:
 Request Headers:
@@ -1007,11 +1076,16 @@ Request Headers:
 
 ### 7.2 타입 체크
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
+
 ```bash
 npm run check
 ```
 
 **기대 출력:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
+
 ```
 ✅ svelte-check found 0 errors
 ```
@@ -1019,6 +1093,9 @@ npm run check
 ### 7.3 콘솔 로그 확인
 
 **정상 동작 시 로그:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
+
 ```
 [Avatar onMount] 시작, uid: GljDA3yso2b3wIHh1M45vHGUcK72
 [Avatar] RTDB 리스너 등록 시작: users/GljDA3yso2b3wIHh1M45vHGUcK72
@@ -1036,6 +1113,9 @@ npm run check
 ```
 
 **이미지 로드 실패 시 로그:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
+
 ```
 [Avatar] ❌ 이미지 로드 실패: https://...
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1052,6 +1132,8 @@ npm run check
 
 프로덕션 배포 전에 다음 코드를 제거하거나 조건부로 변경:
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
+
 ```typescript
 // ❌ 제거할 코드
 $effect(() => {
@@ -1066,6 +1148,9 @@ console.log('[Avatar] RTDB 리스너 등록 시작:', `users/${uid}`);
 ```
 
 **대안: 환경 변수 활용**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
+
 ```typescript
 import { dev } from '$app/environment';
 
@@ -1080,6 +1165,9 @@ $effect(() => {
 ### 8.2 최적화 권장사항
 
 **1. 이미지 최적화**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
+
 ```typescript
 // Google 이미지 URL에 크기 파라미터 추가
 const optimizedPhotoUrl = photoUrl?.replace(/=s\d+/, `=s${size * 2}`);
@@ -1087,12 +1175,18 @@ const optimizedPhotoUrl = photoUrl?.replace(/=s\d+/, `=s${size * 2}`);
 ```
 
 **2. 리스너 최적화**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
+
 ```typescript
 // 동일한 uid의 Avatar가 여러 개 있을 경우
 // 전역 캐시 또는 Context API 사용 고려
 ```
 
 **3. 레이지 로딩**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
+
 ```html
 <img
 	loading="lazy"  <!-- ← 스크롤 시 로드 -->
@@ -1105,6 +1199,8 @@ const optimizedPhotoUrl = photoUrl?.replace(/=s\d+/, `=s${size * 2}`);
 
 ### 9.1 온라인 상태 표시
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
+
 ```svelte
 <div class="relative">
 	<Avatar uid={user.uid} size={40} />
@@ -1115,6 +1211,8 @@ const optimizedPhotoUrl = photoUrl?.replace(/=s\d+/, `=s${size * 2}`);
 ```
 
 ### 9.2 뱃지 시스템
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
 
 ```svelte
 <div class="relative">
@@ -1129,6 +1227,8 @@ const optimizedPhotoUrl = photoUrl?.replace(/=s\d+/, `=s${size * 2}`);
 
 ### 9.3 스켈레톤 로딩
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
+
 ```svelte
 {#if loading}
 	<div class="h-10 w-10 animate-pulse rounded-full bg-gray-200"></div>
@@ -1138,6 +1238,8 @@ const optimizedPhotoUrl = photoUrl?.replace(/=s\d+/, `=s${size * 2}`);
 ```
 
 ### 9.4 이미지 업로드 연동
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
 
 ```svelte
 <script>
@@ -1210,6 +1312,9 @@ const optimizedPhotoUrl = photoUrl?.replace(/=s\d+/, `=s${size * 2}`);
 3. ✅ 네트워크 연결 확인
 
 **해결:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
+
 ```bash
 # 브라우저 콘솔에서 확인
 [Avatar] RTDB 리스너 등록 시작: users/...
@@ -1238,6 +1343,9 @@ const optimizedPhotoUrl = photoUrl?.replace(/=s\d+/, `=s${size * 2}`);
 Svelte 5에서 `$state` Map의 객체를 **변경(mutate)**하고 `.set()`으로 저장해도 반응성이 트리거되지 않습니다.
 
 **잘못된 코드 (반응성 없음):**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
+
 ```typescript
 // ❌ WRONG - 동일한 객체 참조를 수정
 const item = this.cache.get(uid);
@@ -1250,6 +1358,9 @@ if (item) {
 ```
 
 **올바른 코드 (반응성 O):**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
+
 ```typescript
 // ✅ CORRECT - 새 객체 생성 및 Map 재할당
 const newCacheItem: ProfileCacheItem = {
@@ -1269,6 +1380,9 @@ this.cache = new Map(this.cache).set(uid, newCacheItem);
 3. **모든 업데이트에 적용**: onValue 성공/실패 모두 동일한 패턴 사용
 
 **검증 방법:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
+
 ```typescript
 // Avatar 컴포넌트에 $effect 추가
 $effect(() => {
@@ -1294,6 +1408,9 @@ console.log(`[UserProfileStore] 📊 현재 캐시 크기: ${this.cache.size}`);
 **원인:** `unsubscribe()` 호출 안 됨
 
 **해결:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
+
 ```typescript
 // onMount의 return 함수가 올바르게 구현되었는지 확인
 onMount(() => {
@@ -1314,6 +1431,9 @@ onMount(() => {
 **원인:** 이벤트 타입 캐스팅 필요
 
 **해결:** 이미 적용됨
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
+
 ```typescript
 function handleImageError(e: Event) {
 	// ✅ 타입 캐스팅 적용됨
@@ -1330,6 +1450,9 @@ function handleImageError(e: Event) {
 - Firebase RTDB 동시 연결 수 제한 및 비용 발생 가능
 
 **해결책 (향후 개선):**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
+
 ```typescript
 // Context API로 사용자 데이터 공유
 // src/lib/contexts/users.svelte.ts
@@ -1354,6 +1477,9 @@ export class UsersCache {
 **문제:** 동일한 이미지를 여러 번 다운로드
 
 **해결:** 브라우저가 자동으로 캐싱하지만, 추가 최적화 가능
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
+
 ```html
 <img
 	src={photoUrl || ''}
@@ -1368,6 +1494,9 @@ export class UsersCache {
 ### 14.1 XSS 방지
 
 **Svelte의 자동 이스케이핑:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
+
 ```svelte
 <!-- ✅ 안전: Svelte가 자동으로 이스케이프 -->
 <img src={photoUrl} alt={displayName} />
@@ -1379,6 +1508,9 @@ export class UsersCache {
 ### 14.2 RTDB 보안 규칙
 
 **권장 규칙:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
+
 ```json
 {
   "rules": {
@@ -1393,6 +1525,8 @@ export class UsersCache {
 ```
 
 ### 14.3 이미지 URL 검증
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
 
 ```typescript
 // 향후 개선: URL 유효성 검사
@@ -1423,11 +1557,6 @@ Avatar 컴포넌트는 다음과 같은 문제를 해결했습니다:
 - CORS/Referrer 정책 이해 및 적용
 - 상태 기반 UI 전환 (imageLoadFailed)
 
-**다음 단계:**
-- 프로덕션 배포 전 디버깅 로그 제거
-- 성능 최적화 (Context API로 리스너 공유)
-- 추가 기능 (온라인 상태, 뱃지 등)
-
 ## 16. UI 통합 현황 (2025-02 업데이트)
 
 ### 16.1 전역 적용 위치
@@ -1443,6 +1572,8 @@ Avatar 컴포넌트는 다음과 같은 문제를 해결했습니다:
   - 새로 선택한 파일은 `photoPreview` 이미지를 절대 위치로 겹쳐서 보여 주므로 Avatar의 기본 표시와 충돌하지 않습니다.
 
 ### 16.2 구현 가이드
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/user/profile/+page.svelte.md)
 
 ```svelte
 <Avatar uid={uid} size={64} class="shadow-sm" />

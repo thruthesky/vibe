@@ -122,11 +122,3 @@ SNS 웹 프로젝트에서 사용자의 프로필 정보는 다음과 같이 구
 6. **user-props로 대량 쿼리 최적화**: 특정 속성만 필요할 때 `/user-props/` 경로 사용하여 효율성 향상
 7. **Cloud Functions로 자동 동기화**: 프로필 업데이트 시 user-props도 자동으로 동기화되어 데이터 일관성 보장
 
----
-
-## 작업 이력 (SED Log)
-
-| 날짜 | 작업자 | 내용 |
-| ---- | ------ | ---- |
-| 2025-11-14 | Claude Code | 사용자 목록 페이지에 정렬 필드 드롭다운 추가 (전체 회원, 사진있는 회원, 사진있는 여성, 사진있는 남성). 검색 버튼을 우측으로 이동하고 반응형 레이아웃 구현. Cloud Functions의 `sort_recent*` 필드를 활용한 서버 측 필터링 적용. |
-| 2025-11-12 | Codex Agent | 사용자 검색 모달을 `src/lib/components/user/UserSearchDialog.svelte`로 분리하고 `/user/list` 명세에 재사용 기준을 명시. |

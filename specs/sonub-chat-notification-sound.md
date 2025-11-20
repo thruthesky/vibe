@@ -120,6 +120,9 @@ tags: chat, notification, sound, badge, realtime, cloud-functions, rtdb, broadca
 ### 3.2 Cloud Functions 트리거
 
 **트리거 경로:**
+
+**소스 코드 위치**: [chat.new-message-count.handler.ts.md](./repository/firebase/functions/src/handlers/chat.new-message-count.handler.ts.md)
+
 ```typescript
 /chat-joins/{uid}/{roomId}/newMessageCount
 ```
@@ -127,6 +130,9 @@ tags: chat, notification, sound, badge, realtime, cloud-functions, rtdb, broadca
 **트리거 이벤트:** `onValueWritten` (생성, 수정, 삭제 모두 감지)
 
 **핸들러 로직:**
+
+**소스 코드 위치**: [chat.new-message-count.handler.ts.md](./repository/firebase/functions/src/handlers/chat.new-message-count.handler.ts.md)
+
 ```typescript
 export async function handleNewMessageCountWritten(
   uid: string,
@@ -206,6 +212,9 @@ export async function handleNewMessageCountWritten(
 - Lines 225-252: 배지 스타일 (Tailwind CSS + keyframes)
 
 **주요 로직:**
+
+**소스 코드 위치**: [chat.new-message-count.handler.ts.md](./repository/firebase/functions/src/handlers/chat.new-message-count.handler.ts.md)
+
 ```typescript
 // 로그인 시 자동 구독
 $effect(() => {
@@ -226,6 +235,9 @@ let newMessageCount = $derived.by(() => {
 ```
 
 **배지 UI:**
+
+**소스 코드 위치**: [chat.new-message-count.handler.ts.md](./repository/firebase/functions/src/handlers/chat.new-message-count.handler.ts.md)
+
 ```svelte
 {#if newMessageCount > 0}
   <div class="new-message-badge">
@@ -256,6 +268,9 @@ let newMessageCount = $derived.by(() => {
 **주요 로직:**
 
 **1) 증가 감지:**
+
+**소스 코드 위치**: [chat.new-message-count.handler.ts.md](./repository/firebase/functions/src/handlers/chat.new-message-count.handler.ts.md)
+
 ```typescript
 let previousCount = $state(0);
 
@@ -294,6 +309,9 @@ $effect(() => {
 ```
 
 **2) 알림음 재생:**
+
+**소스 코드 위치**: [chat.new-message-count.handler.ts.md](./repository/firebase/functions/src/handlers/chat.new-message-count.handler.ts.md)
+
 ```typescript
 function playNotificationSound() {
   try {
@@ -310,6 +328,9 @@ function playNotificationSound() {
 ```
 
 **3) BroadcastChannel 초기화:**
+
+**소스 코드 위치**: [chat.new-message-count.handler.ts.md](./repository/firebase/functions/src/handlers/chat.new-message-count.handler.ts.md)
+
 ```typescript
 onMount(async () => {
   // Audio 객체 초기화
@@ -343,6 +364,9 @@ onMount(async () => {
 **파일 경로:** `/static/sound/new-message.mp3`
 
 **사용 방법:**
+
+**소스 코드 위치**: [chat.new-message-count.handler.ts.md](./repository/firebase/functions/src/handlers/chat.new-message-count.handler.ts.md)
+
 ```typescript
 const audio = new Audio('/sound/new-message.mp3');
 audio.volume = 0.7;  // 볼륨 70%
@@ -354,6 +378,8 @@ audio.play();
 ## 5. 워크플로우
 
 ### 5.1 새 메시지 수신 시 전체 흐름
+
+**소스 코드 위치**: [chat.new-message-count.handler.ts.md](./repository/firebase/functions/src/handlers/chat.new-message-count.handler.ts.md)
 
 ```mermaid
 sequenceDiagram
@@ -375,6 +401,8 @@ sequenceDiagram
 ```
 
 ### 5.2 채팅방 읽음 처리 시 전체 흐름
+
+**소스 코드 위치**: [chat.new-message-count.handler.ts.md](./repository/firebase/functions/src/handlers/chat.new-message-count.handler.ts.md)
 
 ```mermaid
 sequenceDiagram
@@ -506,6 +534,9 @@ sequenceDiagram
 ### 8.1 RTDB 보안 규칙
 
 **필수 규칙:**
+
+**소스 코드 위치**: [chat.new-message-count.handler.ts.md](./repository/firebase/functions/src/handlers/chat.new-message-count.handler.ts.md)
+
 ```json
 {
   "rules": {
@@ -528,6 +559,9 @@ sequenceDiagram
 ### 8.2 XSS 방지
 
 **배지 숫자 표시:**
+
+**소스 코드 위치**: [chat.new-message-count.handler.ts.md](./repository/firebase/functions/src/handlers/chat.new-message-count.handler.ts.md)
+
 ```svelte
 {newMessageCount > 99 ? '99+' : newMessageCount}
 ```
@@ -553,28 +587,6 @@ sequenceDiagram
 - [ ] 브라우저 푸시 알림 통합 (Notification API)
 - [ ] 배지 클릭 시 채팅 목록 페이지로 이동
 - [ ] 알림 센터 UI (알림 이력 표시)
-
----
-
-## 10. 변경 이력
-
-### v1.0.0 (2025-01-14)
-- [x] ✅ Cloud Functions `handleNewMessageCountWritten()` 구현
-- [x] ✅ 증가 시 `/users/{uid}/newMessageCount` increment
-- [x] ✅ 0/삭제 시 전체 채팅방 newMessageCount 합산 및 재계산
-- [x] ✅ TopBar에 알림 배지 UI 추가
-- [x] ✅ `/users/{uid}/newMessageCount` rtdbStore 구독
-- [x] ✅ 빨간 배지 + 펄스 애니메이션
-- [x] ✅ 99+ 표시 (100개 이상 시)
-- [x] ✅ +layout.svelte에 전역 알림음 시스템 구현
-- [x] ✅ newMessageCount 증가 감지 (이전 값과 비교)
-- [x] ✅ 증가 시에만 알림음 재생 (감소 시 재생 안 함)
-- [x] ✅ 채팅방 페이지에서 알림음 재생 안 함
-- [x] ✅ 디바운스 처리 (500ms 최소 간격)
-- [x] ✅ BroadcastChannel로 다중 탭 중복 재생 방지
-- [x] ✅ Audio 객체 초기화 (볼륨 70%)
-- [x] ✅ 사용자 인터랙션 후 알림음 재생 가능 (브라우저 정책)
-- [x] ✅ SED 스펙 문서 작성
 
 ---
 

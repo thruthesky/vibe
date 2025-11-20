@@ -144,9 +144,9 @@
 			type="button"
 			onclick={goToOpenChatList}
 			class="more-button"
-			aria-label="오픈채팅 더보기"
+			aria-label={`${m.homeSectionRecentOpenChat()} ${m.homeSidebarSeeMore()}`}
 		>
-			<span class="more-text">더보기</span>
+			<span class="more-text">{m.homeSidebarSeeMore()}</span>
 			<ChevronRight class="more-icon" size={16} />
 		</button>
 	</div>

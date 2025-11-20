@@ -71,6 +71,9 @@ tags:
 #### Avatar 컴포넌트 연동 (2025-02 업데이트)
 - 버튼 내부의 기본 출력은 `src/lib/components/user/avatar.svelte`를 그대로 사용합니다.
 - 코드 스니펫:
+
+**소스 코드 위치**: [+layout.svelte.md](./repository/src/routes/my/+layout.svelte.md)
+
   ```svelte
   <button class="relative h-32 w-32 overflow-hidden rounded-full ...">
     <Avatar uid={authStore.user.uid} size={128} class="pointer-events-none" />
@@ -125,6 +128,8 @@ tags:
 
 ### State 변수
 
+**소스 코드 위치**: [+layout.svelte.md](./repository/src/routes/my/+layout.svelte.md)
+
 ```typescript
 // 폼 데이터 상태
 let displayName = $state('');
@@ -147,6 +152,8 @@ let isPhotoUploading = $state(false); // 사진 업로드 중 상태
 ### 주요 함수
 
 #### 1. `loadProfile()` - 프로필 데이터 로드
+
+**소스 코드 위치**: [+layout.svelte.md](./repository/src/routes/my/+layout.svelte.md)
 
 ```typescript
 /**
@@ -195,6 +202,8 @@ async function loadProfile() {
 
 #### 2. `handlePhotoClick()` - 파일 선택 트리거
 
+**소스 코드 위치**: [+layout.svelte.md](./repository/src/routes/my/+layout.svelte.md)
+
 ```typescript
 /**
  * 파일 input 클릭 트리거
@@ -206,6 +215,8 @@ function handlePhotoClick() {
 ```
 
 #### 3. `handlePhotoChange()` - 파일 선택 처리
+
+**소스 코드 위치**: [+layout.svelte.md](./repository/src/routes/my/+layout.svelte.md)
 
 ```typescript
 /**
@@ -251,6 +262,8 @@ async function handlePhotoChange(event: Event) {
 ```
 
 #### 4. `uploadPhoto()` - Firebase Storage 업로드
+
+**소스 코드 위치**: [+layout.svelte.md](./repository/src/routes/my/+layout.svelte.md)
 
 ```typescript
 /**
@@ -310,6 +323,8 @@ async function uploadPhoto(file: File) {
 
 #### 5. `handleRemovePhoto()` - 프로필 사진 제거
 
+**소스 코드 위치**: [+layout.svelte.md](./repository/src/routes/my/+layout.svelte.md)
+
 ```typescript
 /**
  * 프로필 사진 제거
@@ -351,6 +366,8 @@ async function handleRemovePhoto() {
 ```
 
 #### 6. `handleSave()` - 프로필 저장
+
+**소스 코드 위치**: [+layout.svelte.md](./repository/src/routes/my/+layout.svelte.md)
 
 ```typescript
 /**
@@ -433,6 +450,8 @@ async function handleSave() {
 
 ### 라이프사이클
 
+**소스 코드 위치**: [+layout.svelte.md](./repository/src/routes/my/+layout.svelte.md)
+
 ```typescript
 /**
  * 컴포넌트 마운트 시 프로필 로드
@@ -456,6 +475,8 @@ $effect(() => {
 ## 🎨 UI 컴포넌트
 
 ### 프로필 사진 섹션
+
+**소스 코드 위치**: [+layout.svelte.md](./repository/src/routes/my/+layout.svelte.md)
 
 ```svelte
 <!-- 프로필 사진 -->
@@ -543,6 +564,8 @@ $effect(() => {
 
 ### Firebase Realtime Database
 
+**소스 코드 위치**: [+layout.svelte.md](./repository/src/routes/my/+layout.svelte.md)
+
 ```json
 {
   "users": {
@@ -556,6 +579,8 @@ $effect(() => {
 ```
 
 ### Firebase Storage
+
+**소스 코드 위치**: [+layout.svelte.md](./repository/src/routes/my/+layout.svelte.md)
 
 ```
 rules_version = '2';
@@ -577,6 +602,8 @@ service firebase.storage {
 ## 📊 데이터 구조
 
 ### RTDB `/users/{uid}`
+
+**소스 코드 위치**: [+layout.svelte.md](./repository/src/routes/my/+layout.svelte.md)
 
 ```json
 {

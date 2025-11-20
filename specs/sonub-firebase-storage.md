@@ -28,6 +28,8 @@ tags:
 - 로그인한 사용자의 UID별 디렉터리에 파일을 업로드합니다.
 - 업로드 진행률, 취소, 최근 업로드 URL 표시, 목록 새로고침, 삭제 기능을 포함합니다.
 
+**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
+
 ```svelte
 <script lang="ts">
 	import { browser } from '$app/environment';
@@ -453,6 +455,8 @@ Firebase Storage에 업로드된 파일(이미지, 비디오, 기타 파일)을 
 
 **전체 소스 코드:**
 
+**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
+
 ```svelte
 <!--
   첨부 파일 표시 컴포넌트 (재사용 가능)
@@ -669,6 +673,8 @@ Firebase Storage에 업로드된 파일(이미지, 비디오, 기타 파일)을 
 
 **사용 예시:**
 
+**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
+
 ```svelte
 <script lang="ts">
 	import FileAttachments from '$lib/components/FileAttachments.svelte';
@@ -720,6 +726,8 @@ URL이 이미지 파일인지 확인합니다.
 
 **지원 확장자:** `.jpg`, `.jpeg`, `.png`, `.gif`, `.webp`, `.bmp`, `.svg`
 
+**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
+
 ```typescript
 import { isImageUrl } from '$lib/functions/storage.functions';
 
@@ -735,6 +743,8 @@ URL이 비디오 파일인지 확인합니다.
 
 **지원 확장자:** `.mp4`, `.mov`, `.avi`, `.webm`, `.mkv`
 
+**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
+
 ```typescript
 import { isVideoUrl } from '$lib/functions/storage.functions';
 
@@ -748,6 +758,8 @@ if (isVideoUrl(url)) {
 
 Firebase Storage URL에서 파일명을 추출합니다.
 
+**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
+
 ```typescript
 import { getFilenameFromUrl } from '$lib/functions/storage.functions';
 
@@ -757,6 +769,8 @@ const filename = getFilenameFromUrl(url);
 ```
 
 ### 5.4. 이미지 미리보기 구현 예시
+
+**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
 
 ```svelte
 <script lang="ts">
@@ -812,6 +826,8 @@ const filename = getFilenameFromUrl(url);
 
 **파일:** `src/routes/+page.svelte`
 
+**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
+
 ```svelte
 <script lang="ts">
 	import FileAttachments from '$lib/components/FileAttachments.svelte';
@@ -837,6 +853,8 @@ const filename = getFilenameFromUrl(url);
 
 **변경 전 (잘못된 예시 - 버그):**
 
+**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
+
 ```svelte
 <!-- ❌ 모든 파일을 <img> 태그로 렌더링 (잘못된 방법) -->
 {#if message.urls && Object.keys(message.urls).length > 0}
@@ -860,6 +878,8 @@ const filename = getFilenameFromUrl(url);
 
 **변경 후 (올바른 예시):**
 
+**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
+
 ```svelte
 <!-- ✅ FileAttachments 컴포넌트 사용 (올바른 방법) -->
 {#if message.urls}
@@ -877,6 +897,8 @@ const filename = getFilenameFromUrl(url);
 
 **파일:** `src/routes/post/list/+page.svelte`
 
+**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
+
 ```svelte
 <!-- 첨부파일 미리보기 (FileAttachments 컴포넌트 사용) -->
 {#if message.urls}
@@ -887,6 +909,8 @@ const filename = getFilenameFromUrl(url);
 #### 댓글 목록에서 첨부 파일 미리보기
 
 **파일:** `src/lib/components/post/PostCommentList.svelte`
+
+**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
 
 ```svelte
 <!-- 첨부 파일 미리보기 (FileAttachments 컴포넌트 사용) -->
@@ -901,6 +925,8 @@ Firebase Storage는 기본적으로 CORS를 허용하지만, 특정 도메인에
 
 **CORS 설정 파일 예시:** `cors.json`
 
+**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
+
 ```json
 [
   {
@@ -913,6 +939,8 @@ Firebase Storage는 기본적으로 CORS를 허용하지만, 특정 도메인에
 
 **CORS 설정 적용:**
 
+**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
+
 ```bash
 # Google Cloud SDK 설치 후
 gsutil cors set cors.json gs://your-bucket-name.appspot.com
@@ -921,6 +949,8 @@ gsutil cors set cors.json gs://your-bucket-name.appspot.com
 ### 5.7. 이미지 로딩 에러 처리
 
 이미지 로딩 실패 시 fallback 이미지를 표시하는 방법:
+
+**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
 
 ```svelte
 <img
@@ -953,6 +983,8 @@ gsutil cors set cors.json gs://your-bucket-name.appspot.com
 
 **브라우저 콘솔에서 디버깅:**
 
+**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
+
 ```javascript
 // URL에서 파일명 추출 테스트
 import { getFilenameFromUrl, isImageUrl, isVideoUrl } from '$lib/functions/storage.functions';
@@ -975,6 +1007,8 @@ console.log('Is Video:', isVideoUrl(url));
 
 **문제 코드:**
 
+**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
+
 ```svelte
 <!-- ❌ 잘못된 코드 - 모든 파일을 <img>로 렌더링 -->
 {#if message.urls && Object.keys(message.urls).length > 0}
@@ -990,6 +1024,8 @@ console.log('Is Video:', isVideoUrl(url));
 
 1. `FileAttachments` 컴포넌트를 import:
 
+**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
+
 ```svelte
 <script lang="ts">
 	import FileAttachments from '$lib/components/FileAttachments.svelte';
@@ -998,6 +1034,8 @@ console.log('Is Video:', isVideoUrl(url));
 ```
 
 2. 기존 코드를 `FileAttachments` 컴포넌트로 교체:
+
+**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
 
 ```svelte
 <!-- ✅ 올바른 코드 - FileAttachments 컴포넌트 사용 -->
@@ -1015,6 +1053,8 @@ console.log('Is Video:', isVideoUrl(url));
 **검증 방법:**
 
 Chrome DevTools를 사용하여 확인:
+
+**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
 
 ```javascript
 // DOM에서 FileAttachments 컴포넌트 확인

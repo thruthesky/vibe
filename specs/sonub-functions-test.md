@@ -66,7 +66,7 @@ firebase/functions/
 - 빠른 실행 속도
 - 외부 의존성 제거
 
-**예시**: [like.handler.test.ts](../firebase/functions/tests/unit/like.handler.test.ts)
+**예시**: [like.handler.test.ts](./repository/firebase/functions/tests/unit/like.handler.test.ts)
 
 ```typescript
 import {expect} from "chai";
@@ -120,7 +120,7 @@ describe("like.handler - 좋아요 처리", () => {
 - Cloud Functions 트리거 대기 시간 필요
 - 테스트 데이터 생성 및 정리 필수
 
-**예시**: [influencer-score-integration.test.ts](../firebase/functions/tests/influencer-score-integration.test.ts)
+**예시**: [influencer-score-integration.test.ts](./repository/firebase/functions/tests/influencer-score-integration.test.ts)
 
 ```typescript
 import {describe, it, expect, beforeAll, afterAll} from "vitest";
@@ -200,7 +200,7 @@ user-stats/
 
 ### 통계 타입
 
-[stats.utils.ts](../firebase/functions/src/utils/stats.utils.ts)에 정의된 통계 타입:
+[stats.utils.ts](./repository/firebase/functions/src/utils/stats.utils.ts)에 정의된 통계 타입:
 
 ```typescript
 export type StatType =
@@ -270,7 +270,7 @@ influencer-rankings/
 
 ### 점수 체계
 
-[influencer-scores.constants.ts](../firebase/functions/src/shared/influencer-scores.constants.ts)에 정의된 점수:
+[influencer-scores.constants.ts](./repository/firebase/functions/src/shared/influencer-scores.constants.ts)에 정의된 점수:
 
 | 행동 | 작성자 점수 | 수신자 점수 | 설명 |
 |------|------------|------------|------|
@@ -562,8 +562,8 @@ npm test tests/influencer-score-integration.test.ts
 
 ## 참고 문서
 
-- [통계 유틸리티](../firebase/functions/src/utils/stats.utils.ts)
-- [인플루언서 점수 상수](../firebase/functions/src/shared/influencer-scores.constants.ts)
-- [좋아요 통계 핸들러](../firebase/functions/src/handlers/stats.like.handler.ts)
-- [좋아요 핸들러 유닛 테스트](../firebase/functions/tests/unit/like.handler.test.ts)
-- [인플루언서 점수 통합 테스트](../firebase/functions/tests/influencer-score-integration.test.ts)
+- [통계 유틸리티](./repository/firebase/functions/src/utils/stats.utils.ts)
+- [인플루언서 점수 상수](./repository/firebase/functions/src/shared/influencer-scores.constants.ts)
+- [좋아요 통계 핸들러](./repository/firebase/functions/src/handlers/stats.like.handler.ts)
+- [좋아요 핸들러 유닛 테스트](./repository/firebase/functions/tests/unit/like.handler.test.ts)
+- [인플루언서 점수 통합 테스트](./repository/firebase/functions/tests/influencer-score-integration.test.ts)

@@ -805,23 +805,4 @@ module.exports = {
 
 ---
 
-## 5. 변경 이력
-
-### v1.0.0 (2025-01-11)
-- **초기 문서 생성**: sonub-setup-tailwind.md에서 사용법 및 베스트 프랙티스 분리
-- **섹션 2 추가**: 기본 사용 방법 (기존 setup의 Section 7)
-- **섹션 3 추가**: 실무 베스트 프랙티스 (기존 setup의 Section 8)
-  - 코드 가독성 향상 (Prettier, 클래스 그룹화)
-  - Svelte `class:` 디렉티브 사용법
-  - `cn()` 헬퍼 함수 (clsx + tailwind-merge)
-  - Variant 패턴 (cva, tailwind-variants)
-  - `@layer components` + `@apply` 사용법
-  - `data-*` 속성 활용
-  - 프로젝트 구조 권장사항
-  - eslint-plugin-tailwindcss 설정
-  - 본 프로젝트의 CSS 스타일링 규칙 (Layout vs Style 분리, Light 모드 전용)
-  - 빠른 체크리스트
-- **참고 자료 추가**: 공식 문서, 플러그인, 베스트 프랙티스 라이브러리 링크
-- **교차 참조 추가**: sonub-setup-tailwind.md 참조
-
 

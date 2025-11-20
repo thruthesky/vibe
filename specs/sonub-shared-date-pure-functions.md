@@ -35,6 +35,8 @@ tags:
 
 ### 2.1. 파일 위치
 
+**소스 코드 위치**: [date.pure-functions.ts.md](./repository/shared/date.pure-functions.ts.md)
+
 ```
 /Users/thruthesky/apps/sonub/
 ├── shared/                          # 공유 모듈 (NEW)
@@ -48,6 +50,8 @@ tags:
 ```
 
 ### 2.2. 의존성 그래프
+
+**소스 코드 위치**: [date.pure-functions.ts.md](./repository/shared/date.pure-functions.ts.md)
 
 ```
 ┌─────────────────────────────────────────────────────┐
@@ -76,6 +80,9 @@ tags:
 긴 형식의 날짜/시간 문자열을 반환합니다.
 
 **시그니처**:
+
+**소스 코드 위치**: [date.pure-functions.ts.md](./repository/shared/date.pure-functions.ts.md)
+
 ```typescript
 function formatLongDate(
   timestamp?: number | null,
@@ -99,6 +106,9 @@ function formatLongDate(
 - ✅ 부수 효과(side effect) 없음
 
 **예시**:
+
+**소스 코드 위치**: [date.pure-functions.ts.md](./repository/shared/date.pure-functions.ts.md)
+
 ```typescript
 // 한국어
 formatLongDate(1699876845000, 'ko-KR')
@@ -118,6 +128,9 @@ formatLongDate(null, 'ko-KR')
 짧은 형식의 날짜/시간 문자열을 반환합니다. 오늘 날짜면 시간만, 과거 날짜면 날짜만 표시합니다.
 
 **시그니처**:
+
+**소스 코드 위치**: [date.pure-functions.ts.md](./repository/shared/date.pure-functions.ts.md)
+
 ```typescript
 function formatShortDate(
   value?: number | null,
@@ -145,6 +158,9 @@ function formatShortDate(
 - 테스트 시 시간을 모킹하여 테스트 가능합니다
 
 **예시**:
+
+**소스 코드 위치**: [date.pure-functions.ts.md](./repository/shared/date.pure-functions.ts.md)
+
 ```typescript
 const now = Date.now(); // 2025-11-12 22:30:00
 
@@ -169,6 +185,9 @@ formatShortDate(undefined, 'en-US')
 채팅 메시지용 날짜/시간 문자열을 반환합니다. 오늘/올해/과거 연도에 따라 다른 형식으로 표시합니다.
 
 **시그니처**:
+
+**소스 코드 위치**: [date.pure-functions.ts.md](./repository/shared/date.pure-functions.ts.md)
+
 ```typescript
 function formatChatMessageDate(
   value?: number | null,
@@ -203,6 +222,9 @@ function formatChatMessageDate(
 - 각 국가의 날짜/시간 표시 관습을 자동으로 적용
 
 **예시**:
+
+**소스 코드 위치**: [date.pure-functions.ts.md](./repository/shared/date.pure-functions.ts.md)
+
 ```typescript
 // 현재: 2025년 11월 15일 오후 5:30:00
 
@@ -238,6 +260,8 @@ formatChatMessageDate(null, 'en-US')
 
 Svelte 클라이언트는 `src/lib/functions/date.functions.ts`를 통해 간접적으로 사용합니다. 이 wrapper는 Paraglide의 locale을 자동으로 주입합니다.
 
+**소스 코드 위치**: [date.pure-functions.ts.md](./repository/shared/date.pure-functions.ts.md)
+
 ```typescript
 // src/lib/functions/date.functions.ts
 import { getLocale } from '$lib/paraglide/runtime.js';
@@ -270,6 +294,9 @@ export function formatChatMessageDate(value?: number | null): string {
 ```
 
 **컴포넌트에서 사용**:
+
+**소스 코드 위치**: [date.pure-functions.ts.md](./repository/shared/date.pure-functions.ts.md)
+
 ```svelte
 <script lang="ts">
   import { formatLongDate, formatShortDate, formatChatMessageDate } from '$lib/functions/date.functions';
@@ -287,6 +314,8 @@ export function formatChatMessageDate(value?: number | null): string {
 ### 4.2. Firebase Cloud Functions에서 사용
 
 Firebase Functions는 shared 폴더에서 직접 import하여 사용합니다.
+
+**소스 코드 위치**: [date.pure-functions.ts.md](./repository/shared/date.pure-functions.ts.md)
 
 ```typescript
 // firebase/functions/src/handlers/notification.handler.ts
@@ -312,6 +341,9 @@ export async function sendNotification(timestamp: number, userLocale: string) {
 ### 4.3. TypeScript 설정
 
 **Svelte tsconfig.json**:
+
+**소스 코드 위치**: [date.pure-functions.ts.md](./repository/shared/date.pure-functions.ts.md)
+
 ```json
 {
   "extends": "./.svelte-kit/tsconfig.json",
@@ -322,6 +354,9 @@ export async function sendNotification(timestamp: number, userLocale: string) {
 ```
 
 **svelte.config.js**:
+
+**소스 코드 위치**: [date.pure-functions.ts.md](./repository/shared/date.pure-functions.ts.md)
+
 ```javascript
 export default {
   kit: {
@@ -333,6 +368,9 @@ export default {
 ```
 
 **Firebase Functions tsconfig.json**:
+
+**소스 코드 위치**: [date.pure-functions.ts.md](./repository/shared/date.pure-functions.ts.md)
+
 ```json
 {
   "compilerOptions": {
@@ -353,6 +391,9 @@ export default {
 ```
 
 **Vite 설정 (vite.config.ts)**:
+
+**소스 코드 위치**: [date.pure-functions.ts.md](./repository/shared/date.pure-functions.ts.md)
+
 ```typescript
 export default defineConfig({
   server: {
@@ -367,6 +408,8 @@ export default defineConfig({
 ## 5. 설계 원칙
 
 ### 5.1. 완전한 순수 함수 유지
+
+**소스 코드 위치**: [date.pure-functions.ts.md](./repository/shared/date.pure-functions.ts.md)
 
 ```typescript
 // ✅ 올바른 예시 - locale을 파라미터로 받음
@@ -391,6 +434,8 @@ export function formatLongDate(timestamp?: number | null): string {
 
 외부 의존성이 필요한 경우 **파라미터로 주입**합니다:
 
+**소스 코드 위치**: [date.pure-functions.ts.md](./repository/shared/date.pure-functions.ts.md)
+
 ```typescript
 // Pure function: locale을 파라미터로 받음
 export function formatLongDate(timestamp: number, locale: string): string {
@@ -406,6 +451,8 @@ export function formatLongDateWithCurrentLocale(timestamp: number): string {
 
 ### 5.3. Zero External Dependencies
 
+**소스 코드 위치**: [date.pure-functions.ts.md](./repository/shared/date.pure-functions.ts.md)
+
 ```typescript
 // ✅ 허용: 표준 JavaScript API만 사용
 const date = new Date(timestamp);
@@ -420,6 +467,8 @@ import { ref } from 'firebase/database';  // ❌
 ## 6. 테스트 전략
 
 ### 6.1. 단위 테스트
+
+**소스 코드 위치**: [date.pure-functions.ts.md](./repository/shared/date.pure-functions.ts.md)
 
 ```typescript
 // shared/date.pure-functions.test.ts

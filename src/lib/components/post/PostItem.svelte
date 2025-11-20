@@ -181,7 +181,7 @@
 	<!-- 삭제된 게시글 표시 -->
 	{#if message.deleted}
 		<div class="post-card post-deleted">
-			<p class="post-deleted-text">삭제된 글입니다.</p>
+			<p class="post-deleted-text">{m.postDeletedMessage()}</p>
 		</div>
 	{:else}
 		<div class="post-card">
@@ -223,7 +223,7 @@
 									{roomName}
 								</button>
 							{:catch}
-								<button class="post-room-name" disabled>(채팅방)</button>
+								<button class="post-room-name" disabled>({m.chatRoomLabel()})</button>
 							{/await}
 						{/if}
 					{/if}
@@ -233,7 +233,7 @@
 									addSuffix: true,
 									locale: getDateLocale()
 								})
-							: '시간 정보 없음'}
+							: m.commonTimeUnknown()}
 					</span>
 				</div>
 			</div>
@@ -241,7 +241,7 @@
 			<!-- 메시지 내용 -->
 			<div class="post-content">
 				<p class="post-text">
-					{message.text || '(내용 없음)'}
+					{message.text || m.postNoContent()}
 				</p>
 
 				<!-- 첨부파일 미리보기 (FileAttachments 컴포넌트 사용) -->
@@ -275,7 +275,7 @@
 							/>
 						</svg>
 						<!-- 데스크톱: "좋아요" 텍스트 표시, 모바일: 숨김 -->
-						<span class="hidden md:inline">좋아요</span>
+						<span class="hidden md:inline">{m.reactionTypeLike()}</span>
 						<!-- 좋아요 숫자가 0보다 클 때만 표시 -->
 						{#if message.likeCount && message.likeCount > 0}
 							<span>{message.likeCount}</span>
@@ -302,13 +302,13 @@
 							viewBox="0 0 24 24"
 							stroke-width="2"
 						>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-							/>
-						</svg>
-						<span>댓글 {message.totalChildCount || 0}</span>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+								/>
+							</svg>
+						<span>{m.commonComment()} {message.totalChildCount || 0}</span>
 					</button>
 				</div>
 
@@ -316,7 +316,7 @@
 				{#if isMyPost}
 					<div class="post-actions-right">
 						<!-- 수정 아이콘 버튼 -->
-						<button class="action-icon-button" onclick={handleEditClick} aria-label="수정">
+						<button class="action-icon-button" onclick={handleEditClick} aria-label={m.commonEdit()}>
 							<svg
 								class="h-5 w-5"
 								fill="none"
@@ -336,7 +336,7 @@
 						<button
 							class="action-icon-button action-icon-button-danger"
 							onclick={handleDeleteClick}
-							aria-label="삭제"
+							aria-label={m.commonDelete()}
 						>
 							<svg
 								class="h-5 w-5"

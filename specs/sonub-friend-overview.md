@@ -167,6 +167,9 @@ tags:
 
 ### 예시
 사용자 B가 글을 작성하면:
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/friend/followers/+page.svelte.md)
+
 ```
 /chat-messages/msg123 = { senderId: "B", text: "Hello", createdAt: 1710000000 }
 /user-feed/B/msg123 = 1710000000
@@ -183,6 +186,9 @@ tags:
 ## 클라이언트 읽기 패턴
 
 ### 홈 피드 구독 (실시간)
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/friend/followers/+page.svelte.md)
+
 ```typescript
 // 1. 내 피드 목록 실시간 구독
 const feedRef = database.ref(`user-feed/${myUid}`)
@@ -212,6 +218,9 @@ feedRef.on('value', (snapshot) => {
 ```
 
 ### 페이지네이션
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/friend/followers/+page.svelte.md)
+
 ```typescript
 // startAt을 사용하여 이전 데이터 로드
 const feedRef = database.ref(`user-feed/${myUid}`)
@@ -250,6 +259,9 @@ const feedRef = database.ref(`user-feed/${myUid}`)
 2. Cloud Functions `onChatMessageCategoryCreate` 트리거
    - `/user-followers/{B}` 목록 조회 → [A, C, D, ...]
    - Multi-path update로 fan-out:
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/friend/followers/+page.svelte.md)
+
      ```javascript
      const updates = {
        [`/user-feed/${B}/${messageId}`]: createdAt,           // 본인 피드
@@ -268,6 +280,9 @@ const feedRef = database.ref(`user-feed/${myUid}`)
 2. Cloud Functions `onChatMessageDeleted` 트리거
    - `/user-followers/{B}` 목록 조회 → [A, C, D, ...]
    - Multi-path update로 fan-out 제거:
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/friend/followers/+page.svelte.md)
+
      ```javascript
      const updates = {
        [`/user-feed/${B}/${messageId}`]: null,
@@ -389,11 +404,17 @@ const feedRef = database.ref(`user-feed/${myUid}`)
 ### 📝 사용 방법
 
 #### 팔로우하기
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/friend/followers/+page.svelte.md)
+
 ```svelte
 <FollowButton targetUid={사용자UID} />
 ```
 
 #### 피드 목록 표시
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/friend/followers/+page.svelte.md)
+
 ```svelte
 <FeedList pageSize={20} />
 ```
@@ -410,17 +431,3 @@ const feedRef = database.ref(`user-feed/${myUid}`)
 - 팔로우/팔로잉 통계 대시보드 추가
 - 실시간 알림 기능 통합 (팔로우 시 알림 전송)
 
----
-
-## 작업 이력 (SED Log)
-
-| 날짜 | 작업자 | 변경 내용 |
-| ---- | ------ | -------- |
-| 2025-11-15 | Claude Code | "친구 관계의 정의 및 용어" 섹션 추가: 팔로우/팔로잉/팔로워/친구 관계의 명확한 정의 및 용어 정리 표 추가 |
-| 2025-11-17 | Claude Code | Fan-out 피드 시스템 상세 스펙 추가: 데이터 구조, 동작 플로우, 클라이언트 읽기 패턴, 최소 정보 원칙 등 구현에 필요한 모든 세부 사항 추가 |
-| 2025-11-17 | Claude Code | 전체 기능 구현 완료: Cloud Functions (팔로우 관계, fan-out), Security Rules, i18n, FollowButton/FeedList 컴포넌트, 홈페이지 통합, 타입 체크, Firebase 배포 완료 |
-| 2025-11-18 | Claude Code | 게시판/댓글 팔로우 버튼 통합 완료: `/post/list` 페이지 및 `PostCommentList` 컴포넌트에 FollowButton 추가, 본인 글/댓글 제외 로직 구현, Chrome DevTools MCP 테스트 통과 |
-| 2025-11-18 | Claude Code | 버그 수정: Firebase Functions에서 `senderId`를 올바른 필드명 `senderUid`로 수정, 22개 함수 재배포 완료 |
-| 2025-11-18 | Claude Code | 개발자 도구 개선: dev-icon.svelte에서 테스트 계정 로그인 시 alert 제거, UX 향상 |
-| 2025-11-18 | Claude Code | Lucide 아이콘 통합: FollowButton 컴포넌트에 UserPlus/UserCheck 아이콘 추가, 반응형 디자인 구현 (모바일: 아이콘만, 데스크톱: 아이콘+텍스트) |
-| 2025-11-19 | Claude Code | FeedList 무한 스크롤 구현: "더보기" 버튼 제거, DatabaseListView 패턴을 참고한 스크롤 기반 자동 로드 구현, skeleton 로딩 상태 추가, 다국어 메시지 추가 (feedNoMore) |

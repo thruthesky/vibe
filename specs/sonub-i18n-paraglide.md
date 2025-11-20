@@ -60,6 +60,8 @@ Paraglide의 설치 및 최소 설정 절차는 [`sonub-setup-paraglide.md`](./s
 
 ### 1. 컴포넌트에서 번역 사용
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/demo/paraglide/+page.svelte.md)
+
 ```svelte
 <script lang="ts">
   import { m } from '$lib/paraglide/messages';
@@ -70,6 +72,8 @@ Paraglide의 설치 및 최소 설정 절차는 [`sonub-setup-paraglide.md`](./s
 ```
 
 ### 2. 언어 변경
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/demo/paraglide/+page.svelte.md)
 
 ```svelte
 <script lang="ts">
@@ -88,6 +92,8 @@ Paraglide의 설치 및 최소 설정 절차는 [`sonub-setup-paraglide.md`](./s
 ```
 
 ### 3. 현재 로케일 가져오기
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/demo/paraglide/+page.svelte.md)
 
 ```typescript
 import { getLocale } from '$lib/paraglide/runtime';
@@ -114,6 +120,8 @@ const currentLocale = getLocale(); // 'en', 'ko', 'ja', 'zh' 중 하나
 
 Paraglide는 JSON 키를 camelCase 함수로 변환합니다.
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/demo/paraglide/+page.svelte.md)
+
 ```json
 ✅ { "navHome": "홈" }
 ✅ { "authLogin": "로그인" }
@@ -124,6 +132,8 @@ Paraglide는 JSON 키를 camelCase 함수로 변환합니다.
 ### 2. 모든 언어 파일에 동일한 키 유지
 
 누락된 키가 있으면 빌드 시 에러가 발생합니다.
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/demo/paraglide/+page.svelte.md)
 
 ```json
 // messages/ko.json
@@ -151,6 +161,8 @@ Paraglide는 JSON 키를 camelCase 함수로 변환합니다.
 ## 키 명명 규칙 (Naming Conventions)
 
 카테고리별 접두사를 사용하여 체계적으로 관리합니다.
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/demo/paraglide/+page.svelte.md)
 
 ```json
 {
@@ -187,6 +199,8 @@ Paraglide는 JSON 키를 camelCase 함수로 변환합니다.
 
 **`src/hooks.server.ts`**
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/demo/paraglide/+page.svelte.md)
+
 ```typescript
 import type { Handle } from '@sveltejs/kit';
 import { paraglideMiddleware } from '$lib/paraglide/server';
@@ -216,11 +230,17 @@ export const handle: Handle = handleParaglide;
 - 쿠키가 없으면 기본 로케일(en) 사용
 
 **언어 변경:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/demo/paraglide/+page.svelte.md)
+
 ```typescript
 setLocale('ko'); // 자동으로 쿠키 저장 (1년 유효) + 페이지 새로고침
 ```
 
 **로케일 전략 순서:**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/demo/paraglide/+page.svelte.md)
+
 ```
 쿠키 (PARAGLIDE_LOCALE)
   ↓ (없으면)
@@ -236,6 +256,9 @@ Accept-Language 헤더
 ### 1단계: 메시지 파일에 키 추가
 
 **`messages/ko.json`**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/demo/paraglide/+page.svelte.md)
+
 ```json
 {
   "myNewKey": "새로운 메시지",
@@ -244,6 +267,9 @@ Accept-Language 헤더
 ```
 
 **`messages/en.json`**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/demo/paraglide/+page.svelte.md)
+
 ```json
 {
   "myNewKey": "New message",
@@ -252,6 +278,9 @@ Accept-Language 헤더
 ```
 
 **`messages/ja.json`**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/demo/paraglide/+page.svelte.md)
+
 ```json
 {
   "myNewKey": "新しいメッセージ",
@@ -260,6 +289,9 @@ Accept-Language 헤더
 ```
 
 **`messages/zh.json`**
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/demo/paraglide/+page.svelte.md)
+
 ```json
 {
   "myNewKey": "新消息",
@@ -269,11 +301,15 @@ Accept-Language 헤더
 
 ### 2단계: Paraglide 재컴파일
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/demo/paraglide/+page.svelte.md)
+
 ```bash
 npm run dev  # 개발 서버가 자동으로 재컴파일
 ```
 
 ### 3단계: 컴포넌트에서 사용
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/demo/paraglide/+page.svelte.md)
 
 ```svelte
 <script lang="ts">
@@ -290,11 +326,15 @@ npm run dev  # 개발 서버가 자동으로 재컴파일
 
 ### 단일 파라미터
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/demo/paraglide/+page.svelte.md)
+
 ```json
 {
   "welcome": "환영합니다, {name}님!"
 }
 ```
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/demo/paraglide/+page.svelte.md)
 
 ```svelte
 {m.welcome({ name: '홍길동' })}
@@ -302,11 +342,15 @@ npm run dev  # 개발 서버가 자동으로 재컴파일
 
 ### 복수 파라미터
 
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/demo/paraglide/+page.svelte.md)
+
 ```json
 {
   "notification": "{count}개의 새 메시지가 있습니다. {sender}님이 보냈습니다."
 }
 ```
+
+**소스 코드 위치**: [+page.svelte.md](./repository/src/routes/demo/paraglide/+page.svelte.md)
 
 ```svelte
 {m.notification({ count: 5, sender: '김철수' })}
@@ -332,142 +376,9 @@ npm run dev  # 개발 서버가 자동으로 재컴파일
 
 ---
 
-## 트러블슈팅 (Troubleshooting)
+## SED 작업 기록
 
-### 문제 1: `m.xxx is not a function` 오류
-
-**원인**: 메시지 파일의 키가 camelCase가 아니거나 존재하지 않음
-
-**해결 방법**:
-```json
-❌ "my_key": "값"           // snake_case
-❌ "my-key": "값"           // kebab-case
-✅ "myKey": "값"            // camelCase
-```
-
-**코드 수정**:
-```svelte
-❌ {m.my_key()}
-✅ {m.myKey()}
-```
-
-### 문제 2: 번역이 업데이트되지 않음
-
-**원인**: Paraglide가 재컴파일되지 않음
-
-**해결 방법**:
-```bash
-# 개발 서버 재시작
-npm run dev
-```
-
-### 문제 3: 쿠키가 저장되지 않음
-
-**확인 사항**:
-- `setLocale()`을 호출했는지 확인
-- 브라우저 쿠키 설정 확인
-- HTTPS 환경에서는 Secure 플래그 필요할 수 있음
-
-**올바른 사용법**:
-```typescript
-// ✅ 올바른 방법 (자동으로 쿠키 저장)
-setLocale('ko');
-
-// ❌ 잘못된 방법 (수동 쿠키 설정 불필요)
-document.cookie = `PARAGLIDE_LOCALE=ko; ...`;
-setLocale('ko');
-```
-
-### 문제 4: 일부 언어에서만 번역 누락
-
-**원인**: 모든 언어 파일에 키가 없음
-
-**해결 방법**:
-```bash
-# 모든 언어 파일 확인
-cat messages/ko.json | jq 'keys'
-cat messages/en.json | jq 'keys'
-cat messages/ja.json | jq 'keys'
-cat messages/zh.json | jq 'keys'
-```
-
-모든 파일에 동일한 키가 있어야 합니다.
-
-### 문제 5: TypeScript 타입 오류
-
-**원인**: Paraglide가 생성한 타입 파일이 최신이 아님
-
-**해결 방법**:
-```bash
-# 개발 서버 재시작
-npm run dev
-
-# 또는 명시적으로 재컴파일
-npx @inlang/paraglide-js compile
-```
-
----
-
-## 자주 사용하는 함수 (Common Functions)
-
-```typescript
-import { getLocale, setLocale, locales } from '$lib/paraglide/runtime';
-import { m } from '$lib/paraglide/messages';
-
-// 현재 로케일 가져오기
-const currentLocale = getLocale(); // 'en' | 'ko' | 'ja' | 'zh'
-
-// 로케일 변경 (자동으로 쿠키 저장 + 페이지 새로고침)
-setLocale('ko');
-
-// 지원하는 모든 로케일 목록
-console.log(locales); // ['en', 'ko', 'ja', 'zh']
-
-// 메시지 함수 사용
-m.navHome();                           // "홈"
-m.authWelcomeUser({ name: '홍길동' }); // "환영합니다, 홍길동님!"
-```
-
----
-
-## 요약 (Summary)
-
-### 핵심 포인트
-
-1. **번역 추가**: `messages/*.json` 파일에 camelCase 키로 작성
-2. **사용**: `m.keyName()` 함수 호출
-3. **언어 변경**: `setLocale('ko')` 호출 (쿠키 저장 자동)
-4. **자동 생성 파일**: `src/lib/paraglide/` 폴더는 절대 수정 금지
-5. **명명 규칙**: camelCase + 카테고리 접두사 사용
-
-### 작업 흐름
-
-```
-1. messages/*.json 수정
-   ↓
-2. npm run dev (자동 재컴파일)
-   ↓
-3. m.keyName() 사용
-   ↓
-4. setLocale() 로 언어 변경
-```
-
-### 간소화된 접근 방식
-
-- ✅ **쿠키 관리**: `setLocale()`이 자동 처리
-- ✅ **로케일 감지**: `hooks.server.ts` 미들웨어가 자동 처리
-- ✅ **타입 안전성**: Paraglide가 자동 생성
-- ✅ **페이지 새로고침**: `setLocale()`이 자동 처리
-
-**더 자세한 내용은 다음 문서를 참고하세요:**
-- [Paraglide 설정 가이드](../docs/paraglide-setup.md)
-- [Paraglide 간단 가이드](../docs/paraglide-simple-guide.md)
-
----
-
-## 작업 이력 (SED Log)
-
-| 날짜 | 작업자 | 변경 내용 |
-| ---- | ------ | -------- |
-| 2025-11-11 | Codex Agent | Paraglide 설정을 최소 구성으로 정리: message matcher 모듈 제거, 클라이언트 reroute 훅 삭제, Vite 플러그인에 `outputStructure: 'locale-modules'` 적용 및 수동 타입 선언 파일을 정리하여 런타임이 자체 제공하는 타입만 사용하도록 조정. |
-| 2025-11-11 | Codex Agent | 설정/구성 설명을 `sonub-setup-paraglide.md`로 이동하고 본 문서는 번역 작성·사용 지침 중심으로 재구성, 교차 링크 추가. |
+| 날짜 | 작업자 | 내용 |
+| --- | --- | --- |
+| 2025-01-20 | Codex Agent | 홈/사이드바/게시글·댓글/채팅 메시지 편집 UI의 하드코딩 텍스트를 Paraglide `m.*` 호출로 교체하고, 공통/신규 번역 키를 `messages/en|ko|ja|zh.json`에 추가했습니다. |
+| 2025-01-20 | Codex Agent | 주요 화면(홈/게시글 리스트·작성·수정·댓글, 채팅 리스트/룸/생성, 프로필, 사이드바/탑바) 추가 i18n: UserSearchDialog·ChatCreateDialog·ChatRoom·UserProfile 커버·Post/Database 리스트 상태문구를 번역 키로 교체하고 관련 키를 `messages` 전 언어에 동기화했습니다. |

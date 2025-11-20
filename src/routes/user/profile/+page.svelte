@@ -159,7 +159,7 @@
 		<div class="profile-cover">
 			<!-- 커버 이미지 또는 기본 그라디언트 -->
 			{#if coverPhotoUrl}
-				<img src={coverPhotoUrl} alt="커버 이미지" class="profile-cover-image" />
+				<img src={coverPhotoUrl} alt={m.userProfileCoverAlt()} class="profile-cover-image" />
 			{/if}
 			<div class="profile-cover-gradient"></div>
 
@@ -170,7 +170,7 @@
 					class="cover-upload-button"
 					onclick={handleCoverUploadClick}
 					disabled={isUploadingCover}
-					aria-label="커버 사진 업로드"
+					aria-label={m.userProfileCoverUpload()}
 				>
 					{#if isUploadingCover}
 						<!-- 업로드 중 스피너 -->

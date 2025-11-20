@@ -19,6 +19,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { ref, push, set } from 'firebase/database';
 	import { rtdb } from '$lib/firebase';
+	import * as m from '$lib/paraglide/messages.js';
 
 	type ChatRoomType = 'group' | 'open';
 
@@ -32,10 +33,10 @@
 	let {
 		open = $bindable(false),
 		type,
-		title = type === 'group' ? '그룹 채팅방 생성' : '오픈 채팅방 생성',
+		title = type === 'group' ? m.chatCreateGroupTitle() : m.chatCreateOpenTitle(),
 		description = type === 'group'
-			? '그룹 채팅방 이름과 설명을 입력하세요.'
-			: '누구나 참여할 수 있는 공개 채팅방을 만드세요.'
+			? m.chatCreateGroupDescription()
+			: m.chatCreateOpenDescription()
 	}: Props = $props();
 
 	const dispatch = createEventDispatcher<{
@@ -52,7 +53,7 @@
 	// type에 따른 동적 설정
 	const isGroupChat = $derived(type === 'group');
 	const isOpenChat = $derived(type === 'open');
-	const placeholderText = $derived(isGroupChat ? '예: 친구들 모임' : '예: 개발자 모임');
+	const placeholderText = $derived(isGroupChat ? m.chatCreateGroupPlaceholder() : m.chatCreateOpenPlaceholder());
 	const dialogClass = $derived(
 		isGroupChat ? 'chat-create-dialog group' : 'chat-create-dialog open'
 	);
@@ -65,17 +66,17 @@
 
 		const trimmedName = roomName.trim();
 		if (!trimmedName) {
-			errorMessage = '채팅방 이름을 입력해주세요.';
+			errorMessage = m.chatCreateNameRequired();
 			return;
 		}
 
 		if (!authStore.user?.uid) {
-			errorMessage = '로그인이 필요합니다.';
+			errorMessage = m.authLoginRequired();
 			return;
 		}
 
 		if (!rtdb) {
-			errorMessage = '데이터베이스 연결 오류가 발생했습니다.';
+			errorMessage = m.firebaseNotReady();
 			return;
 		}
 
@@ -130,12 +131,12 @@
 			dispatch('created', { roomId });
 			open = false;
 		} catch (error) {
-			console.error(`❌ ${isGroupChat ? '그룹' : '오픈'} 채팅방 생성 실패:`, error);
-			errorMessage = '채팅방 생성에 실패했습니다. 다시 시도해주세요.';
-		} finally {
-			isCreating = false;
-		}
+		console.error('❌ 채팅방 생성 실패:', error);
+		errorMessage = m.chatCreateFailed();
+	} finally {
+		isCreating = false;
 	}
+}
 
 	/**
 	 * 취소 버튼 핸들러
@@ -177,7 +178,7 @@
 		<form class="flex flex-col gap-4" onsubmit={handleSubmit}>
 			<!-- 채팅방 이름 -->
 			<label class="form-label flex flex-col gap-2">
-				<span class="label-text">채팅방 이름 <span class="text-red-500">*</span></span>
+				<span class="label-text">{m.chatCreateNameLabel()} <span class="text-red-500">*</span></span>
 				<input
 					bind:this={inputRef}
 					bind:value={roomName}
@@ -189,12 +190,12 @@
 					disabled={isCreating}
 					onkeydown={(e) => e.stopPropagation()}
 				/>
-				<span class="hint-text">최대 50자</span>
+				<span class="hint-text">{m.chatCreateNameHint()}</span>
 			</label>
 
 			<!-- 채팅방 설명 -->
 			<label class="form-label flex flex-col gap-2">
-				<span class="label-text">채팅방 설명 (선택)</span>
+				<span class="label-text">{m.chatCreateDescriptionLabel()}</span>
 				<textarea
 					bind:value={roomDescription}
 					class="form-textarea"

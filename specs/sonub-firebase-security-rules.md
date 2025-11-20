@@ -409,11 +409,4 @@ firebase deploy --only storage
 - 배포 후 Firebase Console에서 규칙이 올바르게 적용되었는지 확인하세요.
 - 규칙 변경은 즉시 적용되므로 프로덕션 환경에서는 신중하게 배포하세요.
 
----
-
-## 작업 이력 (SED Log)
-
-| 날짜 | 작업자 | 내용 |
-| ---- | ------ | ---- |
-| 2025-11-16 | Codex Agent | `/chat-rooms/{roomId}` 규칙에서 `open` 불리언 필드를 완전히 제거하고, 문서 내 예제 JSON과 필드 설명 표를 모두 업데이트했습니다. 오픈 여부는 `type` 필드만으로 판별하며 `openListOrder`는 `type === 'open'`일 때만 생성된다는 점을 명확히 했습니다. |
 

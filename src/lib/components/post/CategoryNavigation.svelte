@@ -81,7 +81,7 @@
       class="category-create-button cursor-pointer px-1"
       on:click={handleCreate}
     >
-      [글 쓰기]
+      {m.boardWritePost()}
     </button>
   {/if}
 </div>

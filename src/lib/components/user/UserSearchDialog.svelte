@@ -20,6 +20,7 @@
   } from '$lib/components/ui/dialog';
   import DatabaseListView from '$lib/components/DatabaseListView.svelte';
   import Avatar from '$lib/components/user/avatar.svelte';
+  import * as m from '$lib/paraglide/messages.js';
 
   type UserData = Record<string, unknown>;
 
@@ -48,15 +49,15 @@
   let {
     open = $bindable(false),
     keyword = $bindable(''),
-    title = '사용자 검색',
-    description = 'displayNameLowerCase 필드가 정확히 일치하는 사용자를 찾습니다. 입력값은 자동으로 소문자로 변환됩니다.',
-    label = '검색할 사용자 이름 (소문자 기준)',
-    helperText = 'Firebase RTDB 의 `displayNameLowerCase` 필드와 일치해야 하므로 공백/대소문자를 제거한 형태로 입력해주세요.',
-    placeholder = '예: sonub',
+    title = m.userSearchTitle(),
+    description = m.userSearchDescription(),
+    label = m.userSearchLabel(),
+    helperText = m.userSearchHelper(),
+    placeholder = m.userSearchPlaceholder(),
     minLength = 2,
     autoLowercase = true,
-    submitLabel = '검색하기',
-    clearLabel = '검색 초기화',
+    submitLabel = m.userSearchSubmit(),
+    clearLabel = m.userSearchClear(),
     showResults = false,
     usersPath = 'users',
     searchField = 'displayNameLowerCase',
@@ -176,7 +177,7 @@
 
     {#if showResults && searchKeyword}
       <div class="search-results">
-        <h3 class="results-title">검색 결과</h3>
+        <h3 class="results-title">{m.userSearchResults()}</h3>
         {#key searchKeyword}
           <DatabaseListView
             path={usersPath}
@@ -207,12 +208,12 @@
             {/snippet}
 
             {#snippet loading()}
-              <p class="status-message">사용자 검색 중...</p>
+              <p class="status-message">{m.userSearchLoading()}</p>
             {/snippet}
 
             {#snippet empty()}
               <div class="status-message">
-                <p>"{searchKeyword}" 와 일치하는 사용자를 찾을 수 없습니다.</p>
+                <p>{m.userSearchNoResults({ keyword: searchKeyword ?? '' })}</p>
               </div>
             {/snippet}
           </DatabaseListView>

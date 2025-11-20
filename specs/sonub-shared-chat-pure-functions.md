@@ -45,6 +45,8 @@ tags:
 
 ### 2.1. 파일 위치 및 역할
 
+**소스 코드 위치**: [chat.pure-functions.ts.md](./repository/shared/chat.pure-functions.ts.md)
+
 ```
 /Users/thruthesky/apps/sonub/
 ├── shared/
@@ -66,6 +68,8 @@ tags:
 ```
 
 ### 2.2. 의존성 그래프
+
+**소스 코드 위치**: [chat.pure-functions.ts.md](./repository/shared/chat.pure-functions.ts.md)
 
 ```
 ┌──────────────────────────────────────────────────────┐
@@ -94,6 +98,9 @@ tags:
 두 사용자의 UID로부터 고정된 1:1 채팅방 ID를 생성합니다.
 
 **시그니처**:
+
+**소스 코드 위치**: [chat.pure-functions.ts.md](./repository/shared/chat.pure-functions.ts.md)
+
 ```typescript
 function buildSingleRoomId(a: string, b: string): string
 ```
@@ -118,6 +125,9 @@ function buildSingleRoomId(a: string, b: string): string
 - ✅ 부수 효과(side effect) 없음
 
 **예시**:
+
+**소스 코드 위치**: [chat.pure-functions.ts.md](./repository/shared/chat.pure-functions.ts.md)
+
 ```typescript
 // 정순으로 호출
 buildSingleRoomId('alice', 'bob')
@@ -133,6 +143,9 @@ buildSingleRoomId('user123', 'user456')
 ```
 
 **사용 사례**:
+
+**소스 코드 위치**: [chat.pure-functions.ts.md](./repository/shared/chat.pure-functions.ts.md)
+
 ```typescript
 // 클라이언트: 1:1 채팅방 생성
 const roomId = buildSingleRoomId(currentUserUid, otherUserUid);
@@ -152,6 +165,9 @@ export async function handleChatMessage(roomId: string) {
 roomId가 1:1 채팅방인지 확인합니다.
 
 **시그니처**:
+
+**소스 코드 위치**: [chat.pure-functions.ts.md](./repository/shared/chat.pure-functions.ts.md)
+
 ```typescript
 function isSingleChat(roomId: string): boolean
 ```
@@ -174,6 +190,9 @@ function isSingleChat(roomId: string): boolean
 - ✅ 부수 효과(side effect) 없음
 
 **예시**:
+
+**소스 코드 위치**: [chat.pure-functions.ts.md](./repository/shared/chat.pure-functions.ts.md)
+
 ```typescript
 // 1:1 채팅방
 isSingleChat('single-alice-bob')
@@ -193,6 +212,9 @@ isSingleChat('')
 ```
 
 **사용 사례**:
+
+**소스 코드 위치**: [chat.pure-functions.ts.md](./repository/shared/chat.pure-functions.ts.md)
+
 ```typescript
 // UI에서 채팅방 타입에 따라 다른 렌더링
 if (isSingleChat(roomId)) {
@@ -216,6 +238,9 @@ if (isSingleChat(roomId)) {
 1:1 채팅방 roomId에서 두 사용자의 UID를 추출합니다.
 
 **시그니처**:
+
+**소스 코드 위치**: [chat.pure-functions.ts.md](./repository/shared/chat.pure-functions.ts.md)
+
 ```typescript
 function extractUidsFromSingleRoomId(roomId: string): [string, string] | null
 ```
@@ -239,6 +264,9 @@ function extractUidsFromSingleRoomId(roomId: string): [string, string] | null
 - ✅ 부수 효과(side effect) 없음
 
 **예시**:
+
+**소스 코드 위치**: [chat.pure-functions.ts.md](./repository/shared/chat.pure-functions.ts.md)
+
 ```typescript
 // 올바른 형식
 extractUidsFromSingleRoomId('single-alice-bob')
@@ -262,6 +290,9 @@ extractUidsFromSingleRoomId('group-abc123')
 ```
 
 **사용 사례**:
+
+**소스 코드 위치**: [chat.pure-functions.ts.md](./repository/shared/chat.pure-functions.ts.md)
+
 ```typescript
 // Cloud Functions: 1:1 채팅 참여자에게 알림 발송
 export async function onChatMessageCreate(roomId: string, message: Message) {
@@ -294,6 +325,9 @@ if (uids) {
 채팅방 유형 문자열을 UI 표시용 짧은 배지 텍스트로 변환합니다.
 
 **시그니처**:
+
+**소스 코드 위치**: [chat.pure-functions.ts.md](./repository/shared/chat.pure-functions.ts.md)
+
 ```typescript
 function resolveRoomTypeLabel(roomType: string): string
 ```
@@ -322,6 +356,9 @@ function resolveRoomTypeLabel(roomType: string): string
 - ✅ 부수 효과(side effect) 없음
 
 **예시**:
+
+**소스 코드 위치**: [chat.pure-functions.ts.md](./repository/shared/chat.pure-functions.ts.md)
+
 ```typescript
 // 오픈 채팅
 resolveRoomTypeLabel('open')        // → "Open"
@@ -345,6 +382,9 @@ resolveRoomTypeLabel(null)          // → "Room"
 ```
 
 **사용 사례**:
+
+**소스 코드 위치**: [chat.pure-functions.ts.md](./repository/shared/chat.pure-functions.ts.md)
+
 ```svelte
 <!-- Svelte 컴포넌트: 채팅방 타입 배지 표시 -->
 <script lang="ts">
@@ -364,6 +404,8 @@ resolveRoomTypeLabel(null)          // → "Room"
 ### 4.1. Svelte 클라이언트에서 사용
 
 Svelte 클라이언트는 `src/lib/functions/chat.functions.ts`를 통해 사용합니다. 이 파일은 shared 함수들을 re-export합니다.
+
+**소스 코드 위치**: [chat.pure-functions.ts.md](./repository/shared/chat.pure-functions.ts.md)
 
 ```typescript
 // src/lib/functions/chat.functions.ts
@@ -385,6 +427,9 @@ export async function joinChatRoom(db: Database, roomId: string, uid: string) {
 ```
 
 **컴포넌트에서 사용**:
+
+**소스 코드 위치**: [chat.pure-functions.ts.md](./repository/shared/chat.pure-functions.ts.md)
+
 ```svelte
 <script lang="ts">
   import {
@@ -418,6 +463,8 @@ export async function joinChatRoom(db: Database, roomId: string, uid: string) {
 ### 4.2. Firebase Cloud Functions에서 사용
 
 Firebase Functions는 shared 폴더에서 직접 import합니다.
+
+**소스 코드 위치**: [chat.pure-functions.ts.md](./repository/shared/chat.pure-functions.ts.md)
 
 ```typescript
 // firebase/functions/src/handlers/chat.handler.ts
@@ -457,6 +504,9 @@ export async function handleChatMessageCreate(
 ### 4.3. TypeScript 설정
 
 **Svelte (svelte.config.js)**:
+
+**소스 코드 위치**: [chat.pure-functions.ts.md](./repository/shared/chat.pure-functions.ts.md)
+
 ```javascript
 export default {
   kit: {
@@ -468,6 +518,9 @@ export default {
 ```
 
 **Firebase Functions (tsconfig.json)**:
+
+**소스 코드 위치**: [chat.pure-functions.ts.md](./repository/shared/chat.pure-functions.ts.md)
+
 ```json
 {
   "compilerOptions": {
@@ -481,6 +534,9 @@ export default {
 ```
 
 **Vite (vite.config.ts)**:
+
+**소스 코드 위치**: [chat.pure-functions.ts.md](./repository/shared/chat.pure-functions.ts.md)
+
 ```typescript
 export default defineConfig({
   server: {
@@ -494,6 +550,8 @@ export default defineConfig({
 ## 5. 설계 원칙
 
 ### 5.1. Pure Functions Only
+
+**소스 코드 위치**: [chat.pure-functions.ts.md](./repository/shared/chat.pure-functions.ts.md)
 
 ```typescript
 // ✅ 올바른 예시 - 순수 문자열 처리
@@ -509,6 +567,8 @@ export async function createSingleRoom(a: string, b: string) {
 ```
 
 ### 5.2. 입력 검증
+
+**소스 코드 위치**: [chat.pure-functions.ts.md](./repository/shared/chat.pure-functions.ts.md)
 
 ```typescript
 // ✅ 올바른 예시 - null 안전성
@@ -529,6 +589,8 @@ export function extractUidsFromSingleRoomId(roomId: string): [string, string] {
 
 ### 5.3. Zero External Dependencies
 
+**소스 코드 위치**: [chat.pure-functions.ts.md](./repository/shared/chat.pure-functions.ts.md)
+
 ```typescript
 // ✅ 허용: 표준 JavaScript API만 사용
 const sorted = [a, b].sort();
@@ -543,6 +605,8 @@ import { getLocale } from '$lib/paraglide/runtime.js';  // ❌
 ## 6. 테스트 전략
 
 ### 6.1. 단위 테스트
+
+**소스 코드 위치**: [chat.pure-functions.ts.md](./repository/shared/chat.pure-functions.ts.md)
 
 ```typescript
 // shared/chat.pure-functions.test.ts

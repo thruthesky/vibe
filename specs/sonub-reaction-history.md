@@ -49,6 +49,8 @@ dependencies:
 
 ### 2.1.1 나의 발자취 (My Actions)
 
+**소스 코드 위치**: [reaction-history.utils.ts.md](./repository/firebase/functions/src/utils/reaction-history.utils.ts.md)
+
 ```
 /my-actions/{uid}/{pushKey}
   fromUid: string         # 본인의 UID
@@ -59,6 +61,9 @@ dependencies:
 ```
 
 **예시:**
+
+**소스 코드 위치**: [reaction-history.utils.ts.md](./repository/firebase/functions/src/utils/reaction-history.utils.ts.md)
+
 ```json
 {
   "my-actions": {
@@ -84,6 +89,8 @@ dependencies:
 
 ### 2.1.2 받은 반응 (Received Reactions)
 
+**소스 코드 위치**: [reaction-history.utils.ts.md](./repository/firebase/functions/src/utils/reaction-history.utils.ts.md)
+
 ```
 /received-reactions/{uid}/{pushKey}
   fromUid: string         # 리액션을 발생시킨 사용자의 UID
@@ -94,6 +101,9 @@ dependencies:
 ```
 
 **예시:**
+
+**소스 코드 위치**: [reaction-history.utils.ts.md](./repository/firebase/functions/src/utils/reaction-history.utils.ts.md)
+
 ```json
 {
   "received-reactions": {
@@ -123,6 +133,8 @@ dependencies:
 - pushKey는 기본적으로 시간순 정렬을 보장하지만, DatabaseListView 사용을 위해 `createdAt` 필드 사용
 
 # 3. 아키텍처
+
+**소스 코드 위치**: [reaction-history.utils.ts.md](./repository/firebase/functions/src/utils/reaction-history.utils.ts.md)
 
 ```
 ┌─────────────────────────────┐
@@ -227,6 +239,8 @@ dependencies:
 
 ### 5.2.1 `recordMyAction()`
 
+**소스 코드 위치**: [reaction-history.utils.ts.md](./repository/firebase/functions/src/utils/reaction-history.utils.ts.md)
+
 ```typescript
 /**
  * 나의 발자취에 리액션 기록
@@ -240,6 +254,8 @@ async function recordMyAction(params: {
 ```
 
 ### 5.2.2 `recordReceivedReaction()`
+
+**소스 코드 위치**: [reaction-history.utils.ts.md](./repository/firebase/functions/src/utils/reaction-history.utils.ts.md)
 
 ```typescript
 /**
@@ -257,6 +273,8 @@ async function recordReceivedReaction(params: {
 
 ### 5.2.3 `deleteMyAction()`
 
+**소스 코드 위치**: [reaction-history.utils.ts.md](./repository/firebase/functions/src/utils/reaction-history.utils.ts.md)
+
 ```typescript
 /**
  * 나의 발자취에서 리액션 삭제
@@ -269,6 +287,8 @@ async function deleteMyAction(params: {
 ```
 
 ### 5.2.4 `deleteReceivedReaction()`
+
+**소스 코드 위치**: [reaction-history.utils.ts.md](./repository/firebase/functions/src/utils/reaction-history.utils.ts.md)
 
 ```typescript
 /**
@@ -285,6 +305,8 @@ async function deleteReceivedReaction(params: {
 ## 5.3 핸들러 구현 예시
 
 ### 5.3.1 `handleReactionLikeCreate`
+
+**소스 코드 위치**: [reaction-history.utils.ts.md](./repository/firebase/functions/src/utils/reaction-history.utils.ts.md)
 
 ```typescript
 export const onReactionLikeCreate = onValueCreated(
@@ -318,6 +340,8 @@ export const onReactionLikeCreate = onValueCreated(
 ```
 
 # 6. Database Security Rules
+
+**소스 코드 위치**: [reaction-history.utils.ts.md](./repository/firebase/functions/src/utils/reaction-history.utils.ts.md)
 
 ```json
 {
@@ -369,6 +393,8 @@ export const onReactionLikeCreate = onValueCreated(
 
 ### 7.2.1 사용자 정보 조회
 
+**소스 코드 위치**: [reaction-history.utils.ts.md](./repository/firebase/functions/src/utils/reaction-history.utils.ts.md)
+
 ```typescript
 import { getUserFields } from '$lib/functions/user.functions';
 
@@ -377,6 +403,8 @@ const userData = await getUserFields(fromUid, ['displayName', 'photoUrl']);
 ```
 
 ### 7.2.2 대상 정보 조회
+
+**소스 코드 위치**: [reaction-history.utils.ts.md](./repository/firebase/functions/src/utils/reaction-history.utils.ts.md)
 
 ```typescript
 // 게시글 정보 조회
@@ -399,6 +427,8 @@ if (targetType === 'comment') {
 ## 7.3 UI 컴포넌트
 
 ### 7.3.1 리액션 아이템 컴포넌트
+
+**소스 코드 위치**: [reaction-history.utils.ts.md](./repository/firebase/functions/src/utils/reaction-history.utils.ts.md)
 
 ```svelte
 <!-- ReactionItem.svelte -->
@@ -460,6 +490,8 @@ if (targetType === 'comment') {
 
 댓글의 경우 `targetId`만으로는 댓글을 조회할 수 없습니다 (`/comments/{postId}/{commentId}` 구조이므로). 따라서 다음 필드를 추가합니다:
 
+**소스 코드 위치**: [reaction-history.utils.ts.md](./repository/firebase/functions/src/utils/reaction-history.utils.ts.md)
+
 ```
 /my-actions/{uid}/{pushKey}
   fromUid: string
@@ -479,6 +511,8 @@ if (targetType === 'comment') {
 ```
 
 ## 8.2 최종 데이터 구조
+
+**소스 코드 위치**: [reaction-history.utils.ts.md](./repository/firebase/functions/src/utils/reaction-history.utils.ts.md)
 
 ```typescript
 interface ReactionRecord {
@@ -677,6 +711,9 @@ interface ReactionRecord {
 ### 나의 발자취 페이지 구현 특징
 
 1. **DatabaseListView 설정**:
+
+**소스 코드 위치**: [reaction-history.utils.ts.md](./repository/firebase/functions/src/utils/reaction-history.utils.ts.md)
+
    ```svelte
    <DatabaseListView
      path={`my-actions/${authStore.user.uid}`}
@@ -706,6 +743,9 @@ interface ReactionRecord {
 ### 받은 반응 페이지 구현 특징
 
 1. **사용자 정보 표시**:
+
+**소스 코드 위치**: [reaction-history.utils.ts.md](./repository/firebase/functions/src/utils/reaction-history.utils.ts.md)
+
    ```svelte
    {#await getUserFields(reaction.fromUid, ['displayName', 'photoUrl'])}
      <div class="avatar-placeholder"></div>
@@ -732,6 +772,9 @@ interface ReactionRecord {
 ### 공통 구현 패턴
 
 1. **로그인 체크**:
+
+**소스 코드 위치**: [reaction-history.utils.ts.md](./repository/firebase/functions/src/utils/reaction-history.utils.ts.md)
+
    ```svelte
    {#if !authStore.user}
      <!-- 로그인 필요 메시지 -->
