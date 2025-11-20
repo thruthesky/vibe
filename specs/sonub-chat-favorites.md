@@ -92,57 +92,8 @@ tags:
 
 ### 3.1 Firebase RTDB 경로
 
-```
-/chat-favorites/{uid}/{favoriteId}
-  ├─ name: string                    # 폴더 이름
-  ├─ description: string | null      # 폴더 설명 (선택사항)
-  ├─ createdAt: number              # 생성 타임스탬프
-  ├─ folderOrder: string            # 정렬 순서 ("500{timestamp}" 또는 "{timestamp}")
-  └─ roomList: object               # 채팅방 목록
-       └─ {roomId}: true            # 채팅방 ID를 키로 하는 boolean
-```
-
-### 3.2 데이터 구조 예시
-
-```json
-{
-  "chat-favorites": {
-    "user123": {
-      "favorite001": {
-        "name": "업무 관련",
-        "description": "팀 채팅을 모아둔 폴더",
-        "createdAt": 1700000000000,
-        "folderOrder": "5001700000000000",
-        "roomList": {
-          "room001": true,
-          "room002": true,
-          "room003": true
-        }
-      },
-      "favorite002": {
-        "name": "친구들",
-        "description": null,
-        "createdAt": 1700100000000,
-        "folderOrder": "1700100000000",
-        "roomList": {
-          "room004": true,
-          "room005": true
-        }
-      }
-    }
-  }
-}
-```
-
-### 3.3 정렬 로직 설명
-
-- `folderOrder` 필드는 폴더의 정렬 순서를 결정합니다
-- **상단 고정 폴더**: `folderOrder`가 "500"으로 시작 (예: "5001700000000000")
-- **일반 폴더**: 타임스탬프만 사용 (예: "1700000000000")
-- **정렬 순서**:
-  1. 고정된 폴더가 먼저 표시됨
-  2. 같은 그룹 내에서는 `folderOrder` 문자열 비교로 정렬
-  3. 결과적으로 최신 생성 순서대로 정렬됨
+상세한 데이터베이스 구조는 다음 문서를 참조하세요:
+- [채팅 북마크 데이터베이스 구조](./sonub-firebase-database-structure.md#채팅-북마크-chat-favorites)
 
 ## 4. 타입 정의 (Type Definitions)
 

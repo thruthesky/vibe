@@ -35,19 +35,9 @@ status: completed
 
 ## 2. Database 구조
 
-### 2.1 `/chat-rooms/{roomId}`
-```typescript
-{
-  owner: "owner-uid",           // 채팅방 소유자
-  password: true,               // 비밀번호 설정 여부 플래그 (true 또는 필드 삭제)
-  members: {
-    [uid: string]: true | false // 입장 허가된 사용자 목록
-                                 // true: 멤버이며 알림 구독
-                                 // false: 멤버이지만 알림 미구독
-                                 // 필드 없음: 멤버가 아님
-  }
-}
-```
+상세한 데이터베이스 구조는 다음 문서를 참조하세요:
+- [채팅방 데이터베이스 구조](./sonub-firebase-database-structure.md#채팅방-chat-rooms)
+- [채팅방 비밀번호 데이터베이스 구조](./sonub-firebase-database-structure.md#채팅방-비밀번호-chat-room-passwords)
 
 **🔥 매우 중요: `members/{uid}` 필드의 의미 🔥**
 
@@ -69,22 +59,6 @@ const isMember = snapshot.val() === true;
 // ✅ 올바른 코드 - 필드 존재 여부만 확인 (true/false 모두 멤버임)
 const isMember = snapshot.exists();
 ```
-
-**중요**: `password` 필드는 `true` 또는 필드가 존재하지 않음(undefined)만 가능합니다. `false`를 저장하지 않습니다.
-
-### 2.2 `/chat-room-passwords/{roomId}`
-```typescript
-{
-  password: "plain-text-password",  // 비밀번호 (Plain Text - 암호화 안 함)
-  try: {
-    [uid: string]: "input-password" // 비밀번호 시도 기록 (Cloud Functions 트리거용)
-  }
-}
-```
-
-**중요**:
-- `password` 필드는 Plain Text로 저장됩니다 (bcrypt 암호화 하지 않음)
-- `try/{uid}` 경로는 Cloud Functions 트리거용이며, 검증 후 즉시 삭제됩니다
 
 ---
 

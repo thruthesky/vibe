@@ -48,55 +48,12 @@ tags:
 
 ## 2. 현재 DB 구조 분석
 
-### 2.1. 기존 통계 시스템
-
-**전역 통계 (`/stats/counters/`)**:
-- `user`: 전체 사용자 수
-- `like`: 전체 좋아요 수
-- `comment`: 전체 댓글 수
-- `follow`: 전체 팔로우 수
-- `message`: 전체 채팅 메시지 수
-
-**사용자별 통계 (`/user-action-counters/{uid}`)**:
-- `user`: 사용자 생성 (항상 1)
-- `like`: **사용자가 누른** 좋아요 수
-- `comment`: **사용자가 작성한** 댓글 수
-- `follow`: **사용자가 팔로우한** 수
-- `chat`: **사용자가 보낸** 채팅 메시지 수
-
-> **참고**: `/users/{uid}`는 사용자 검색/목록에서 자주 조회되므로 최소한의 정보만 포함해야 합니다. 사용자 자신의 actions (좋아요, 글쓰기, 코멘트 쓰기, 팔로우 등)카운터 정보는 별도의 경로인 `/user-action-counters/{uid}`에 저장되며, `incrementActionCounter()` 공통 함수로 일관되게 관리됩니다.
-
-### 2.2. 좋아요 시스템
-
-**데이터 구조**:
-- `/likes/{uid}/{targetId}` = `targetType` (예: "message", "comment", "post", "chat-message-{roomId}")
-- `/likes-by/{targetId}/{uid}` = `true` (타겟별 좋아요한 사용자 목록)
-- 각 게시글/댓글/메시지에 `likeCount` 필드 저장
-
-**Cloud Functions**:
-- `like.handler.ts` - 좋아요 추가/취소 시 자동으로 `likeCount` 업데이트
-- `/stats/counters/like` 전역 통계 자동 증감
-- `/user-action-counters/{uid}/like` 사용자별 통계 자동 증감 (누른 사람 기준, `incrementActionCounter()` 함수 사용)
-
-### 2.3. 댓글 시스템
-
-**데이터 구조**:
-- `/posts/{postId}` - 포럼 게시글
-  - `authorUid`: 게시글 작성자 UID (실제 코드에서 사용)
-  - `totalChildCount`: 게시글의 총 댓글 수 (모든 레벨 포함)
-  - `childCount`: 게시글의 첫 번째 레벨 댓글 수
-  - `likeCount`: 게시글이 받은 좋아요 수
-  - `createdAt`: 게시글 작성 시간 (밀리초 타임스탬프)
-- `/comments/{postId}/{commentId}` - 댓글
-  - `authorUid`: 댓글 작성자 UID
-  - `parentId`: 부모 댓글 ID (없으면 null)
-  - `childCount`: 댓글의 직접 자식 댓글 수 (답글 수)
-  - `likeCount`: 댓글이 받은 좋아요 수
-  - `createdAt`: 댓글 작성 시간 (밀리초 타임스탬프)
-
-**참고**:
-- 게시글 작성자 필드는 실제 코드에서 `authorUid`를 사용하고 있습니다 (comment.create.handler.ts:29, chat.message-category.handler.ts:157)
-- Firebase Database Structure 문서에는 `uid`로 명시되어 있으나, 실제 구현과 본 계획서에서는 `authorUid`를 사용합니다
+상세한 데이터베이스 구조는 다음 문서를 참조하세요:
+- [전역 통계 데이터베이스 구조](./sonub-firebase-database-structure.md#전역-통계-stats)
+- [사용자별 활동 통계 데이터베이스 구조](./sonub-firebase-database-structure.md#사용자별-활동-통계-user-action-counters)
+- [좋아요 데이터베이스 구조](./sonub-firebase-database-structure.md#좋아요-likes--likes-by)
+- [게시글 데이터베이스 구조](./sonub-firebase-database-structure.md#게시글-posts)
+- [댓글 데이터베이스 구조](./sonub-firebase-database-structure.md#댓글-comments)
 
 **Cloud Functions**:
 - `comment.create.handler.ts` - 댓글 생성 시 자동으로 `childCount`, `totalChildCount` 업데이트

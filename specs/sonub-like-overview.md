@@ -38,14 +38,10 @@ dependencies:
 
 # 2. 데이터 모델
 
-| 경로 | 설명 |
-| --- | --- |
-| `/likes/{uid}/{targetId}` | 로그인 사용자가 좋아요한 항목 기록. 값은 `targetType` |
-| `/posts/{postId}/likeCount` | 게시글의 총 좋아요 수 |
-| `/comments/{postId}/{commentId}/likeCount` | 특정 댓글의 좋아요 수 |
-
-- `".indexOn": ["likeCount"]` 는 `firebase/database.rules.json` 에 정의되어 있어 정렬 쿼리에서 효율적으로 사용한다.
-- `/likes` 루트에 대한 read 권한은 본인만, write 권한은 본인 UID와 일치할 때만 허용한다.
+상세한 데이터베이스 구조는 다음 문서를 참조하세요:
+- [좋아요 데이터베이스 구조](./sonub-firebase-database-structure.md#좋아요-likes--likes-by)
+- [게시글 데이터베이스 구조 (likeCount 필드 포함)](./sonub-firebase-database-structure.md#게시글-posts)
+- [댓글 데이터베이스 구조 (likeCount 필드 포함)](./sonub-firebase-database-structure.md#댓글-comments)
 
 # 3. 아키텍처
 

@@ -100,29 +100,10 @@ tags:
 
 ## 3. 데이터베이스 구조 (Database Structure)
 
-### 3.1 Firebase RTDB 경로
+상세한 데이터베이스 구조는 다음 문서를 참조하세요:
+- [팔로우 관계 데이터베이스 구조](./sonub-firebase-database-structure.md#팔로우-관계-user-following--user-followers)
 
-```
-/user-following/{uid}/{targetUid}
-  └─ true                           # 팔로우 여부 (boolean)
-
-/user-followers/{uid}/{followerUid}
-  └─ true                           # 팔로워 여부 (boolean)
-```
-
-### 3.2 데이터 흐름
-
-#### 팔로우 시
-1. A가 B를 팔로우하면:
-   - `/user-following/{A의uid}/{B의uid}` → `true` 저장
-   - `/user-followers/{B의uid}/{A의uid}` → `true` 저장
-
-#### 언팔로우 시
-1. A가 B를 언팔로우하면:
-   - `/user-following/{A의uid}/{B의uid}` → 삭제
-   - `/user-followers/{B의uid}/{A의uid}` → 삭제
-
-### 3.3 보안 규칙
+### 3.1 보안 규칙
 
 ```jsonc
 {

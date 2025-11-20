@@ -96,31 +96,8 @@ tags: chat, file-upload, firebase-storage, attachment, svelte5, realtime, instan
 
 ### 2.2 데이터 구조
 
-**ChatMessage 타입 확장:**
-```typescript
-interface ChatMessage {
-  roomId: string;
-  type: 'text' | 'image' | 'file' | 'message';
-  text?: string;
-  senderUid: string;
-  createdAt: number;
-  roomOrder: string;
-  rootOrder: string;
-  editedAt?: number | null;
-  deletedAt?: number | null;
-  urls?: Record<number, string>;  // ✅ 신규 추가
-}
-```
-
-**urls 필드 설계:**
-- 타입: `Record<number, string>` (숫자 인덱스를 키로 사용)
-- 값: Firebase Storage 다운로드 URL
-- 예시: `{ 0: "https://...", 1: "https://...", 2: "https://..." }`
-
-**선택 이유:**
-1. Firebase RTDB는 배열을 객체로 변환하므로 `Record<number, string>`이 자연스러움
-2. 순서 보장 (0, 1, 2, ...)
-3. TypeScript 타입 안전성 확보
+상세한 데이터베이스 구조는 다음 문서를 참조하세요:
+- [채팅 메시지 데이터베이스 구조 (urls 필드 포함)](./sonub-firebase-database-structure.md#채팅-메시지-chat-messages)
 
 ### 2.3 Storage 경로 구조
 

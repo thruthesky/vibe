@@ -74,40 +74,8 @@ dependencies: []
 
 ## 데이터베이스 구조
 
-### 경로 구조
-
-```
-/chat-joins/
-├── {uid1}/
-│   ├── {roomId1}/
-│   │   ├── roomId: string
-│   │   ├── roomType: "single" | "group" | "open"
-│   │   ├── partnerUid: string (1:1 채팅만)
-│   │   ├── lastMessageText: string
-│   │   ├── lastMessageAt: number
-│   │   ├── joinedAt: number
-│   │   ├── updatedAt: number
-│   │   ├── listOrder: string
-│   │   └── newMessageCount: number
-│   └── {roomId2}/
-│       └── ...
-└── {uid2}/
-    └── ...
-```
-
-### 필드 상세 설명
-
-| 필드 | 타입 | 필수 | 설명 | 자동 생성 |
-|------|------|------|------|----------|
-| `roomId` | string | ✅ | 채팅방 ID | onChatMessageCreate |
-| `roomType` | string | ✅ | 채팅방 유형 (single, group, open) | onChatMessageCreate |
-| `partnerUid` | string | ❌ | 1:1 채팅의 상대방 UID (1:1 채팅만) | onChatMessageCreate |
-| `lastMessageText` | string | ❌ | 마지막 메시지 내용 (미리보기용) | onChatMessageCreate |
-| `lastMessageAt` | number | ✅ | 마지막 메시지 시간 (Unix timestamp, 밀리초) | onChatMessageCreate |
-| `joinedAt` | number | ✅ | 채팅방 참여 시간 (Unix timestamp, 밀리초) | onChatJoinCreate |
-| `updatedAt` | number | ✅ | 마지막 업데이트 시간 (Unix timestamp, 밀리초) | onChatMessageCreate |
-| `listOrder` | string | ✅ | 정렬 필드 (prefix + timestamp) | onChatMessageCreate |
-| `newMessageCount` | number | ✅ | 읽지 않은 메시지 개수 | onChatMessageCreate |
+상세한 데이터베이스 구조는 다음 문서를 참조하세요:
+- [채팅방 참여 데이터베이스 구조](./sonub-firebase-database-structure.md#채팅방-참여-chat-joins)
 
 ## 주요 필드 상세 설명
 

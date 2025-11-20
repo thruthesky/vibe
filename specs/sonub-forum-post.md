@@ -876,60 +876,8 @@ async function handleDeletePost(messageId: string) {
 
 ### 8.1. 게시글 데이터 구조
 
-```typescript
-interface Message {
-  // 기본 정보
-  messageId: string;
-  senderUid: string;
-  text: string;
-  createdAt: number;
-
-  // 게시판 관련
-  category?: ForumCategory;
-  roomId: string;
-
-  // 첨부 파일
-  urls?: Record<number, string>;
-
-  // 댓글
-  totalChildCount?: number;
-
-  // 삭제
-  deleted?: boolean;
-  deletedAt?: number;
-}
-```
-
-### 8.2. 정렬 필드 자동 생성 (Cloud Functions)
-
-게시글이 생성될 때 Firebase Cloud Functions에서 자동으로 정렬 필드를 생성합니다.
-
-**자동 생성 필드:**
-- `categoryOrder`: `"{category}-{timestamp}"` 형식 (예: `"qna-1700000000000"`)
-  - ✅ **양수 타임스탬프 사용**: 문자열 필드로 클라이언트에서 역순 정렬
-- `allCategoryOrder`: `-createdAt` 음수 타임스탬프 (예: `-1700000000000`)
-  - ⚠️ **음수 타임스탬프 사용**: 숫자 필드로 Firebase의 오름차순 정렬로 최신순 표시
-
-**Cloud Functions 처리 흐름:**
-```typescript
-// Firebase Cloud Functions: onPostCreate 핸들러
-export const onPostCreate = onValueCreated('/posts/{postId}', async (event) => {
-  const postId = event.params.postId;
-  const post = event.data.val();
-
-  // 1. 정렬 필드 자동 생성
-  // categoryOrder: 문자열이므로 양수 타임스탬프 사용
-  // allCategoryOrder: 숫자이므로 음수 타임스탬프 사용 (Firebase 오름차순 정렬로 최신순 표시)
-  const categoryOrder = `${post.category}-${Number(post.createdAt)}`;
-  const allCategoryOrder = -Number(post.createdAt);
-
-  // 2. DB에 저장
-  await event.data.ref.update({
-    categoryOrder,
-    allCategoryOrder
-  });
-});
-```
+상세한 데이터베이스 구조는 다음 문서를 참조하세요:
+- [게시글 데이터베이스 구조](./sonub-firebase-database-structure.md#게시글-posts)
 
 **정렬 필드 타입별 처리 방식:**
 

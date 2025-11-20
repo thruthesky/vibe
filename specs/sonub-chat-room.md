@@ -119,22 +119,8 @@ function buildSingleRoomId(a: string, b: string) {
 
 #### Firebase 데이터 구조
 
-```typescript
-// 채팅방 참여 정보 경로
-const path = `chat-joins/${authStore.user.uid}`;
-
-// 데이터 구조
-{
-  "{roomId}": {
-    "roomType": "single" | "group" | "open",
-    "name": "채팅방 이름",
-    "lastMessage": "마지막 메시지 내용",
-    "newMessageCount": 3,           // 읽지 않은 메시지 수
-    "allChatListOrder": -1234567890, // 정렬 순서 (음수 timestamp)
-    "joinedAt": 1234567890
-  }
-}
-```
+상세한 데이터베이스 구조는 다음 문서를 참조하세요:
+- [채팅방 참여 데이터베이스 구조](./sonub-firebase-database-structure.md#채팅방-참여-chat-joins)
 
 #### DatabaseListView 설정
 
@@ -1128,16 +1114,8 @@ const targetProfileError = $derived(userProfileStore.getError(uidParam));
 
 #### Firebase 경로
 
-- **프로필 경로**: `/users/{uid}`
-- **데이터 구조**:
-  ```json
-  {
-    "displayName": "사용자 이름",
-    "photoURL": "프로필 이미지 URL",
-    "createdAt": 1234567890,
-    "lastLoginAt": 1234567890
-  }
-  ```
+상세한 데이터베이스 구조는 다음 문서를 참조하세요:
+- [사용자 프로필 데이터베이스 구조](./sonub-firebase-database-structure.md#사용자-정보-users)
 
 ### 2. 채팅방 헤더
 
@@ -1163,24 +1141,8 @@ Firebase Realtime Database의 메시지를 실시간으로 표시합니다.
 
 #### Firebase 데이터 구조
 
-```typescript
-// 메시지 경로
-const messagePath = 'chat-messages';
-
-// 메시지 데이터 구조
-{
-  roomId: string;           // 채팅방 ID
-  type: 'message';          // 메시지 타입
-  text: string;             // 메시지 내용
-  urls: string[];           // 첨부 URL (미래 확장)
-  senderUid: string;        // 발신자 UID
-  createdAt: number;        // 생성 시간 (timestamp)
-  editedAt: number | null;  // 수정 시간
-  deletedAt: number | null; // 삭제 시간
-  roomOrder: string;        // 정렬 키: `-{roomId}-{timestamp}`
-  rootOrder: string;        // 루트 정렬 키
-}
-```
+상세한 데이터베이스 구조는 다음 문서를 참조하세요:
+- [채팅 메시지 데이터베이스 구조](./sonub-firebase-database-structure.md#채팅-메시지-chat-messages)
 
 #### DatabaseListView 설정
 

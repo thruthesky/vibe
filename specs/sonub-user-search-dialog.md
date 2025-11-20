@@ -143,17 +143,8 @@ Firebase Realtime Database에서 사용자를 검색하고 선택할 수 있는 
 
 ### 5. 데이터베이스 구조
 
-RTDB 사용자 노드:
-
-\`\`\`
-users/
-  {uid}/
-    displayName: string
-    displayNameLowerCase: string  // 검색용
-    email: string
-    photoURL: string
-    createdAt: number
-\`\`\`
+상세한 데이터베이스 구조는 다음 문서를 참조하세요:
+- [사용자 정보 데이터베이스 구조](./sonub-firebase-database-structure.md#사용자-정보-users)
 
 ## Implementation Notes
 

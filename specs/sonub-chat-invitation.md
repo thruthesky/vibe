@@ -37,49 +37,8 @@ priority: "***"
 
 ## 데이터베이스 구조
 
-### /chat-invitations/{inviteeUid}/{roomId}
-
-초대받은 사용자별로 초대 목록을 관리합니다.
-
-**클라이언트가 저장하는 필드:**
-```json
-{
-  "roomId": "string (채팅방 ID)",
-  "inviterUid": "string (초대한 사람 UID)"
-}
-```
-
-**Cloud Functions가 자동 추가하는 필드:**
-```json
-{
-  "createdAt": "number (생성 시간, Unix timestamp 밀리초)",
-  "invitationOrder": "string (정렬용: -${timestamp})",
-  "roomName": "string (채팅방 이름)",
-  "roomType": "string (채팅방 타입: group | open)",
-  "inviterName": "string (초대한 사람 이름)",
-  "message": "string (다국어 초대 메시지)"
-}
-```
-
-**전체 데이터 예시:**
-```json
-{
-  "chat-invitations": {
-    "user-invitee-uid": {
-      "room-abc123": {
-        "roomId": "room-abc123",
-        "inviterUid": "user-inviter-uid",
-        "createdAt": 1699876543210,
-        "invitationOrder": "-1699876543210",
-        "roomName": "친구들 그룹챗",
-        "roomType": "group",
-        "inviterName": "홍길동",
-        "message": "홍길동님이 친구들 그룹챗 채팅방에 초대하였습니다."
-      }
-    }
-  }
-}
-```
+상세한 데이터베이스 구조는 다음 문서를 참조하세요:
+- [채팅 초대 데이터베이스 구조](./sonub-firebase-database-structure.md#채팅-초대-chat-invitations)
 
 ## Security Rules
 

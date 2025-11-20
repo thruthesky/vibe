@@ -113,24 +113,9 @@ tags: chat, notification, sound, badge, realtime, cloud-functions, rtdb, broadca
 
 ## 3. 데이터 구조
 
-### 3.1 RTDB 경로
-
-**기존 경로 (채팅방별):**
-```
-/chat-joins/{uid}/{roomId}/newMessageCount: number
-```
-
-**새로운 경로 (전체 합계):**
-```
-/users/{uid}/newMessageCount: number
-```
-
-**예시:**
-```
-/chat-joins/user123/room-abc/newMessageCount: 5
-/chat-joins/user123/room-def/newMessageCount: 3
-/users/user123/newMessageCount: 8  ← Cloud Functions가 자동 관리
-```
+상세한 데이터베이스 구조는 다음 문서를 참조하세요:
+- [채팅방 참여 데이터베이스 구조 (newMessageCount 포함)](./sonub-firebase-database-structure.md#채팅방-참여-chat-joins)
+- [사용자 정보 데이터베이스 구조 (전체 newMessageCount 합계)](./sonub-firebase-database-structure.md#사용자-정보-users)
 
 ### 3.2 Cloud Functions 트리거
 

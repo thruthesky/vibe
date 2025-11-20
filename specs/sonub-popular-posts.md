@@ -35,49 +35,10 @@ related:
 
 ## 2. 데이터베이스 구조
 
-### 2.1 Firebase Realtime Database 경로
+상세한 데이터베이스 구조는 다음 문서를 참조하세요:
+- [게시글 순위 데이터베이스 구조](./sonub-firebase-database-structure.md#게시글-순위-post-rankings)
 
-```
-/post-rankings/
-  ├── daily/
-  │   └── {yyyyMMdd}/
-  │       └── {postId}: -score
-  ├── weekly/
-  │   └── {yyyyWww}/
-  │       └── {postId}: -score
-  └── monthly/
-      └── {yyyyMM}/
-          └── {postId}: -score
-```
-
-### 2.2 경로 설명
-
-- **`daily/{yyyyMMdd}`**: 일별 순위 (예: `20251119`)
-- **`weekly/{yyyyWww}`**: 주별 순위, ISO week 기준 (예: `2025W47`)
-- **`monthly/{yyyyMM}`**: 월별 순위 (예: `202511`)
-- **`{postId}`**: 게시글 ID
-- **`-score`**: 음수로 저장된 점수 (내림차순 정렬을 위해)
-
-### 2.3 점수 계산 공식
-
-```
-점수 = (likeCount × 1) + (commentCount × 2)
-```
-
-- **좋아요**: 1점
-- **댓글**: 2점
-- 댓글이 더 높은 가중치를 가짐 (사용자 참여도가 더 높은 지표)
-
-### 2.4 점수 저장 방식
-
-점수는 **음수로 저장**하여 Firebase의 `orderByValue().limitToFirst(N)`을 사용할 때 자동으로 내림차순 정렬이 되도록 구현했습니다.
-
-**예시:**
-- 실제 점수: 150점
-- 저장 값: -150
-- 정렬 결과: -200, -150, -100, -50 (높은 점수가 먼저)
-
-### 2.5 Security Rules
+### 2.1 Security Rules
 
 ```json
 "post-rankings": {

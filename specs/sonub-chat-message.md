@@ -234,26 +234,8 @@ async function handleDeleteMessage(messageId: string, urls: Record<number, strin
 
 ### 4.1 데이터 구조
 
-**경로**: `/chat-messages/{messageId}`
-
-```json
-{
-  "roomId": "string",
-  "type": "message",
-  "text": "string",
-  "senderUid": "string",
-  "createdAt": 1234567890000,
-  "editedAt": 1234567890000,      // 수정 시각 (null이면 미수정)
-  "deleted": false,                // 삭제 여부
-  "deletedAt": null,               // 삭제 시각 (null이면 미삭제)
-  "urls": {
-    "0": "https://...",
-    "1": "https://..."
-  },
-  "roomOrder": "-roomId-timestamp",
-  "rootOrder": "-roomId-timestamp"
-}
-```
+상세한 데이터베이스 구조는 다음 문서를 참조하세요:
+- [채팅 메시지 데이터베이스 구조](./sonub-firebase-database-structure.md#채팅-메시지-chat-messages)
 
 ### 4.2 Security Rules
 
