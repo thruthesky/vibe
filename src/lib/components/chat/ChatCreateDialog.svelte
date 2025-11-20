@@ -199,13 +199,13 @@
 				<textarea
 					bind:value={roomDescription}
 					class="form-textarea"
-					placeholder="채팅방에 대한 간단한 설명을 입력하세요"
+					placeholder={m.chatCreateDescriptionPlaceholder()}
 					maxlength="200"
 					rows="3"
 					disabled={isCreating}
 					onkeydown={(e) => e.stopPropagation()}
 				></textarea>
-				<span class="hint-text">최대 200자</span>
+				<span class="hint-text">{m.chatCreateDescriptionHint()}</span>
 			</label>
 
 			<!-- 오픈 채팅방 안내 (오픈 타입일 때만 표시) -->
@@ -225,7 +225,7 @@
 							d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z"
 						/>
 					</svg>
-					<span>오픈 채팅방은 누구나 참여할 수 있는 공개 채팅방입니다.</span>
+					<span>{m.chatCreateOpenChatInfo()}</span>
 				</div>
 			{/if}
 
@@ -258,10 +258,10 @@
 					onclick={handleCancel}
 					disabled={isCreating}
 				>
-					취소
+					{m.commonCancel()}
 				</Button>
 				<Button type="submit" class="w-full sm:w-auto" disabled={isCreating}>
-					{isCreating ? '생성 중...' : '생성하기'}
+					{isCreating ? m.chatCreating() : m.chatCreateButton()}
 				</Button>
 			</DialogFooter>
 		</form>

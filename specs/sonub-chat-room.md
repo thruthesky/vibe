@@ -12,7 +12,7 @@ updated: 2025-01-20
 
 Sonub 애플리케이션의 1:1 채팅방 및 그룹 채팅방 기능에 대한 상세 사양 문서입니다.
 
-## 파일 위치
+## 소스 코드 위치
 
 - **페이지**: [src/routes/chat/room/+page.svelte](./repository/src/routes/chat/room/+page.svelte)
 - **다국어**: [messages/*.json](./repository/messages/)

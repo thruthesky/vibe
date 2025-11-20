@@ -295,7 +295,7 @@ PUBLIC_FIREBASE_DATABASE_URL="YOUR_DATABASE_URL"
 
 ### 6.1 Firebase 초기화 파일 생성
 
-**파일 경로:** `src/lib/firebase.ts`
+**소스 코드 위치:** [src/lib/firebase.ts.md](./repository/src/lib/firebase.ts.md)
 
 **내용:**
 ```typescript
@@ -431,7 +431,7 @@ export default app;
 
 ### 6.2 TypeScript 타입 정의 파일 생성 (선택)
 
-**파일 경로:** `src/lib/types/firebase.ts`
+**소스 코드 위치:** [src/lib/types/firebase.ts.md](./repository/src/lib/types/firebase.ts.md)
 
 **내용:**
 ```typescript
@@ -495,7 +495,7 @@ Firebase 로그인 흐름과 샘플 코드는 해당 문서의 "Authentication �
 
 ### 7.2 Realtime Database 예제
 
-**파일 경로:** `src/routes/todos/+page.svelte`
+**소스 코드 위치:** [src/routes/todos/+page.svelte.md](./repository/src/routes/todos/+page.svelte.md)
 
 **내용:**
 ```svelte

@@ -1235,7 +1235,7 @@ await update(ref(rtdb, 'posts/-DEF'), { order: 20 }); // 숫자
 
 #### 11.9.9. 구현 세부사항
 
-**파일 위치**: [src/lib/components/DatabaseListView.svelte](./repository/src/lib/components/DatabaseListView.svelte)
+**소스 코드 위치:** [src/lib/components/DatabaseListView.svelte.md](./repository/src/lib/components/DatabaseListView.svelte.md)
 
 **주요 함수**:
 - `compareOrderByValues()`: Firebase 정렬 규칙 구현

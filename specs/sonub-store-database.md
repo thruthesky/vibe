@@ -64,7 +64,7 @@ Firebase Realtime Database(RTDB)를 사용할 때 다음과 같은 문제가 발
    - 연결 해제 시 자동으로 상태 업데이트
    - 중복 리스너 방지
 
-### 1.2 파일 위치
+### 1.2 소스 코드 위치
 
 - **소스 코드 위치**: [repository/src/lib/stores/database.svelte.ts.md](./repository/src/lib/stores/database.svelte.ts.md)
 - **타입 정의**: 동일 파일 내 정의
@@ -873,8 +873,6 @@ export function setupPresence(uid: string): void {
 ```
 
 ## 4. 전체 소스 코드
-
-**파일 경로:** `src/lib/stores/database.svelte.ts`
 
 **소스 코드 위치**: [database.svelte.ts.md](./repository/src/lib/stores/database.svelte.ts.md)
 

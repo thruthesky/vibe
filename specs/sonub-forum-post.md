@@ -197,7 +197,7 @@ tags:
 
 ### 4.1. UserProfile 컴포넌트
 
-**파일 경로:** `src/lib/components/UserProfile.svelte`
+**소스 코드 위치:** `src/lib/components/UserProfile.svelte`
 
 **기능:**
 - 사용자 UID를 받아서 프로필 사진 + 이름을 표시
@@ -259,7 +259,7 @@ tags:
 
 ### 4.2. FileAttachments 컴포넌트
 
-**파일 경로:** `src/lib/components/FileAttachments.svelte`
+**소스 코드 위치:** `src/lib/components/FileAttachments.svelte`
 
 **기능:**
 - Firebase Storage URL 목록을 받아서 첨부 파일 미리보기 표시
@@ -379,7 +379,7 @@ tags:
 
 ### 4.3. PostCommentList 컴포넌트
 
-**파일 경로:** `src/lib/components/post/PostCommentList.svelte`
+**소스 코드 위치:** `src/lib/components/post/PostCommentList.svelte`
 
 **기능:**
 - 게시글의 댓글 목록 표시
@@ -1090,9 +1090,7 @@ loadedItems.sort((a, b) => {
 
 ### 11.1. 홈페이지 (최근 게시글)
 
-**파일 경로:** `src/routes/+page.svelte`
-
-**소스 코드 위치**: [post.functions.ts.md](./repository/src/lib/functions/post.functions.ts.md)
+**소스 코드 위치:** `src/routes/+page.svelte` (참조: [post.functions.ts.md](./repository/src/lib/functions/post.functions.ts.md))
 
 ```svelte
 <script lang="ts">
@@ -1415,7 +1413,7 @@ loadedItems.sort((a, b) => {
 
 ### 11.2. 게시판 목록 (카테고리별)
 
-**파일 경로:** `src/routes/post/list/+page.svelte`
+**소스 코드 위치:** `src/routes/post/list/+page.svelte`
 
 게시판 목록 페이지는 홈페이지와 동일한 구조를 사용합니다. 수정/삭제 아이콘 버튼이 하단 액션 바의 오른쪽에 배치됩니다.
 

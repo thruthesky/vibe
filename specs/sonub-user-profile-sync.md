@@ -200,8 +200,6 @@ User.uid          ──┘                │
 
 ### 4.1 syncAuthProfileToRtdb() 함수
 
-**파일 위치:**
-
 **소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/profile/+page.svelte.md)
 
 ```
@@ -395,8 +393,6 @@ export async function signInWithApple(): Promise<UserCredential> {
 ```
 
 ### 4.4 Auth Store 연동
-
-**파일 위치:**
 
 **소스 코드 위치**: [+page.svelte.md](./repository/src/routes/my/profile/+page.svelte.md)
 

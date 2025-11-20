@@ -23,7 +23,7 @@ dependencies:
 
 ## 파일 위치
 
-`firebase/functions/src/handlers/user.handler.ts`
+**소스 코드 위치:** [firebase/functions/src/handlers/user.handler.ts.md](./repository/firebase/functions/src/handlers/user.handler.ts.md)
 
 ## 함수 목록
 
@@ -635,9 +635,7 @@ export async function handleUserGenderUpdate(
 
 ## 전체 소스 코드
 
-**파일 경로:** `firebase/functions/src/handlers/user.handler.ts`
-
-**소스 코드 위치**: [user.handler.ts.md](./repository/firebase/functions/src/handlers/user.handler.ts.md)
+**소스 코드 위치:** [firebase/functions/src/handlers/user.handler.ts.md](./repository/firebase/functions/src/handlers/user.handler.ts.md)
 
 ```typescript
 /**

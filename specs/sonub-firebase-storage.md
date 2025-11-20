@@ -22,7 +22,7 @@ tags:
 
 ## 2. Storage 업로드 예제
 
-**파일 경로:** `src/routes/upload/+page.svelte`
+**소스 코드 위치:** [src/routes/upload/+page.svelte.md](./repository/src/routes/upload/+page.svelte.md)
 
 **설명:**
 - 로그인한 사용자의 UID별 디렉터리에 파일을 업로드합니다.
@@ -422,7 +422,7 @@ Firebase Storage에 업로드된 파일(이미지, 비디오, 기타 파일)을 
 
 ### 5.2. FileAttachments 컴포넌트 사용
 
-**파일 경로:** `src/lib/components/FileAttachments.svelte`
+**소스 코드 위치:** [src/lib/components/FileAttachments.svelte.md](./repository/src/lib/components/FileAttachments.svelte.md)
 
 **기능:**
 - Firebase Storage URL 목록을 받아서 미리보기로 표시
@@ -716,7 +716,7 @@ Firebase Storage에 업로드된 파일(이미지, 비디오, 기타 파일)을 
 
 ### 5.3. 파일 타입 판별 함수
 
-**파일 경로:** `src/lib/functions/storage.functions.ts`
+**소스 코드 위치:** [src/lib/functions/storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
 
 Firebase Storage URL에서 파일 타입을 판별하는 유틸리티 함수들:
 
@@ -824,9 +824,7 @@ const filename = getFilenameFromUrl(url);
 
 #### 홈페이지에서 첨부 파일 미리보기
 
-**파일:** `src/routes/+page.svelte`
-
-**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
+**소스 코드 위치:** [src/routes/+page.svelte.md](./repository/src/routes/+page.svelte.md)
 
 ```svelte
 <script lang="ts">
@@ -895,9 +893,7 @@ const filename = getFilenameFromUrl(url);
 
 #### 게시판 목록에서 첨부 파일 미리보기
 
-**파일:** `src/routes/post/list/+page.svelte`
-
-**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
+**소스 코드 위치:** [src/routes/post/list/+page.svelte.md](./repository/src/routes/post/list/+page.svelte.md)
 
 ```svelte
 <!-- 첨부파일 미리보기 (FileAttachments 컴포넌트 사용) -->
@@ -908,9 +904,7 @@ const filename = getFilenameFromUrl(url);
 
 #### 댓글 목록에서 첨부 파일 미리보기
 
-**파일:** `src/lib/components/post/PostCommentList.svelte`
-
-**소스 코드 위치**: [storage.functions.ts.md](./repository/src/lib/functions/storage.functions.ts.md)
+**소스 코드 위치:** [src/lib/components/post/PostCommentList.svelte.md](./repository/src/lib/components/post/PostCommentList.svelte.md)
 
 ```svelte
 <!-- 첨부 파일 미리보기 (FileAttachments 컴포넌트 사용) -->

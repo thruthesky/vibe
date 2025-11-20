@@ -179,9 +179,7 @@ export const onChatMessageCreate = onValueCreated(
 
 ## 전체 소스 코드
 
-**파일 경로:** `firebase/functions/src/index.ts`
-
-**소스 코드 위치**: [index.ts.md](./repository/firebase/functions/src/index.ts.md)
+**소스 코드 위치:** [firebase/functions/src/index.ts.md](./repository/firebase/functions/src/index.ts.md)
 
 ```typescript
 /**

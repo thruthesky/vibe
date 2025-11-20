@@ -70,7 +70,7 @@ src/
 
 ### 2.1 전역 레이아웃 개요
 
-**파일 경로:** `src/routes/+layout.svelte`
+**소스 코드 위치:** `src/routes/+layout.svelte`
 
 **목적:** 모든 페이지에 공통으로 적용되는 레이아웃 구조 정의
 
@@ -84,7 +84,7 @@ src/
 
 ### 2.2 레이아웃 구현
 
-**파일:** `src/routes/+layout.svelte`
+**소스 코드 위치:** `src/routes/+layout.svelte`
 
 ```svelte
 <script lang="ts">
@@ -232,7 +232,7 @@ src/
 
 ### 3.1 탑바 개요
 
-**파일 경로:** `src/lib/components/top-bar.svelte`
+**소스 코드 위치:** `src/lib/components/top-bar.svelte`
 
 **목적:** 모든 페이지 상단에 표시되는 네비게이션 바
 
@@ -246,7 +246,7 @@ src/
 
 ### 3.2 탑바 구현
 
-**파일:** `src/lib/components/top-bar.svelte`
+**소스 코드 위치:** `src/lib/components/top-bar.svelte`
 
 ```svelte
 <script lang="ts">
@@ -605,7 +605,7 @@ src/
 
 #### 4.1.1 좌측 사이드바 개요
 
-**파일 경로:** `src/lib/components/left-sidebar.svelte`
+**소스 코드 위치:** `src/lib/components/left-sidebar.svelte`
 
 **목적:** 데스크톱에서만 표시되는 좌측 네비게이션/메뉴 영역
 
@@ -618,7 +618,7 @@ src/
 
 #### 4.1.2 좌측 사이드바 구현
 
-**파일:** `src/lib/components/left-sidebar.svelte`
+**소스 코드 위치:** `src/lib/components/left-sidebar.svelte`
 
 ```svelte
 <script lang="ts">
@@ -737,7 +737,7 @@ src/
 
 #### 4.2.1 우측 사이드바 개요
 
-**파일 경로:** `src/lib/components/right-sidebar.svelte`
+**소스 코드 위치:** `src/lib/components/right-sidebar.svelte`
 
 **목적:** 데스크톱에서만 표시되는 우측 정보/위젯 영역
 
@@ -751,7 +751,7 @@ src/
 
 #### 4.2.2 우측 사이드바 구현
 
-**파일:** `src/lib/components/right-sidebar.svelte`
+**소스 코드 위치:** `src/lib/components/right-sidebar.svelte`
 
 ```svelte
 <script lang="ts">
@@ -1241,7 +1241,7 @@ await goto('/user/login'); // 로그인 페이지로 이동
 
 ### 12.1 홈페이지 구조
 
-**파일:** `src/routes/+page.svelte`
+**소스 코드 위치:** `src/routes/+page.svelte`
 
 **주요 섹션:**
 1. 메인 타이틀 및 설명

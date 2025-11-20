@@ -9,6 +9,7 @@
 	import { auth } from '$lib/firebase';
 	import { signInWithEmailAndPassword, onAuthStateChanged, type User } from 'firebase/auth';
 	import { ADMIN_MANAGE_PASSWORD, TEST_ACCOUNT_PASSWORD } from '../../../app.config';
+	import * as m from '$lib/paraglide/messages.js';
 
 	/**
 	 * 테스트 계정 타입 정의

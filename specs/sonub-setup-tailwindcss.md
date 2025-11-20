@@ -201,7 +201,7 @@ npm install -D @tailwindcss/typography @tailwindcss/forms
 
 `vite.config.ts` 파일을 열어 Tailwind Vite 플러그인을 추가합니다:
 
-**파일 위치:** `vite.config.ts`
+**소스 코드 위치:** [vite.config.ts.md](./repository/vite.config.ts.md)
 
 **기존 내용:**
 ```typescript
@@ -230,7 +230,7 @@ export default defineConfig({
 
 `src/app.css` 파일을 생성하고 Tailwind 지시문을 추가합니다:
 
-**파일 위치:** `src/app.css`
+**소스 코드 위치:** [src/app.css.md](./repository/src/app.css.md)
 
 **내용:**
 ```css
@@ -245,7 +245,7 @@ export default defineConfig({
 
 `src/routes/+layout.svelte` 파일을 생성 또는 수정하여 CSS를 임포트합니다:
 
-**파일 위치:** `src/routes/+layout.svelte`
+**소스 코드 위치:** [src/routes/+layout.svelte.md](./repository/src/routes/+layout.svelte.md)
 
 **내용:**
 ```svelte
@@ -290,7 +290,7 @@ npm run dev
 
 다크 모드를 비활성화하려면 다음과 같이 설정합니다:
 
-**파일 위치:** `tailwind.config.ts` (또는 `tailwind.config.js`)
+**소스 코드 위치:** [tailwind.config.ts.md](./repository/tailwind.config.ts.md)
 
 **내용:**
 ```typescript
@@ -315,7 +315,7 @@ export default {
 
 Light 모드 전용 CSS 변수 및 스타일을 정의합니다.
 
-**파일 위치:** `src/app.css`
+**소스 코드 위치:** [src/app.css.md](./repository/src/app.css.md)
 
 **내용:**
 ```css
@@ -345,7 +345,7 @@ Light 모드 전용 CSS 변수 및 스타일을 정의합니다.
 
 HTML에 `dark` 클래스를 추가하지 않습니다.
 
-**파일 위치:** `src/app.html`
+**소스 코드 위치:** [src/app.html.md](./repository/src/app.html.md)
 
 **내용:**
 ```html
@@ -371,7 +371,7 @@ HTML에 `dark` 클래스를 추가하지 않습니다.
 
 전역 CSS를 임포트합니다.
 
-**파일 위치:** `src/routes/+layout.svelte`
+**소스 코드 위치:** [src/routes/+layout.svelte.md](./repository/src/routes/+layout.svelte.md)
 
 **내용:**
 ```svelte
@@ -399,7 +399,7 @@ npm install -D prettier-plugin-tailwindcss
 
 #### 6.2.2. Prettier 설정 파일 수정
 
-**파일 위치:** `.prettierrc`
+**소스 코드 위치:** [.prettierrc.md](./repository/.prettierrc.md)
 
 **내용:**
 ```json
@@ -575,7 +575,7 @@ vite v7.1.10 building for production...
 
 간단한 테스트 페이지를 생성하여 Tailwind 동작을 확인합니다.
 
-**파일 위치:** `src/routes/tailwind-test/+page.svelte`
+**소스 코드 위치:** [src/routes/tailwind-test/+page.svelte.md](./repository/src/routes/tailwind-test/+page.svelte.md)
 
 **내용:**
 ```svelte

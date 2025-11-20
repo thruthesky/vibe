@@ -321,7 +321,7 @@ Svelte의 `class:` 디렉티브를 사용하면 삼항연산자 없이 조건부
 npm install -D clsx tailwind-merge
 ```
 
-**파일 위치:** `src/lib/utils/cn.ts`
+**소스 코드 위치:** `src/lib/utils/cn.ts`
 
 **내용:**
 
@@ -395,7 +395,7 @@ export function cn(...inputs: ClassValue[]) {
 npm install -D class-variance-authority
 ```
 
-**파일 위치:** `src/lib/styles/button.ts`
+**소스 코드 위치:** `src/lib/styles/button.ts`
 
 **내용:**
 
@@ -496,7 +496,7 @@ export const button = tv({
 
 반복되는 고정 패턴은 전역 컴포넌트 레이어로 선언하여 클래스명을 짧게 유지합니다.
 
-**파일 위치:** `src/app.css`
+**소스 코드 위치:** `src/app.css`
 
 **내용:**
 

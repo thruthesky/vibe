@@ -59,7 +59,7 @@ src/
 
 ### 2.1 메뉴 아이콘 개요
 
-**파일 경로:** `src/lib/components/top-bar.svelte`
+**소스 코드 위치:** `src/lib/components/top-bar.svelte`
 
 **목적:** 탑바 우측에 메뉴 아이콘(햄버거 메뉴)을 표시하고, 클릭 시 메뉴 페이지로 이동
 
@@ -116,7 +116,7 @@ src/
 
 ### 3.1 메뉴 페이지 개요
 
-**파일 경로:** `src/routes/menu/+page.svelte`
+**소스 코드 위치:** `src/routes/menu/+page.svelte`
 
 **목적:** 사용자 메뉴 항목을 모두 표시하는 페이지
 

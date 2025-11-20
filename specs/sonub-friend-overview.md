@@ -316,7 +316,7 @@ const feedRef = database.ref(`user-feed/${myUid}`)
 ### ✅ 완료된 작업
 
 #### 1. Firebase Cloud Functions
-- **파일 위치**: `firebase/functions/src/handlers/`
+- **소스 코드 위치**: `firebase/functions/src/handlers/`
 - **구현된 함수**:
   - `onUserFollowingCreate`: 팔로우 관계 생성 시 `/user-followers` 동기화
   - `onUserFollowingDelete`: 언팔로우 시 `/user-followers` 정리
@@ -329,14 +329,14 @@ const feedRef = database.ref(`user-feed/${myUid}`)
   - 이유: Firebase Realtime Database의 실제 필드명과 일치시키기 위함
 
 #### 2. Firebase Security Rules
-- **파일 위치**: `firebase/database.rules.json`
+- **소스 코드 위치**: `firebase/database.rules.json`
 - **구현된 규칙**:
   - `/user-following`: 본인만 읽기/쓰기 가능
   - `/user-followers`: 누구나 읽기 가능, Cloud Functions만 쓰기 가능
   - `/user-feed`: 본인만 읽기 가능, Cloud Functions만 쓰기 가능
 
 #### 3. 다국어 (i18n) 메시지
-- **파일 위치**: `messages/ko.json`, `en.json`, `ja.json`, `zh.json`
+- **소스 코드 위치**: `messages/ko.json`, `en.json`, `ja.json`, `zh.json`
 - **추가된 키**:
   - `followButton`, `followingButton`, `followLoading`
   - `followLoginRequired`, `followSelfNotAllowed`, `followError`
@@ -376,7 +376,7 @@ const feedRef = database.ref(`user-feed/${myUid}`)
   - 사용자/메시지 데이터 캐싱
 
 #### 5. 홈페이지 통합
-- **파일 위치**: [src/routes/+page.svelte](src/routes/+page.svelte)
+- **소스 코드 위치**: [src/routes/+page.svelte](src/routes/+page.svelte)
 - **구현 내용**:
   - "팔로잉 피드" / "전체" 탭 네비게이션
   - 탭 전환 시 FeedList 또는 기존 게시판 표시
