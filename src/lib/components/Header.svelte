@@ -12,8 +12,8 @@
 <header class="header">
 	<div class="header-content">
 		<div class="logo">
-			<span class="logo-icon">🤖</span>
-			<span class="logo-text">Vibers</span>
+			<span class="logo-icon">⚫</span>
+			<span class="logo-text">한바보</span>
 		</div>
 
 		<div class="auth-section">

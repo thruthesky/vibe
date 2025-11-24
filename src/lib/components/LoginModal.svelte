@@ -12,8 +12,6 @@
 		}
 	}
 
-
-
 	function handleClose() {
 		isOpen = false;
 	}
@@ -25,7 +23,7 @@
 			<button class="close-button" onclick={handleClose} aria-label="Close">×</button>
 
 			<div class="modal-header">
-				<div class="logo-icon">🤖</div>
+				<div class="logo-icon">⚫</div>
 				<h2>Start Building.</h2>
 				<p>Log in to your account</p>
 			</div>
