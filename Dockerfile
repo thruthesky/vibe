@@ -6,10 +6,11 @@ WORKDIR /app
 RUN npm install -g pnpm
 
 # Copy package files
-COPY package.json pnpm-lock.yaml* ./
+COPY package.json ./
+COPY pnpm-lock.yaml* ./
 
 # Install dependencies with pnpm
-RUN pnpm install --frozen-lockfile
+RUN pnpm install
 
 # Copy source code
 COPY . .
@@ -32,7 +33,10 @@ COPY --from=build /app/package.json ./
 COPY --from=build /app/pnpm-lock.yaml* ./
 
 # Install production dependencies only
-RUN pnpm install --prod --frozen-lockfile
+RUN pnpm install --prod
+
+# Create directory for generated HTML files
+RUN mkdir -p /var/app/generated
 
 # SvelteKit adapter-node default port
 ENV PORT=3000
