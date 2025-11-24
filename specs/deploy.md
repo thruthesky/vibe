@@ -13,6 +13,41 @@ Vibers uses Dokploy for automated deployment. When you push code to GitHub, Dokp
 
 ## Deployment Workflow
 
+### Pre-Deployment Testing (필수)
+
+배포 전에 **반드시** 테스트를 실행하여 코드에 이상이 없는지 확인:
+
+```bash
+# 1. 빌드 테스트
+pnpm run build
+
+# 2. E2E 테스트 (홈페이지 로드 확인)
+pnpm run e2e
+```
+
+**E2E 테스트 내용:**
+
+- 홈페이지가 정상적으로 로드되는지 확인
+- 로그인 버튼이 표시되는지 확인
+- 로그인 모달이 열리는지 확인
+- 주요 UI 요소들이 렌더링되는지 확인
+
+### Automated Deployment
+
+가장 간단한 배포 방법:
+
+```bash
+# 빌드 + 테스트 + 커밋 + 푸시를 한 번에
+pnpm run deploy
+
+# 또는 커밋 메시지 지정
+./scripts/deploy.sh "feat: Add new feature"
+```
+
+### Manual Deployment Steps
+
+수동으로 배포하려면:
+
 1. **Push to GitHub**: `git push origin main`
 2. **Automatic Trigger**: Dokploy detects the push and starts deployment
 3. **Build Process**:
@@ -271,18 +306,64 @@ watch -n 5 'curl -s "http://167.88.45.173:3000/api/deployment.all?applicationId=
 
 ## Deployment Checklist
 
-Before pushing to production:
+### Using Automated Deployment Script (Recommended)
 
+```bash
+# One command to do everything
+pnpm run deploy
+
+# Or with custom commit message
+./scripts/deploy.sh "feat: Your commit message"
+```
+
+The script will automatically:
+
+- ✅ Run build
+- ✅ Run E2E tests
+- ✅ Commit changes
+- ✅ Push to GitHub
+- ✅ Monitor deployment
+- ✅ Verify site accessibility
+
+### Manual Deployment Checklist
+
+If deploying manually:
+
+- [ ] **🔴 CRITICAL: Run build test** `pnpm run build`
+- [ ] **🔴 CRITICAL: Run E2E tests** `pnpm run e2e`
 - [ ] Test locally with `pnpm dev`
-- [ ] Run build locally: `pnpm run build`
-- [ ] Test Docker build: `docker build -t vibers-test .`
 - [ ] Commit all changes: `git add -A && git commit -m "..."`
 - [ ] Push to GitHub: `git push origin main`
-- [ ] Monitor deployment: Run `deploy-watch.sh`
+- [ ] Monitor deployment: `./scripts/deploy-watch.sh`
 - [ ] **Wait for deployment status: `done`**
-- [ ] **🔴 CRITICAL: 사이트 접속 확인 `curl -I https://vibers.kr`**
+- [ ] **🔴 CRITICAL: 사이트 접속 확인** `curl -I https://vibers.kr`
 - [ ] **🔴 CRITICAL: 브라우저에서 https://vibers.kr 접속 확인**
 - [ ] Test core features: Login, chat, AI generation
+
+## Testing
+
+### E2E Tests
+
+Playwright를 사용한 End-to-End 테스트:
+
+```bash
+# Run E2E tests (headless)
+pnpm run e2e
+
+# Run with UI (for debugging)
+pnpm run test:ui
+
+# Run with browser visible
+pnpm run e2e:headed
+```
+
+**테스트 파일 위치:** `tests/e2e/homepage.spec.ts`
+
+**테스트 내용:**
+
+- 홈페이지 로드 확인
+- 로그인 모달 기능 확인
+- UI 요소 렌더링 확인
 
 ## Emergency Rollback
 
