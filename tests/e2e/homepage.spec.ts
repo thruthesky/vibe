@@ -17,33 +17,34 @@ test.describe('Vibers Homepage', () => {
 		// Check for subtitle
 		await expect(page.getByText('Create apps and websites by chatting with AI')).toBeVisible();
 
-		// Check for login button when not authenticated
-		await expect(page.getByRole('button', { name: /log in/i })).toBeVisible();
+		// Check for chat sidebar (always visible now, no auth required)
+		await expect(page.locator('.chat-sidebar')).toBeVisible();
 	});
 
-	test('login modal opens when clicking login button', async ({ page }) => {
+	test('chat sidebar is always visible', async ({ page }) => {
 		await page.goto('/');
 
-		// Click login button (header login button)
-		const loginButton = page.locator('header').getByRole('button', { name: /log in/i });
-		await loginButton.click();
+		// Check that chat sidebar is visible
+		const chatSidebar = page.locator('.chat-sidebar');
+		await expect(chatSidebar).toBeVisible();
 
-		// Wait for modal to appear by checking for the modal content
-		const modalContent = page.locator('.modal-content');
-		await expect(modalContent).toBeVisible({ timeout: 10000 });
+		// Check for chat input
+		const chatInput = page.locator('.chat-input');
+		await expect(chatInput).toBeVisible();
+		await expect(chatInput).toHaveAttribute('placeholder', 'Describe your app...');
 
-		// Check that login modal appears
-		await expect(page.getByText('Start Building.', { exact: true })).toBeVisible();
-		await expect(page.getByText('Log in to your account', { exact: true })).toBeVisible();
-
-		// Check for Google sign-in button
-		await expect(page.getByRole('button', { name: /sign in with google account/i })).toBeVisible();
+		// Check for send button
+		await expect(page.locator('.send-button')).toBeVisible();
 	});
 
-	test('CTA button shows for unauthenticated users', async ({ page }) => {
+	test('chat input accepts text', async ({ page }) => {
 		await page.goto('/');
 
-		// Check for Get Started button
-		await expect(page.getByRole('button', { name: /get started/i })).toBeVisible();
+		// Type in chat input
+		const chatInput = page.locator('.chat-input');
+		await chatInput.fill('Create a simple calculator app');
+
+		// Check that text was entered
+		await expect(chatInput).toHaveValue('Create a simple calculator app');
 	});
 });

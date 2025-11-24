@@ -1,12 +1,5 @@
 <script lang="ts">
-	import { authStore } from '$lib/stores/auth.svelte';
-	import LoginModal from '$lib/components/LoginModal.svelte';
-
-	let { showLoginModal = $bindable(false) } = $props();
-
-	async function handleLogout() {
-		await authStore.signOut();
-	}
+	// No auth needed anymore
 </script>
 
 <header class="header">
@@ -31,14 +24,6 @@
 				</svg>
 			</span>
 			<span class="logo-text">한바보</span>
-		</div>
-
-		<div class="auth-section">
-			{#if authStore.isAuthenticated}
-				<button class="logout-button" onclick={handleLogout}> Log out </button>
-			{:else}
-				<button class="login-button" onclick={() => (showLoginModal = true)}> Log in </button>
-			{/if}
 		</div>
 	</div>
 </header>

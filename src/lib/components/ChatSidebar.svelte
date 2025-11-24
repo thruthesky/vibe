@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { authStore } from '$lib/stores/auth.svelte';
-
 	interface Message {
 		role: 'user' | 'assistant';
 		content: string;
@@ -18,7 +16,7 @@
 
 	function handleSubmit(e: Event) {
 		e.preventDefault();
-		if (!authStore.isAuthenticated || !prompt.trim() || isGenerating) return;
+		if (!prompt.trim() || isGenerating) return;
 
 		onSubmit(prompt);
 		prompt = '';

@@ -22,7 +22,7 @@ echo ""
 
 # Step 1: Build
 echo -e "${BLUE}🔨 Step 1/4: Building application...${NC}"
-if pnpm run build; then
+if npm run build; then
 	echo -e "${GREEN}✅ Build successful${NC}"
 else
 	echo -e "${RED}❌ Build failed${NC}"
@@ -32,7 +32,7 @@ echo ""
 
 # Step 2: E2E Tests
 echo -e "${BLUE}🧪 Step 2/4: Running E2E tests...${NC}"
-if pnpm run e2e; then
+if npm run e2e; then
 	echo -e "${GREEN}✅ E2E tests passed${NC}"
 else
 	echo -e "${RED}❌ E2E tests failed${NC}"

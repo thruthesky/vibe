@@ -1,8 +1,7 @@
 <script lang="ts">
 	import Header from '$lib/components/Header.svelte';
-	import LoginModal from '$lib/components/LoginModal.svelte';
 	import ChatSidebar from '$lib/components/ChatSidebar.svelte';
-	import { authStore } from '$lib/stores/auth.svelte';
+	import { litert } from '$lib/litert';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -13,28 +12,36 @@
 		subdomain?: string;
 	}
 
-	let showLoginModal = $state(false);
 	let messages = $state<Message[]>([]);
 	let isGenerating = $state(false);
 	let currentSubdomain = $state<string | null>(null);
 
+	// Initialize LiteRT.js on mount
+	$effect(() => {
+		litert.initialize();
+	});
+
 	async function handlePromptSubmit(prompt: string) {
-		if (!authStore.isAuthenticated || isGenerating) return;
+		if (isGenerating) return;
 
 		// Add user message
 		messages = [...messages, { role: 'user', content: prompt }];
 		isGenerating = true;
 
 		try {
-			const response = await fetch('/api/generate', {
+			// Generate code using LiteRT.js (client-side)
+			const html = await litert.generateCode(prompt);
+
+			// Save HTML to server
+			const response = await fetch('/api/save-html', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ prompt })
+				body: JSON.stringify({ html })
 			});
 
 			if (!response.ok) {
 				const errData = await response.json().catch(() => ({}));
-				throw new Error(errData.error || 'Failed to generate app');
+				throw new Error(errData.error || 'Failed to save app');
 			}
 
 			const responseData = await response.json();
@@ -74,14 +81,12 @@
 {:else}
 	<!-- Main app layout with sidebar and canvas -->
 	<div class="app-container">
-		<Header bind:showLoginModal />
-		<LoginModal bind:isOpen={showLoginModal} />
+		<Header />
 
-		{#if authStore.isAuthenticated}
-			<ChatSidebar bind:messages onSubmit={handlePromptSubmit} {isGenerating} />
-		{/if}
+		<!-- Always show ChatSidebar (no auth required) -->
+		<ChatSidebar bind:messages onSubmit={handlePromptSubmit} {isGenerating} />
 
-		<main class="main-content" class:with-sidebar={authStore.isAuthenticated}>
+		<main class="main-content with-sidebar">
 			{#if currentSubdomain}
 				<!-- Canvas area showing generated app in iframe -->
 				<div class="canvas-area">
@@ -103,17 +108,14 @@
 						</h1>
 						<p class="hero-subtitle">Create apps and websites by chatting with AI</p>
 
-						{#if !authStore.isAuthenticated}
-							<div class="cta-section">
-								<button class="cta-button" onclick={() => (showLoginModal = true)}>
-									Get Started - It's Free
-								</button>
-								<p class="cta-hint">Sign in to start building with AI</p>
-							</div>
-						{:else if isGenerating}
+						{#if isGenerating}
 							<div class="generating-indicator">
 								<div class="spinner"></div>
 								<p>Generating your app...</p>
+							</div>
+						{:else}
+							<div class="cta-section">
+								<p class="cta-hint">Start chatting in the sidebar to build your app!</p>
 							</div>
 						{/if}
 					</div>
