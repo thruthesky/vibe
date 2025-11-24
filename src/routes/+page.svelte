@@ -1,7 +1,6 @@
 <script lang="ts">
 	import Header from '$lib/components/Header.svelte';
 	import ChatSidebar from '$lib/components/ChatSidebar.svelte';
-	import { litert } from '$lib/litert';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -16,11 +15,6 @@
 	let isGenerating = $state(false);
 	let currentSubdomain = $state<string | null>(null);
 
-	// Initialize LiteRT.js on mount
-	$effect(() => {
-		litert.initialize();
-	});
-
 	async function handlePromptSubmit(prompt: string) {
 		if (isGenerating) return;
 
@@ -29,19 +23,16 @@
 		isGenerating = true;
 
 		try {
-			// Generate code using LiteRT.js (client-side)
-			const html = await litert.generateCode(prompt);
-
-			// Save HTML to server
-			const response = await fetch('/api/save-html', {
+			// Call backend API to generate code
+			const response = await fetch('/api/generate', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ html })
+				body: JSON.stringify({ prompt })
 			});
 
 			if (!response.ok) {
 				const errData = await response.json().catch(() => ({}));
-				throw new Error(errData.error || 'Failed to save app');
+				throw new Error(errData.error || 'Failed to generate app');
 			}
 
 			const responseData = await response.json();

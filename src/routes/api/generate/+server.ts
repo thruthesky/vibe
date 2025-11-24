@@ -37,12 +37,15 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 			return json({ error: 'Invalid prompt' }, { status: 400 });
 		}
 
-		// Call Firebase AI Logic (using Gemini API directly for now)
-		// Note: In production, you'd use Firebase AI Logic SDK
-		// Try to get API key from env, fallback to hardcoded (dev only)
-		const apiKey = env.VITE_FIREBASE_API_KEY || process.env.VITE_FIREBASE_API_KEY || 'AIzaSyDxc1SSSwzgIPCikQpsgPKHkO0s8Qn1y7M';
+		// Get Gemini API key from environment variables
+		const apiKey = env.GEMINI_API_KEY || process.env.GEMINI_API_KEY;
 		
-		console.log('Using API Key:', apiKey ? '***' + apiKey.slice(-4) : 'None');
+		if (!apiKey) {
+			console.error('GEMINI_API_KEY environment variable is not set');
+			return json({ error: 'Server configuration error: API key not configured' }, { status: 500 });
+		}
+		
+		console.log('Using Gemini API Key:', '***' + apiKey.slice(-4));
 
 		const aiResponse = await fetch(
 			`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`,
