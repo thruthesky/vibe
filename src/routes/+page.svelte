@@ -69,22 +69,10 @@
 </svelte:head>
 
 {#if data.htmlContent}
-	<!-- Render generated HTML content (inside iframe or direct access) -->
+	<!-- Direct subdomain access - render HTML directly -->
 	{@html data.htmlContent}
-{:else if currentSubdomain}
-	<!-- Render generated HTML via iframe -->
-	<div class="generated-app-container">
-		<iframe
-			src="https://{currentSubdomain}.vibers.kr"
-			title="Generated App"
-			class="generated-app-iframe"
-		></iframe>
-		<button class="close-preview" onclick={() => (currentSubdomain = null)}>
-			Close Preview
-		</button>
-	</div>
 {:else}
-	<!-- Normal landing page -->
+	<!-- Main app layout with sidebar and canvas -->
 	<div class="app-container">
 		<Header bind:showLoginModal />
 		<LoginModal bind:isOpen={showLoginModal} />
@@ -94,60 +82,95 @@
 		{/if}
 
 		<main class="main-content" class:with-sidebar={authStore.isAuthenticated}>
-			<div class="gradient-bg hero-section">
-				<div class="hero-content">
-					<h1 class="hero-title">
-						Build something <span class="gradient-text">Vibers</span>
-					</h1>
-					<p class="hero-subtitle">Create apps and websites by chatting with AI</p>
-
-					{#if !authStore.isAuthenticated}
-						<div class="cta-section">
-							<button class="cta-button" onclick={() => (showLoginModal = true)}>
-								Get Started - It's Free
-							</button>
-							<p class="cta-hint">Sign in to start building with AI</p>
-						</div>
-					{:else if isGenerating}
-						<div class="generating-indicator">
-							<div class="spinner"></div>
-							<p>Generating your app...</p>
-						</div>
-					{/if}
+			{#if currentSubdomain}
+				<!-- Canvas area showing generated app in iframe -->
+				<div class="canvas-area">
+					<div class="canvas-header">
+						<h2>Generated App Preview</h2>
+						<button class="close-canvas" onclick={() => (currentSubdomain = null)}>
+							Close Preview
+						</button>
+					</div>
+					<iframe
+						src="https://{currentSubdomain}.vibers.kr"
+						title="Generated App"
+						class="canvas-iframe"
+					></iframe>
 				</div>
-			</div>
+			{:else}
+				<!-- Hero section when no app is generated -->
+				<div class="gradient-bg hero-section">
+					<div class="hero-content">
+						<h1 class="hero-title">
+							Build something <span class="gradient-text">Vibers</span>
+						</h1>
+						<p class="hero-subtitle">Create apps and websites by chatting with AI</p>
+
+						{#if !authStore.isAuthenticated}
+							<div class="cta-section">
+								<button class="cta-button" onclick={() => (showLoginModal = true)}>
+									Get Started - It's Free
+								</button>
+								<p class="cta-hint">Sign in to start building with AI</p>
+							</div>
+						{:else if isGenerating}
+							<div class="generating-indicator">
+								<div class="spinner"></div>
+								<p>Generating your app...</p>
+							</div>
+						{/if}
+					</div>
+				</div>
+			{/if}
 		</main>
 	</div>
 {/if}
 
 <style>
-	.generated-app-container {
-		position: fixed;
-		top: 0;
-		left: 0;
+	.canvas-area {
 		width: 100%;
-		height: 100%;
-		z-index: 100;
+		height: calc(100vh - 4rem);
+		display: flex;
+		flex-direction: column;
+		background: #f5f5f5;
+	}
+
+	.canvas-header {
+		padding: 1rem 2rem;
 		background: white;
+		border-bottom: 1px solid #e0e0e0;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
 	}
 
-	.generated-app-iframe {
-		width: 100%;
-		height: 100%;
-		border: none;
+	.canvas-header h2 {
+		margin: 0;
+		font-size: 1.25rem;
+		font-weight: 600;
+		color: #333;
 	}
 
-	.close-preview {
-		position: fixed;
-		bottom: 20px;
-		right: 20px;
-		padding: 10px 20px;
-		background: #333;
-		color: white;
+	.close-canvas {
+		padding: 0.5rem 1rem;
+		background: #f0f0f0;
+		color: #333;
 		border: none;
-		border-radius: 5px;
+		border-radius: 4px;
 		cursor: pointer;
-		z-index: 101;
+		font-size: 0.9rem;
+		transition: background 0.2s;
+	}
+
+	.close-canvas:hover {
+		background: #e0e0e0;
+	}
+
+	.canvas-iframe {
+		flex: 1;
+		width: 100%;
+		border: none;
+		background: white;
 	}
 
 	.app-container {
