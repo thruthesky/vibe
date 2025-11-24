@@ -92,7 +92,7 @@
 						</button>
 					</div>
 					<iframe
-						src="https://{currentSubdomain}.vibers.kr"
+						src="/app/{currentSubdomain}"
 						title="Generated App"
 						class="canvas-iframe"
 					></iframe>

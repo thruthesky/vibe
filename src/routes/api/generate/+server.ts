@@ -111,7 +111,7 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 		return json({
 			success: true,
 			subdomain,
-			url: `https://${subdomain}.vibers.kr`
+			url: `https://vibers.kr/app/${subdomain}`
 		});
 	} catch (error) {
 		console.error('Generation error:', error);
