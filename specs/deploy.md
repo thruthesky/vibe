@@ -206,13 +206,49 @@ Headers: x-api-key: {API_KEY}
 
 ## Post-Deployment Verification
 
-After deployment completes, verify:
+**⚠️ CRITICAL: 배포 완료 후 반드시 사이트 접속 확인 필요!**
+
+After deployment completes, **ALWAYS** verify the site is accessible:
+
+### 1. 사이트 접속 확인 (필수)
+
+배포가 `done` 상태가 되면 즉시 사이트에 접속하여 확인:
+
+```bash
+# HTTP 상태 확인
+curl -I https://vibers.kr
+
+# 페이지 내용 확인
+curl https://vibers.kr
+```
+
+**브라우저에서 직접 확인:**
+
+- https://vibers.kr 접속
+- 페이지가 정상적으로 로드되는지 확인
+- 502, 503, 504 에러가 없는지 확인
+
+### 2. 기능 테스트
+
+사이트가 정상적으로 열리면 다음 기능들을 테스트:
 
 1. **Main Domain**: https://vibers.kr
 2. **Health Check**: Ensure the page loads
 3. **Authentication**: Test Google login
 4. **Chat Interface**: Verify sidebar appears when logged in
 5. **AI Generation**: Test creating an app with a prompt
+
+### 3. 문제 발생 시
+
+만약 502, 503 에러가 발생하면:
+
+```bash
+# 에러 로그 확인
+./scripts/deploy-error-check.sh auto
+
+# 컨테이너 상태 확인 (Dokploy UI)
+http://167.88.45.173:3000
+```
 
 ## Quick Reference Commands
 
@@ -243,7 +279,9 @@ Before pushing to production:
 - [ ] Commit all changes: `git add -A && git commit -m "..."`
 - [ ] Push to GitHub: `git push origin main`
 - [ ] Monitor deployment: Run `deploy-watch.sh`
-- [ ] Verify deployment: Check https://vibers.kr
+- [ ] **Wait for deployment status: `done`**
+- [ ] **🔴 CRITICAL: 사이트 접속 확인 `curl -I https://vibers.kr`**
+- [ ] **🔴 CRITICAL: 브라우저에서 https://vibers.kr 접속 확인**
 - [ ] Test core features: Login, chat, AI generation
 
 ## Emergency Rollback
