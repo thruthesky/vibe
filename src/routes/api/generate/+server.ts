@@ -3,6 +3,7 @@ import type { RequestHandler } from './$types';
 import { writeFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { generateSubdomainId } from '$lib/utils/subdomain';
+import { env } from '$env/dynamic/private';
 
 const OUT_DIR = process.env.OUT_DIR ?? '/var/app/generated';
 
@@ -38,7 +39,11 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 
 		// Call Firebase AI Logic (using Gemini API directly for now)
 		// Note: In production, you'd use Firebase AI Logic SDK
-		const apiKey = 'AIzaSyDxc1SSSwzgIPCikQpsgPKHkO0s8Qn1y7M';
+		// Try to get API key from env, fallback to hardcoded (dev only)
+		const apiKey = env.VITE_FIREBASE_API_KEY || process.env.VITE_FIREBASE_API_KEY || 'AIzaSyDxc1SSSwzgIPCikQpsgPKHkO0s8Qn1y7M';
+		
+		console.log('Using API Key:', apiKey ? '***' + apiKey.slice(-4) : 'None');
+
 		const aiResponse = await fetch(
 			`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${apiKey}`,
 			{
@@ -62,8 +67,9 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 		);
 
 		if (!aiResponse.ok) {
-			console.error('AI API error:', await aiResponse.text());
-			return json({ error: 'AI generation failed' }, { status: 500 });
+			const errorText = await aiResponse.text();
+			console.error('AI API error:', errorText);
+			return json({ error: `AI generation failed: ${errorText}` }, { status: 500 });
 		}
 
 		const aiData = await aiResponse.json();
@@ -108,6 +114,6 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 		});
 	} catch (error) {
 		console.error('Generation error:', error);
-		return json({ error: 'Internal server error' }, { status: 500 });
+		return json({ error: `Internal server error: ${error instanceof Error ? error.message : String(error)}` }, { status: 500 });
 	}
 };

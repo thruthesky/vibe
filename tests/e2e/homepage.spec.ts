@@ -24,8 +24,9 @@ test.describe('Vibers Homepage', () => {
 	test('login modal opens when clicking login button', async ({ page }) => {
 		await page.goto('/');
 
-		// Click login button
-		await page.getByRole('button', { name: /log in/i }).click();
+		// Click login button (header login button)
+		const loginButton = page.locator('header').getByRole('button', { name: /log in/i });
+		await loginButton.click();
 
 		// Check that login modal appears
 		await expect(page.getByText('Start Building')).toBeVisible();

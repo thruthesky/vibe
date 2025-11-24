@@ -16,6 +16,7 @@
 	let showLoginModal = $state(false);
 	let messages = $state<Message[]>([]);
 	let isGenerating = $state(false);
+	let currentSubdomain = $state<string | null>(null);
 
 	async function handlePromptSubmit(prompt: string) {
 		if (!authStore.isAuthenticated || isGenerating) return;
@@ -46,6 +47,7 @@
 					subdomain: responseData.subdomain
 				}
 			];
+			currentSubdomain = responseData.subdomain;
 		} catch (error) {
 			console.error('Generation error:', error);
 			messages = [
@@ -61,10 +63,17 @@
 	}
 </script>
 
-{#if data.htmlContent}
-	<!-- Render generated HTML for subdomain -->
-	<div class="generated-app">
-		{@html data.htmlContent}
+{#if currentSubdomain}
+	<!-- Render generated HTML via iframe -->
+	<div class="generated-app-container">
+		<iframe
+			src="https://{currentSubdomain}.vibers.kr"
+			title="Generated App"
+			class="generated-app-iframe"
+		></iframe>
+		<button class="close-preview" onclick={() => (currentSubdomain = null)}>
+			Close Preview
+		</button>
 	</div>
 {:else}
 	<!-- Normal landing page -->
@@ -104,10 +113,33 @@
 {/if}
 
 <style>
-	.generated-app {
+	.generated-app-container {
+		position: fixed;
+		top: 0;
+		left: 0;
 		width: 100%;
-		height: 100vh;
-		overflow: auto;
+		height: 100%;
+		z-index: 100;
+		background: white;
+	}
+
+	.generated-app-iframe {
+		width: 100%;
+		height: 100%;
+		border: none;
+	}
+
+	.close-preview {
+		position: fixed;
+		bottom: 20px;
+		right: 20px;
+		padding: 10px 20px;
+		background: #333;
+		color: white;
+		border: none;
+		border-radius: 5px;
+		cursor: pointer;
+		z-index: 101;
 	}
 
 	.app-container {
