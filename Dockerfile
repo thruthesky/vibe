@@ -2,22 +2,39 @@
 FROM node:20-alpine AS build
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm ci
+# Install pnpm
+RUN npm install -g pnpm
+
+# Copy package files
+COPY package.json pnpm-lock.yaml* ./
+
+# Install dependencies with pnpm
+RUN pnpm install --frozen-lockfile
+
+# Copy source code
 COPY . .
-RUN npm run build
+
+# Build the application
+RUN pnpm run build
 
 # ---- run stage ----
 FROM node:20-alpine
 WORKDIR /app
 
-ENV NODE_ENV=production
-# build 결과 + package.json + prod deps만
-COPY --from=build /app/build ./build
-COPY --from=build /app/package*.json ./
-RUN npm ci --omit=dev
+# Install pnpm in production image
+RUN npm install -g pnpm
 
-# SvelteKit adapter-node 기본 포트(원하면 바꿔도 됨)
+ENV NODE_ENV=production
+
+# Copy build results and package files
+COPY --from=build /app/build ./build
+COPY --from=build /app/package.json ./
+COPY --from=build /app/pnpm-lock.yaml* ./
+
+# Install production dependencies only
+RUN pnpm install --prod --frozen-lockfile
+
+# SvelteKit adapter-node default port
 ENV PORT=3000
 EXPOSE 3000
 
