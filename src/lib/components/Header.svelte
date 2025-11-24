@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { authStore } from '$lib/stores/auth.svelte';
+	import LoginModal from '$lib/components/LoginModal.svelte';
 
 	let { showLoginModal = $bindable(false) } = $props();
 
@@ -24,6 +25,8 @@
 		</div>
 	</div>
 </header>
+
+<LoginModal bind:isOpen={showLoginModal} />
 
 <style>
 	.header {

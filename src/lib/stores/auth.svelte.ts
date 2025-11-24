@@ -56,9 +56,37 @@ export const authStore = {
 	async signOut() {
 		try {
 			await firebaseSignOut(auth);
+			currentUser = null; // Ensure state is cleared
 		} catch (error) {
 			console.error('Sign-out error:', error);
 			throw error;
 		}
+	},
+
+	// For testing purposes only
+	mockLogin(email: string) {
+		currentUser = {
+			uid: 'mock-' + Math.random().toString(36).substr(2, 9),
+			email,
+			displayName: email.split('@')[0],
+			emailVerified: true,
+			isAnonymous: false,
+			metadata: {},
+			providerData: [],
+			refreshToken: '',
+			tenantId: null,
+			delete: async () => {},
+			getIdToken: async () => 'mock-token',
+			getIdTokenResult: async () => ({
+				token: 'mock-token',
+				signInProvider: 'password',
+				claims: {},
+				authTime: Date.now().toString(),
+				issuedAtTime: Date.now().toString(),
+				expirationTime: (Date.now() + 3600000).toString()
+			}),
+			reload: async () => {},
+			toJSON: () => ({})
+		} as unknown as User;
 	}
 };

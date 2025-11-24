@@ -240,9 +240,6 @@
 		font-size: 0.95rem;
 	}
 
-	.prompt-wrapper {
-		margin-bottom: 2rem;
-	}
 
 	.generating-indicator {
 		display: flex;

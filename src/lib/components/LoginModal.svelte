@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { authStore } from '$lib/stores/auth.svelte';
 
-	let { isOpen = $bindable(false) } = $props();
+	export let isOpen = false;
 
 	async function handleGoogleSignIn() {
 		try {
@@ -12,14 +12,7 @@
 		}
 	}
 
-	async function handleAppleSignIn() {
-		try {
-			await authStore.signInWithApple();
-			isOpen = false;
-		} catch (error) {
-			console.error('Sign-in failed:', error);
-		}
-	}
+
 
 	function handleClose() {
 		isOpen = false;
@@ -57,16 +50,7 @@
 							d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"
 						></path>
 					</svg>
-					Continue with Google
-				</button>
-
-				<button class="auth-button apple" onclick={handleAppleSignIn}>
-					<svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor">
-						<path
-							d="M14.94 13.52c-.26.58-.39.84-.73 1.36-.47.72-1.13 1.62-1.95 1.63-.73.01-1.02-.48-1.9-.47-.88 0-1.15.48-1.88.48-.82.01-1.43-.84-1.9-1.56-1.33-2.03-1.47-4.41-.65-5.67.58-.9 1.5-1.43 2.37-1.43.88 0 1.44.48 2.17.48.7 0 1.13-.48 2.14-.48.77 0 1.58.42 2.16 1.14-1.9 1.04-1.59 3.75.27 4.52zm-2.93-8.7c.38-.49.67-1.18.56-1.87-.61.03-1.33.42-1.76.93-.38.45-.7 1.16-.58 1.83.66.04 1.34-.37 1.78-.89z"
-						></path>
-					</svg>
-					Login with Apple Account
+					Sign In with Google Account
 				</button>
 			</div>
 		</div>

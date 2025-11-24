@@ -2,15 +2,15 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { goto } from '$app/navigation';
 
-	let email = $state('');
-	let password = $state('');
-	let error = $state('');
+	let email = '';// $state not needed
+	let password = '';// $state not needed
+	let error = '';// $state not needed
 
 	const ALLOWED_ACCOUNTS = ['apple@test.com', 'banana@test.com', 'cherry@test.com'];
 	const COMMON_PASSWORD = '12345a,*';
 
 	function handleLogin() {
-		error = '';
+		error = '';// reset error
 
 		if (!ALLOWED_ACCOUNTS.includes(email)) {
 			error = 'Invalid email address';
@@ -24,6 +24,11 @@
 
 		// Perform mock login
 		authStore.mockLogin(email);
+		goto('/');
+	}
+
+	function autoLogin(account: string) {
+		authStore.mockLogin(account);
 		goto('/');
 	}
 </script>
@@ -52,6 +57,11 @@
 				{/each}
 			</ul>
 			<p>Password: {COMMON_PASSWORD}</p>
+			<div class="auto-login-buttons">
+				{#each ALLOWED_ACCOUNTS as acc}
+					<button onclick={() => autoLogin(acc)}>{acc} (auto login)</button>
+				{/each}
+			</div>
 		</div>
 	</div>
 </div>
