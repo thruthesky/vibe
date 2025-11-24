@@ -33,7 +33,8 @@
 			});
 
 			if (!response.ok) {
-				throw new Error('Failed to generate app');
+				const errData = await response.json().catch(() => ({}));
+				throw new Error(errData.error || 'Failed to generate app');
 			}
 
 			const responseData = await response.json();
