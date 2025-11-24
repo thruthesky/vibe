@@ -91,10 +91,7 @@
 							Close Preview
 						</button>
 					</div>
-					<iframe
-						src="/app/{currentSubdomain}"
-						title="Generated App"
-						class="canvas-iframe"
+					<iframe src="/app/{currentSubdomain}" title="Generated App" class="canvas-iframe"
 					></iframe>
 				</div>
 			{:else}
@@ -263,7 +260,6 @@
 		font-size: 0.95rem;
 	}
 
-
 	.generating-indicator {
 		display: flex;
 		flex-direction: column;
@@ -299,4 +295,3 @@
 		}
 	}
 </style>
-

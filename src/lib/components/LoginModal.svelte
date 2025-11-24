@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { authStore } from '$lib/stores/auth.svelte';
 
-	export let isOpen = false;
+	let { isOpen = $bindable(false) } = $props();
 
 	async function handleGoogleSignIn() {
 		try {
@@ -23,7 +23,32 @@
 			<button class="close-button" onclick={handleClose} aria-label="Close">×</button>
 
 			<div class="modal-header">
-				<div class="logo-icon">⚫</div>
+				<div class="logo-icon">
+					<svg
+						width="1em"
+						height="1em"
+						viewBox="0 0 24 24"
+						fill="none"
+						xmlns="http://www.w3.org/2000/svg"
+					>
+						<rect
+							x="4"
+							y="4"
+							width="16"
+							height="14"
+							rx="2"
+							stroke="currentColor"
+							stroke-width="2"
+						/>
+						<rect x="7" y="9" width="2" height="2" fill="currentColor" />
+						<rect x="15" y="9" width="2" height="2" fill="currentColor" />
+						<path d="M9 14H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+						<path d="M12 4V2" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+						<circle cx="12" cy="2" r="1" fill="currentColor" />
+						<path d="M2 11H4" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+						<path d="M20 11H22" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+					</svg>
+				</div>
 				<h2>Start Building.</h2>
 				<p>Log in to your account</p>
 			</div>

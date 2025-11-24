@@ -28,12 +28,13 @@ test.describe('Vibers Homepage', () => {
 		const loginButton = page.locator('header').getByRole('button', { name: /log in/i });
 		await loginButton.click();
 
-		// Wait for modal to appear
-		await page.waitForTimeout(500);
+		// Wait for modal to appear by checking for the modal content
+		const modalContent = page.locator('.modal-content');
+		await expect(modalContent).toBeVisible({ timeout: 10000 });
 
 		// Check that login modal appears
-		await expect(page.getByText('Start Building', { exact: false })).toBeVisible();
-		await expect(page.getByText('Log in to your account', { exact: false })).toBeVisible();
+		await expect(page.getByText('Start Building.', { exact: true })).toBeVisible();
+		await expect(page.getByText('Log in to your account', { exact: true })).toBeVisible();
 
 		// Check for Google sign-in button
 		await expect(page.getByRole('button', { name: /sign in with google account/i })).toBeVisible();
