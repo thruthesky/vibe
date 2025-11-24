@@ -63,6 +63,10 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Vibers - Build something amazing</title>
+</svelte:head>
+
 {#if currentSubdomain}
 	<!-- Render generated HTML via iframe -->
 	<div class="generated-app-container">
