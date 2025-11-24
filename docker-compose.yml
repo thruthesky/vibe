@@ -1,0 +1,37 @@
+version: '3.9'
+
+services:
+  vibers-web:
+    build: .
+    container_name: vibers-web
+    networks:
+      - dokploy-network
+    environment:
+      - PORT=3000
+      - OUT_DIR=/var/app/generated
+
+    # 1) HTML 생성 저장 경로를 영구 볼륨에 연결
+    volumes:
+      - vibers-generated:/var/app/generated
+
+    # 2) Traefik 라벨로 와일드카드 서브도메인 라우팅
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.services.vibers.loadbalancer.server.port=3000'
+
+      # vibers.kr + 모든 하위도메인 *.vibers.kr
+      - "traefik.http.routers.vibers.rule=Host(`vibers.kr`) || HostRegexp(`^.+\\.vibers\\.kr$`)"
+      - 'traefik.http.routers.vibers.entrypoints=websecure'
+      - 'traefik.http.routers.vibers.tls=true'
+
+      # (선택) 와일드카드 TLS를 쓰려면 DNS-01 기반 certResolver 필요
+      # - "traefik.http.routers.vibers.tls.certresolver=letsencrypt"
+      # - "traefik.http.routers.vibers.tls.domains[0].main=vibers.kr"
+      # - "traefik.http.routers.vibers.tls.domains[0].sans=*.vibers.kr"
+
+networks:
+  dokploy-network:
+    external: true
+
+volumes:
+  vibers-generated:
