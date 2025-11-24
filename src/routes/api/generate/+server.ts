@@ -5,7 +5,7 @@ import path from 'node:path';
 import { generateSubdomainId } from '$lib/utils/subdomain';
 import { env } from '$env/dynamic/private';
 
-const OUT_DIR = process.env.OUT_DIR ?? '/var/app/generated';
+const OUT_DIR = process.env.OUT_DIR ?? (process.env.NODE_ENV === 'production' ? '/var/app/generated' : './static/generated');
 
 // System prompt for AI to generate single-page HTML apps
 const SYSTEM_PROMPT = `You are an expert web developer. Generate a complete, production-ready single-page HTML application based on the user's request.
@@ -50,11 +50,12 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
+					system_instruction: {
+						parts: [{ text: SYSTEM_PROMPT }]
+					},
 					contents: [
 						{
-							parts: [{ text: SYSTEM_PROMPT }]
-						},
-						{
+							role: 'user',
 							parts: [{ text: prompt }]
 						}
 					],

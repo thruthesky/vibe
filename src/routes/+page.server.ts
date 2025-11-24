@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { error } from '@sveltejs/kit';
 
-const OUT_DIR = process.env.OUT_DIR ?? '/var/app/generated';
+const OUT_DIR = process.env.OUT_DIR ?? (process.env.NODE_ENV === 'production' ? '/var/app/generated' : './static/generated');
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const subdomain = locals.subdomain;
