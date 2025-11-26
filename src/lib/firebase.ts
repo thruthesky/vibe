@@ -3,7 +3,7 @@ import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getVertexAI, getGenerativeModel } from "@firebase/vertexai";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCQy4rYdhFg_TZkRdau_4CjlE2N02Slm1A",
+  apiKey: "AIzaSyDHTpyT6DnBXhrD5pe-ZN9tOl0SChIyBds",
   authDomain: "withcenter-test-5.firebaseapp.com",
   databaseURL: "https://withcenter-test-5-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "withcenter-test-5",
@@ -15,5 +15,5 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
-export const vertexAI = getVertexAI(app);
+export const vertexAI = getVertexAI(app, { location: "asia-northeast3" });
 export const model = getGenerativeModel(vertexAI, { model: "gemini-2.5-flash-lite" });
