@@ -41,8 +41,10 @@
 		"vite": "^7.2.2"
 	},
 	"dependencies": {
+		"@firebase/vertexai": "^1.2.4",
 		"@litertjs/core": "^0.1.0",
-		"@sveltejs/adapter-node": "^5.4.0"
+		"@sveltejs/adapter-node": "^5.4.0",
+		"firebase": "^12.6.0"
 	},
 	"optionalDependencies": {
 		"@tailwindcss/oxide-darwin-arm64": "^4.1.17"

@@ -1,5 +1,33 @@
 <script lang="ts">
-	// No auth needed anymore
+	import { onMount } from 'svelte';
+	import { auth, googleProvider } from '$lib/firebase';
+	import { signInWithPopup, signOut, onAuthStateChanged, type User } from 'firebase/auth';
+
+	let user = $state<User | null>(null);
+
+	onMount(() => {
+		const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+			user = currentUser;
+		});
+		return () => unsubscribe();
+	});
+
+	async function login() {
+		try {
+			await signInWithPopup(auth, googleProvider);
+		} catch (error) {
+			console.error('Login failed:', error);
+			alert('Login failed. Please try again.');
+		}
+	}
+
+	async function logout() {
+		try {
+			await signOut(auth);
+		} catch (error) {
+			console.error('Logout failed:', error);
+		}
+	}
 </script>
 
 <header class="header">
@@ -24,6 +52,20 @@
 				</svg>
 			</span>
 			<span class="logo-text">한바보</span>
+		</div>
+
+		<div class="auth-actions">
+			{#if user}
+				<div class="user-info">
+					{#if user.photoURL}
+						<img src={user.photoURL} alt={user.displayName || 'User'} class="user-avatar" />
+					{/if}
+					<span class="user-name">{user.displayName}</span>
+				</div>
+				<button class="logout-button" onclick={logout}>Logout</button>
+			{:else}
+				<button class="login-button" onclick={login}>Sign In with Google</button>
+			{/if}
 		</div>
 	</div>
 </header>
@@ -81,5 +123,30 @@
 		border-color: #ccc;
 		transform: translateY(-1px);
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+	}
+
+	.auth-actions {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+	}
+
+	.user-info {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		font-size: 0.9rem;
+		color: #555;
+	}
+
+	.user-avatar {
+		width: 32px;
+		height: 32px;
+		border-radius: 50%;
+		object-fit: cover;
+	}
+
+	.user-name {
+		font-weight: 500;
 	}
 </style>

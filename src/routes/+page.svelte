@@ -15,6 +15,8 @@
 	let isGenerating = $state(false);
 	let currentSubdomain = $state<string | null>(null);
 
+	import { model } from '$lib/firebase';
+
 	async function handlePromptSubmit(prompt: string) {
 		if (isGenerating) return;
 
@@ -23,30 +25,56 @@
 		isGenerating = true;
 
 		try {
-			// Call backend API to generate code
-			const response = await fetch('/api/generate', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ prompt })
+			const result = await model.generateContent({
+				contents: [{ role: 'user', parts: [{ text: prompt }] }],
+				generationConfig: {
+					temperature: 0.7,
+					maxOutputTokens: 8192
+				}
 			});
 
-			if (!response.ok) {
-				const errData = await response.json().catch(() => ({}));
-				throw new Error(errData.error || 'Failed to generate app');
+			const response = result.response;
+			const text = response.text();
+
+			console.log('AI Response:', text);
+
+			// Extract JSON/HTML from response
+			let htmlContent: string;
+			try {
+				const jsonMatch = text.match(/\{[\s\S]*"html"[\s\S]*\}/);
+				if (jsonMatch) {
+					const parsed = JSON.parse(jsonMatch[0]);
+					htmlContent = parsed.html;
+				} else {
+					htmlContent = text;
+				}
+			} catch (e) {
+				htmlContent = text;
 			}
 
-			const responseData = await response.json();
+			// Save HTML to server to get subdomain
+			const saveResponse = await fetch('/api/save-html', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ html: htmlContent })
+			});
+
+			if (!saveResponse.ok) {
+				throw new Error('Failed to save generated app');
+			}
+
+			const saveData = await saveResponse.json();
 
 			// Add assistant message with subdomain
 			messages = [
 				...messages,
 				{
 					role: 'assistant',
-					content: `I've created your app! It's now live at ${responseData.subdomain}.vibers.kr`,
-					subdomain: responseData.subdomain
+					content: `I've created your app! It's now live at ${saveData.subdomain}.vibers.kr`,
+					subdomain: saveData.subdomain
 				}
 			];
-			currentSubdomain = responseData.subdomain;
+			currentSubdomain = saveData.subdomain;
 		} catch (error) {
 			console.error('Generation error:', error);
 			messages = [
