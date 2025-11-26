@@ -32,19 +32,9 @@
 				parts: [{ text: m.content }]
 			}));
 
-			// System instruction for code generation
-			const systemInstruction = `당신은 자바스크립트 전문 개발자입니다. 하나의 HTML 페이지에 CSS, JavaScript를 모두 포함하여, 사용자가 요청하는 앱을 현대적이며 화려한 디자인으로 만들어서 JSON 형식으로 제공해주세요.
-
-응답 형식:
-{
-  "html": "<!DOCTYPE html><html>...</html>"
-}
-
-중요: 반드시 위 JSON 형식으로만 응답하고, 다른 설명은 추가하지 마세요.`;
-
+			// 채팅 세션 시작 (systemInstruction은 firebase.ts에서 모델 생성 시 설정됨)
 			const chat = model.startChat({
 				history: history as any,
-				systemInstruction: systemInstruction,
 				generationConfig: {
 					maxOutputTokens: 8192,
 				}
