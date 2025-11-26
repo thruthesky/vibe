@@ -27,13 +27,24 @@
 
 		try {
 			// Prepare history for multi-turn chat
-			const history = messages.slice(0, -1).map(m => ({
+			const history = messages.slice(0, -1).map((m: Message) => ({
 				role: m.role === 'assistant' ? 'model' : 'user',
 				parts: [{ text: m.content }]
 			}));
 
+			// System instruction for code generation
+			const systemInstruction = `당신은 자바스크립트 전문 개발자입니다. 하나의 HTML 페이지에 CSS, JavaScript를 모두 포함하여, 사용자가 요청하는 앱을 현대적이며 화려한 디자인으로 만들어서 JSON 형식으로 제공해주세요.
+
+응답 형식:
+{
+  "html": "<!DOCTYPE html><html>...</html>"
+}
+
+중요: 반드시 위 JSON 형식으로만 응답하고, 다른 설명은 추가하지 마세요.`;
+
 			const chat = model.startChat({
-				history: history as any, // Type assertion might be needed depending on SDK types
+				history: history as any,
+				systemInstruction: systemInstruction,
 				generationConfig: {
 					maxOutputTokens: 8192,
 				}
@@ -63,14 +74,26 @@
 			// Extract JSON/HTML from response
 			let htmlContent: string;
 			try {
-				const jsonMatch = fullText.match(/\{[\s\S]*"html"[\s\S]*\}/);
+				// Remove markdown code blocks if present
+				let cleanedText = fullText.replace(/```json\s*/g, '').replace(/```\s*/g, '');
+				
+				// Try to find JSON object
+				const jsonMatch = cleanedText.match(/\{[\s\S]*?"html"[\s\S]*?\}/);
 				if (jsonMatch) {
 					const parsed = JSON.parse(jsonMatch[0]);
 					htmlContent = parsed.html;
 				} else {
-					htmlContent = fullText;
+					// If no JSON found, try to extract HTML directly
+					const htmlMatch = fullText.match(/<!DOCTYPE html>[\s\S]*<\/html>/i);
+					if (htmlMatch) {
+						htmlContent = htmlMatch[0];
+					} else {
+						throw new Error('No valid HTML found in response');
+					}
 				}
 			} catch (e) {
+				console.error('Failed to extract HTML:', e);
+				// Fallback: use the full text as HTML
 				htmlContent = fullText;
 			}
 
@@ -92,7 +115,7 @@
 				...messages.slice(0, -1),
 				{
 					role: 'assistant',
-					content: fullText, // Keep the full generated text
+					content: `앱을 생성했습니다! ${saveData.subdomain}.vibers.kr에서 확인하실 수 있습니다.`,
 					subdomain: saveData.subdomain
 				}
 			];
