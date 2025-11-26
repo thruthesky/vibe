@@ -21,35 +21,57 @@
 		if (isGenerating) return;
 
 		// Add user message
-		messages = [...messages, { role: 'user', content: prompt }];
+		const userMessage: Message = { role: 'user', content: prompt };
+		messages = [...messages, userMessage];
 		isGenerating = true;
 
 		try {
-			const result = await model.generateContent({
-				contents: [{ role: 'user', parts: [{ text: prompt }] }],
+			// Prepare history for multi-turn chat
+			const history = messages.slice(0, -1).map(m => ({
+				role: m.role === 'assistant' ? 'model' : 'user',
+				parts: [{ text: m.content }]
+			}));
+
+			const chat = model.startChat({
+				history: history as any, // Type assertion might be needed depending on SDK types
 				generationConfig: {
-					temperature: 0.7,
-					maxOutputTokens: 8192
+					maxOutputTokens: 8192,
 				}
 			});
 
-			const response = result.response;
-			const text = response.text();
+			const result = await chat.sendMessageStream(prompt);
+			
+			// Create a placeholder message for the assistant
+			let assistantMessage: Message = { role: 'assistant', content: '' };
+			messages = [...messages, assistantMessage];
+			
+			let fullText = '';
 
-			console.log('AI Response:', text);
+			for await (const chunk of result.stream) {
+				const chunkText = chunk.text();
+				fullText += chunkText;
+				
+				// Update the last message (assistant's response) in real-time
+				messages = [
+					...messages.slice(0, -1),
+					{ ...assistantMessage, content: fullText }
+				];
+			}
+
+			console.log('Full AI Response:', fullText);
 
 			// Extract JSON/HTML from response
 			let htmlContent: string;
 			try {
-				const jsonMatch = text.match(/\{[\s\S]*"html"[\s\S]*\}/);
+				const jsonMatch = fullText.match(/\{[\s\S]*"html"[\s\S]*\}/);
 				if (jsonMatch) {
 					const parsed = JSON.parse(jsonMatch[0]);
 					htmlContent = parsed.html;
 				} else {
-					htmlContent = text;
+					htmlContent = fullText;
 				}
 			} catch (e) {
-				htmlContent = text;
+				htmlContent = fullText;
 			}
 
 			// Save HTML to server to get subdomain
@@ -65,16 +87,17 @@
 
 			const saveData = await saveResponse.json();
 
-			// Add assistant message with subdomain
+			// Update the assistant message with the subdomain link
 			messages = [
-				...messages,
+				...messages.slice(0, -1),
 				{
 					role: 'assistant',
-					content: `I've created your app! It's now live at ${saveData.subdomain}.vibers.kr`,
+					content: fullText, // Keep the full generated text
 					subdomain: saveData.subdomain
 				}
 			];
 			currentSubdomain = saveData.subdomain;
+
 		} catch (error) {
 			console.error('Generation error:', error);
 			messages = [

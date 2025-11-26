@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
-import { getVertexAI, getGenerativeModel } from "@firebase/vertexai";
+import { getAI, getGenerativeModel, GoogleAIBackend } from "firebase/ai";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDHTpyT6DnBXhrD5pe-ZN9tOl0SChIyBds",
@@ -15,5 +15,9 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
-export const vertexAI = getVertexAI(app, { location: "asia-northeast3" });
-export const model = getGenerativeModel(vertexAI, { model: "gemini-2.5-flash-lite" });
+
+// Initialize the Gemini Developer API backend service (AI Logic)
+const ai = getAI(app, { backend: new GoogleAIBackend() });
+
+// Create a GenerativeModel instance
+export const model = getGenerativeModel(ai, { model: "gemini-2.5-flash-lite" });
