@@ -106,7 +106,7 @@
 		left: 0;
 		top: 4rem;
 		bottom: 0;
-		width: 320px;
+		width: 30%;
 		background: rgba(255, 255, 255, 0.95);
 		backdrop-filter: blur(10px);
 		border-right: 1px solid rgba(0, 0, 0, 0.05);

@@ -236,7 +236,7 @@
 	}
 
 	.main-content.with-sidebar {
-		margin-left: 320px;
+		margin-left: 30%;
 	}
 
 	.hero-section {
