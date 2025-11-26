@@ -79,6 +79,7 @@ const systemInstruction = `당신은 10년 경력의 시니어 풀스택 웹 개
 
 // Gemini 모델 생성 (systemInstruction은 모델 생성 시 설정해야 함)
 export const model = getGenerativeModel(ai, {
-  model: "gemini-2.5-flash-lite",
+  // gemini-2.5-flash-lite
+  model: "gemini-2.5-flash",
   systemInstruction: systemInstruction
 });
