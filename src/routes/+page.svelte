@@ -61,30 +61,26 @@
 
 			console.log('Full AI Response:', fullText);
 
-			// Extract JSON/HTML from response
+			// HTML 추출 - 순수 HTML 응답에서 DOCTYPE부터 </html>까지 추출
 			let htmlContent: string;
-			try {
-				// Remove markdown code blocks if present
-				let cleanedText = fullText.replace(/```json\s*/g, '').replace(/```\s*/g, '');
-				
-				// Try to find JSON object
-				const jsonMatch = cleanedText.match(/\{[\s\S]*?"html"[\s\S]*?\}/);
-				if (jsonMatch) {
-					const parsed = JSON.parse(jsonMatch[0]);
-					htmlContent = parsed.html;
+
+			// 마크다운 코드 블록 제거 (AI가 실수로 추가할 경우 대비)
+			let cleanedText = fullText.replace(/```html?\s*/gi, '').replace(/```\s*/g, '');
+
+			// HTML 문서 추출 (DOCTYPE부터 </html>까지)
+			const htmlMatch = cleanedText.match(/<!DOCTYPE\s+html[^>]*>[\s\S]*<\/html>/i);
+
+			if (htmlMatch) {
+				htmlContent = htmlMatch[0];
+			} else {
+				// DOCTYPE이 없는 경우 <html>부터 시작하는 것도 허용
+				const htmlTagMatch = cleanedText.match(/<html[^>]*>[\s\S]*<\/html>/i);
+				if (htmlTagMatch) {
+					htmlContent = '<!DOCTYPE html>\n' + htmlTagMatch[0];
 				} else {
-					// If no JSON found, try to extract HTML directly
-					const htmlMatch = fullText.match(/<!DOCTYPE html>[\s\S]*<\/html>/i);
-					if (htmlMatch) {
-						htmlContent = htmlMatch[0];
-					} else {
-						throw new Error('No valid HTML found in response');
-					}
+					console.error('No valid HTML found in response');
+					throw new Error('AI 응답에서 유효한 HTML을 찾을 수 없습니다.');
 				}
-			} catch (e) {
-				console.error('Failed to extract HTML:', e);
-				// Fallback: use the full text as HTML
-				htmlContent = fullText;
 			}
 
 			// Save HTML to server to get subdomain
